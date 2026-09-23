@@ -4,6 +4,7 @@ import type { EventBus, GameEvents } from './EventBus';
 import type { TileGrid } from '../world/TileGrid';
 import type { CombatSystem } from '../combat/CombatSystem';
 import type { Projectiles } from '../combat/Projectiles';
+import type { Pathfinder } from '../world/Pathfinder';
 import type { AttackTokens } from '../enemies/AttackTokens';
 import type { Player } from '../player/Player';
 import type { Enemy } from '../enemies/Enemy';
@@ -15,6 +16,7 @@ export interface WorldCtx {
   combat: CombatSystem;
   projectiles: Projectiles;
   tokens: AttackTokens;
+  nav: Pathfinder;
   rng: () => number;
   player: () => Player;
   enemies: () => readonly Enemy[];

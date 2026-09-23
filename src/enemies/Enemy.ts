@@ -265,6 +265,41 @@ export class Enemy extends Actor {
     this.integrate();
   }
 
+  private path: { x: number; y: number }[] = [];
+  private pathGoal = { x: NaN, y: NaN };
+  private repathIn = 0;
+
+  /**
+   * Walk toward a point: straight when the way is clear, otherwise along an A* path around walls
+   * (re-planned every ~1/3 s or when the goal moves). Returns the heading used (for facing).
+   */
+  navigateTo(tx: number, ty: number, speed: number): number {
+    const hw = this.collider.w / 2 + 1;
+    const nav = this.ctx.nav;
+    let gx = tx;
+    let gy = ty;
+    if (!nav.clearLine(this.x, this.y, tx, ty, hw)) {
+      const goalMoved = Math.hypot(tx - this.pathGoal.x, ty - this.pathGoal.y) > 16;
+      if (--this.repathIn <= 0 || goalMoved || !this.path.length) {
+        this.path = nav.find(this.x, this.y, tx, ty, hw) ?? [];
+        this.pathGoal = { x: tx, y: ty };
+        this.repathIn = 20;
+      }
+      while (this.path.length > 1 && Math.hypot(this.path[0].x - this.x, this.path[0].y - this.y) < 6) this.path.shift();
+      if (this.path.length) [gx, gy] = [this.path[0].x, this.path[0].y];
+    } else this.path = [];
+    const d = Math.hypot(gx - this.x, gy - this.y);
+    const a = Math.atan2(gy - this.y, gx - this.x);
+    if (d > 1) this.steer((Math.cos(a) * speed * Math.min(1, d / 6)), (Math.sin(a) * speed * Math.min(1, d / 6)));
+    else this.steer(0, 0);
+    return a;
+  }
+
+  /** Current planned route (debug overlay). */
+  get debugPath() {
+    return this.path;
+  }
+
   outsideLeash(): boolean {
     return Math.hypot(this.x - this.homeX, this.y - this.homeY) > this.def.leash.distance;
   }
@@ -301,7 +336,8 @@ export class Enemy extends Actor {
     const s = this.move!.strikes[this.strikeIndex];
     this.vx = this.vy = 0;
     this.runner = new AttackRunner(this, s, this.facing, this.def.weaponRestDeg * DEG);
-    this.anim.play('attack', { restart: true, phases: { windup: s.windup, active: s.active, recovery: s.recovery } });
+    const anim = s.anim && this.anim.has(s.anim) ? s.anim : 'attack';
+    this.anim.play(anim, { restart: true, phases: { windup: s.windup, active: s.active, recovery: s.recovery } });
   }
 
   randRange([a, b]: readonly [number, number]) {

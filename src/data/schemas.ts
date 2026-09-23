@@ -74,6 +74,10 @@ export const CameraCfg = z.object({
   leadLerp: num.min(0).max(1),
   padLeadDistance: num.min(0),
   centerOffsetY: num,
+  /** Keep the view inside the current room (no void). Rooms smaller than the screen are centred. */
+  clampToRoom: z.boolean(),
+  /** Blend time when the clamp switches rooms (walking through a door). */
+  roomBlendMs: num.min(0),
 });
 
 export const JuiceCfg = z.object({
@@ -84,6 +88,20 @@ export const JuiceCfg = z.object({
   particles: z.object({ sparks: int.nonnegative(), blood: int.nonnegative(), bloodOnKill: int.nonnegative(), maxStains: int.nonnegative() }),
   damageNumbers: z.enum(['all', 'dummy', 'none']),
   enemyBarTicks: int.nonnegative(),
+  hitFeedback: z.object({
+    /** Visual recoil (px) on hit / heavy hit / blocked hit. */
+    flinch: num.min(0),
+    flinchHeavy: num.min(0),
+    flinchBlocked: num.min(0),
+    /** Health bars: how long the lost chunk lingers, then how fast it drains (fraction of max per second). */
+    trailHoldMs: num.min(0),
+    trailDrainPerSec: pos,
+    /** Red screen-edge flash when the player is hit (strongest on the side the hit came from). */
+    vignetteMs: pos,
+    vignetteAlpha: num.min(0).max(1),
+    /** Below this HP fraction the screen edge pulses. */
+    lowHpThreshold: num.min(0).max(1),
+  }),
 });
 
 const CritCfg = z.object({
@@ -207,6 +225,8 @@ export const StrikeDef = z.object({
   /** Player only: tick from which a roll may cancel the recovery. */
   rollCancelFrom: int.nonnegative().optional(),
   sfx: z.string().default('swing'),
+  /** Body animation to play (phased windup/active/recovery). Default: "attack" ("thrust" for player thrusts). */
+  anim: z.string().optional(),
 });
 
 export const MoveDef = z.object({

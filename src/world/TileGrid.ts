@@ -45,7 +45,8 @@ export class TileGrid {
   }
 }
 
-export function buildGrid(rooms: RoomData[], pad = 2): TileGrid {
+/** pad: rock margin (tiles) around the rooms; enough to fill the screen when a small room is centred. */
+export function buildGrid(rooms: RoomData[], pad = 12): TileGrid {
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
   for (const r of rooms) {
     minX = Math.min(minX, r.origin[0]);
@@ -72,6 +73,8 @@ export interface TileSet {
   floor_moss: number[];
   wall_front: number[];
   wall_cap: number[];
+  /** Solid rock filling the void outside rooms (falls back to a closed wall cap). */
+  rock?: number[];
 }
 export interface PlacedTile {
   tx: number;
@@ -83,14 +86,16 @@ export interface PlacedTile {
  * 3/4-view wall autotiling. Authors only place walls; for each wall with floor directly south we draw a
  * brick front face on that cell and a top cap on the cell above it. Caps that land on walkable floor are
  * returned as `overhang` so they can be depth-sorted above actors standing "behind" the wall.
- * Cap tiles are picked by a 4-bit mask of which sides border open space (N=1, E=2, S=4, W=8).
+ * Cap tiles are picked by a 4-bit mask of which sides border open floor (N=1, E=2, S=4, W=8).
+ * Void (outside every room) is filled with solid rock, which walls merge into seamlessly.
  */
 export function autotile(g: TileGrid, ts: TileSet): { statics: PlacedTile[]; overhang: PlacedTile[] } {
   const wall = (x: number, y: number) => g.get(x, y) === Cell.Wall;
   const floor = (x: number, y: number) => g.get(x, y) === Cell.Floor;
   const front = (x: number, y: number) => wall(x, y) && floor(x, y + 1);
   const cap = (x: number, y: number) => (wall(x, y) && !front(x, y)) || (!wall(x, y) && front(x, y + 1));
-  const closed = (x: number, y: number) => cap(x, y) || front(x, y);
+  const closed = (x: number, y: number) => !floor(x, y) || cap(x, y);
+  const rock = ts.rock ?? [ts.wall_cap[0]];
   const mask = (x: number, y: number) =>
     (closed(x, y - 1) ? 0 : 1) | (closed(x + 1, y) ? 0 : 2) | (closed(x, y + 1) ? 0 : 4) | (closed(x - 1, y) ? 0 : 8);
   const pick = (list: number[], x: number, y: number) => list[hash2(x, y) % list.length];
@@ -106,6 +111,8 @@ export function autotile(g: TileGrid, ts: TileSet): { statics: PlacedTile[]; ove
         statics.push({ tx: x, ty: y, index: pick(ts.wall_front, x, y) });
       } else if (cap(x, y)) {
         statics.push({ tx: x, ty: y, index: ts.wall_cap[mask(x, y)] });
+      } else {
+        statics.push({ tx: x, ty: y, index: pick(rock, x, y) });
       }
     }
   }

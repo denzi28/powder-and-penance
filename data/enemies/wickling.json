@@ -50,7 +50,7 @@
           "lunge": { "distance": 12, "startTick": 27, "ticks": 5 },
           "hitbox": { "shape": "arc", "radius": 24, "halfAngle": 38 },
           "sweep": { "fromDeg": -150, "toDeg": 30 },
-          "knockback": 110, "hitstop": 5, "shake": 0.3, "sfx": "swing_heavy"
+          "knockback": 110, "hitstop": 5, "shake": 0.3, "sfx": "swing_heavy", "anim": "overhead"
         }
       ]
     },
@@ -68,7 +68,7 @@
           "lunge": { "distance": 6, "startTick": 17, "ticks": 4 },
           "hitbox": { "shape": "arc", "radius": 22, "halfAngle": 75 },
           "sweep": { "fromDeg": -100, "toDeg": 80 },
-          "knockback": 60, "hitstop": 2, "shake": 0.1
+          "knockback": 60, "hitstop": 2, "shake": 0.1, "anim": "swipe"
         },
         {
           "damage": 12, "poise": 11,
@@ -77,7 +77,7 @@
           "lunge": { "distance": 6, "startTick": 9, "ticks": 4 },
           "hitbox": { "shape": "arc", "radius": 22, "halfAngle": 75 },
           "sweep": { "fromDeg": 80, "toDeg": -100 },
-          "knockback": 70, "hitstop": 3, "shake": 0.12
+          "knockback": 70, "hitstop": 3, "shake": 0.12, "anim": "swipe"
         }
       ]
     },
@@ -93,7 +93,7 @@
           "telegraph": { "tick": 4, "kind": "normal" },
           "hitbox": { "shape": "circle", "radius": 12, "offset": 8 },
           "sweep": { "fromDeg": 20, "toDeg": 0, "reach": 6 },
-          "knockback": 200, "hitstop": 3, "shake": 0.15, "sfx": "swing"
+          "knockback": 200, "hitstop": 3, "shake": 0.15, "sfx": "swing", "anim": "shove"
         }
       ]
     }

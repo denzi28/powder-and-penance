@@ -108,11 +108,60 @@
           "phase": "windup"
         },
         {
+          "ticks": 2,
+          "phase": "windup"
+        },
+        {
           "ticks": 1,
           "phase": "active"
         },
         {
           "ticks": 1,
+          "phase": "active"
+        },
+        {
+          "ticks": 1,
+          "phase": "recovery"
+        },
+        {
+          "ticks": 2,
+          "phase": "recovery"
+        }
+      ]
+    },
+    "thrust": {
+      "row": 31,
+      "dirs": [
+        "S",
+        "SE",
+        "E",
+        "NE",
+        "N"
+      ],
+      "loop": false,
+      "frames": [
+        {
+          "ticks": 1,
+          "phase": "windup"
+        },
+        {
+          "ticks": 2,
+          "phase": "windup"
+        },
+        {
+          "ticks": 1,
+          "phase": "active"
+        },
+        {
+          "ticks": 1,
+          "phase": "active"
+        },
+        {
+          "ticks": 1,
+          "phase": "recovery"
+        },
+        {
+          "ticks": 2,
           "phase": "recovery"
         }
       ]
@@ -129,10 +178,13 @@
       "loop": false,
       "frames": [
         {
-          "ticks": 10
+          "ticks": 6
         },
         {
-          "ticks": 16
+          "ticks": 8
+        },
+        {
+          "ticks": 12
         }
       ]
     },

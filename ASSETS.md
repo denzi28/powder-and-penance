@@ -116,8 +116,9 @@ Draw the legs and boots in roughly rows 21–27 of the cell. The torso layer cov
 |---|---|---|---|---|
 | `idle` | 0 | S SE E NE N | 2 × 36t | Breathing. Also used while walking; the legs supply the bob. |
 | `roll` | 5 | S SE E NE N | 7 frames: 5 `roll` + 2 `recover` | **Full body.** The legs layer and weapon are hidden during the roll. The direction is the roll direction, not the aim. |
-| `attack` | 10 | S SE E NE N | 3 frames: `windup`, `active`, `recovery` | Shared by every melee strike. The weapon sprite does the swinging (see *Weapon motion*). Faces the attack direction. The windup frame is held while a heavy is charging. |
-| `stagger` | 15 | S SE E NE N | 2 (10t, 16t) | Flinch. Legs stay visible. |
+| `attack` | 10 | S SE E NE N | 6 frames: 2 `windup`, 2 `active`, 2 `recovery` | Swings. The weapon sprite does the swinging (see *Weapon motion*). Faces the attack direction. The last windup frame is held while a heavy charges. |
+| `thrust` | 31 | S SE E NE N | 6 frames, same phases | Used automatically for thrusts (strikes whose sweep has `fromDeg == toDeg`) and for criticals |
+| `stagger` | 15 | S SE E NE N | 3 | Flinch, snap back, settle. Legs stay visible. |
 | `death` | 20 | S | 5 | **Full body** collapse. Legs and weapon are hidden. |
 
 | `kneel` | 21 | S SE E NE N | 1 | **Full body.** Resting or kindling at a shrine. |
@@ -134,14 +135,19 @@ Draw the legs and boots in roughly rows 21–27 of the cell. The torso layer cov
 | `phial_icon` | 8×10 | 0,0 | HUD icon. Frame 0 = full, frame 1 = spent. |
 | `tallow_icon` | 8×9 | 0,0 | HUD icon |
 
-### `wickling` (enemy, single layer, 32×32, pivot 16,28, 5 columns)
+### `wickling` (enemy, single layer, 32×32, pivot 16,28, 7 columns)
 | Animation | Row | Dirs | Frames |
 |---|---|---|---|
 | `idle` | 0 | S SE E NE N | 2 (candle flicker) |
 | `walk` | 5 | S SE E NE N | 4, `footstep` on 1 and 3. Playback speed scales with move speed. |
-| `attack` | 10 | S SE E NE N | 3 phased: `windup` / `active` / `recovery` (shared by all its moves) |
-| `stagger` | 15 | S SE E NE N | 2 |
-| `death` | 20 | S | 5 (melts into a puddle) |
+| `overhead` | 10 | S SE E NE N | 7 phased: 3 `windup` (rears back; the last is the held "tense" pose), 2 `active`, 2 `recovery` |
+| `swipe` | 15 | S SE E NE N | 7 phased (twists to one side, whips across) |
+| `shove` | 20 | S SE E NE N | 7 phased (crouches, springs forward) |
+| `attack` | 10 | S SE E NE N | Alias of `overhead`, used by strikes without an `anim` |
+| `stagger` | 25 | S SE E NE N | 3 |
+| `death` | 30 | S | 5 (melts into a puddle) |
+
+**Per-attack animations:** a strike in `data/enemies/*.json` (or `data/weapons/*.json`) can name its body animation with `"anim"`. Give every enemy attack its own windup silhouette: the pose is the real telegraph, and the glint only confirms it.
 
 Enemies hold their weapon like the player does: `handAnchors` in the body manifest, plus a separate weapon sheet (`cleaver`, pivot = grip, drawn pointing right, `points.tip` for the telegraph glint).
 
@@ -196,6 +202,7 @@ The manifest's `tiles` block maps tile kinds to sheet indices (index = row × 8 
 |---|---|---|
 | `floor` | 0–3 | Walkable floor (variants picked by a stable per-cell hash) |
 | `floor_moss` | 4–5 | `,` in room files |
+| `rock` | 6–7 | Solid dark mass filling everything outside rooms, so no black void is ever on screen |
 | `wall_front` | 8–9 | Brick face of a wall with floor directly south of it |
 | `wall_cap` | 16–31 | Top of a wall. **Index = 16 + edge mask**, where the mask bits say which sides are open: N=1, E=2, S=4, W=8. Draw a rim on the open sides. |
 

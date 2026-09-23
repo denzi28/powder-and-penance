@@ -3,5 +3,7 @@
   "aimLeadMax": 40,
   "leadLerp": 0.15,
   "padLeadDistance": 36,
-  "centerOffsetY": -12
+  "centerOffsetY": -12,
+  "clampToRoom": true,
+  "roomBlendMs": 350
 }

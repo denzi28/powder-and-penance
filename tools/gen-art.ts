@@ -106,6 +106,28 @@ function sheet(name: string, img: Img, manifest: object) {
   write(path.join(SPRITES, `${name}.anim.json`), JSON.stringify({ image: `${name}.png`, ...manifest }, null, 2) + '\n');
 }
 
+// ---------------------------------------------------------------- phased attack timing
+// Relative frame weights inside each phase; the game stretches each phase to the strike's data ticks.
+/** Player swing/thrust: 2 anticipation, 2 strike, 2 follow-through frames. */
+const phased6 = () => [
+  { ticks: 1, phase: 'windup' },
+  { ticks: 2, phase: 'windup' },
+  { ticks: 1, phase: 'active' },
+  { ticks: 1, phase: 'active' },
+  { ticks: 1, phase: 'recovery' },
+  { ticks: 2, phase: 'recovery' },
+];
+/** Enemy attacks: 3 anticipation frames (the last one, the held "tense" pose, is longest), 2 strike, 2 recovery. */
+const phased7 = () => [
+  { ticks: 1, phase: 'windup' },
+  { ticks: 2, phase: 'windup' },
+  { ticks: 2, phase: 'windup' },
+  { ticks: 1, phase: 'active' },
+  { ticks: 1, phase: 'active' },
+  { ticks: 2, phase: 'recovery' },
+  { ticks: 1, phase: 'recovery' },
+];
+
 // ---------------------------------------------------------------- player
 type Dir5 = 'S' | 'SE' | 'E' | 'NE' | 'N';
 const DIR5: Dir5[] = ['S', 'SE', 'E', 'NE', 'N'];
@@ -114,23 +136,36 @@ const PIVOT: [number, number] = [16, 28];
 /** Weapon hand position in cell pixels, per authored direction. */
 const HAND: Record<Dir5, [number, number]> = { S: [20, 17], SE: [20, 16], E: [18, 16], NE: [19, 15], N: [19, 15] };
 
-type TorsoPose = 'idle' | 'windup' | 'active' | 'flinch';
+type TorsoPose = 'idle' | 'windup' | 'windup2' | 'active' | 'follow' | 'flinch' | 'flinch2';
 
 function drawTorso(c: Img, dir: Dir5, breath: number, pose: TorsoPose = 'idle') {
-  if (pose === 'windup') breath = 1;
-  if (pose === 'active' || pose === 'flinch') breath = -1;
+  if (pose === 'windup' || pose === 'windup2') breath = 1;
+  if (pose === 'active' || pose === 'flinch' || pose === 'flinch2') breath = -1;
   // Cloak
   c.rect(12, 13, 8, 1, P.teal2);
   c.rect(11, 14, 10, 8, P.teal2);
   c.vline(11, 14, 7, P.teal3);
   c.vline(20, 14, 8, P.teal1);
   c.hline(11, 21, 10, P.teal1);
-  if (pose === 'windup') {
+  if (pose === 'windup' || pose === 'windup2') {
     // cloak gathers: widen at the shoulders
     c.vline(10, 15, 4, P.teal2);
     c.vline(21, 15, 4, P.teal1);
   }
+  if (pose === 'windup2') {
+    // coiled deeper: the hem pulls in and the shoulders hunch
+    c.vline(9, 16, 3, P.teal2);
+    c.vline(22, 16, 3, P.teal1);
+    c.hline(12, 21, 8, P.dark2);
+  }
   if (pose === 'active') c.hline(10, 22, 12, P.teal1); // hem flares out with the swing
+  if (pose === 'follow') {
+    // follow-through: hem swirls to one side
+    c.hline(12, 22, 11, P.teal1);
+    c.set(22, 21, P.teal1);
+    c.set(21, 20, P.teal2);
+  }
+  if (pose === 'flinch2') c.hline(10, 22, 4, P.teal1); // cloak snaps back
   c.hline(11, 18, 10, P.dark2); // belt
   if (dir === 'S') {
     c.set(15, 18, P.flame1);
@@ -158,7 +193,7 @@ function drawTorso(c: Img, dir: Dir5, breath: number, pose: TorsoPose = 'idle') 
   c.rect(tipX, hy - 1, 2, 1, P.teal1);
 
   // Face opening with glowing eyes (the character's readable "front")
-  const eye = pose === 'flinch' ? P.ember : P.flame2;
+  const eye = pose === 'flinch' || pose === 'flinch2' ? P.ember : P.flame2;
   switch (dir) {
     case 'S':
       c.rect(13, hy + 3, 6, 3, P.ink);
@@ -298,7 +333,7 @@ function drawDrink(c: Img, dir: Dir5, f: number) {
 }
 
 function genPlayer() {
-  const body = new Img(CELL * 8, CELL * 31);
+  const body = new Img(CELL * 8, CELL * 36);
   const cell = (draw: (c: Img) => void, col: number, row: number) => {
     const c = new Img(CELL, CELL);
     draw(c);
@@ -308,8 +343,15 @@ function genPlayer() {
   DIR5.forEach((d, row) => {
     for (let f = 0; f < 2; f++) cell(c => drawTorso(c, d, f), f, row);
     for (let f = 0; f < 7; f++) cell(c => drawRoll(c, d, f), f, 5 + row);
-    (['windup', 'active', 'idle'] as const).forEach((pose, f) => cell(c => drawTorso(c, d, 0, pose), f, 10 + row));
-    (['flinch', 'idle'] as const).forEach((pose, f) => cell(c => drawTorso(c, d, 0, pose), f, 15 + row));
+    // Swing: anticipation (2) -> strike (2) -> follow-through / settle (2)
+    (['windup', 'windup2', 'active', 'follow', 'follow', 'idle'] as const).forEach((pose, f) =>
+      cell(c => drawTorso(c, d, 0, pose), f, 10 + row),
+    );
+    (['flinch', 'flinch2', 'idle'] as const).forEach((pose, f) => cell(c => drawTorso(c, d, 0, pose), f, 15 + row));
+    // Thrust: lean back (2) -> lunge (2) -> recover (2)
+    (['windup', 'windup2', 'active', 'active', 'follow', 'idle'] as const).forEach((pose, f) =>
+      cell(c => drawTorso(c, d, 0, pose), f, 31 + row),
+    );
     cell(c => drawRoll(c, d, 5), 0, 21 + row); // kneel (full body)
     for (let f = 0; f < 3; f++) cell(c => drawDrink(c, d, f), f, 26 + row);
   });
@@ -336,17 +378,9 @@ function genPlayer() {
           { ticks: 5, phase: 'recover' },
         ],
       },
-      attack: {
-        row: 10,
-        dirs: DIR5,
-        loop: false,
-        frames: [
-          { ticks: 1, phase: 'windup' },
-          { ticks: 1, phase: 'active' },
-          { ticks: 1, phase: 'recovery' },
-        ],
-      },
-      stagger: { row: 15, dirs: DIR5, loop: false, frames: [{ ticks: 10 }, { ticks: 16 }] },
+      attack: { row: 10, dirs: DIR5, loop: false, frames: phased6() },
+      thrust: { row: 31, dirs: DIR5, loop: false, frames: phased6() },
+      stagger: { row: 15, dirs: DIR5, loop: false, frames: [{ ticks: 6 }, { ticks: 8 }, { ticks: 12 }] },
       death: {
         row: 20,
         dirs: ['S'],
@@ -463,10 +497,18 @@ function genMisc() {
 // ---------------------------------------------------------------- enemies
 /** Wickling: a hunched, wax-headed acolyte with a candle stub burning on its crown. */
 const WICK_HAND: Record<Dir5, [number, number]> = { S: [21, 20], SE: [21, 19], E: [19, 19], NE: [20, 18], N: [20, 18] };
-type WickPose = { bob: number; hunch: number; flame: number; sway: number; flinch?: boolean };
+type WickPose = { bob?: number; hunch?: number; flame?: number; sway?: number; lean?: number; flinch?: boolean };
+/** Screen direction the body faces, per authored direction (for leaning into / away from an attack). */
+const FACE_VEC: Record<Dir5, [number, number]> = { S: [0, 1], SE: [0.7, 0.7], E: [1, 0], NE: [0.7, -0.7], N: [0, -1] };
 
-function drawWickling(c: Img, dir: Dir5, o: WickPose) {
+function drawWickling(c: Img, dir: Dir5, pose: WickPose) {
+  const o = { bob: 0, hunch: 0, flame: 0, sway: 0, lean: 0, ...pose };
   const b = o.bob;
+  // Lean: head and shoulders shift toward the facing (positive) or away from it (negative, anticipation).
+  const [fx, fy] = FACE_VEC[dir];
+  const lx = Math.round(o.lean * fx);
+  const ly = Math.round(o.lean * fy * 0.7);
+  const shoulders = Math.round(o.lean * fx * 0.5);
   // Robe: a ragged bell shape
   const rows: [number, number, number][] = [
     [17, 13, 6],
@@ -481,15 +523,15 @@ function drawWickling(c: Img, dir: Dir5, o: WickPose) {
     [26, 10, 12],
   ];
   for (const [y, x, w] of rows) {
-    const sway = y >= 24 ? o.sway : 0;
+    const sway = y >= 24 ? o.sway : y <= 20 ? shoulders : 0;
     c.hline(x + sway, y + b, w, P.wood1);
     c.set(x + sway, y + b, P.wood2);
   }
   for (let x = 10; x < 22; x += 2) c.set(x + o.sway, 27 + b, P.dark2); // ragged hem
-  c.vline(16, 19 + b, 6, P.dark2); // robe seam
+  c.vline(16 + shoulders, 19 + b, 6, P.dark2); // robe seam
   // Wax head, drooping
-  const hx = 16 + (o.flinch ? -1 : 0);
-  const hy = 13 + b + o.hunch;
+  const hx = 16 + (o.flinch ? -1 : 0) + lx;
+  const hy = 13 + b + o.hunch + ly;
   c.disc(hx, hy, 3.6, P.wax1);
   c.set(hx - 2, hy - 2, P.wax2);
   c.set(hx - 1, hy - 3, P.wax2);
@@ -539,26 +581,64 @@ function drawDummy(c: Img, lean: number) {
   c.set(17 + lean, 7, P.ink);
 }
 
+/**
+ * Wickling attack poses, 7 frames each (see phased7): 3 anticipation frames (the last is the held, trembling
+ * "tense" pose the player should learn to read), 2 strike frames, 2 recovery frames.
+ * Each attack has its own silhouette so the windup itself tells you which attack is coming.
+ */
+const WICK_ATTACKS: Record<string, WickPose[]> = {
+  // Rears up and back, candle flaring, then crashes forward and down.
+  overhead: [
+    { lean: -1, bob: -1, hunch: -1 },
+    { lean: -2, bob: -1, hunch: -2, flame: 1 },
+    { lean: -2, bob: -1, hunch: -2, flame: 1, sway: 1 },
+    { lean: 2, bob: 1, hunch: 1 },
+    { lean: 2, bob: 1, hunch: 2, sway: -1 },
+    { lean: 1, bob: 1, hunch: 2 },
+    { lean: 0 },
+  ],
+  // Twists the whole body to one side, then whips across.
+  swipe: [
+    { sway: -1, lean: -1 },
+    { sway: -1, lean: -1, hunch: 1 },
+    { sway: -1, lean: -1, hunch: 1, flame: 1 },
+    { sway: 1, lean: 1 },
+    { sway: 1, lean: 2 },
+    { sway: 1, lean: 1, bob: 1 },
+    {},
+  ],
+  // Crouches low, then springs its whole weight forward.
+  shove: [
+    { bob: 1, hunch: 1 },
+    { bob: 1, hunch: 2, lean: -1 },
+    { bob: 1, hunch: 2, lean: -1, flame: 1 },
+    { lean: 2, hunch: -1 },
+    { lean: 3, hunch: -1 },
+    { lean: 1 },
+    {},
+  ],
+};
+
 function genEnemies() {
-  const COLS = 5;
-  const wick = new Img(CELL * COLS, CELL * 21);
+  const COLS = 7;
+  const wick = new Img(CELL * COLS, CELL * 31);
   const cell = (draw: (c: Img) => void, col: number, row: number) => {
     const c = new Img(CELL, CELL);
     draw(c);
     c.outline(P.ink);
     wick.blit(c, col * CELL, row * CELL);
   };
+  const attackNames = Object.keys(WICK_ATTACKS);
   DIR5.forEach((d, r) => {
-    for (let f = 0; f < 2; f++) cell(c => drawWickling(c, d, { bob: 0, hunch: 0, flame: f, sway: 0 }), f, r);
+    for (let f = 0; f < 2; f++) cell(c => drawWickling(c, d, { flame: f }), f, r);
     for (let f = 0; f < 4; f++)
-      cell(c => drawWickling(c, d, { bob: f % 2 ? -1 : 0, hunch: 0, flame: f % 2, sway: f === 1 ? 1 : f === 3 ? -1 : 0 }), f, 5 + r);
-    cell(c => drawWickling(c, d, { bob: 1, hunch: 1, flame: 1, sway: 0 }), 0, 10 + r); // windup: coil
-    cell(c => drawWickling(c, d, { bob: 0, hunch: -1, flame: 0, sway: 1 }), 1, 10 + r); // active: lunge
-    cell(c => drawWickling(c, d, { bob: 0, hunch: 0, flame: 1, sway: 0 }), 2, 10 + r); // recovery
-    cell(c => drawWickling(c, d, { bob: 0, hunch: -1, flame: 0, sway: -1, flinch: true }), 0, 15 + r);
-    cell(c => drawWickling(c, d, { bob: 1, hunch: 1, flame: 1, sway: 0, flinch: true }), 1, 15 + r);
+      cell(c => drawWickling(c, d, { bob: f % 2 ? -1 : 0, flame: f % 2, sway: f === 1 ? 1 : f === 3 ? -1 : 0 }), f, 5 + r);
+    attackNames.forEach((name, a) => WICK_ATTACKS[name].forEach((pose, f) => cell(c => drawWickling(c, d, pose), f, 10 + a * 5 + r)));
+    cell(c => drawWickling(c, d, { hunch: -1, lean: -2, sway: -1, flinch: true }), 0, 25 + r);
+    cell(c => drawWickling(c, d, { bob: 1, lean: -1, flame: 1, flinch: true }), 1, 25 + r);
+    cell(c => drawWickling(c, d, { bob: 1, hunch: 1, flinch: true }), 2, 25 + r);
   });
-  for (let f = 0; f < 5; f++) cell(c => drawWicklingDeath(c, f), f, 20);
+  for (let f = 0; f < 5; f++) cell(c => drawWicklingDeath(c, f), f, 30);
   const toPivot = ([x, y]: [number, number]) => [x - PIVOT[0], y - PIVOT[1]];
   sheet('wickling', wick, {
     cell: [CELL, CELL],
@@ -573,18 +653,11 @@ function genEnemies() {
         loop: true,
         frames: [{ ticks: 8 }, { ticks: 8, events: ['footstep'] }, { ticks: 8 }, { ticks: 8, events: ['footstep'] }],
       },
-      attack: {
-        row: 10,
-        dirs: DIR5,
-        loop: false,
-        frames: [
-          { ticks: 1, phase: 'windup' },
-          { ticks: 1, phase: 'active' },
-          { ticks: 1, phase: 'recovery' },
-        ],
-      },
-      stagger: { row: 15, dirs: DIR5, loop: false, frames: [{ ticks: 8 }, { ticks: 30 }] },
-      death: { row: 20, dirs: ['S'], loop: false, frames: [{ ticks: 8 }, { ticks: 10 }, { ticks: 12 }, { ticks: 30 }, { ticks: 60 }] },
+      // One phased animation per attack; "attack" is the fallback for strikes without an `anim`.
+      ...Object.fromEntries(attackNames.map((name, a) => [name, { row: 10 + a * 5, dirs: DIR5, loop: false, frames: phased7() }])),
+      attack: { row: 10, dirs: DIR5, loop: false, frames: phased7() },
+      stagger: { row: 25, dirs: DIR5, loop: false, frames: [{ ticks: 6 }, { ticks: 10 }, { ticks: 30 }] },
+      death: { row: 30, dirs: ['S'], loop: false, frames: [{ ticks: 8 }, { ticks: 10 }, { ticks: 12 }, { ticks: 30 }, { ticks: 60 }] },
     },
   });
 
@@ -1005,6 +1078,15 @@ function genTiles() {
   floor(4, 0, true);
   floor(5, 2, true);
 
+  // Rock: the solid mass outside every room (indices 6, 7). Darker than wall caps, faintly textured.
+  for (const idx of [6, 7]) {
+    const [ox, oy] = at(idx);
+    const r = rng(500 + idx);
+    img.rect(ox, oy, T, T, P.ink);
+    for (let i = 0; i < 10; i++) img.set(ox + Math.floor(r() * 16), oy + Math.floor(r() * 16), P.dark1);
+    for (let i = 0; i < 3; i++) img.set(ox + Math.floor(r() * 16), oy + Math.floor(r() * 16), P.dark2);
+  }
+
   const front = (idx: number, v: number) => {
     const [ox, oy] = at(idx);
     img.rect(ox, oy, T, T, P.stone3);
@@ -1044,6 +1126,7 @@ function genTiles() {
       floor_moss: [4, 5],
       wall_front: [8, 8, 8, 9],
       wall_cap: Array.from({ length: 16 }, (_, i) => 16 + i),
+      rock: [6, 6, 6, 7],
     },
   });
 }

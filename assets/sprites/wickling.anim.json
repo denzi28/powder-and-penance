@@ -82,6 +82,129 @@
         }
       ]
     },
+    "overhead": {
+      "row": 10,
+      "dirs": [
+        "S",
+        "SE",
+        "E",
+        "NE",
+        "N"
+      ],
+      "loop": false,
+      "frames": [
+        {
+          "ticks": 1,
+          "phase": "windup"
+        },
+        {
+          "ticks": 2,
+          "phase": "windup"
+        },
+        {
+          "ticks": 2,
+          "phase": "windup"
+        },
+        {
+          "ticks": 1,
+          "phase": "active"
+        },
+        {
+          "ticks": 1,
+          "phase": "active"
+        },
+        {
+          "ticks": 2,
+          "phase": "recovery"
+        },
+        {
+          "ticks": 1,
+          "phase": "recovery"
+        }
+      ]
+    },
+    "swipe": {
+      "row": 15,
+      "dirs": [
+        "S",
+        "SE",
+        "E",
+        "NE",
+        "N"
+      ],
+      "loop": false,
+      "frames": [
+        {
+          "ticks": 1,
+          "phase": "windup"
+        },
+        {
+          "ticks": 2,
+          "phase": "windup"
+        },
+        {
+          "ticks": 2,
+          "phase": "windup"
+        },
+        {
+          "ticks": 1,
+          "phase": "active"
+        },
+        {
+          "ticks": 1,
+          "phase": "active"
+        },
+        {
+          "ticks": 2,
+          "phase": "recovery"
+        },
+        {
+          "ticks": 1,
+          "phase": "recovery"
+        }
+      ]
+    },
+    "shove": {
+      "row": 20,
+      "dirs": [
+        "S",
+        "SE",
+        "E",
+        "NE",
+        "N"
+      ],
+      "loop": false,
+      "frames": [
+        {
+          "ticks": 1,
+          "phase": "windup"
+        },
+        {
+          "ticks": 2,
+          "phase": "windup"
+        },
+        {
+          "ticks": 2,
+          "phase": "windup"
+        },
+        {
+          "ticks": 1,
+          "phase": "active"
+        },
+        {
+          "ticks": 1,
+          "phase": "active"
+        },
+        {
+          "ticks": 2,
+          "phase": "recovery"
+        },
+        {
+          "ticks": 1,
+          "phase": "recovery"
+        }
+      ]
+    },
     "attack": {
       "row": 10,
       "dirs": [
@@ -98,8 +221,24 @@
           "phase": "windup"
         },
         {
+          "ticks": 2,
+          "phase": "windup"
+        },
+        {
+          "ticks": 2,
+          "phase": "windup"
+        },
+        {
           "ticks": 1,
           "phase": "active"
+        },
+        {
+          "ticks": 1,
+          "phase": "active"
+        },
+        {
+          "ticks": 2,
+          "phase": "recovery"
         },
         {
           "ticks": 1,
@@ -108,7 +247,7 @@
       ]
     },
     "stagger": {
-      "row": 15,
+      "row": 25,
       "dirs": [
         "S",
         "SE",
@@ -119,7 +258,10 @@
       "loop": false,
       "frames": [
         {
-          "ticks": 8
+          "ticks": 6
+        },
+        {
+          "ticks": 10
         },
         {
           "ticks": 30
@@ -127,7 +269,7 @@
       ]
     },
     "death": {
-      "row": 20,
+      "row": 30,
       "dirs": [
         "S"
       ],

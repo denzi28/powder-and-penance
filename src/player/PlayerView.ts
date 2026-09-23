@@ -24,13 +24,16 @@ export class PlayerView {
   /** Returns the snapped draw position of the feet (camera follows this). */
   render(alpha: number): { x: number; y: number } {
     const p = this.p;
-    const x = Math.round(lerp(p.prevX, p.x, alpha));
-    const y = Math.round(lerp(p.prevY, p.y, alpha));
-    const depth = DEPTH.actor(y);
+    const feetX = Math.round(lerp(p.prevX, p.x, alpha));
+    const feetY = Math.round(lerp(p.prevY, p.y, alpha));
+    // The sprite recoils from hits; the shadow and camera stay on the real position.
+    const x = feetX + Math.round(p.flinchX);
+    const y = feetY + Math.round(p.flinchY);
+    const depth = DEPTH.actor(feetY);
     const { sx, sy } = p.squash;
     const flash = p.flash > 0;
 
-    this.shadow.setPosition(x, y);
+    this.shadow.setPosition(feetX, feetY);
 
     let torsoDy = 0;
     this.legs.setVisible(p.legsVisible);
@@ -79,7 +82,7 @@ export class PlayerView {
       tint(this.weapon.sprite, flash);
     }
     this.renderShield(x, y + torsoDy, depth, bf.flip, anchor, flash);
-    return { x, y };
+    return { x: feetX, y: feetY };
   }
 
   /** Off-hand shield: at the off hand normally, pushed out toward the aim while blocking. */

@@ -100,7 +100,7 @@ A ruined candle-abbey where gunpowder replaced prayer. Light, wax and smoke are 
 
 ### 3.4 Camera
 - Aim lead: the camera shifts toward the cursor by `aimLeadFactor` (0.25) of the cursor distance, clamped to `aimLeadMax` (40 px). This lead is smoothed with an exponential lerp.
-- Room-bounds clamping is optional per room (bosses use it).
+- **Room clamp:** the view stays inside the room you're in, including the wall-top row above its north wall. Rooms smaller than the screen are centred. Everything outside rooms is filled with solid rock tiles, so no black void is ever visible. Walking through a door blends the camera to the new room over `roomBlendMs`.
 - Shake: trauma-based (trauma² × amplitude, decays per tick), with integer offsets.
 - Hit-stop: per-event values in `data/config/juice.json` (for example light hit 2 ticks, heavy hit 5, parry 8, riposte 10).
 
@@ -249,7 +249,7 @@ Stagger, parried and critVictim can interrupt any state.
 - **Alerted room.** Alerted enemies know where you are while you are inside that room, even behind walls. After you leave the room and stay unseen for `loseTicks`, they drop back to suspicious and search.
 - **Getting hit** makes an enemy certain immediately, and it alerts the room too.
 - **Backstabs** work on enemies that are unaware (idle, suspicious, returning), staggered or parried. Sneaking up from behind is the payoff for stealth.
-- Enemies have no pathfinding yet. An alerted enemy tracking you through a wall walks straight at you. Steering around obstacles comes with the full area in M5.
+- **Navigation:** an enemy walks straight when the line is clear. Otherwise it follows a grid A* path (8-directional, no corner cutting, smoothed) and re-plans about every ⅓ s or when its goal moves. This is used for chasing, searching and returning home. Press F1 to see paths in cyan.
 - **Move selection:** each attack has `range [min,max]`, `weight`, `cooldownTicks` and optional conditions (`playerHealing`, `playerBehind`, `phase>=2`). Weighted random choice uses a seeded RNG.
 - **Aggression tokens:** at most `maxAttackers` (2) enemies can be in `attack` at once. The rest strafe. This keeps groups fair and readable.
 - Returning enemies heal if `healOnReturn` is set per archetype (default true).

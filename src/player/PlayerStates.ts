@@ -131,7 +131,9 @@ function startStrike(p: Player, s: StrikeDef) {
   p.stamina.spend(s.stamina);
   p.vx = p.vy = 0;
   p.runner = new AttackRunner(p, s, p.aimAngle, p.weapon.view.restAngleOffsetDeg * DEG);
-  p.body.play('attack', { restart: true, phases: { windup: s.windup, active: s.active, recovery: s.recovery } });
+  const thrust = s.sweep.fromDeg === s.sweep.toDeg;
+  const anim = s.anim && p.body.has(s.anim) ? s.anim : thrust ? 'thrust' : 'attack';
+  p.body.play(anim, { restart: true, phases: { windup: s.windup, active: s.active, recovery: s.recovery } });
   p.squash.set(DATA.juice.squash.attack);
 }
 
@@ -375,7 +377,7 @@ const critical: State<Player> = {
     p.vx = p.vy = 0;
     p.invulnerable = true;
     p.runner = new AttackRunner(p, critStrike(c.ticks, c.hitTick), angle, p.weapon.view.restAngleOffsetDeg * DEG, true);
-    p.body.play('attack', { restart: true, phases: { windup: c.hitTick, active: 4, recovery: c.ticks - c.hitTick } });
+    p.body.play('thrust', { restart: true, phases: { windup: c.hitTick, active: 4, recovery: c.ticks - c.hitTick } });
     victim.beginCritVictim(p, c.ticks + c.victimExtraTicks);
   },
   tick(p, t) {

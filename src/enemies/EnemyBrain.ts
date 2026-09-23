@@ -36,13 +36,9 @@ const suspicious: State<Enemy> = {
       e.searchLeft = per.investigateTicks;
       return;
     }
-    const dx = e.lastSeenX - e.x;
-    const dy = e.lastSeenY - e.y;
-    const d = Math.hypot(dx, dy);
+    const d = Math.hypot(e.lastSeenX - e.x, e.lastSeenY - e.y);
     if (d > 8) {
-      const a = Math.atan2(dy, dx);
-      e.turnTo(a);
-      e.steer((dx / d) * e.def.speed * 0.5, (dy / d) * e.def.speed * 0.5);
+      e.turnTo(e.navigateTo(e.lastSeenX, e.lastSeenY, e.def.speed * 0.5));
     } else {
       e.steer(0, 0);
       e.facing += 1.5 * DEG * e.strafeDir; // look around
@@ -85,14 +81,16 @@ const approach: State<Enemy> = {
   tick(e) {
     const exit = combatExit(e);
     if (exit) return exit;
-    const a = Math.atan2(e.lastSeenY - e.y, e.lastSeenX - e.x);
-    e.turnTo(a);
+    // Face the player when they're in sight; otherwise face where we're walking.
+    if (e.visible) e.turnTo(e.angleToPlayer());
     if (e.tryAttack()) return 'attack';
     const d = e.distToPlayer();
     // Not ready to attack: hold at the preferred spacing and circle. Ready: keep closing until in range.
-    if (!e.readyToAttack() && d <= e.def.spacing.preferred) return 'strafe';
-    if (d > e.bodyRadius + e.player.bodyRadius + 2) e.steer(Math.cos(a) * e.def.speed, Math.sin(a) * e.def.speed);
-    else e.steer(0, 0);
+    if (!e.readyToAttack() && d <= e.def.spacing.preferred && e.visible) return 'strafe';
+    if (d > e.bodyRadius + e.player.bodyRadius + 2) {
+      const heading = e.navigateTo(e.lastSeenX, e.lastSeenY, e.def.speed);
+      if (!e.visible) e.turnTo(heading);
+    } else e.steer(0, 0);
   },
 };
 
@@ -196,16 +194,12 @@ const ret: State<Enemy> = {
   tick(e) {
     if (e.awareness >= 1) return 'notice';
     if (e.awareness >= e.def.perception.suspicionAt) return 'suspicious';
-    const dx = e.homeX - e.x;
-    const dy = e.homeY - e.y;
-    const d = Math.hypot(dx, dy);
-    if (d < 3) {
+    if (Math.hypot(e.homeX - e.x, e.homeY - e.y) < 3) {
       if (e.def.leash.healOnReturn) e.hp = e.maxHp;
       e.vx = e.vy = 0;
       return 'idle';
     }
-    e.turnTo(Math.atan2(dy, dx));
-    e.steer((dx / d) * e.def.speed, (dy / d) * e.def.speed);
+    e.turnTo(e.navigateTo(e.homeX, e.homeY, e.def.speed));
   },
 };
 

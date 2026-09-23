@@ -34,6 +34,10 @@ export class AnimPlayer {
     return this.def ? this.def.frames[this.index] : { ticks: 1 };
   }
 
+  has(name: string) {
+    return name in this.anims;
+  }
+
   play(name: string, opts: PlayOpts = {}) {
     if (!opts.restart && name === this.name) return;
     const def = this.anims[name];

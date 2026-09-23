@@ -10,5 +10,15 @@
   "flashTicks": 4,
   "particles": { "sparks": 6, "blood": 8, "bloodOnKill": 18, "maxStains": 600 },
   "damageNumbers": "dummy",
-  "enemyBarTicks": 240
+  "enemyBarTicks": 240,
+  "hitFeedback": {
+    "flinch": 2.5,
+    "flinchHeavy": 4.5,
+    "flinchBlocked": 1.5,
+    "trailHoldMs": 450,
+    "trailDrainPerSec": 0.6,
+    "vignetteMs": 450,
+    "vignetteAlpha": 0.55,
+    "lowHpThreshold": 0.25
+  }
 }

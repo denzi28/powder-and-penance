@@ -45,6 +45,9 @@ export abstract class Actor {
   weaponReach = 0;
   runner: AttackRunner | null = null;
   readonly squash = new Squash();
+  /** Visual-only recoil offset (px) pushed away from a hit; decays each tick. */
+  flinchX = 0;
+  flinchY = 0;
 
   constructor(readonly ctx: WorldCtx, x: number, y: number) {
     this.x = this.prevX = x;
@@ -83,6 +86,14 @@ export abstract class Actor {
     this.prevWeaponAngle = this.weaponAngle;
     if (this.flash > 0) this.flash--;
     this.poise.tick();
+    this.flinchX = Math.abs(this.flinchX) < 0.3 ? 0 : this.flinchX * 0.6;
+    this.flinchY = Math.abs(this.flinchY) < 0.3 ? 0 : this.flinchY * 0.6;
+  }
+
+  /** Visual jolt away from a hit (does not move the actor). */
+  flinch(angle: number, px: number) {
+    this.flinchX = Math.cos(angle) * px;
+    this.flinchY = Math.sin(angle) * px * 0.6;
   }
 
   moveBy(dx: number, dy: number) {

@@ -3,6 +3,7 @@ import Phaser from 'phaser';
 import { DATA, onDataError, onDataReload } from '../data/config';
 import { hexToInt } from '../ui/colors';
 import { MenuRenderer, wrap } from '../ui/MenuRenderer';
+import { TrailBar } from '../ui/TrailBar';
 import type { GameScene } from './GameScene';
 
 export class UIScene extends Phaser.Scene {
@@ -25,6 +26,8 @@ export class UIScene extends Phaser.Scene {
   private toastTitle!: Phaser.GameObjects.BitmapText;
   private toastBody!: Phaser.GameObjects.BitmapText;
   private menuUi!: MenuRenderer;
+  private hpTrail!: TrailBar;
+  private vignette!: Phaser.GameObjects.Graphics;
 
   constructor() {
     super('ui');
@@ -57,6 +60,8 @@ export class UIScene extends Phaser.Scene {
     this.toastTitle = this.add.bitmapText(0, 0, 'pixel', '').setScale(2).setTint(hexToInt(DATA.palette.flame2)).setDepth(15);
     this.toastBody = this.add.bitmapText(0, 0, 'pixel', '').setTint(hexToInt(DATA.palette.wax2)).setDepth(15);
     this.menuUi = new MenuRenderer(this, 16);
+    this.hpTrail = new TrailBar(this.gs.player.hp);
+    this.vignette = this.add.graphics().setDepth(12);
     const offErr = onDataError(msg => this.err.setText(`DATA ERROR (see console)\n${msg.split('\n').slice(0, 6).join('\n')}`));
     const offOk = onDataReload(() => this.err.setText(''));
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
@@ -72,13 +77,19 @@ export class UIScene extends Phaser.Scene {
     const g = this.g;
     g.clear();
 
-    const bar = (y: number, w: number, h: number, frac: number, color: string) => {
+    const bar = (y: number, w: number, h: number, frac: number, color: string, trail = frac) => {
+      const px = (f: number) => Math.round(w * Math.max(0, Math.min(1, f)));
       g.fillStyle(hexToInt(pal.ink), 1).fillRect(hud.x - 1, y - 1, w + 2, h + 2);
       g.fillStyle(hexToInt(pal.dark2), 1).fillRect(hud.x, y, w, h);
-      g.fillStyle(hexToInt(color), 1).fillRect(hud.x, y, Math.round(w * Math.max(0, Math.min(1, frac))), h);
+      if (trail > frac) g.fillStyle(hexToInt(pal.wax2), 1).fillRect(hud.x, y, px(trail), h); // recent damage
+      g.fillStyle(hexToInt(color), 1).fillRect(hud.x, y, px(frac), h);
     };
+    const fb = DATA.juice.hitFeedback;
+    const dt = this.game.loop.delta;
+    this.hpTrail.update(p.hp, p.maxHp, dt, fb.trailHoldMs, fb.trailDrainPerSec);
     const hpW = Math.round(DATA.player.maxHp * hud.hpPxPerPoint);
-    bar(hud.y, hpW, hud.hpHeight, p.hp / DATA.player.maxHp, pal.blood2);
+    bar(hud.y, hpW, hud.hpHeight, p.hp / p.maxHp, pal.blood2, this.hpTrail.value / p.maxHp);
+    this.drawVignette();
     const stW = Math.round(p.stamina.max * hud.staminaPxPerPoint);
     const stY = hud.y + hud.hpHeight + hud.gap;
     bar(stY, stW, hud.staminaHeight, p.stamina.value / p.stamina.max, p.stamina.locked ? pal.ember : pal.moss2);
@@ -121,6 +132,50 @@ export class UIScene extends Phaser.Scene {
     this.drawToast();
     this.menuUi.draw(this.gs.menu);
     this.drawDeath();
+  }
+
+  /**
+   * Red screen-edge flash when hit: every edge a little, the edge facing the attacker a lot (so off-screen
+   * hits still tell you where they came from). Plus a slow pulse while HP is low.
+   */
+  private drawVignette() {
+    const g = this.vignette;
+    g.clear();
+    const fb = DATA.juice.hitFeedback;
+    const p = this.gs.player;
+    const W = DATA.game.width;
+    const H = DATA.game.height;
+    const red = hexToInt(DATA.palette.blood2);
+    const sides: { nx: number; ny: number; a: number }[] = [
+      { nx: -1, ny: 0, a: 0 },
+      { nx: 1, ny: 0, a: 0 },
+      { nx: 0, ny: -1, a: 0 },
+      { nx: 0, ny: 1, a: 0 },
+    ];
+    const hurt = this.gs.hurt;
+    if (hurt && hurt.t < fb.vignetteMs) {
+      const fade = 1 - hurt.t / fb.vignetteMs;
+      const dx = Math.cos(hurt.angle);
+      const dy = Math.sin(hurt.angle);
+      for (const s of sides) s.a += fb.vignetteAlpha * hurt.strength * fade * (0.3 + 0.7 * Math.max(0, s.nx * dx + s.ny * dy));
+    }
+    if (!p.dead && p.hp > 0 && p.hp / p.maxHp <= fb.lowHpThreshold) {
+      const pulse = 0.12 + 0.1 * Math.sin(this.time.now / 180);
+      for (const s of sides) s.a = Math.max(s.a, pulse);
+    }
+    const bands = 6;
+    const bw = 3;
+    for (const s of sides) {
+      if (s.a <= 0.01) continue;
+      for (let i = 0; i < bands; i++) {
+        g.fillStyle(red, s.a * (1 - i / bands));
+        const o = i * bw;
+        if (s.nx < 0) g.fillRect(o, 0, bw, H);
+        else if (s.nx > 0) g.fillRect(W - o - bw, 0, bw, H);
+        else if (s.ny < 0) g.fillRect(0, o, W, bw);
+        else g.fillRect(0, H - o - bw, W, bw);
+      }
+    }
   }
 
   /** Phial charges under the bars: lit icon per charge left, dark icon per spent charge. */

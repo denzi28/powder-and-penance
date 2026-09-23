@@ -37,7 +37,14 @@ export class DebugOverlay {
       const x = a === gs.player ? px : Math.round(a.x);
       const y = a === gs.player ? py : Math.round(a.y);
       this.drawActor(a, x, y);
-      if (a instanceof Enemy && !a.dead && a.def.ai !== 'dummy') this.drawCone(a);
+      if (a instanceof Enemy && !a.dead && a.def.ai !== 'dummy') {
+        this.drawCone(a);
+        const path = a.debugPath;
+        if (path.length) {
+          this.g.lineStyle(1, hexToInt(DATA.palette.cyan), 0.8);
+          this.g.strokePoints([{ x: a.x, y: a.y }, ...path], false);
+        }
+      }
       const label = this.label(i++);
       const tags = [a.invulnerable ? 'IFR' : '', a.hyperArmor ? 'ARMOR' : '', a === gs.player && gs.player.stamina.locked ? 'EXH' : '']
         .filter(Boolean)

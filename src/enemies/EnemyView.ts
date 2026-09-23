@@ -26,14 +26,16 @@ export class EnemyView {
 
   render(alpha: number) {
     const e = this.e;
-    const x = (this.x = Math.round(lerp(e.prevX, e.x, alpha)));
-    const y = (this.y = Math.round(lerp(e.prevY, e.y, alpha)));
-    const depth = DEPTH.actor(y);
+    const feetX = (this.x = Math.round(lerp(e.prevX, e.x, alpha)));
+    const feetY = (this.y = Math.round(lerp(e.prevY, e.y, alpha)));
+    const x = feetX + Math.round(e.flinchX); // recoil from hits (visual only)
+    const y = feetY + Math.round(e.flinchY);
+    const depth = DEPTH.actor(feetY);
     const sheet = e.def.sprite;
     const f = this.lib.frame(sheet, e.anim.name, e.dir, e.anim.index);
     const { sx, sy } = e.squash;
 
-    this.shadow.setPosition(x, y).setAlpha(e.alpha);
+    this.shadow.setPosition(feetX, feetY).setAlpha(e.alpha);
     this.body
       .setFrame(f.frame)
       .setScale(f.flip ? -sx : sx, sy)
