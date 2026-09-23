@@ -18,6 +18,7 @@ import { Pickups } from '../world/Pickups';
 import { DeathMarker } from '../world/DeathMarker';
 import { Doors } from '../world/Doors';
 import { Props } from '../world/Props';
+import { Decor } from '../world/Decor';
 import { LootDrops, rollLoot, type LootDrop } from '../world/LootDrops';
 import { Pathfinder } from '../world/Pathfinder';
 import { Player } from '../player/Player';
@@ -77,6 +78,7 @@ export class GameScene extends Phaser.Scene {
   pickups!: Pickups;
   doors!: Doors;
   props!: Props;
+  decor!: Decor;
   loot!: LootDrops;
   marker!: DeathMarker;
   /** Current area (rooms with this `area` are built into one world). */
@@ -90,7 +92,7 @@ export class GameScene extends Phaser.Scene {
   debug!: DebugOverlay;
 
   // Game state
-  /** Persistent world state: "shrine:<id>" lit, "item:<id>" taken (later: doors, shortcuts, bosses). */
+  /** Persistent world state: "shrine:<id>" lit, "item:<id>" taken, "door:<id>" open, "loot:<prop>" dropped, "weapon:<id>" placed. */
   flags = new Set<string>();
   lastShrine: string | null = null;
   /** Open menu (freezes the simulation). */
@@ -168,6 +170,7 @@ export class GameScene extends Phaser.Scene {
     this.pickups = new Pickups(this.lib);
     this.doors = new Doors(this.lib);
     this.props = new Props(this.lib);
+    this.decor = new Decor(this.lib);
     this.loot = new LootDrops(this.lib);
     this.marker = new DeathMarker(this.lib);
     const spawn = this.respawnPoint();
@@ -573,12 +576,30 @@ export class GameScene extends Phaser.Scene {
     this.rooms = this.areaRooms();
     this.roomsJson = JSON.stringify(this.rooms);
     this.grid = buildGrid(this.rooms);
-    this.worldView.build(this.grid);
+    this.decor.build(this.rooms, this.grid);
+    this.worldView.build(this.grid, DATA.areas.areas[this.area].tileset);
     this.racks.build(this.rooms);
     this.shrines.build(this.rooms, id => this.flags.has(`shrine:${id}`));
     this.pickups.build(this.rooms, id => this.flags.has(`item:${id}`));
     this.doors.build(this.rooms, this.grid, id => this.flags.has(`door:${id}`));
     this.props.build(this.ctxObj, this.rooms);
+    this.placeWeapons();
+  }
+
+  /**
+   * Weapons placed in room data are put on the floor once ("weapon:<id>" flag); from then on they are
+   * ordinary ground items, saved and restored with the rest.
+   */
+  private placeWeapons() {
+    for (const r of this.rooms)
+      for (const en of r.entities) {
+        if (en.type !== 'weapon' || !en.id || this.flags.has(`weapon:${en.id}`)) continue;
+        this.flags.add(`weapon:${en.id}`);
+        const x = (r.origin[0] + en.at[0]) * TILE + TILE / 2;
+        const y = (r.origin[1] + en.at[1]) * TILE + TILE - 4;
+        this.ground.add(String(en.weapon), x, y, this.area);
+        this.dirty = true;
+      }
   }
 
   private findSpawn(): { x: number; y: number } {

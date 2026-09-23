@@ -1712,6 +1712,241 @@ function genTiles() {
   });
 }
 
+/** 1px line (Bresenham). */
+function line(img: Img, x0: number, y0: number, x1: number, y1: number, c: RGBA) {
+  x0 = Math.round(x0);
+  y0 = Math.round(y0);
+  x1 = Math.round(x1);
+  y1 = Math.round(y1);
+  const dx = Math.abs(x1 - x0);
+  const dy = -Math.abs(y1 - y0);
+  const sx = x0 < x1 ? 1 : -1;
+  const sy = y0 < y1 ? 1 : -1;
+  let err = dx + dy;
+  for (;;) {
+    img.set(x0, y0, c);
+    if (x0 === x1 && y0 === y1) return;
+    const e2 = 2 * err;
+    if (e2 >= dy) (err += dy), (x0 += sx);
+    if (e2 <= dx) (err += dx), (y0 += sy);
+  }
+}
+
+// ---------------------------------------------------------------- Penance Road tileset (same index layout as `tiles`)
+// Dirt floor, grass, a packed cart road, earth cliffs with grassy tops, and dark forest outside the ravine.
+function genRoadTiles() {
+  const T = 16;
+  const img = new Img(T * 8, T * 4);
+  const at = (idx: number) => [(idx % 8) * T, Math.floor(idx / 8) * T] as const;
+  const speck = (ox: number, oy: number, r: () => number, n: number, c: RGBA) => {
+    for (let i = 0; i < n; i++) img.set(ox + Math.floor(r() * 16), oy + Math.floor(r() * 16), c);
+  };
+
+  // 0-3 dirt
+  for (let v = 0; v < 4; v++) {
+    const [ox, oy] = at(v);
+    const r = rng(2000 + v);
+    img.rect(ox, oy, T, T, P.wood1);
+    speck(ox, oy, r, 14, P.dark2);
+    speck(ox, oy, r, 8, P.wood2);
+    if (v === 2) for (const [x, y] of [[4, 6], [5, 6], [11, 11]]) img.rect(ox + x, oy + y, 2, 1, P.stone2); // pebbles
+    if (v === 3) img.ellipse(ox + 8, oy + 9, 3, 1.5, P.dark2); // puddle stain
+  }
+  // 4-5 grass
+  for (const v of [4, 5]) {
+    const [ox, oy] = at(v);
+    const r = rng(2100 + v);
+    img.rect(ox, oy, T, T, P.moss1);
+    speck(ox, oy, r, 10, P.teal1);
+    for (let i = 0; i < 9; i++) {
+      const x = ox + Math.floor(r() * 15);
+      const y = oy + 1 + Math.floor(r() * 14);
+      img.set(x, y, P.moss2);
+      img.set(x + 1, y - 1, P.moss2);
+    }
+    if (v === 5) for (const [x, y] of [[5, 5], [11, 10]]) img.set(ox + x, oy + y, P.wax1); // tiny flowers
+  }
+  // 6-7 forest outside the ravine: near-black canopy
+  for (const idx of [6, 7]) {
+    const [ox, oy] = at(idx);
+    const r = rng(2200 + idx);
+    img.rect(ox, oy, T, T, P.ink);
+    for (let i = 0; i < 3; i++) img.ellipse(ox + 2 + r() * 12, oy + 2 + r() * 12, 2 + r() * 2, 1.5 + r(), P.teal1);
+    speck(ox, oy, r, 4, P.dark1);
+  }
+  // 8-9 cliff face: layered earth with roots, grass lip on top
+  for (const [idx, v] of [[8, 0], [9, 1]]) {
+    const [ox, oy] = at(idx);
+    const r = rng(2300 + idx);
+    img.rect(ox, oy, T, T, P.wood1);
+    img.rect(ox, oy + 5, T, 3, P.dark2);
+    img.rect(ox, oy + 10, T, 2, P.dark2);
+    speck(ox, oy, r, 8, P.wood2);
+    img.hline(ox, oy, T, P.moss2);
+    for (let x = 0; x < T; x += 3) img.set(ox + x + (v ? 1 : 0), oy + 1, P.moss1); // grass hanging over the lip
+    if (v === 1) line(img, ox + 4, oy + 2, ox + 6, oy + 9, P.dark1); // root
+    img.hline(ox, oy + 13, T, P.dark2);
+    img.rect(ox, oy + 14, T, 2, P.dark1);
+  }
+  // 10-11 cart road: packed lighter earth with two wheel ruts
+  for (const v of [10, 11]) {
+    const [ox, oy] = at(v);
+    const r = rng(2400 + v);
+    img.rect(ox, oy, T, T, P.wood2);
+    speck(ox, oy, r, 10, P.wood1);
+    img.hline(ox, oy + 4, T, P.wood1);
+    img.hline(ox, oy + 11, T, P.wood1);
+    if (v === 11) img.set(ox + 7, oy + 8, P.stone3);
+  }
+  // 16-31 cliff tops: dark brush and treetops (clearly not walkable), rim = grass edge on open sides
+  for (let mask = 0; mask < 16; mask++) {
+    const [ox, oy] = at(16 + mask);
+    const r = rng(2500 + mask);
+    img.rect(ox, oy, T, T, P.dark1);
+    for (let i = 0; i < 4; i++) {
+      const cx = ox + 2 + r() * 12;
+      const cy = oy + 2 + r() * 12;
+      img.ellipse(cx, cy, 2.5 + r() * 2, 2 + r() * 1.5, P.teal1);
+      img.set(cx - 1, cy - 1, P.moss1);
+    }
+    speck(ox, oy, r, 3, P.moss1);
+    if (mask & 1) img.hline(ox, oy, T, P.moss2);
+    if (mask & 2) img.vline(ox + 15, oy, T, P.moss2);
+    if (mask & 4) {
+      img.hline(ox, oy + 14, T, P.moss2);
+      img.hline(ox, oy + 15, T, P.dark2);
+    }
+    if (mask & 8) img.vline(ox, oy, T, P.moss2);
+  }
+
+  sheet('tiles_road', img, {
+    cell: [T, T],
+    pivot: [0, 0],
+    layer: 'tiles',
+    tiles: {
+      floor: [0, 0, 0, 0, 1, 1, 2, 3],
+      floor_grass: [4, 4, 5],
+      floor_road: [10, 10, 10, 11],
+      wall_front: [8, 8, 9],
+      wall_cap: Array.from({ length: 16 }, (_, i) => 16 + i),
+      rock: [6, 6, 7],
+    },
+  });
+}
+
+// ---------------------------------------------------------------- Penance Road decor (64x48 cells, pivot = ground centre)
+function genRoadDecor() {
+  const W = 64;
+  const H = 48;
+  const frames: Img[] = [];
+  const cell = () => new Img(W, H);
+  const B = 46; // ground line
+
+  // 0: the prison wagon, overturned on its side. Floor planks face us; the barred side faces up.
+  {
+    const c = cell();
+    c.rect(6, B - 20, 52, 20, P.wood1); // floor boards (now vertical)
+    for (let x = 8; x < 58; x += 6) c.vline(x, B - 20, 20, P.dark2);
+    c.hline(6, B - 20, 52, P.wood2);
+    c.hline(6, B - 11, 52, P.wood2);
+    c.rect(6, B - 32, 52, 12, P.dark1); // the cage side seen from above, dark inside
+    for (let x = 9; x < 57; x += 5) c.vline(x, B - 32, 12, P.steel1); // bars
+    c.hline(6, B - 32, 52, P.wood2);
+    c.rect(40, B - 32, 10, 12, P.dark1); // broken bars: the way you crawled out
+    line(c, 40, B - 31, 44, B - 24, P.steel1);
+    for (const [cx, cy] of [[16, B - 8], [48, B - 8]]) {
+      c.disc(cx, cy, 7, P.wood2); // wheels, axle side toward us
+      c.disc(cx, cy, 5, P.wood1);
+      line(c, cx - 5, cy, cx + 5, cy, P.wood2);
+      line(c, cx, cy - 5, cx, cy + 5, P.wood2);
+      c.disc(cx, cy, 1.5, P.steel1);
+    }
+    c.outline(P.ink);
+    frames.push(c);
+  }
+  // 1: dead horse
+  {
+    const c = cell();
+    c.ellipse(32, B - 6, 15, 6, P.wood2);
+    c.ellipse(15, B - 5, 6, 4, P.wood2); // head
+    c.hline(14, B - 9, 10, P.dark2); // mane
+    for (const x of [38, 42, 46]) line(c, x, B - 3, x + 4, B + 1, P.wood1);
+    c.set(12, B - 6, P.ink);
+    c.outline(P.ink);
+    frames.push(c);
+  }
+  // 2: dead guard (flat) with blood
+  {
+    const c = cell();
+    c.ellipse(34, B - 4, 11, 3, P.blood1);
+    c.rect(24, B - 7, 12, 5, P.steel1); // breastplate
+    c.disc(40, B - 5, 3, P.steel2); // helmet
+    c.rect(18, B - 6, 6, 3, P.dark2); // legs
+    c.outline(P.ink);
+    frames.push(c);
+  }
+  // 3: boulder
+  {
+    const c = cell();
+    c.ellipse(32, B - 8, 11, 9, P.stone2);
+    c.ellipse(29, B - 11, 6, 4, P.stone3);
+    c.set(26, B - 13, P.stone4);
+    c.hline(24, B - 1, 16, P.stone1);
+    c.outline(P.ink);
+    frames.push(c);
+  }
+  // 4: dead tree
+  {
+    const c = cell();
+    c.rect(30, B - 30, 5, 30, P.wood1);
+    c.vline(31, B - 28, 26, P.dark2);
+    line(c, 32, B - 22, 20, B - 36, P.wood1);
+    line(c, 33, B - 26, 46, B - 42, P.wood1);
+    line(c, 20, B - 36, 16, B - 38, P.wood1);
+    line(c, 38, B - 33, 44, B - 30, P.wood1);
+    line(c, 32, B - 30, 30, B - 44, P.wood1);
+    c.outline(P.ink);
+    frames.push(c);
+  }
+  // 5: loose wheel and planks (flat)
+  {
+    const c = cell();
+    c.ellipse(26, B - 4, 7, 3, P.wood2);
+    c.ellipse(26, B - 4, 5, 2, P.wood1);
+    c.rect(36, B - 5, 12, 2, P.wood2);
+    c.rect(38, B - 2, 9, 2, P.wood1);
+    c.outline(P.ink);
+    frames.push(c);
+  }
+  // 6: signpost pointing the way to the Abbey
+  {
+    const c = cell();
+    c.rect(31, B - 26, 2, 26, P.wood1);
+    c.rect(24, B - 26, 18, 6, P.wood2);
+    c.set(42, B - 24, P.wood2);
+    c.set(42, B - 23, P.wood2);
+    c.hline(26, B - 23, 12, P.wood1);
+    c.outline(P.ink);
+    frames.push(c);
+  }
+  // 7: roadside candle shrine (a small cairn with wax stubs)
+  {
+    const c = cell();
+    c.ellipse(32, B - 5, 8, 5, P.stone2);
+    c.ellipse(32, B - 9, 5, 3, P.stone3);
+    for (const [x, h] of [[29, 5], [32, 7], [35, 4]]) {
+      c.rect(x, B - 11 - h, 2, h, P.wax1);
+      c.set(x, B - 12 - h, P.flame2);
+    }
+    c.outline(P.ink);
+    frames.push(c);
+  }
+
+  const img = new Img(W * frames.length, H);
+  frames.forEach((f, i) => img.blit(f, i * W, 0));
+  sheet('decor_road', img, { cell: [W, H], pivot: [32, B], layer: 'single' });
+}
+
 // ---------------------------------------------------------------- font (original 5x7, ASCII 32..126, 16 per row)
 const GLYPHS: Record<string, string> = {
   ' ': '.....|.....|.....|.....|.....|.....|.....',
@@ -1808,5 +2043,7 @@ genShrine();
 genRoster();
 genWorldBits();
 genTiles();
+genRoadTiles();
+genRoadDecor();
 genFont();
 console.log(`gen-art: wrote ${written} file(s), skipped ${skipped} existing${skipped && !FORCE ? ' (use --force to overwrite)' : ''}`);

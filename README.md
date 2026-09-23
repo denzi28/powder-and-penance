@@ -68,8 +68,12 @@ npm run gen:art    # regenerate missing placeholder art (--force to overwrite al
   - To wipe your progress, choose New Game on the title screen.
 - **Test items:** test room: Phial Shard (+1 phial, south-west corner) and Bitter Salt (+heal, east of the thick block). Arena: Powder Pouch (ammo) and a Lump of Tallow. Each can be picked up once per save.
 
+## Act 1 (in progress)
+Act 1 is being built room by room: the plan is in [WORLD.md](WORLD.md) and the story in [STORY.md](STORY.md).
+- **New games start on the Penance Road** (`road_01_wreck`) with bare fists. A sword and a flintlock lie in the wreck.
+- The road isn't connected to the Abbey yet. Use the debug menu (`) to jump to any abbey room, or to area `test` for the weapon racks and training dummies.
+
 ## The Guttering Abbey (M5)
-New games start at the **Porch Wick** in the abbey. The old test room and arena are still there: use the debug menu (`) to go to area `test`.
 
 | Room | What's there |
 |---|---|

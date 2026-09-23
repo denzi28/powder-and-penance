@@ -1,0 +1,12 @@
+{
+  "image": "decor_road.png",
+  "cell": [
+    64,
+    48
+  ],
+  "pivot": [
+    32,
+    46
+  ],
+  "layer": "single"
+}

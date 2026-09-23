@@ -1,0 +1,142 @@
+{
+  "id": "road_01_wreck",
+  "area": "road",
+  "origin": [0, 0],
+  "legend": {
+    "#": "wall",
+    ".": "floor",
+    ",": "floor_grass",
+    "=": "floor_road",
+    " ": "void"
+  },
+  "tiles": [
+    "##############################",
+    "#######,,,,,#####,,,,,########",
+    "#######,....,###,.....,,######",
+    "####,,,......,,,........,,,###",
+    "###,.......................,,#",
+    "#,,.........................,#",
+    "#,..........................,#",
+    "#,.========.................,#",
+    "#,.=================........,#",
+    "#,.........===================",
+    "#,..................==========",
+    "#,,.........................,#",
+    "###,.....................,,,,#",
+    "###,,,,,....,,,......,,,,#####",
+    "########,..,###,,...,#########",
+    "########,,,######,,,,#########",
+    "##############################"
+  ],
+  "entities": [
+    {
+      "type": "spawn",
+      "id": "default",
+      "at": [12, 11]
+    },
+    {
+      "type": "decor",
+      "kind": "wagon",
+      "at": [8, 8]
+    },
+    {
+      "type": "decor",
+      "kind": "horse",
+      "at": [14, 8]
+    },
+    {
+      "type": "decor",
+      "kind": "guard_dead",
+      "at": [6, 11]
+    },
+    {
+      "type": "decor",
+      "kind": "guard_dead",
+      "at": [17, 6],
+      "flip": true
+    },
+    {
+      "type": "decor",
+      "kind": "wheel_debris",
+      "at": [11, 12]
+    },
+    {
+      "type": "decor",
+      "kind": "wheel_debris",
+      "at": [4, 9],
+      "flip": true
+    },
+    {
+      "type": "weapon",
+      "id": "road_wreck_sword",
+      "weapon": "straight_sword",
+      "at": [7, 11]
+    },
+    {
+      "type": "weapon",
+      "id": "road_wreck_pistol",
+      "weapon": "flintlock",
+      "at": [18, 6]
+    },
+    {
+      "type": "decor",
+      "kind": "boulder",
+      "at": [16, 4]
+    },
+    {
+      "type": "decor",
+      "kind": "boulder",
+      "at": [19, 3]
+    },
+    {
+      "type": "decor",
+      "kind": "boulder",
+      "at": [5, 5]
+    },
+    {
+      "type": "decor",
+      "kind": "boulder",
+      "at": [23, 12]
+    },
+    {
+      "type": "decor",
+      "kind": "dead_tree",
+      "at": [9, 3]
+    },
+    {
+      "type": "decor",
+      "kind": "dead_tree",
+      "at": [26, 6]
+    },
+    {
+      "type": "decor",
+      "kind": "signpost",
+      "at": [25, 12]
+    },
+    {
+      "type": "prop",
+      "kind": "crate",
+      "at": [10, 11]
+    },
+    {
+      "type": "prop",
+      "kind": "crate",
+      "at": [5, 10]
+    },
+    {
+      "type": "prop",
+      "kind": "pot",
+      "at": [20, 12]
+    },
+    {
+      "type": "cutscene",
+      "id": "wreck_intro",
+      "at": [12, 11]
+    },
+    {
+      "type": "npc",
+      "id": "oskar",
+      "at": [8, 7]
+    }
+  ]
+}

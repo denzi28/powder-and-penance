@@ -3,5 +3,5 @@
   "height": 270,
   "tickRate": 60,
   "maxStepsPerFrame": 5,
-  "startRoom": "abbey_01_porch"
+  "startRoom": "road_01_wreck"
 }

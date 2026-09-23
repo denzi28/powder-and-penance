@@ -59,6 +59,8 @@ function loadAll(src: Record<string, unknown>) {
     loot: one(S.LootTables, 'loot'),
     enemies: dir(S.EnemyDef, 'enemies'),
     rooms: dir(S.RoomData, 'rooms'),
+    areas: one(S.Areas, 'areas'),
+    decor: one(S.DecorTable, 'decor'),
   };
 
   if (!errors.length) {
@@ -79,11 +81,16 @@ function loadAll(src: Record<string, unknown>) {
     if (sh && !data.shields[sh]) errors.push(`data/config/player.json: loadout.shield references unknown shield "${sh}"`);
     // Persistent entities (shrines, items) need world-unique ids: they key the save's world flags.
     const ids = new Set<string>();
-    for (const r of Object.values(data.rooms))
+    for (const r of Object.values(data.rooms)) {
+      if (!data.areas.areas[r.area]) errors.push(`data/rooms/${r.id}.json: area "${r.area}" is not in data/areas.json`);
       for (const en of r.entities) {
         if (en.type === 'prop' && !data.props[String(en.kind)])
           errors.push(`data/rooms/${r.id}.json: unknown prop kind "${String(en.kind)}"`);
-        if (en.type === 'shrine' || en.type === 'item' || en.type === 'door') {
+        if (en.type === 'decor' && !data.decor.decor[String(en.kind)])
+          errors.push(`data/rooms/${r.id}.json: unknown decor kind "${String(en.kind)}"`);
+        if (en.type === 'weapon' && !data.weapons[String(en.weapon)])
+          errors.push(`data/rooms/${r.id}.json: weapon "${en.id}" has unknown weapon "${String(en.weapon)}"`);
+        if (en.type === 'shrine' || en.type === 'item' || en.type === 'door' || en.type === 'weapon') {
           if (!en.id) errors.push(`data/rooms/${r.id}.json: ${en.type} needs an "id"`);
           else if (ids.has(en.id)) errors.push(`data/rooms/${r.id}.json: duplicate entity id "${en.id}"`);
           else ids.add(en.id);
@@ -95,6 +102,7 @@ function loadAll(src: Record<string, unknown>) {
         if (en.type === 'shield_rack' && en.shield !== null && !data.shields[String(en.shield)])
           errors.push(`data/rooms/${r.id}.json: shield_rack has unknown shield "${String(en.shield)}"`);
       }
+    }
     if (!data.rooms[data.game.startRoom])
       errors.push(`data/config/game.json: startRoom "${data.game.startRoom}" has no file in data/rooms`);
   }

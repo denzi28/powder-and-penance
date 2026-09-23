@@ -17,7 +17,7 @@
     "walkAnimSpeedAt": 88
   },
   "weaponBehindArcDeg": [200, 340],
-  "loadout": { "slots": ["straight_sword", "revolver"], "shield": "buckler" },
+  "loadout": { "slots": ["fists", "fists"], "shield": null },
   "swapTicks": 18,
   "guardBreakTicks": 70
 }

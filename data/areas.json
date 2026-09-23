@@ -1,0 +1,7 @@
+{
+  "areas": {
+    "road": { "name": "Penance Road", "tileset": "tiles_road" },
+    "abbey": { "name": "The Guttering Abbey", "tileset": "tiles" },
+    "test": { "name": "Test Grounds", "tileset": "tiles" }
+  }
+}

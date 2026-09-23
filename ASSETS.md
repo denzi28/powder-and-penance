@@ -182,6 +182,24 @@ Enemies hold their weapon like the player does: `handAnchors` in the body manife
 | `prop_crate`, `prop_pot`, `prop_candles` | 16×16 | 8,14 | none | Frame 0 = intact, frame 1 = rubble |
 | `loot` | 7×7 | 3,5 | none | Frame 0 = Tallow drop, frame 1 = powder drop |
 
+### Area tilesets
+Each area picks its tileset in `data/areas.json`. Every tileset uses the same index layout as `tiles` (§ tiles below), so autotiling works unchanged. Floor variants are extra keys in the manifest's `tiles` block, used by room legends as `floor_<name>`; a variant a tileset lacks falls back to `floor`.
+
+| Sheet | Area | Floor variants |
+|---|---|---|
+| `tiles` | abbey, test | `floor` (stone), `floor_moss` |
+| `tiles_road` | road | `floor` (dirt), `floor_grass`, `floor_road` (cart ruts; indices 10–11). Walls are earth cliffs; caps are dark brush; rock is forest. |
+
+### Decor (`decor_road`: 64×48 cells, pivot 32,46 = ground centre)
+Static scenery, referenced by `data/decor.json`, which picks a sheet and frame and lists which tiles each decor makes solid.
+
+| Frame | Decor | Frame | Decor |
+|---|---|---|---|
+| 0 | `wagon` (overturned prison wagon) | 4 | `dead_tree` |
+| 1 | `horse` (dead) | 5 | `wheel_debris` (flat) |
+| 2 | `guard_dead` (flat) | 6 | `signpost` |
+| 3 | `boulder` | 7 | `candle_cairn` |
+
 ### Abbey enemies (single-layer sheets, dirs S SE E NE N)
 | Sheet | Cell | Pivot | Animations |
 |---|---|---|---|

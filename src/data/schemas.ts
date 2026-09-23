@@ -461,7 +461,22 @@ export const ShieldDef = z.object({
   blockRegenMult: num.min(0).max(1),
 });
 
-export const TileKind = z.enum(['wall', 'floor', 'floor_moss', 'void']);
+/** wall, void, floor, or a named floor variant ("floor_moss", "floor_dirt"...) looked up in the area's tileset. */
+export const TileKind = z.string().regex(/^(wall|void|floor|floor_[a-z0-9_]+)$/, 'expected wall, void, floor or floor_<variant>');
+/** data/areas.json: per-area presentation. */
+export const AreaDef = z.object({ name: z.string(), tileset: z.string() });
+export const Areas = z.object({ areas: z.record(z.string(), AreaDef) });
+/**
+ * data/decor.json: static scenery. `blocks` are tile offsets from the entity's tile that become solid
+ * (movement and bullets stop; sight passes, so solid decor is low cover). `flat` decor lies on the floor.
+ */
+export const DecorDef = z.object({
+  sprite: z.string(),
+  frame: int.nonnegative().default(0),
+  blocks: z.array(Vec2).default([]),
+  flat: z.boolean().default(false),
+});
+export const DecorTable = z.object({ decor: z.record(z.string(), DecorDef) });
 export const RoomEntity = z.object({ type: z.string(), id: z.string().optional(), at: Vec2 }).passthrough();
 export const RoomData = z
   .object({
@@ -525,6 +540,7 @@ export type EnemyDef = z.infer<typeof EnemyDef>;
 export type SfxPreset = z.infer<typeof SfxPreset>;
 export type RoomData = z.infer<typeof RoomData>;
 export type TileKind = z.infer<typeof TileKind>;
+export type DecorDef = z.infer<typeof DecorDef>;
 export type FrameDef = z.infer<typeof FrameDef>;
 export type AnimDef = z.infer<typeof AnimDef>;
 export type SpriteManifest = z.infer<typeof SpriteManifest>;
