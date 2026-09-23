@@ -54,6 +54,9 @@
     "boss_roar":        { "wave": "sawtooth", "freq": 95, "freqEnd": 55, "duration": 1.3, "volume": 0.5, "filter": 900, "filterEnd": 300 },
     "ignite":           { "wave": "noise", "freq": 0.6, "duration": 1.2, "volume": 0.5, "filter": 600, "filterEnd": 3500 },
     "summon":           { "wave": "triangle", "freq": 180, "freqEnd": 520, "duration": 0.7, "volume": 0.35, "filter": 2000 },
-    "warp":             { "wave": "sine", "freq": 330, "freqEnd": 990, "duration": 1.0, "volume": 0.3 }
+    "warp":             { "wave": "sine", "freq": 330, "freqEnd": 990, "duration": 1.0, "volume": 0.3 },
+    "voice":            { "wave": "square", "freq": 520, "duration": 0.04, "volume": 0.09, "filter": 2600 },
+    "voice_soft":       { "wave": "triangle", "freq": 520, "freqEnd": 500, "duration": 0.055, "volume": 0.16 },
+    "voice_low":        { "wave": "sawtooth", "freq": 300, "freqEnd": 280, "duration": 0.065, "volume": 0.13, "filter": 1100 }
   }
 }

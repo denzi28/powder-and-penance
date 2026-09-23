@@ -1,9 +1,10 @@
 {
+  "narration": { "sfx": "voice_soft", "pitch": 0.75, "every": 3, "volume": 0.55 },
   "npcs": {
-    "oskar": { "name": "Oskar", "sprite": "npc_oskar", "portrait": 0 },
-    "maudlin": { "name": "Sister Maudlin", "sprite": "npc_maudlin", "portrait": 1 },
-    "pip": { "name": "Pip", "sprite": "npc_pip", "portrait": 2 },
-    "tollwarden": { "name": "The Tollwarden", "sprite": "tollwarden", "portrait": 3 },
-    "matron": { "name": "The Mire Matron", "sprite": "mire_matron", "portrait": 4 }
+    "oskar": { "name": "Oskar", "sprite": "npc_oskar", "portrait": 0, "voice": { "sfx": "voice", "pitch": 0.8, "every": 2 } },
+    "maudlin": { "name": "Sister Maudlin", "sprite": "npc_maudlin", "portrait": 1, "voice": { "sfx": "voice_soft", "pitch": 1.25, "every": 2 } },
+    "pip": { "name": "Pip", "sprite": "npc_pip", "portrait": 2, "voice": { "sfx": "voice", "pitch": 1.75, "every": 2, "volume": 0.9 } },
+    "tollwarden": { "name": "The Tollwarden", "sprite": "tollwarden", "portrait": 3, "voice": { "sfx": "voice_low", "pitch": 0.62, "every": 2, "volume": 1.1 } },
+    "matron": { "name": "The Mire Matron", "sprite": "mire_matron", "portrait": 4, "voice": { "sfx": "voice_soft", "pitch": 0.9, "every": 3 } }
   }
 }

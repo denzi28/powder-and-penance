@@ -5,7 +5,7 @@ import { DATA } from '../data/config';
 import { TILE } from '../world/TileGrid';
 import { grantItem } from '../game/Items';
 import { check, storyFlag } from './conditions';
-import type { Cond, Step } from '../data/schemas';
+import type { Cond, Step, Voice } from '../data/schemas';
 import type { GameScene } from '../scenes/GameScene';
 
 /** What the dialogue box shows (read by the UI). */
@@ -40,6 +40,9 @@ export class Story {
   private lastChoice = new WeakMap<Step, number>();
   /** Who spoke last: a menu keeps showing their name and portrait. */
   private lastSpeaker: { speaker: string; portrait: number } | null = null;
+  /** Voice of the line being typed, and how many letters of it have been spoken. */
+  private voice: Voice = DATA.npcs.narration;
+  private letters = 0;
   private wait = 0;
   private menu: { options: MenuOption[]; step: Step } | null = null;
   private fade: { from: number; to: number; t: number; ticks: number } | null = null;
@@ -143,6 +146,8 @@ export class Story {
       gs.npcs.speaking = s.who ?? null;
       this.lastSpeaker = who ? { speaker: who.name, portrait: who.portrait } : null;
       this.dialogue = { speaker: who?.name ?? null, portrait: who?.portrait ?? null, text: s.say, shown: 0, choices: null, selected: 0 };
+      this.voice = who?.voice ?? DATA.npcs.narration;
+      this.letters = 0;
     } else if ('menu' in s) {
       const options = s.menu.filter(o => check(gs.flags, o.when));
       this.menu = { options, step: s };
@@ -200,12 +205,28 @@ export class Story {
     return true;
   }
 
+  /**
+   * The speaker's voice: a blip every `voice.every` letters as they type out (spaces and punctuation are
+   * silent), at most one per tick so fast text doesn't buzz. Skipping the line with a press stays silent.
+   */
+  private speak(text: string, from: number, to: number) {
+    const v = this.voice;
+    let blip = false;
+    for (let i = from; i < to; i++) {
+      if (!/[\p{L}\p{N}]/u.test(text[i])) continue;
+      if (this.letters++ % v.every === 0) blip = true;
+    }
+    if (blip) this.gs.bus.emit('sfx', { id: v.sfx, pitch: v.pitch, volume: v.volume });
+  }
+
   /** Typewriter, then wait for a press. Returns true when the line is done. */
   private tickSay(): boolean {
     const d = this.dialogue!;
     const press = this.press('confirm', 'interact', 'light');
     if (d.shown < d.text.length) {
+      const before = Math.floor(d.shown);
       d.shown = press ? d.text.length : Math.min(d.text.length, d.shown + TYPE_CHARS_PER_TICK);
+      if (!press) this.speak(d.text, before, Math.floor(d.shown));
       if (d.shown >= d.text.length) this.gs.npcs.speaking = null;
       return false;
     }

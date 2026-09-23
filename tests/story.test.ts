@@ -50,6 +50,42 @@ function play(id: string, flags: Set<string>, maxTicks = 20000) {
   return { finished: !story.active, ticks: t };
 }
 
+describe('voices', () => {
+  /** Types one line out untouched and returns the voice blips it made. */
+  function blips(who: string | undefined, say: string, press = false) {
+    const heard: { id: string; pitch?: number }[] = [];
+    const gs = {
+      flags: new Set<string>(),
+      controls: { pressed: (a: string) => press && a === 'confirm', clearBuffer: () => {} },
+      npcs: { speaking: null, refresh: () => {}, get: () => null },
+      bus: { emit: (_: string, e: { id: string; pitch?: number }) => heard.push(e) },
+      markDirty: () => {},
+    } as unknown as GameScene;
+    const scripts = DATA.scripts as Record<string, unknown>;
+    scripts.__voice_test = { id: '__voice_test', steps: [{ say, ...(who ? { who } : {}) }] };
+    const story = new Story(gs);
+    story.start('__voice_test');
+    for (let t = 0; t < 200; t++) story.tick();
+    delete scripts.__voice_test;
+    return heard;
+  }
+
+  it('each speaker blips at their own pitch while their letters type out; spaces and punctuation are silent', () => {
+    const pip = blips('pip', 'abcd efgh!');
+    const npc = DATA.npcs.npcs;
+    expect(pip.length).toBe(4); // 8 letters, every 2nd
+    expect(pip.every(e => e.id === npc.pip.voice.sfx && e.pitch === npc.pip.voice.pitch)).toBe(true);
+    expect(npc.pip.voice.pitch).toBeGreaterThan(1);
+    expect(npc.tollwarden.voice.pitch).toBeLessThan(1);
+    expect(blips(undefined, 'abcdef')[0].id).toBe(DATA.npcs.narration.sfx);
+    expect(blips('pip', '... !!!').length).toBe(0);
+  });
+
+  it('skipping a line with a press is silent', () => {
+    expect(blips('pip', 'a long line that is skipped', true).length).toBe(0);
+  });
+});
+
 describe('scripts', () => {
   for (const id of Object.keys(DATA.scripts))
     it(`${id} plays to the end`, () => {

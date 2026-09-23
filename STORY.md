@@ -62,6 +62,14 @@ Everything is data; the game hot-reloads it and checks every reference when it l
 
 **Characters:** `data/npcs.json` gives each a name, a sprite, and a portrait frame.
 
+**Voices:** as a line types out, the speaker "talks" in blips, like Undertale.
+- Each character has a `voice`: `{ "sfx", "pitch", "every", "volume" }`.
+  - `sfx` is a preset in `data/audio/sfx.json`: `voice` (a square chirp), `voice_soft` (round), or `voice_low` (a growl).
+  - `pitch` sets how high it is. Small and young characters are high (Pip 1.75). Bosses are low (Tollwarden 0.62).
+  - `every` means one blip per that many letters. Use 3 for slow, heavy talkers.
+- `narration` is the voice of lines with no speaker. It is soft and quiet.
+- Spaces and punctuation are silent. A line skipped with a press is silent too.
+
 **Placing a character in a room:**
 ```json
 { "type": "npc", "id": "oskar_wreck", "npc": "oskar", "talk": "oskar_wreck", "when": "!oskar_freed", "at": [9, 7] }

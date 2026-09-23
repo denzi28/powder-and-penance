@@ -147,7 +147,7 @@ export type GameData = Extract<ReturnType<typeof loadAll>, { ok: true }>['data']
 /** Story references: NPC placements, cutscene triggers and everything scripts point at. */
 function checkStory(data: {
   rooms: Record<string, S.RoomData>;
-  npcs: { npcs: Record<string, S.NpcDef> };
+  npcs: { npcs: Record<string, S.NpcDef>; narration: S.Voice };
   scripts: Record<string, S.ScriptDef>;
   items: Record<string, unknown>;
   enemies: Record<string, unknown>;
@@ -187,6 +187,9 @@ function checkStory(data: {
     }
   };
   for (const sc of Object.values(data.scripts)) walk(`data/scripts/${sc.id}.json`, sc.steps);
+  for (const [id, n] of Object.entries(data.npcs.npcs))
+    if (!data.sfx.presets[n.voice.sfx]) errors.push(`data/npcs.json: "${id}" has unknown voice sound "${n.voice.sfx}"`);
+  if (!data.sfx.presets[data.npcs.narration.sfx]) errors.push(`data/npcs.json: unknown narration voice sound "${data.npcs.narration.sfx}"`);
   return errors;
 }
 

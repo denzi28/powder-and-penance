@@ -268,9 +268,21 @@ export const Step: z.ZodType<Step> = z.lazy(() =>
 );
 /** data/scripts/*.json: a dialogue or cutscene. `skippable`: Esc jumps to the end (flags are still set). */
 export const ScriptDef = z.object({ id: z.string(), skippable: z.boolean().default(false), steps: z.array(Step) });
+/**
+ * A speaking voice: a short blip (`sfx`, a preset in data/audio/sfx.json) played as the text types out,
+ * once every `every` letters, at `pitch` (high = small/young, low = big/old), at `volume`.
+ */
+export const Voice = z.object({
+  sfx: z.string().default('voice'),
+  pitch: num.min(0.2).max(4).default(1),
+  every: int.positive().default(2),
+  volume: num.min(0).max(2).default(1),
+});
+export type Voice = z.infer<typeof Voice>;
 /** data/npcs.json: characters. `portrait` is a frame of the `portraits` sheet. */
-export const NpcDef = z.object({ name: z.string(), sprite: z.string(), portrait: int.nonnegative() });
-export const Npcs = z.object({ npcs: z.record(z.string(), NpcDef) });
+export const NpcDef = z.object({ name: z.string(), sprite: z.string(), portrait: int.nonnegative(), voice: Voice.default({ sfx: 'voice', pitch: 1, every: 2, volume: 1 }) });
+/** `narration`: the voice of lines with no speaker. */
+export const Npcs = z.object({ npcs: z.record(z.string(), NpcDef), narration: Voice.default({ sfx: 'voice_soft', pitch: 0.75, every: 3, volume: 0.55 }) });
 
 export const DeathCfg = z.object({
   text: z.string(),
