@@ -142,7 +142,7 @@ The manifest's `tiles` block maps tile kinds to sheet indices (index = row × 8 
 | `wall_front` | 8–9 | Brick face of a wall with floor directly south of it |
 | `wall_cap` | 16–31 | Top of a wall. **Index = 16 + edge mask**, where the mask bits say which sides are open: N=1, E=2, S=4, W=8. Draw a rim on the open sides. |
 
-**How walls are drawn (3/4 view):** level authors only place `#`. A wall with floor directly south gets a **front face** on its own cell and a **cap on the cell above**. If that cap lands on walkable floor (for example above a free-standing pillar), it is drawn **over** actors whose feet are behind it, so characters disappear behind the pillar's top.
+**How walls are drawn (3/4 view):** level authors only place `#`. A wall with floor directly south gets a **front face** on its own cell and a **cap on the cell above**. If that cap lands on a floor cell (for example above a free-standing pillar or a thin wall), that cell becomes **solid**, so a wall blocks everything it visibly covers. The cap is still depth-sorted, so tall sprites standing further north (big enemies, bosses) are correctly hidden behind it.
 
 ---
 

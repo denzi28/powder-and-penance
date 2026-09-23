@@ -29,8 +29,13 @@ export class TileGrid {
     return x >= 0 && y >= 0 && x < this.w && y < this.h && this.moss[y * this.w + x] === 1;
   }
 
+  /**
+   * Walls block their whole visual footprint: the wall cell itself, plus the floor cell just above a
+   * brick front face, where the wall's top cap is drawn. Otherwise you could stand "inside" the cap.
+   */
   isSolid(tx: number, ty: number) {
-    return this.get(tx, ty) !== Cell.Floor;
+    if (this.get(tx, ty) !== Cell.Floor) return true;
+    return this.get(tx, ty + 1) === Cell.Wall && this.get(tx, ty + 2) === Cell.Floor;
   }
 
   set(tx: number, ty: number, c: Cell, moss = false) {

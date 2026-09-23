@@ -62,6 +62,13 @@ describe('moveBox', () => {
     const s = moveBox(g, 24, 30, 4, 5, -20, 3);
     expect(s.y).toBe(33);
   });
+  it("treats the floor cell under a pillar's cap as solid", () => {
+    // pillar front face at (2,2); its cap sits on floor cell (2,1)
+    expect(g.isSolid(2, 1)).toBe(true);
+    const r = moveBox(g, 24, 30, 4, 5, 20, 0);
+    expect(r.hitX).toBe(true);
+    expect(r.x).toBe(28);
+  });
   it('stops at the floor edge moving down', () => {
     const r = moveBox(g, 24, 60, 4, 5, 0, 20);
     expect(r.hitY).toBe(true);
