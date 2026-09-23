@@ -2,11 +2,12 @@
 // really is the only short way between the Undercroft and the Porch.
 import { describe, expect, it } from 'vitest';
 import { DATA } from '../src/data/config';
-import { buildGrid, Cell, TILE } from '../src/world/TileGrid';
+import { levelGrid } from './levelGrid';
+import { Cell, TILE } from '../src/world/TileGrid';
 import { Pathfinder } from '../src/world/Pathfinder';
 
 const rooms = Object.values(DATA.rooms).filter(r => r.area === 'abbey');
-const centreOf = (id: string, grid: ReturnType<typeof buildGrid>) => {
+const centreOf = (id: string, grid: ReturnType<typeof levelGrid>) => {
   const r = DATA.rooms[id];
   const cx = r.origin[0] + Math.floor(r.tiles[0].length / 2);
   const cy = r.origin[1] + Math.floor(r.tiles.length / 2);
@@ -32,7 +33,7 @@ describe('The Guttering Abbey', () => {
   });
 
   it('every room is reachable from the start with doors open', () => {
-    const grid = buildGrid(rooms);
+    const grid = levelGrid(rooms);
     const pf = new Pathfinder(() => grid);
     const start = centreOf('abbey_01_porch', grid);
     for (const r of rooms) {
@@ -42,7 +43,7 @@ describe('The Guttering Abbey', () => {
   });
 
   it('with the shortcut gate closed, Porch -> Undercroft is the long way round', () => {
-    const grid = buildGrid(rooms);
+    const grid = levelGrid(rooms);
     const pf = new Pathfinder(() => grid);
     const a = centreOf('abbey_01_porch', grid);
     const b = centreOf('abbey_10_undercroft', grid);

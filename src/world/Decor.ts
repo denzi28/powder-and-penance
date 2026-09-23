@@ -1,9 +1,9 @@
-// Static scenery (data/decor.json): wrecks, boulders, corpses, trees. Purely visual, except that a decor's
-// `blocks` tiles become Block cells: solid for movement and bullets, see-through for perception.
+// Static scenery sprites (data/decor.json): wrecks, boulders, corpses, trees. Which tiles they make solid
+// is decided by markObstacles (world/Obstacles.ts), shared with the level tests.
 import Phaser from 'phaser';
 import { DATA } from '../data/config';
 import { DEPTH } from '../render/depth';
-import { Cell, TILE, type TileGrid } from './TileGrid';
+import { TILE } from './TileGrid';
 import type { SpriteLib } from '../anim/SpriteLib';
 import type { RoomData } from '../data/schemas';
 
@@ -13,7 +13,7 @@ export class Decor {
   constructor(private lib: SpriteLib) {}
 
   /** Anchor = bottom-centre of the entity's tile; the sprite's pivot sits there. */
-  build(rooms: RoomData[], grid: TileGrid) {
+  build(rooms: RoomData[]) {
     this.clear();
     for (const r of rooms)
       for (const en of r.entities) {
@@ -30,10 +30,6 @@ export class Decor {
           .setFlipX(en.flip === true)
           .setDepth(def.flat ? DEPTH.floor + 1 : DEPTH.actor(y));
         this.sprites.push(s);
-        for (const [dx, dy] of def.blocks) {
-          const bx = tx + (en.flip === true ? -dx : dx);
-          if (grid.get(bx, ty + dy) === Cell.Floor) grid.set(bx, ty + dy, def.tall ? Cell.Tall : Cell.Block);
-        }
       }
   }
 

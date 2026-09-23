@@ -123,11 +123,12 @@ R('road_04_collapsed_gate', [95, 12], 26, 18)
 // path holds the road's only shrine. Exit north to the hub.
 R('road_05_hill_of_candles', [120, 16], 22, 20)
   .open(0, 8, 1, 2).open(10, 0, 2, 1)
-  .cliff(1, 1, 8, 6).cliff(13, 1, 8, 4).cliff(1, 10, 6, 9).cliff(7, 15, 14, 4)
+  // the NE mass stops at row 3 so the upper path (rows 4-5) is two tiles high; row 6 lies under the ridge's cap
+  .cliff(1, 1, 8, 6).cliff(13, 1, 8, 3).cliff(1, 10, 6, 9).cliff(7, 15, 14, 4)
   .cliff(7, 11, 9, 1).cliff(7, 7, 13, 1) // switchback ridges
   .grassEdges()
-  .paint(0, 8, 20, 2, '=').paint(19, 5, 2, 4, '=').paint(9, 5, 11, 2, '=').paint(10, 0, 2, 5, '=')
-  .decor('candle_cairn', 2, 7).decor('candle_cairn', 5, 7).decor('candle_cairn', 14, 5).decor('candle_cairn', 17, 5)
+  .paint(0, 8, 20, 2, '=').paint(19, 4, 2, 5, '=').paint(9, 4, 12, 2, '=').paint(10, 0, 2, 5, '=')
+  .decor('candle_cairn', 2, 7).decor('candle_cairn', 5, 7)
   .decor('candle_cairn', 9, 2).decor('candle_cairn', 12, 2)
   .decor('candle_cairn', 9, 13).decor('candle_cairn', 12, 14).decor('candle_cairn', 15, 12).decor('candle_cairn', 18, 13)
   .decor('signpost', 20, 9).decor('dead_tree', 17, 13)

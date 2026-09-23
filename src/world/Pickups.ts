@@ -3,7 +3,7 @@
 // "item:<id>"; opened chests stay open (and empty) for good. Chests are solid.
 import Phaser from 'phaser';
 import { DEPTH } from '../render/depth';
-import { Cell, TILE, type TileGrid } from './TileGrid';
+import { TILE } from './TileGrid';
 import type { SpriteLib } from '../anim/SpriteLib';
 import type { RoomData } from '../data/schemas';
 
@@ -37,7 +37,8 @@ export class Pickups {
 
   constructor(private lib: SpriteLib) {}
 
-  build(rooms: RoomData[], grid: TileGrid, taken: (id: string) => boolean) {
+  /** Chest tiles are made solid by markObstacles (world/Obstacles.ts). */
+  build(rooms: RoomData[], taken: (id: string) => boolean) {
     this.clear();
     for (const r of rooms)
       for (const en of r.entities) {
@@ -50,7 +51,6 @@ export class Pickups {
         const sprite = this.lib.sprite('chest').setFrame(open ? 4 : 0).setPosition(x, y).setDepth(DEPTH.actor(y));
         const glint = this.lib.sprite('item_glint').setPosition(x + 4, y - 11).setDepth(DEPTH.actor(y) + 0.1).setVisible(!open);
         this.list.push({ id: en.id, item: String(en.item), x, y, state: open ? 'open' : 'closed', t: 0, sprite, glint });
-        if (grid.get(tx, ty) === Cell.Floor) grid.set(tx, ty, Cell.Block);
       }
   }
 

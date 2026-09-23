@@ -2,7 +2,8 @@
 // and within each area every exit can be walked to from every spawn point (doors counted as open).
 import { describe, expect, it } from 'vitest';
 import { DATA } from '../src/data/config';
-import { buildGrid, TILE } from '../src/world/TileGrid';
+import { levelGrid } from './levelGrid';
+import { TILE } from '../src/world/TileGrid';
 import { Pathfinder } from '../src/world/Pathfinder';
 import { Exits, findSpawn } from '../src/world/Exits';
 
@@ -22,7 +23,7 @@ describe('area exits', () => {
         if (!target.length) continue; // area not built yet: the exit says so in game
         const s = findSpawn(target, e.to.spawn);
         expect(s, `${e.id} -> ${e.to.area}/${e.to.spawn}`).not.toBeNull();
-        const grid = buildGrid(target);
+        const grid = levelGrid(target);
         const tx = Math.floor(s!.x / TILE);
         const ty = Math.floor(s!.y / TILE);
         expect(grid.isSolid(tx, ty), `${e.id}: spawn ${e.to.spawn} is solid`).toBe(false);
@@ -33,7 +34,7 @@ describe('area exits', () => {
     });
 
     it(`${area}: every exit is reachable from every spawn point`, () => {
-      const grid = buildGrid(rooms);
+      const grid = levelGrid(rooms);
       const pf = new Pathfinder(() => grid);
       const spawns = rooms.flatMap(r => r.entities.filter(en => en.type === 'spawn').map(en => findSpawn([r], en.id!)!));
       for (const s of spawns)

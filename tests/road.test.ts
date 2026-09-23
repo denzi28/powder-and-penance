@@ -1,11 +1,12 @@
 // Level integrity for the Penance Road: one connected ravine from the Wreck to the hub exit.
 import { describe, expect, it } from 'vitest';
 import { DATA } from '../src/data/config';
-import { buildGrid, TILE } from '../src/world/TileGrid';
+import { levelGrid } from './levelGrid';
+import { TILE } from '../src/world/TileGrid';
 import { Pathfinder } from '../src/world/Pathfinder';
 
 const rooms = Object.values(DATA.rooms).filter(r => r.area === 'road');
-const grid = buildGrid(rooms);
+const grid = levelGrid(rooms);
 const pf = new Pathfinder(() => grid);
 const centre = (tx: number, ty: number) => ({ x: tx * TILE + 8, y: ty * TILE + 10 });
 
