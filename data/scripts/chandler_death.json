@@ -1,0 +1,31 @@
+{
+  "id": "chandler_death",
+  "steps": [
+    { "camera": "enemy:chandler_wick", "ticks": 50 },
+    { "wait": 30 },
+    { "say": "...Ah. There it goes.", "who": "chandler" },
+    { "say": "I can feel the cold now. Forty years I stood between this Abbey and the cold.", "who": "chandler" },
+    { "say": "We rendered them, child. The sick. The old. The ones the Drip had already started on. Tallow for the Great Wick, so the flame would not go out. I signed every page of that ledger myself.", "who": "chandler" },
+    { "say": "And it was never enough. The more we fed it, the faster it guttered.", "who": "chandler" },
+    { "wait": 40 },
+    { "say": "The Wick was never starving.", "who": "chandler" },
+    { "wait": 20 },
+    { "say": "Something up there is drinking it.", "who": "chandler" },
+    { "wait": 40 },
+    { "say": "Go and look at it for me. I never had the courage to climb.", "who": "chandler" },
+    { "wait": 30 },
+    { "say": "The black flame on his head bends, gutters, and goes out. What is left of him settles into the floor, soft as a snuffed candle." },
+    { "set": "chandler_rests" },
+    { "wait": 30 },
+    { "sfx": "lift_groan" },
+    { "shake": 0.35 },
+    { "camera": "point:nave_lift", "ticks": 70 },
+    { "say": "In the corner of the Nave, chains that have not moved in forty years begin to turn. Far above, something answers them." },
+    { "wait": 40 },
+    { "fade": "out", "ticks": 90 },
+    { "card": "END OF ACT ONE", "sub": "The Guttering Abbey", "ticks": 300 },
+    { "set": "act1_complete" },
+    { "camera": "player", "ticks": 1 },
+    { "fade": "in", "ticks": 60 }
+  ]
+}

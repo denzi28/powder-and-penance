@@ -24,6 +24,7 @@ import { Npcs } from '../story/Npcs';
 import { Story } from '../story/Story';
 import { BossArena } from '../game/BossArena';
 import { Levers } from '../world/Levers';
+import { WaxPools } from '../world/WaxPools';
 import { check } from '../story/conditions';
 import { tickWarp, type WarpTarget } from '../game/Warp';
 import { Exits, findSpawn, type Exit } from '../world/Exits';
@@ -97,6 +98,8 @@ export class GameScene extends Phaser.Scene {
   /** Boss arenas of the current area; `arena.active` drives the boss bar. */
   arena = new BossArena(this);
   exits = new Exits();
+  /** Wax spilled by bosses (strike.pools): slows whoever wades it. */
+  pools = new WaxPools();
   levers!: Levers;
   loot!: LootDrops;
   marker!: DeathMarker;
@@ -182,6 +185,7 @@ export class GameScene extends Phaser.Scene {
       player: () => this.player,
       enemies: () => this.enemies,
       roomAt: (x, y) => this.roomAt(x, y),
+      slowAt: (x, y) => this.pools.mult(x, y),
     };
 
     // Load or start fresh. Flags and the last shrine must be known before the world is built.
@@ -304,6 +308,9 @@ export class GameScene extends Phaser.Scene {
     this.resolveBodies();
     this.combat.resolve(this.actors, this.bus);
     this.projectiles.tick(this.actors, this.grid, this.combat, this.bus);
+    this.pools.tick();
+    for (const e of this.enemies)
+      if (e.veiled > 0 && e.veiled % 4 === 0) this.particles.burst(e.x + (this.rng() - 0.5) * 16, e.y - 6, 4, -Math.PI / 2, 1.4, 3, 18, e.veiled % 8 ? 'stone3' : 'stone2', false); // its smoke clings to it
     tickShrineSeq(this);
     for (const c of this.pickups.tick()) grantItem(this, c.id, c.item, c.x, c.y);
     this.tryRecoverMarker();
@@ -482,6 +489,7 @@ export class GameScene extends Phaser.Scene {
     this.props.build(this.ctxObj, this.rooms, this.brokenWall); // props respawn; their loot flags don't
     this.loot.clear();
     this.projectiles.clear();
+    this.pools.clear();
   }
 
   private tickDeath() {
@@ -586,6 +594,47 @@ export class GameScene extends Phaser.Scene {
       if (sm.shield) caster.bubble = true;
       this.bus.emit('sfx', { id: 'summon', x: caster.x, y: caster.y });
     });
+    this.bus.on('vanish', e => {
+      // Gone in a cloud of smoke; out of it again behind (or beside) the one it's hunting, half-seen.
+      const o = e.actor as Enemy;
+      const v = e.strike.vanish!;
+      const p = this.player;
+      this.smokeCloud(o.x, o.y, 1);
+      const open = (x: number, y: number) =>
+        [[-7, 0], [7, 0], [0, -4], [0, 0]].every(([dx, dy]) => !this.grid.isSolid(Math.floor((x + dx) / TILE), Math.floor((y + dy) / TILE))) &&
+        this.roomAt(x, y) === o.room;
+      const behind = p.facing + Math.PI;
+      for (let i = 0; i < 16; i++) {
+        const a = behind + (this.rng() - 0.5) * Math.min(Math.PI * 2, 1.2 + i * 0.35);
+        const x = p.x + Math.cos(a) * v.distance;
+        const y = p.y + Math.sin(a) * v.distance * 0.8;
+        if (!open(x, y)) continue;
+        o.x = o.prevX = x;
+        o.y = o.prevY = y;
+        break;
+      }
+      o.vx = o.vy = 0;
+      o.facing = Math.atan2(p.y - o.y, p.x - o.x);
+      o.veiled = v.ticks;
+      o.alpha = 0.18;
+      o.attackGap = 0;
+      this.smokeCloud(o.x, o.y, 0.6);
+      this.bus.emit('sfx', { id: 'veil', x: o.x, y: o.y });
+    });
+    this.bus.on('pools', e => {
+      const pl = e.strike.pools!;
+      const at = pl.at === 'target' && e.target ? e.target : { x: e.actor.x, y: e.actor.y };
+      for (let i = 0; i < pl.count; i++) {
+        const a = this.rng() * Math.PI * 2;
+        const d = pl.count === 1 ? 0 : pl.spread * Math.sqrt(this.rng());
+        const x = at.x + Math.cos(a) * d;
+        const y = at.y + Math.sin(a) * d * 0.7;
+        if (this.grid.isSolid(Math.floor(x / TILE), Math.floor(y / TILE))) continue;
+        this.pools.add(x, y, pl.radius, pl.ticks, pl.speedMult);
+        this.particles.burst(x, y, 4, -Math.PI / 2, Math.PI * 2, 8, 50, i % 2 ? 'wax1' : 'wax2', true);
+      }
+      this.bus.emit('sfx', { id: 'wax_spill', x: at.x, y: at.y });
+    });
     this.bus.on('propBroken', e => {
       const p = e.prop;
       if (p.def.secretWall) {
@@ -603,6 +652,13 @@ export class GameScene extends Phaser.Scene {
       this.loot.spawn(rollLoot(DATA.loot.tables[p.def.loot], this.rng), p.x, p.y, this.rng);
       this.dirty = true;
     });
+  }
+
+  /** A billow of censer smoke (size 1 = a full cloud). */
+  private smokeCloud(x: number, y: number, size: number) {
+    this.particles.burst(x, y - 8, 10 * size, -Math.PI / 2, Math.PI * 2, Math.round(40 * size), 70 * size, 'stone3', false);
+    this.particles.burst(x, y - 14, 18 * size, -Math.PI / 2, Math.PI, Math.round(24 * size), 40 * size, 'stone4', false);
+    this.bus.emit('dust', { x, y, kind: 'roll' });
   }
 
   // ------------------------------------------------------------------ enemies
@@ -675,6 +731,7 @@ export class GameScene extends Phaser.Scene {
     this.props.render(alpha);
     this.loot.render();
     this.projectileView.render(this.projectiles.list, alpha);
+    this.pools.draw(this);
     this.npcs.update(delta, this.player.x);
     this.arena.update(delta);
     // A script can point the camera elsewhere (cutscenes); otherwise it follows the player.
@@ -699,6 +756,7 @@ export class GameScene extends Phaser.Scene {
     this.resetEnemies();
     this.loot.clear();
     this.projectiles.clear();
+    this.pools.clear();
     this.ground.setArea(area);
     this.marker.setArea(area);
     this.cam.snap();

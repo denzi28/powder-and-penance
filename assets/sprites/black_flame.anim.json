@@ -1,0 +1,12 @@
+{
+  "image": "black_flame.png",
+  "cell": [
+    8,
+    10
+  ],
+  "pivot": [
+    4,
+    6
+  ],
+  "layer": "fx"
+}

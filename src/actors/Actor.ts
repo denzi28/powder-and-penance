@@ -128,12 +128,15 @@ export abstract class Actor {
     return false;
   }
 
-  /** Movement multiplier of the floor under the feet (data/terrain.json), e.g. 0.55 in a wax pool. */
+  /**
+   * Movement multiplier of the floor under the feet (data/terrain.json), e.g. 0.55 in a wax pool, or of
+   * wax spilled in a fight (the slower of the two).
+   */
   terrainMult(): number {
     if (this.ignoresTerrain) return 1;
     const g = this.ctx.grid();
     const v = g.variant(Math.floor(this.x / 16), Math.floor(this.y / 16));
-    return DATA.terrain.floors[v]?.speedMult ?? 1;
+    return Math.min(DATA.terrain.floors[v]?.speedMult ?? 1, this.ctx.slowAt?.(this.x, this.y) ?? 1);
   }
 
   integrate() {

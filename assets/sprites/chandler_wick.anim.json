@@ -1,0 +1,409 @@
+{
+  "image": "chandler_wick.png",
+  "cell": [
+    64,
+    64
+  ],
+  "pivot": [
+    32,
+    58
+  ],
+  "layer": "single",
+  "animations": {
+    "idle": {
+      "row": 0,
+      "dirs": [
+        "S",
+        "SE",
+        "E",
+        "NE",
+        "N"
+      ],
+      "loop": true,
+      "frames": [
+        {
+          "ticks": 10
+        },
+        {
+          "ticks": 10
+        }
+      ]
+    },
+    "walk": {
+      "row": 5,
+      "dirs": [
+        "S",
+        "SE",
+        "E",
+        "NE",
+        "N"
+      ],
+      "loop": true,
+      "frames": [
+        {
+          "ticks": 7
+        },
+        {
+          "ticks": 7,
+          "events": [
+            "footstep"
+          ]
+        },
+        {
+          "ticks": 7
+        },
+        {
+          "ticks": 7,
+          "events": [
+            "footstep"
+          ]
+        }
+      ]
+    },
+    "sweep": {
+      "row": 10,
+      "dirs": [
+        "S",
+        "SE",
+        "E",
+        "NE",
+        "N"
+      ],
+      "loop": false,
+      "frames": [
+        {
+          "ticks": 1,
+          "phase": "windup"
+        },
+        {
+          "ticks": 2,
+          "phase": "windup"
+        },
+        {
+          "ticks": 2,
+          "phase": "windup"
+        },
+        {
+          "ticks": 1,
+          "phase": "active"
+        },
+        {
+          "ticks": 1,
+          "phase": "active"
+        },
+        {
+          "ticks": 2,
+          "phase": "recovery"
+        },
+        {
+          "ticks": 1,
+          "phase": "recovery"
+        }
+      ]
+    },
+    "jab": {
+      "row": 15,
+      "dirs": [
+        "S",
+        "SE",
+        "E",
+        "NE",
+        "N"
+      ],
+      "loop": false,
+      "frames": [
+        {
+          "ticks": 1,
+          "phase": "windup"
+        },
+        {
+          "ticks": 2,
+          "phase": "windup"
+        },
+        {
+          "ticks": 2,
+          "phase": "windup"
+        },
+        {
+          "ticks": 1,
+          "phase": "active"
+        },
+        {
+          "ticks": 1,
+          "phase": "active"
+        },
+        {
+          "ticks": 2,
+          "phase": "recovery"
+        },
+        {
+          "ticks": 1,
+          "phase": "recovery"
+        }
+      ]
+    },
+    "slam": {
+      "row": 20,
+      "dirs": [
+        "S",
+        "SE",
+        "E",
+        "NE",
+        "N"
+      ],
+      "loop": false,
+      "frames": [
+        {
+          "ticks": 1,
+          "phase": "windup"
+        },
+        {
+          "ticks": 2,
+          "phase": "windup"
+        },
+        {
+          "ticks": 2,
+          "phase": "windup"
+        },
+        {
+          "ticks": 1,
+          "phase": "active"
+        },
+        {
+          "ticks": 1,
+          "phase": "active"
+        },
+        {
+          "ticks": 2,
+          "phase": "recovery"
+        },
+        {
+          "ticks": 1,
+          "phase": "recovery"
+        }
+      ]
+    },
+    "leap": {
+      "row": 25,
+      "dirs": [
+        "S",
+        "SE",
+        "E",
+        "NE",
+        "N"
+      ],
+      "loop": false,
+      "frames": [
+        {
+          "ticks": 1,
+          "phase": "windup"
+        },
+        {
+          "ticks": 2,
+          "phase": "windup"
+        },
+        {
+          "ticks": 2,
+          "phase": "windup"
+        },
+        {
+          "ticks": 1,
+          "phase": "active"
+        },
+        {
+          "ticks": 1,
+          "phase": "active"
+        },
+        {
+          "ticks": 2,
+          "phase": "recovery"
+        },
+        {
+          "ticks": 1,
+          "phase": "recovery"
+        }
+      ]
+    },
+    "volley": {
+      "row": 30,
+      "dirs": [
+        "S",
+        "SE",
+        "E",
+        "NE",
+        "N"
+      ],
+      "loop": false,
+      "frames": [
+        {
+          "ticks": 1,
+          "phase": "windup"
+        },
+        {
+          "ticks": 2,
+          "phase": "windup"
+        },
+        {
+          "ticks": 2,
+          "phase": "windup"
+        },
+        {
+          "ticks": 1,
+          "phase": "active"
+        },
+        {
+          "ticks": 1,
+          "phase": "active"
+        },
+        {
+          "ticks": 2,
+          "phase": "recovery"
+        },
+        {
+          "ticks": 1,
+          "phase": "recovery"
+        }
+      ]
+    },
+    "flood": {
+      "row": 35,
+      "dirs": [
+        "S",
+        "SE",
+        "E",
+        "NE",
+        "N"
+      ],
+      "loop": false,
+      "frames": [
+        {
+          "ticks": 1,
+          "phase": "windup"
+        },
+        {
+          "ticks": 2,
+          "phase": "windup"
+        },
+        {
+          "ticks": 2,
+          "phase": "windup"
+        },
+        {
+          "ticks": 1,
+          "phase": "active"
+        },
+        {
+          "ticks": 1,
+          "phase": "active"
+        },
+        {
+          "ticks": 2,
+          "phase": "recovery"
+        },
+        {
+          "ticks": 1,
+          "phase": "recovery"
+        }
+      ]
+    },
+    "intro": {
+      "row": 40,
+      "dirs": [
+        "S",
+        "SE",
+        "E",
+        "NE",
+        "N"
+      ],
+      "loop": false,
+      "frames": [
+        {
+          "ticks": 16
+        },
+        {
+          "ticks": 16
+        },
+        {
+          "ticks": 16
+        },
+        {
+          "ticks": 16
+        },
+        {
+          "ticks": 26
+        },
+        {
+          "ticks": 20
+        }
+      ]
+    },
+    "stagger": {
+      "row": 45,
+      "dirs": [
+        "S",
+        "SE",
+        "E",
+        "NE",
+        "N"
+      ],
+      "loop": false,
+      "frames": [
+        {
+          "ticks": 6
+        },
+        {
+          "ticks": 10
+        },
+        {
+          "ticks": 30
+        }
+      ]
+    },
+    "death": {
+      "row": 50,
+      "dirs": [
+        "S"
+      ],
+      "loop": false,
+      "frames": [
+        {
+          "ticks": 8
+        },
+        {
+          "ticks": 10
+        },
+        {
+          "ticks": 12
+        },
+        {
+          "ticks": 30
+        },
+        {
+          "ticks": 60
+        }
+      ]
+    }
+  },
+  "handAnchors": {
+    "S": [
+      11,
+      -14
+    ],
+    "SE": [
+      10,
+      -15
+    ],
+    "E": [
+      6,
+      -15
+    ],
+    "NE": [
+      9,
+      -17
+    ],
+    "N": [
+      9,
+      -17
+    ]
+  }
+}

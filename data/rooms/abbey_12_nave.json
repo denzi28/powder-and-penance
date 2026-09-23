@@ -9,7 +9,7 @@
     " ": "void"
   },
   "tiles": [
-    "#####################",
+    "#################.###",
     "#...................#",
     "#...................#",
     "#...................#",
@@ -26,18 +26,31 @@
     "#...................#",
     "#...................#",
     "#...................#",
-    "#########...#########"
+    "##########.##########"
   ],
   "entities": [
+    { "type": "decor", "kind": "great_altar", "at": [10, 3] },
+    { "type": "decor", "kind": "candelabrum", "at": [7, 3] },
+    { "type": "decor", "kind": "candelabrum", "at": [13, 3] },
+    { "type": "decor", "kind": "pew", "at": [3, 7] },
+    { "type": "decor", "kind": "pew", "at": [3, 9] },
+    { "type": "decor", "kind": "pew", "at": [3, 14] },
+    { "type": "decor", "kind": "pew", "at": [18, 7] },
+    { "type": "decor", "kind": "pew_broken", "at": [18, 9] },
+    { "type": "decor", "kind": "pew", "at": [18, 14] },
+    { "type": "decor", "kind": "lift_gate", "at": [17, 0] },
+    { "type": "enemy", "kind": "chandler", "at": [10, 4], "facing": "N" },
+    { "type": "arena", "id": "nave", "boss": "chandler", "seals": [[10, 17]], "at": [0, 0] },
+    { "type": "shrine", "id": "shrine_nave", "name": "Nave Wick", "at": [10, 11], "when": "boss:chandler" },
     {
-      "type": "prop",
-      "kind": "candles",
-      "at": [9, 2]
+      "type": "exit",
+      "id": "abbey_lift_up",
+      "at": [17, 0],
+      "to": { "area": "abbey", "spawn": "nave_lift" },
+      "when": "act2",
+      "closed": "The lift to the Cathedral. Its chains are awake and humming, but the cage will not rise. Not yet."
     },
-    {
-      "type": "prop",
-      "kind": "candles",
-      "at": [11, 2]
-    }
+    { "type": "spawn", "id": "nave_lift", "at": [17, 1] },
+    { "type": "point", "id": "nave_lift", "at": [17, 1] }
   ]
 }

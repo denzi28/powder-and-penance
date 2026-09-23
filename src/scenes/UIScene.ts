@@ -32,6 +32,8 @@ export class UIScene extends Phaser.Scene {
   private toastNote!: Phaser.GameObjects.BitmapText;
   private toastPanel!: Phaser.GameObjects.Rectangle;
   private areaText!: Phaser.GameObjects.BitmapText;
+  private cardTitle!: Phaser.GameObjects.BitmapText;
+  private cardSub!: Phaser.GameObjects.BitmapText;
   private mapView!: MapView;
   private dialogueBox!: DialogueBox;
   private bossBar!: BossBar;
@@ -72,6 +74,8 @@ export class UIScene extends Phaser.Scene {
     this.toastNote = this.add.bitmapText(0, 0, 'pixel', '').setTint(hexToInt(DATA.palette.stone4)).setDepth(15);
     this.toastPanel = this.add.rectangle(0, 0, 10, 10, hexToInt(DATA.palette.ink), 0.7).setOrigin(0, 0).setDepth(14);
     this.areaText = this.add.bitmapText(0, 0, 'pixel', '').setTint(hexToInt(DATA.palette.wax2)).setDepth(16);
+    this.cardTitle = this.add.bitmapText(0, 0, 'pixel', '').setScale(2).setTint(hexToInt(DATA.palette.flame2)).setDepth(22);
+    this.cardSub = this.add.bitmapText(0, 0, 'pixel', '').setTint(hexToInt(DATA.palette.stone4)).setDepth(22);
     this.mapView = new MapView(this);
     this.dialogueBox = new DialogueBox(this);
     this.bossBar = new BossBar(this);
@@ -152,6 +156,23 @@ export class UIScene extends Phaser.Scene {
     this.bossBar.update(this.gs, dt);
     this.menuUi.draw(this.gs.menu);
     this.drawDeath();
+    this.drawCard();
+  }
+
+  /** A script's title card (`card` step): big and centred, fading in and out, over whatever fade is up. */
+  private drawCard() {
+    const c = this.gs.story.card;
+    this.cardTitle.setVisible(!!c);
+    this.cardSub.setVisible(!!c);
+    if (!c) return;
+    const edge = Math.min(40, c.ticks / 3);
+    const a = Math.max(0, Math.min(1, c.t / edge, (c.ticks - c.t) / edge));
+    const W = DATA.game.width;
+    const y = Math.round(DATA.game.height / 2 - 14);
+    this.cardTitle.setText(c.title).setAlpha(a);
+    this.cardTitle.setPosition(Math.round((W - this.cardTitle.width) / 2), y);
+    this.cardSub.setText(c.sub ?? '').setAlpha(a * 0.9);
+    this.cardSub.setPosition(Math.round((W - this.cardSub.width) / 2), y + this.cardTitle.height + 8);
   }
 
   /**

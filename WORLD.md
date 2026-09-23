@@ -107,7 +107,7 @@ The 13 existing rooms stay. Changes:
   - Die and your Tallow lands just outside the doorway you came through.
   - When he falls, he kneels and speaks his last words.
 - **Undercroft:** a sluice down to the Waxmire in its south wall ✅, opened by the lever in the Sluice (mire_08).
-- **Nave Approach → Nave:** the great door needs **both Seals**. The **Chandler** fight, then the ending cutscene and the lift to Act 2 (sealed).
+- **Nave Approach → Nave** ✅: the great door needs **both Seals** (`requires` takes a list). The Nave: the great altar and its fire, candelabra, pews, four pillars. The **Chandler** fight (two phases; the turn happens at the altar), the **Nave Wick** shrine after him, the ending, and the lift to Act 2 in the north-east corner (an exit that stays shut until `act2`; Act 2 will point it at the Cathedral).
 
 ## Tallow Works (`works`)
 Where the dying pilgrims are "given to the flame": rendering vats, hooks, grease. The Act 1 twist is revealed here.

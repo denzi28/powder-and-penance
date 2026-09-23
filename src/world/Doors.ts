@@ -1,8 +1,8 @@
 // Doors in wall gaps. A closed door turns its grid cell into a wall (blocks movement, sight, projectiles,
 // paths); opening it restores the floor for good (world flag "door:<id>").
 // A shortcut door (entity field `opensFrom`: N/S/E/W) only opens from that side; from the other side it is
-// "barred from beyond" until opened. A locked door (entity field `requires`: a key item id) opens only once
-// you hold that key.
+// "barred from beyond" until opened. A locked door (entity field `requires`: a key item id, or a list of
+// them) opens only once you hold every one of those keys.
 import Phaser from 'phaser';
 import { DEPTH } from '../render/depth';
 import { Cell, TILE, type TileGrid } from './TileGrid';
@@ -19,8 +19,8 @@ export interface Door {
   orient: 'h' | 'v';
   open: boolean;
   opensFrom: Side | null;
-  /** Key item id needed to open it (entity field `requires`), or null. */
-  requires: string | null;
+  /** Key item ids needed to open it (entity field `requires`); empty = no lock. */
+  requires: string[];
   sprite: Phaser.GameObjects.Sprite;
 }
 
@@ -54,7 +54,7 @@ export class Doors {
           orient,
           open: false,
           opensFrom: (en.opensFrom as Side) ?? null,
-          requires: en.requires === undefined ? null : String(en.requires),
+          requires: en.requires === undefined ? [] : [en.requires].flat().map(String),
           sprite,
         };
         this.list.push(door);
@@ -81,6 +81,11 @@ export class Doors {
       }
     }
     return best;
+  }
+
+  /** Keys the door still wants (those not held: no world flag "key:<id>"). */
+  missingKeys(d: Door, flags: ReadonlySet<string>): string[] {
+    return d.requires.filter(k => !flags.has(`key:${k}`));
   }
 
   /** Is (x, y) on the side a one-way door opens from? */

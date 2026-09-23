@@ -239,7 +239,8 @@ export type Step =
   | { sfx: string }
   | { shake: number }
   | { give: string }
-  | { toast: [string, string] };
+  | { toast: [string, string] }
+  | { card: string; sub?: string; ticks?: number };
 export const Step: z.ZodType<Step> = z.lazy(() =>
   z.union([
     /** A line of dialogue. `who`: a character id (data/npcs.json); omitted = narration. */
@@ -264,6 +265,8 @@ export const Step: z.ZodType<Step> = z.lazy(() =>
     /** Give an item (data/items), explained like a chest's. */
     z.object({ give: z.string() }).strict(),
     z.object({ toast: z.tuple([z.string(), z.string()]) }).strict(),
+    /** A title card in the middle of the screen (over a fade, it reads like a chapter's end), for `ticks`. */
+    z.object({ card: z.string(), sub: z.string().optional(), ticks: int.positive().optional() }).strict(),
   ]),
 );
 /** data/scripts/*.json: a dialogue or cutscene. `skippable`: Esc jumps to the end (flags are still set). */
@@ -366,6 +369,26 @@ export const StrikeDef = z.object({
    * die. (The caster won't cast again while any of them live.)
    */
   summon: z.object({ kind: z.string(), count: int.positive(), radius: pos.default(40), shield: z.boolean().default(false) }).optional(),
+  /**
+   * Smoke instead of a swing: when the active frames start the attacker vanishes in a cloud and comes out
+   * `distance` px from its target (behind or beside it), barely visible for `ticks`, ready to strike.
+   */
+  vanish: z.object({ distance: pos, ticks: int.positive() }).optional(),
+  /**
+   * Spilled wax: when the active frames start, `count` slowing pools of `radius` px land within `spread` px
+   * of `at` (the attacker, or the target). Anyone wading one moves at `speedMult`. They set after `ticks`.
+   * Works on its own (damage 0: no hitbox) or alongside a swing.
+   */
+  pools: z
+    .object({
+      count: int.positive(),
+      radius: pos,
+      spread: num.min(0).default(0),
+      at: z.enum(['self', 'target']).default('self'),
+      ticks: int.positive(),
+      speedMult: num.min(0.05).max(1).default(0.5),
+    })
+    .optional(),
 });
 
 export const MoveDef = z.object({
@@ -415,6 +438,14 @@ export const EnemyDef = z.object({
           fallenLine: z.string(),
           igniteTicks: int.positive().default(70),
         })
+        .optional(),
+      /**
+       * A turn instead of a death: when this phase's health runs out it does not fall. It walks, untouchable,
+       * to `altar` (room tiles; it faces north there), performs `anim` for `ticks` while its arena flares,
+       * then `kind` takes its place with its own entrance. `line` is shown as a banner as the turn begins.
+       */
+      turn: z
+        .object({ kind: z.string(), altar: Vec2, anim: z.string().default('pour'), ticks: int.positive(), line: z.string().optional() })
         .optional(),
       /** On its final death the body crumbles away to dust instead of leaving a corpse. */
       dust: z.boolean().default(false),

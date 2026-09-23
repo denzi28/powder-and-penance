@@ -1,0 +1,204 @@
+{
+  "id": "chandler_wick",
+  "name": "The Chandler, Last Candle",
+  "ai": "boss",
+  "boss": {
+    "title": "The Chandler, Last Candle",
+    "introAnim": "intro",
+    "introTicks": 110,
+    "slams": [78],
+    "slamShake": 0.55,
+    "slamSfx": "explosion",
+    "introLine": "(The black flame on his head leans toward you, like something listening.)",
+    "roarSfx": "boss_roar",
+    "deathScript": "chandler_death"
+  },
+  "sprite": "chandler_wick",
+  "weaponSprite": "chandler_snuffer_lit",
+  "weaponRestDeg": 55,
+  "wader": true,
+  "hp": 850,
+  "poise": { "max": 240, "resetTicks": 240 },
+  "tallow": 6000,
+  "speed": 60,
+  "strafeSpeed": 38,
+  "accelTicks": 6,
+  "turnDegPerTick": 8,
+  "collider": { "w": 16, "h": 6 },
+  "hurtbox": { "w": 22, "h": 48, "offsetY": -24 },
+  "bodyRadius": 11,
+  "knockbackResist": 0.85,
+  "spacing": { "preferred": 60, "strafeTicks": [24, 60] },
+  "attackGapTicks": [6, 20],
+  "staggerTicks": 34,
+  "parriedTicks": 70,
+  "deathTicks": 120,
+  "corpseTicks": 999999,
+  "blood": "flame1",
+  "moves": [
+    {
+      "id": "last_rite",
+      "range": [0, 72],
+      "weight": 3,
+      "cooldown": 110,
+      "strikes": [
+        {
+          "damage": 24, "poise": 25,
+          "windup": 14, "active": 6, "recovery": 4,
+          "trackDegPerTick": 7,
+          "hyperArmor": 50,
+          "telegraph": { "tick": 4, "kind": "normal" },
+          "hitbox": { "shape": "arc", "radius": 64, "halfAngle": 100 },
+          "originY": -14,
+          "sweep": { "fromDeg": -120, "toDeg": 110 },
+          "knockback": 60, "hitstop": 3, "shake": 0.15, "sfx": "swing_heavy", "anim": "sweep"
+        },
+        {
+          "damage": 24, "poise": 25,
+          "windup": 10, "active": 6, "recovery": 4,
+          "trackDegPerTick": 7,
+          "hyperArmor": 50,
+          "hitbox": { "shape": "arc", "radius": 64, "halfAngle": 100 },
+          "originY": -14,
+          "sweep": { "fromDeg": 110, "toDeg": -120 },
+          "knockback": 60, "hitstop": 3, "shake": 0.15, "sfx": "swing_heavy", "anim": "sweep"
+        },
+        {
+          "damage": 20, "poise": 20,
+          "windup": 9, "active": 4, "recovery": 3,
+          "trackDegPerTick": 8,
+          "hyperArmor": 50,
+          "lunge": { "distance": 16, "startTick": 6, "ticks": 4 },
+          "hitbox": { "shape": "arc", "radius": 56, "halfAngle": 30 },
+          "originY": -14,
+          "sweep": { "fromDeg": 0, "toDeg": 0, "reach": 14 },
+          "knockback": 40, "hitstop": 3, "shake": 0.1, "sfx": "swing", "anim": "jab"
+        },
+        {
+          "damage": 20, "poise": 20,
+          "windup": 7, "active": 4, "recovery": 3,
+          "trackDegPerTick": 8,
+          "hyperArmor": 50,
+          "lunge": { "distance": 16, "startTick": 4, "ticks": 4 },
+          "hitbox": { "shape": "arc", "radius": 56, "halfAngle": 30 },
+          "originY": -14,
+          "sweep": { "fromDeg": 0, "toDeg": 0, "reach": 14 },
+          "knockback": 40, "hitstop": 3, "shake": 0.1, "sfx": "swing", "anim": "jab"
+        },
+        {
+          "damage": 44, "poise": 70,
+          "windup": 22, "active": 6, "recovery": 40,
+          "trackDegPerTick": 5,
+          "hyperArmor": 80,
+          "telegraph": { "tick": 6, "kind": "danger" },
+          "unblockable": true,
+          "hitbox": { "shape": "circle", "radius": 30, "offset": 36 },
+          "originY": -4,
+          "sweep": { "fromDeg": -160, "toDeg": 10, "reach": 8 },
+          "pools": { "count": 1, "radius": 22, "ticks": 600, "at": "target" },
+          "knockback": 200, "hitstop": 8, "shake": 0.5, "sfx": "bell_slam", "anim": "slam"
+        }
+      ]
+    },
+    {
+      "id": "leap_slam",
+      "range": [60, 170],
+      "weight": 2,
+      "cooldown": 150,
+      "strikes": [
+        {
+          "damage": 56, "poise": 90,
+          "windup": 32, "active": 6, "recovery": 4,
+          "trackDegPerTick": 5,
+          "hyperArmor": 100,
+          "unblockable": true,
+          "telegraph": { "tick": 10, "kind": "danger" },
+          "lunge": { "distance": 110, "startTick": 18, "ticks": 14 },
+          "hitbox": { "shape": "circle", "radius": 44, "offset": 8 },
+          "originY": -4,
+          "sweep": { "fromDeg": -160, "toDeg": 10 },
+          "pools": { "count": 1, "radius": 30, "ticks": 700 },
+          "knockback": 240, "hitstop": 10, "shake": 0.7, "sfx": "explosion", "anim": "leap"
+        },
+        {
+          "damage": 0, "poise": 0,
+          "windup": 0, "active": 2, "recovery": 40,
+          "hitbox": { "shape": "circle", "radius": 1, "offset": 0 },
+          "originY": -6,
+          "sweep": { "fromDeg": 10, "toDeg": 10 },
+          "sfx": "throw", "anim": "leap",
+          "projectile": {
+            "sprite": "black_flame",
+            "speed": 130, "range": 150,
+            "damage": 20, "poise": 20, "knockback": 60, "hitstop": 3, "shake": 0.1,
+            "radius": 4, "count": 10, "spreadDeg": 324
+          }
+        }
+      ]
+    },
+    {
+      "id": "flame_volley",
+      "range": [50, 260],
+      "weight": 3,
+      "cooldown": 100,
+      "strikes": [
+        {
+          "damage": 0, "poise": 0,
+          "windup": 20, "active": 4, "recovery": 26,
+          "trackDegPerTick": 6,
+          "telegraph": { "tick": 6, "kind": "normal" },
+          "hitbox": { "shape": "circle", "radius": 1, "offset": 0 },
+          "originY": -44,
+          "sweep": { "fromDeg": -40, "toDeg": 30 },
+          "sfx": "throw", "anim": "volley",
+          "projectile": {
+            "sprite": "black_flame",
+            "speed": 1, "range": 1,
+            "damage": 28, "poise": 30, "knockback": 120, "hitstop": 4, "shake": 0.2,
+            "radius": 4, "count": 7, "spreadDeg": 80,
+            "lob": { "flightTicks": 38, "arcHeight": 44, "blastRadius": 20, "sfx": "explosion" }
+          }
+        }
+      ]
+    },
+    {
+      "id": "wax_flood",
+      "range": [0, 400],
+      "weight": 2,
+      "cooldown": 420,
+      "strikes": [
+        {
+          "damage": 0, "poise": 0,
+          "windup": 34, "active": 4, "recovery": 26,
+          "trackDegPerTick": 2,
+          "hyperArmor": 120,
+          "telegraph": { "tick": 10, "kind": "normal" },
+          "hitbox": { "shape": "circle", "radius": 1, "offset": 0 },
+          "sweep": { "fromDeg": 60, "toDeg": 60 },
+          "pools": { "count": 5, "radius": 26, "spread": 80, "at": "target", "ticks": 720, "speedMult": 0.45 },
+          "sfx": "swing", "anim": "flood"
+        }
+      ]
+    },
+    {
+      "id": "snuffing_lunge",
+      "range": [70, 150],
+      "weight": 1,
+      "cooldown": 140,
+      "strikes": [
+        {
+          "damage": 36, "poise": 50,
+          "windup": 20, "active": 8, "recovery": 30,
+          "trackDegPerTick": 6,
+          "hyperArmor": 60,
+          "telegraph": { "tick": 6, "kind": "normal" },
+          "lunge": { "distance": 90, "startTick": 16, "ticks": 10 },
+          "hitbox": { "shape": "arc", "radius": 56, "halfAngle": 32 },
+          "originY": -14,
+          "sweep": { "fromDeg": 0, "toDeg": 0, "reach": 18 },
+          "knockback": 180, "hitstop": 6, "shake": 0.3, "sfx": "swing_heavy", "anim": "jab"
+        }
+      ]
+    }
+  ]
+}

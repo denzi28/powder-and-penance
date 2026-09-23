@@ -3203,9 +3203,32 @@ function drawPip(c: Img, { breath, mouth }: NpcPose) {
 }
 
 /** Head-and-shoulders portraits for the dialogue box, drawn at double detail. */
-function drawPortrait(c: Img, who: 'oskar' | 'maudlin' | 'pip' | 'tollwarden' | 'matron') {
+function drawPortrait(c: Img, who: 'oskar' | 'maudlin' | 'pip' | 'tollwarden' | 'matron' | 'chandler') {
   c.rect(0, 0, 32, 32, P.dark1);
-  if (who === 'matron') {
+  if (who === 'chandler') {
+    c.rect(3, 24, 26, 8, P.wax2); // chasuble
+    c.hline(3, 24, 26, P.flame1);
+    c.rect(14, 24, 4, 8, P.flame1); // the gold orphrey
+    c.vline(15, 24, 8, P.flame2);
+    c.rect(9, 21, 14, 4, P.blood2); // red stole at the collar
+    c.rect(10, 7, 12, 15, P.stone4); // a long grey face
+    c.hline(11, 21, 10, P.stone3);
+    c.vline(10, 9, 12, P.stone3); // hollow cheeks
+    c.vline(21, 9, 12, P.stone3);
+    c.hline(11, 11, 4, P.dark2); // deep-set, tired eyes
+    c.hline(17, 11, 4, P.dark2);
+    c.set(13, 12, P.ink);
+    c.set(18, 12, P.ink);
+    c.rect(15, 13, 2, 3, P.stone3); // nose
+    c.hline(14, 18, 4, P.dark2); // a thin mouth
+    c.vline(12, 6, 4, P.wax1); // wax running from the crown
+    c.hline(9, 5, 14, P.flame1); // crown band
+    c.set(16, 5, P.blood2);
+    for (const x of [10, 13, 16, 19, 22]) {
+      c.vline(x, 1, 4, P.wax2); // lit tapers
+      c.set(x, 0, P.flame2);
+    }
+  } else if (who === 'matron') {
     c.rect(4, 24, 24, 8, P.teal1); // sodden habit
     c.rect(9, 22, 14, 4, P.stone3); // collar
     c.rect(6, 2, 20, 23, P.stone1); // veil
@@ -3293,7 +3316,7 @@ function genNpcs() {
     });
     sheet(`npc_${name}`, img, { cell: [32, 32], pivot: [16, 28], layer: 'single' });
   }
-  const who = ['oskar', 'maudlin', 'pip', 'tollwarden', 'matron'] as const;
+  const who = ['oskar', 'maudlin', 'pip', 'tollwarden', 'matron', 'chandler'] as const;
   const portraits = new Img(32 * who.length, 32);
   who.forEach((w, i) => {
     const c = new Img(32, 32);
@@ -3662,6 +3685,479 @@ function genRoadDecor() {
   sheet('decor_road', img, { cell: [W, H], pivot: [32, B], layer: 'single' });
 }
 
+// =============================================================== THE NAVE: THE CHANDLER
+// --- The Chandler (64x64): head of the Abbey. Tall and gaunt in heavy cream-and-red vestments with gold
+// trim, a crown of lit tapers like a halo, a thin grey face with tired eyes. His weapon is a great
+// candle-snuffer on an iron staff.
+const CHANDLER_HAND: Record<Dir5, [number, number]> = { S: [42, 39], SE: [41, 38], E: [37, 38], NE: [40, 36], N: [40, 36] };
+
+/** kneel 0..1; reach: both hands forward and up (pouring); lift: the free hand up to the crown (plucking a taper); smoke: censer cloud; drip: wax running off him. */
+type PriestPose = BodyPose & { kneel?: number; reach?: number; lift?: number; smoke?: number; drip?: number };
+
+function drawChandler(c: Img, dir: Dir5, pose: PriestPose) {
+  const o = { bob: 0, lean: 0, hunch: 0, step: -1, flinch: false, sway: 0, kneel: 0, reach: 0, lift: 0, smoke: 0, drip: 0, ...pose };
+  const b = o.bob + Math.round(o.kneel * 9);
+  const { lx, ly, sh } = leanOffsets(dir, o.lean);
+  const back = dir === 'N' || dir === 'NE';
+  const cx = 32 + sh;
+  const top = 21 + b; // shoulders
+  const hem = 57;
+  // Red under-robe: a long bell to the floor, pooled wide when he kneels; the hem swings as he walks.
+  for (let y = top; y <= hem; y++) {
+    const k = (y - top) / Math.max(1, hem - top);
+    const half = Math.round(5 + k * (7 + o.kneel * 5));
+    const swing = y > hem - 6 && o.step >= 0 ? (o.step % 2 ? 1 : -1) : 0;
+    c.hline(cx - half + swing, y, half * 2 + 1, y >= hem - 1 ? P.flame1 : P.blood1);
+  }
+  // Cream chasuble over it, to the knees, edged in gold
+  const chasBot = Math.min(hem - 5, top + 25);
+  for (let y = top; y <= chasBot; y++) {
+    const k = (y - top) / Math.max(1, chasBot - top);
+    const half = Math.round(6 + k * 4);
+    c.hline(cx - half, y, half * 2 + 1, P.wax2);
+    c.set(cx - half, y, P.flame1);
+    c.set(cx + half, y, P.flame1);
+  }
+  c.hline(cx - 10, chasBot, 21, P.flame1);
+  // The orphrey: a gold band down the front, a gold cross on the back
+  if (!back) {
+    c.vline(cx - 1, top, chasBot - top, P.flame1);
+    c.vline(cx, top, chasBot - top, P.flame2);
+    c.vline(cx + 1, top, chasBot - top, P.flame1);
+  } else {
+    c.vline(cx, top + 2, 18, P.flame1);
+    c.hline(cx - 4, top + 7, 9, P.flame1);
+  }
+  // Wax stains running down under the gold: the Drip had him all along
+  for (const [x, y, l] of [[-5, 10, 5], [4, 14, 4], [-3, 20, 3]]) c.vline(cx + x, top + y, l + o.drip, P.wax1);
+  // Stiff red stole at the collar
+  c.hline(cx - 5, top, 11, P.blood2);
+  c.hline(cx - 4, top - 1, 9, P.blood2);
+
+  // Arms: heavy cream sleeves, red cuffs, grey hands. The right hand holds the staff (CHANDLER_HAND).
+  const [rx0, ry0] = CHANDLER_HAND[dir];
+  const rHand: [number, number] = o.reach > 0 ? [cx + 5, Math.round(top + 10 - o.reach * 7)] : [rx0 + sh, ry0 + b];
+  const lHand: [number, number] =
+    o.reach > 0 ? [cx - 5, Math.round(top + 10 - o.reach * 7)] : o.lift > 0 ? [cx - 6, Math.round(top - 3 - o.lift * 5)] : [cx - 10 + o.sway, top + 17];
+  for (const [side, hand] of [[1, rHand], [-1, lHand]] as const) {
+    // red alb sleeves under the chasuble, a gold cuff
+    for (let t = -1; t <= 1; t++) line(c, cx + side * 7 + t, top + 1, hand[0] + t, hand[1] - 2, t === side ? P.blood2 : P.blood1);
+    c.hline(hand[0] - 1, hand[1] - 2, 3, P.flame1);
+    c.rect(hand[0] - 1, hand[1] - 1, 3, 3, P.stone4);
+  }
+  if (o.drip > 0) for (const h of [rHand, lHand]) c.vline(h[0], h[1] + 2, o.drip * 3, P.wax1); // pouring himself out
+
+  // Head: long, thin and grey
+  const hx = 32 + lx + (o.flinch ? -2 : 0);
+  const hy = 12 + b + o.hunch + ly;
+  c.ellipse(hx, hy + 1, 4, 5.5, back ? P.stone2 : P.stone4);
+  if (!back) {
+    const fx = dir === 'S' ? hx : dir === 'SE' ? hx + 1 : hx + 2;
+    c.hline(fx - 3, hy, 2, P.dark2); // deep-set eyes
+    c.hline(fx + 1, hy, 2, P.dark2);
+    c.set(fx - 2, hy + 1, o.flinch ? P.ember : P.ink);
+    c.set(fx + 2, hy + 1, o.flinch ? P.ember : P.ink);
+    c.vline(fx - 3, hy + 2, 3, P.stone3); // hollow cheeks
+    c.vline(fx + 3, hy + 2, 3, P.stone3);
+    c.hline(fx - 1, hy + 4, 3, P.dark2); // a thin mouth
+  }
+  // Crown of lit tapers on a gold band, like a halo
+  const cy = hy - 4;
+  c.hline(hx - 4, cy, 9, P.flame1);
+  if (!back) c.set(hx, cy, P.blood2);
+  (back ? [-3, -1, 1, 3] : [-4, -2, 0, 2, 4]).forEach((dx, i) => {
+    if (o.lift > 1.2 && dx === -2) return; // plucked, to throw
+    const h = 3 + (i % 2) + (dx === 0 ? 1 : 0);
+    c.vline(hx + dx, cy - h, h, P.wax2);
+    c.set(hx + dx, cy - h - 1, P.flame2);
+    if (!o.flinch) c.set(hx + dx, cy - h - 2, P.flame1);
+  });
+  // Censer smoke curling around him
+  if (o.smoke > 0) {
+    const r = rng(900 + Math.round(o.smoke * 10));
+    for (let i = 0; i < 90 * o.smoke; i++) {
+      const a = r() * Math.PI * 2;
+      const d = 8 + r() * 16;
+      c.set(32 + Math.cos(a) * d, 46 + Math.sin(a) * d * 0.6 - r() * 16, r() < 0.5 ? P.stone3 : P.stone4);
+    }
+  }
+}
+
+function chandlerDeath(c: Img, f: number) {
+  // (He never falls here: his turn takes him to the altar. Kept for completeness: he sinks to his knees.)
+  drawChandler(c, 'S', { kneel: Math.min(1, f / 2), hunch: f, flinch: f < 2 });
+}
+
+// --- The Chandler, Last Candle (64x64): he poured himself onto the altar and got up as a candle. A column of
+// melting wax, half flame, rags of burnt vestment at the hips, a melted face with one ember eye, and one
+// wick rising from his head that burns with a black flame.
+const CANDLE_HAND: Record<Dir5, [number, number]> = { S: [43, 44], SE: [42, 43], E: [38, 43], NE: [41, 41], N: [41, 41] };
+
+type CandlePose = BodyPose & { rise?: number; spread?: number; flare?: number; melt?: number; out?: boolean };
+
+/** A teardrop of darkness with a pale rim: a flame that burns and gives no light. `base` = y of its root. */
+function blackFlame(c: Img, x: number, base: number, size: number, sway: number) {
+  const h = Math.max(4, Math.min(base - 1, Math.round(5 + size * 3))); // never taller than the cell allows
+  for (let i = 0; i < h; i++) {
+    const k = i / Math.max(1, h - 1); // 0 at the tip, 1 at the root
+    const half = Math.round(Math.sin(k * Math.PI * 0.85) * (1.2 + size * 1.3));
+    const xo = Math.round(sway * (1 - k));
+    const y = base - h + i;
+    c.hline(x - half + xo, y, half * 2 + 1, i % 3 === 1 ? P.dark1 : P.ink);
+    c.set(x - half + xo - 1, y, P.stone3);
+    c.set(x + half + xo + 1, y, P.stone3);
+  }
+  c.set(x + Math.round(sway), base - h - 1, P.stone4);
+}
+
+function drawCandleMan(c: Img, dir: Dir5, pose: CandlePose) {
+  const o = { bob: 0, lean: 0, hunch: 0, step: -1, flinch: false, sway: 0, rise: 0, spread: 0, flare: 1, melt: 0, out: false, ...pose };
+  const b = o.bob + o.rise;
+  const { lx, ly, sh } = leanOffsets(dir, o.lean);
+  const back = dir === 'N' || dir === 'NE';
+  const cx = 32 + sh;
+  // His own wax, pooling where he stands
+  c.ellipse(32, 57, 12 + o.melt * 4, 3 + o.melt * 0.5, P.wax1);
+  c.ellipse(28, 56.5, 5, 1.2, P.wax2);
+  // The column of his body: wax, lit from inside (shorter than he was: he has been melting)
+  const top = 28 + b;
+  for (let y = top; y <= 56; y++) {
+    const k = (y - top) / Math.max(1, 56 - top);
+    const half = Math.round(7 + k * 3 + (y > 50 ? (y - 50) * 0.6 : 0));
+    c.hline(cx - half, y, half * 2 + 1, P.wax1);
+    c.set(cx - half + 1, y, P.wax2);
+    if (!back && (y - top) % 5 === 2) c.set(cx + 2, y, P.flame1); // the glow through the wax
+  }
+  for (const [x, y, l] of [[-8, 8, 4], [7, 12, 5], [-5, 18, 3], [9, 20, 4]]) if (top + y < 56) c.vline(cx + x, top + y, l, P.wax2); // drips
+  // Rags of burnt vestment at the hips
+  const rag = rng(77);
+  for (let x = -9; x <= 9; x++) if (top + 14 < 56) c.vline(cx + x, top + 14, Math.min(3 + Math.floor(rag() * 5), 56 - top - 14), x % 3 === 0 ? P.blood1 : P.dark2);
+  // Fire licking up one flank, and cracks glowing through the wax
+  const fl = rng(31 + (o.sway + 3) * 7 + o.bob * 3);
+  for (let i = 0; i < 7; i++) {
+    const y = top + 6 + Math.floor(fl() * 24);
+    if (y > 55) continue;
+    const x = cx + 7 + Math.floor(fl() * 3);
+    const h = 2 + Math.floor(fl() * 3);
+    c.vline(x, y - h, h, P.flame1);
+    c.set(x, y - h, P.flame2);
+    c.set(x + 1, y - 1, P.ember);
+  }
+  if (!back)
+    for (const [x0, y0, x1, y1] of [[-3, 5, 1, 9], [1, 9, -1, 13], [3, 17, 5, 22]]) if (top + y1 < 55) line(c, cx + x0, top + y0, cx + x1, top + y1, P.ember);
+  // Arms of wax (spread = raised wide). The right hand holds the snuffer (CANDLE_HAND) unless spread.
+  const armY = top + 2;
+  for (const side of [-1, 1]) {
+    const held = side === 1 && !o.spread;
+    const hx2 = held ? CANDLE_HAND[dir][0] + sh : Math.round(cx + side * (11 + o.spread * 5));
+    const hy2 = Math.min(53, held ? CANDLE_HAND[dir][1] + b : Math.round(armY + 15 - o.spread * 12)); // sunk in: arms stay above the pool
+    if (armY > 52) continue;
+    for (let t = 0; t <= 1; t++) line(c, cx + side * 7, armY + t, hx2, hy2 + t, P.wax1);
+    c.rect(hx2 - 1, hy2 - 1, 3, 3, P.wax2);
+    c.vline(hx2, hy2 + 2, 2 + (o.spread ? 2 : 0), P.wax1);
+  }
+  // Head: melted to one side, one ember eye left
+  const hx = 32 + lx + (o.flinch ? -2 : 0);
+  const hy = 18 + b + o.hunch + ly;
+  c.ellipse(hx, hy + 2, 5, 6, P.wax1);
+  c.ellipse(hx + 2, hy + 7, 3, 2, P.wax1);
+  if (!back) {
+    const fx = dir === 'S' ? hx : dir === 'SE' ? hx + 1 : hx + 2;
+    c.rect(fx - 3, hy + 1, 2, 2, P.ink);
+    c.set(fx - 3, hy + 1, o.flinch ? P.wax2 : P.flame2);
+    c.hline(fx + 1, hy + 2, 2, P.wax2); // the other eye, melted shut
+    c.hline(fx - 1, hy + 5, 3, o.flinch ? P.ember : P.dark2);
+  }
+  // The wick, and its black flame
+  c.vline(hx, hy - 6, 3, P.ink);
+  if (!o.out) blackFlame(c, hx, hy - 6, o.flare, o.sway);
+  // Rising out of the altar fire: flames around what hasn't come up yet
+  if (o.rise > 0 && o.melt === 0) {
+    const r = rng(600 + o.rise);
+    for (let i = 0; i < 16; i++) {
+      const x = 20 + Math.floor(r() * 25);
+      const h = 3 + Math.floor(r() * 8);
+      c.vline(x, 57 - h, h, i % 3 ? P.flame1 : P.ember);
+      c.set(x, 57 - h, P.flame2);
+    }
+  }
+}
+
+function candleDeath(c: Img, f: number) {
+  // He melts down into his own pool; the black flame shrinks and goes out.
+  const poses: CandlePose[] = [
+    { flinch: true, hunch: 2, flare: 1.5 },
+    { rise: 7, melt: 1, flare: 0.6, flinch: true },
+    { rise: 15, melt: 2, flare: 0 },
+    { rise: 24, melt: 3, out: true },
+    { rise: 32, melt: 4, out: true },
+  ];
+  drawCandleMan(c, 'S', poses[f]);
+}
+
+function drawSnuffer(img: Img, lit: boolean) {
+  // Iron staff, brass pommel and collar, and the snuffer's bell at the end (mouth toward the tip)
+  img.hline(2, 8, 44, P.dark2);
+  img.hline(2, 7, 44, P.steel1);
+  img.rect(0, 6, 3, 4, P.flame1);
+  img.rect(44, 6, 3, 4, P.flame1);
+  for (let x = 47; x <= 58; x++) {
+    const half = Math.round(1 + (x - 47) * 0.45);
+    img.vline(x, 8 - half, half * 2 + 1, x > 55 ? P.steel2 : P.steel1);
+    img.set(x, 8 - half, P.steel2);
+  }
+  img.vline(59, 3, 11, P.dark1); // the dark mouth of the bell
+  if (lit) {
+    // black flames lick out of the bell and along the staff; embers in the iron
+    for (const [x, s] of [[50, 0.2], [54, 0.5], [58, 0.8]] as const) blackFlame(img, x, 6 - Math.round((x - 47) * 0.45), s, 1);
+    for (const x of [12, 22, 31, 39]) img.set(x, 7, P.ember);
+  }
+  img.outline(P.ink);
+}
+
+function genNave() {
+  const P7 = phased7();
+  const frames = <T,>(draw: (c: Img, d: Dir5, p: T) => void, poses: T[]) => poses.map(p => (c: Img, d: Dir5) => draw(c, d, p));
+  const walk4 = <T,>(draw: (c: Img, d: Dir5, p: T) => void, mk: (f: number) => T) => [0, 1, 2, 3].map(f => (c: Img, d: Dir5) => draw(c, d, mk(f)));
+
+  rosterSheet(
+    'chandler',
+    64,
+    [32, 58],
+    7,
+    [
+      { name: 'idle', frames: frames(drawChandler, [{}, { bob: 1 }]), timing: [{ ticks: 26 }, { ticks: 26 }], loop: true },
+      { name: 'walk', frames: walk4(drawChandler, f => ({ step: f, bob: f % 2 ? 1 : 0, sway: f === 1 ? 1 : f === 3 ? -1 : 0 })), timing: walkT(11), loop: true },
+      {
+        name: 'sweep',
+        frames: frames(drawChandler, [{ lean: -1 }, { lean: -2, sway: -1 }, { lean: -2, sway: -1, bob: 1 }, { lean: 3 }, { lean: 2 }, { lean: 1 }, {}]),
+        timing: P7,
+        loop: false,
+      },
+      {
+        // Extinguish: the bell raised high, then brought down over you
+        name: 'slam',
+        frames: frames(drawChandler, [{ hunch: -1, bob: -1 }, { hunch: -2, bob: -2 }, { hunch: -2, bob: -2 }, { hunch: 2, bob: 2, lean: 3 }, { hunch: 2, bob: 3, lean: 3 }, { bob: 1, lean: 1 }, {}]),
+        timing: P7,
+        loop: false,
+      },
+      {
+        name: 'jab',
+        frames: frames(drawChandler, [{ lean: -1 }, { lean: -2 }, { lean: -2, hunch: 1 }, { lean: 4 }, { lean: 3 }, { lean: 1 }, {}]),
+        timing: P7,
+        loop: false,
+      },
+      {
+        // Taper volley: plucks candles from his crown and flicks them
+        name: 'flick',
+        frames: frames(drawChandler, [{ lift: 0.5 }, { lift: 1 }, { lift: 1.6 }, { lift: 0.4, lean: 2 }, { lean: 2 }, { lean: 1 }, {}]),
+        timing: P7,
+        loop: false,
+      },
+      {
+        // Censer smoke: the cloud swallows him
+        name: 'censer',
+        frames: frames(drawChandler, [{ smoke: 0.3, sway: 1 }, { smoke: 0.6 }, { smoke: 1, bob: 1 }, { smoke: 1.4, bob: 2 }, { smoke: 1.6, bob: 2 }, { smoke: 1 }, { smoke: 0.4 }]),
+        timing: P7,
+        loop: false,
+      },
+      {
+        // The entrance: kneeling at the altar, he finishes his prayer and rises
+        name: 'intro',
+        frames: frames(drawChandler, [{ kneel: 1 }, { kneel: 1, hunch: 1 }, { kneel: 0.6 }, { kneel: 0.2 }, {}, { hunch: -1 }]),
+        timing: [{ ticks: 30 }, { ticks: 30 }, { ticks: 20 }, { ticks: 20 }, { ticks: 20 }, { ticks: 40 }],
+        loop: false,
+      },
+      {
+        // His turn: hands over the altar fire, pouring out the wax he is made of
+        name: 'pour',
+        frames: frames(drawChandler, [{ reach: 1.5, drip: 1 }, { reach: 1.6, drip: 2, bob: 1 }, { reach: 1.5, drip: 3 }, { reach: 1.4, drip: 2, bob: 1 }]),
+        timing: [{ ticks: 12 }, { ticks: 12 }, { ticks: 12 }, { ticks: 12 }],
+        loop: true,
+      },
+      { name: 'stagger', frames: frames(drawChandler, [{ lean: -2, flinch: true }, { lean: -1, bob: 1, flinch: true }, { bob: 1 }]), timing: staggerT, loop: false },
+    ],
+    [0, 1, 2, 3, 4].map(f => (c: Img) => chandlerDeath(c, f)),
+    CHANDLER_HAND,
+  );
+
+  rosterSheet(
+    'chandler_wick',
+    64,
+    [32, 58],
+    7,
+    [
+      { name: 'idle', frames: frames(drawCandleMan, [{ flare: 1 }, { flare: 1.4, bob: 1, sway: 1 }]), timing: [{ ticks: 10 }, { ticks: 10 }], loop: true },
+      {
+        name: 'walk',
+        frames: walk4(drawCandleMan, f => ({ step: f, bob: f % 2 ? -1 : 0, lean: 1, sway: f === 1 ? 1 : f === 3 ? -1 : 0, flare: 1 + (f % 2) * 0.4 })),
+        timing: walkT(7),
+        loop: true,
+      },
+      {
+        name: 'sweep',
+        frames: frames(drawCandleMan, [{ sway: -2, lean: -2 }, { sway: -3, lean: -3 }, { sway: -3, lean: -3, bob: 1 }, { sway: 3, lean: 4, flare: 1.6 }, { sway: 2, lean: 3 }, { sway: 1, lean: 1 }, {}]),
+        timing: P7,
+        loop: false,
+      },
+      {
+        name: 'jab',
+        frames: frames(drawCandleMan, [{ lean: -1 }, { lean: -3, hunch: 1 }, { lean: -3, hunch: 1 }, { lean: 5, sway: -2 }, { lean: 4 }, { lean: 2 }, {}]),
+        timing: P7,
+        loop: false,
+      },
+      {
+        name: 'slam',
+        frames: frames(drawCandleMan, [{ hunch: -1, bob: -2 }, { hunch: -2, bob: -3, flare: 2 }, { hunch: -2, bob: -3, flare: 2 }, { hunch: 2, bob: 2, lean: 3 }, { hunch: 2, bob: 3, lean: 3 }, { bob: 1 }, {}]),
+        timing: P7,
+        loop: false,
+      },
+      {
+        name: 'leap',
+        frames: frames(drawCandleMan, [{ bob: 3, hunch: 2 }, { bob: 4, hunch: 3 }, { bob: -7, hunch: -2, flare: 2.5 }, { bob: 4, hunch: 3, lean: 3 }, { bob: 3, hunch: 2, lean: 2 }, { bob: 1 }, {}]),
+        timing: P7,
+        loop: false,
+      },
+      {
+        // Flame volley: the black flame on his head swells and flings burning wax
+        name: 'volley',
+        frames: frames(drawCandleMan, [{ flare: 1.5 }, { flare: 2, hunch: -1 }, { flare: 2.6, hunch: -2, bob: -1 }, { flare: 1, lean: 3, sway: 2 }, { flare: 1.2, lean: 2 }, { lean: 1 }, {}]),
+        timing: P7,
+        loop: false,
+      },
+      {
+        // Wax flood: arms thrown wide, his wax running out across the floor
+        name: 'flood',
+        frames: frames(drawCandleMan, [{ spread: 0.5 }, { spread: 1 }, { spread: 1.5, bob: -1 }, { spread: 2, bob: -2, melt: 1, flare: 2 }, { spread: 2, melt: 1, flare: 2 }, { spread: 1, melt: 1 }, {}]),
+        timing: P7,
+        loop: false,
+      },
+      {
+        // Rising out of the altar fire, arms opening
+        name: 'intro',
+        frames: frames(drawCandleMan, [{ rise: 26, flare: 2.5 }, { rise: 18, flare: 2.5 }, { rise: 10, flare: 2 }, { rise: 4, flare: 2 }, { spread: 1.5, flare: 3 }, { spread: 1, flare: 2 }]),
+        timing: [{ ticks: 16 }, { ticks: 16 }, { ticks: 16 }, { ticks: 16 }, { ticks: 26 }, { ticks: 20 }],
+        loop: false,
+      },
+      { name: 'stagger', frames: frames(drawCandleMan, [{ lean: -2, flinch: true }, { lean: -1, bob: 1, flinch: true }, { bob: 1 }]), timing: staggerT, loop: false },
+    ],
+    [0, 1, 2, 3, 4].map(f => (c: Img) => candleDeath(c, f)),
+    CANDLE_HAND,
+  );
+
+  // ---- weapons and projectiles
+  for (const lit of [false, true]) {
+    const s = new Img(64, 16);
+    drawSnuffer(s, lit);
+    sheet(lit ? 'chandler_snuffer_lit' : 'chandler_snuffer', s, { cell: [64, 16], pivot: [8, 8], layer: 'weapon', points: { tip: [58, 8] } });
+  }
+  const taper = new Img(12, 6);
+  taper.rect(1, 2, 7, 2, P.wax2); // a lit taper, flying flame-first
+  taper.hline(1, 3, 7, P.wax1);
+  taper.set(8, 2, P.ink);
+  taper.rect(9, 2, 2, 2, P.flame2);
+  taper.set(11, 2, P.flame1);
+  taper.outline(P.ink);
+  sheet('taper_shot', taper, { cell: [12, 6], pivot: [6, 3], layer: 'fx' });
+  const bf = new Img(8, 10);
+  blackFlame(bf, 4, 9, 0.4, 0);
+  bf.outline(P.ink);
+  sheet('black_flame', bf, { cell: [8, 10], pivot: [4, 6], layer: 'fx' });
+
+  // ---- Nave decor (64x64, pivot 32,62)
+  const W = 64;
+  const H = 64;
+  const B = 62;
+  const cell = () => new Img(W, H);
+  const deco: Img[] = [];
+  // 0: the great altar (three tiles), its fire burning high in a black iron bowl
+  {
+    const c = cell();
+    c.rect(9, B - 14, 46, 14, P.stone2); // the block
+    c.hline(9, B - 1, 46, P.stone1);
+    for (const x of [15, 27, 37, 49]) c.vline(x, B - 12, 10, P.stone1); // panels
+    c.rect(8, B - 17, 48, 4, P.stone3); // top slab
+    c.rect(22, B - 17, 20, 12, P.blood1); // altar cloth
+    c.hline(22, B - 6, 20, P.flame1);
+    c.vline(22, B - 17, 12, P.flame1);
+    c.vline(41, B - 17, 12, P.flame1);
+    for (const [x, l] of [[12, 6], [19, 9], [45, 7], [52, 5]]) c.vline(x, B - 14, l, P.wax1); // wax running down the front
+    c.ellipse(32, B - 19, 8, 3, P.dark2); // the fire bowl
+    c.hline(25, B - 18, 15, P.steel1);
+    const r = rng(4242);
+    for (let i = 0; i < 26; i++) {
+      const x = 26 + Math.floor(r() * 13);
+      const h = 4 + Math.floor(r() * (14 - Math.abs(x - 32) * 1.4));
+      c.vline(x, B - 20 - h, h, i % 3 ? P.flame1 : P.flame2);
+      c.set(x, B - 21 - h, P.flame2);
+    }
+    c.vline(32, B - 40, 8, P.flame2);
+    for (const x of [12, 52]) {
+      c.rect(x - 1, B - 22, 3, 5, P.wax2); // altar candles
+      c.set(x, B - 23, P.flame2);
+    }
+    c.outline(P.ink);
+    deco.push(c);
+  }
+  // 1: candelabrum, tall iron, three candles
+  {
+    const c = cell();
+    c.vline(32, B - 30, 30, P.dark2);
+    c.vline(31, B - 30, 30, P.steel1);
+    c.hline(27, B - 1, 10, P.dark2); // feet
+    c.hline(28, B - 2, 8, P.steel1);
+    line(c, 26, B - 26, 38, B - 26, P.steel1); // the arms
+    line(c, 26, B - 26, 26, B - 30, P.steel1);
+    line(c, 38, B - 26, 38, B - 30, P.steel1);
+    for (const [x, y] of [[26, 31], [32, 34], [38, 31]]) {
+      c.rect(x - 1, B - y - 4, 2, 4, P.wax2);
+      c.set(x - 1, B - y - 5, P.flame2);
+      c.set(x - 1, B - y - 6, P.flame1);
+      c.vline(x + 1, B - y + 1, 3, P.wax1); // drips
+    }
+    c.outline(P.ink);
+    deco.push(c);
+  }
+  // 2, 3: a pew (anchor and west tile), whole or broken
+  for (const broken of [false, true]) {
+    const c = cell();
+    const x0 = 9;
+    const w = 31;
+    if (!broken) {
+      c.rect(x0, B - 16, w, 3, P.wood1); // backrest
+      c.hline(x0, B - 16, w, P.wood2);
+      c.rect(x0, B - 10, w, 4, P.wood2); // seat
+      c.hline(x0, B - 7, w, P.wood1);
+      for (const x of [x0, x0 + w - 2]) c.rect(x, B - 16, 2, 16, P.wood1); // ends
+      c.rect(x0 + 13, B - 6, 2, 6, P.wood1);
+    } else {
+      line(c, x0, B - 14, x0 + 14, B - 10, P.wood1); // snapped backrest
+      line(c, x0 + 17, B - 12, x0 + w, B - 17, P.wood1);
+      c.rect(x0, B - 8, 12, 3, P.wood2);
+      c.rect(x0 + 18, B - 9, w - 18, 3, P.wood2);
+      for (const x of [x0, x0 + w - 2]) c.rect(x, B - 12, 2, 12, P.wood1);
+      for (const [x, y] of [[x0 + 14, 2], [x0 + 16, 4], [x0 + 12, 1]]) c.rect(x, B - y, 2, 1, P.wood2); // splinters
+    }
+    c.outline(P.ink);
+    deco.push(c);
+  }
+  // 4: the lift gate in the wall: a dark shaft behind iron bars, a chain going up
+  {
+    const c = cell();
+    c.rect(24, B - 30, 17, 30, P.ink);
+    c.rect(24, B - 32, 17, 2, P.steel1);
+    for (let x = 25; x <= 39; x += 3) c.vline(x, B - 30, 30, P.steel1);
+    c.hline(24, B - 16, 17, P.steel1);
+    c.vline(32, B - 44, 12, P.dark2); // the chain
+    for (let y = B - 44; y < B - 32; y += 2) c.set(32, y, P.steel2);
+    c.outline(P.ink);
+    deco.push(c);
+  }
+  const img = new Img(W * deco.length, H);
+  deco.forEach((f, i) => img.blit(f, i * W, 0));
+  sheet('decor_nave', img, { cell: [W, H], pivot: [32, B], layer: 'single' });
+}
+
 // ---------------------------------------------------------------- font (original 5x7, ASCII 32..126, 16 per row)
 const GLYPHS: Record<string, string> = {
   ' ': '.....|.....|.....|.....|.....|.....|.....',
@@ -3766,5 +4262,6 @@ genNpcs();
 genTollwarden();
 genWorks();
 genMire();
+genNave();
 genFont();
 console.log(`gen-art: wrote ${written} file(s), skipped ${skipped} existing${skipped && !FORCE ? ' (use --force to overwrite)' : ''}`);

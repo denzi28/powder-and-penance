@@ -6,7 +6,8 @@
 // rhythm: stands, faces the player and repeats its first move every rhythmIntervalTicks (parry practice).
 // dummy:  does nothing; can be staggered and backstabbed.
 // boss:   dormant until its arena wakes it -> intro (entrance, player keeps control) -> the fighter's combat
-//         states, without searching, leashing or giving up.
+//         states, without searching, leashing or giving up. A boss with a `turn` goes to `turn` instead of
+//         dying: it walks to its altar and performs until its arena swaps in the next phase.
 import { DATA } from '../data/config';
 import { DEG } from '../core/math';
 import type { State } from '../actors/StateMachine';
@@ -379,8 +380,43 @@ const channel: State<Enemy> = {
   },
 };
 
+/**
+ * A boss whose health ran out, making its turn (boss.turn): untouchable, it walks to its altar, faces it and
+ * performs (turn.anim) for turn.ticks. Then `turned` is set and its arena swaps in the next phase.
+ */
+const turn: State<Enemy> = {
+  enter(e) {
+    e.vx = e.vy = 0;
+    e.runner = null;
+    e.bubble = false;
+    e.veiled = 0;
+    e.alpha = 1;
+    e.turnT = -1;
+    e.ctx.tokens.release(e);
+    e.anim.play('stagger', { restart: true });
+  },
+  tick(e, t) {
+    const tr = e.def.boss!.turn!;
+    if (e.turnT < 0) {
+      if (t < 30) return e.steer(0, 0); // reels from the last blow first
+      const spot = e.altarSpot();
+      // Strides there with purpose; if something keeps it from arriving, it performs where it stands.
+      if (Math.hypot(spot.x - e.x, spot.y - e.y) > 4 && t < 600) {
+        e.turnTo(e.navigateTo(spot.x, spot.y, Math.max(e.def.speed * 1.6, 40)));
+        return;
+      }
+      e.steer(0, 0);
+      e.turnT = 0;
+      e.anim.play(e.anim.has(tr.anim) ? tr.anim : 'idle', { restart: true });
+    }
+    e.steer(0, 0);
+    e.turnTo(-Math.PI / 2, 12); // to the altar
+    if (++e.turnT >= tr.ticks) e.turned = true;
+  },
+};
+
 const FIGHTER = { idle, suspicious, notice, approach, strafe, attack, stagger, parried, guardBroken, critVictim, return: ret, dead, channel, submerged, rise };
-const BOSS = { idle: dormant, intro, approach, strafe, attack, stagger, parried, guardBroken, critVictim, dead, channel };
+const BOSS = { idle: dormant, intro, approach, strafe, attack, stagger, parried, guardBroken, critVictim, dead, channel, turn };
 
 export const BRAINS: Record<'melee' | 'ranged' | 'dummy' | 'rhythm' | 'boss', Record<string, State<Enemy>>> = {
   // Ranged differs only through data: spacing.retreatBelow and moves whose strikes throw projectiles.

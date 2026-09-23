@@ -8,7 +8,7 @@ import type { SpriteLib } from '../anim/SpriteLib';
 import type { Enemy } from './Enemy';
 
 /** Animations that need both hands free: the held weapon is laid on the floor meanwhile. */
-const SET_DOWN_ANIMS: ReadonlySet<string> = new Set(['summon', 'channel']);
+const SET_DOWN_ANIMS: ReadonlySet<string> = new Set(['summon', 'channel', 'pour', 'flood']);
 
 export class EnemyView {
   private shadow: Phaser.GameObjects.Sprite;

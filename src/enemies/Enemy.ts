@@ -64,6 +64,20 @@ export class Enemy extends Actor {
   summons: Enemy[] = [];
   /** Sitting in a summoning bubble: invulnerable until every summon is dead. */
   bubble = false;
+  /** Ticks left half-seen in its own smoke (strike.vanish). */
+  veiled = 0;
+  /** Boss turning into its next phase (boss.turn): ticks spent performing at the altar (-1 = still walking there). */
+  turnT = -1;
+  /** The turn is complete: the arena swaps in the next phase. */
+  turned = false;
+
+  /** Where a turning boss stands to perform (boss.turn.altar, in its room). */
+  altarSpot(): { x: number; y: number } {
+    const t = this.def.boss?.turn;
+    const r = this.room ? DATA.rooms[this.room] : null;
+    if (!t || !r) return { x: this.x, y: this.y };
+    return { x: (r.origin[0] + t.altar[0]) * TILE + TILE / 2, y: (r.origin[1] + t.altar[1]) * TILE + TILE - 2 };
+  }
   get ignoresTerrain() {
     return this.def.wader;
   }
@@ -193,7 +207,11 @@ export class Enemy extends Actor {
       this.ctx.bus.emit('sfx', { id: 'break_pot', x: this.x, y: this.y });
       this.ctx.bus.emit('shake', { trauma: 0.25 });
     }
-    this.invulnerable = (this.bubble || this.sm.name === 'submerged') && !this.dead;
+    if (this.veiled > 0 && --this.veiled === 0 && !this.dead) {
+      this.alpha = 1; // steps out of the smoke
+      this.ctx.bus.emit('dust', { x: this.x, y: this.y, kind: 'roll' });
+    }
+    this.invulnerable = (this.bubble || this.sm.name === 'submerged' || this.sm.name === 'turn') && !this.dead;
     this.sm.tick();
     this.applyKnockback();
     this.hyperArmor = this.runner?.hyperArmor ?? 0;
@@ -216,7 +234,8 @@ export class Enemy extends Actor {
       if (this.anim.name === 'hit' && this.anim.done) this.anim.play('idle');
       this.anim.tick();
     } else if (
-      st === 'attack' || st === 'stagger' || st === 'dead' || st === 'parried' || st === 'critVictim' || st === 'guardBroken' || st === 'intro' || st === 'rise'
+      st === 'attack' || st === 'stagger' || st === 'dead' || st === 'parried' || st === 'critVictim' || st === 'guardBroken' || st === 'intro' || st === 'rise' ||
+      (st === 'turn' && (this.turnT >= 0 || this.sm.t < 30))
     ) {
       this.anim.tick();
     } else if (st === 'channel' && speed <= 4 && this.anim.has('channel')) {
@@ -283,7 +302,11 @@ export class Enemy extends Actor {
       if (h.staggered && st !== 'critVictim') this.sm.change('stagger', true);
       return;
     }
-    if (h.killed) this.sm.change('dead');
+    if (h.killed && this.def.boss?.turn) {
+      // Not a death: this phase is spent, and the boss goes to make its turn.
+      this.hp = 1;
+      this.sm.change('turn', true);
+    } else if (h.killed) this.sm.change('dead');
     else if (st === 'critVictim') return; // locked in the paired animation
     else if (h.guardBroken) this.sm.change('guardBroken', true);
     else if (h.blocked) {
@@ -455,6 +478,13 @@ export class Enemy extends Actor {
 
   kill() {
     if (this.dead || this.def.immortal) return;
+    if (this.def.boss?.turn) {
+      if (this.sm.name !== 'turn') {
+        this.hp = 1;
+        this.sm.change('turn');
+      }
+      return;
+    }
     this.hp = 0;
     this.sm.change('dead');
   }

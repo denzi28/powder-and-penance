@@ -71,7 +71,7 @@ export class MapView {
       gs.grid.h,
       here,
       seen.map(r => r.id).join(','),
-      gs.doors.list.map(d => (d.open ? 1 : d.requires && !gs.flags.has(`key:${d.requires}`) ? 2 : 0)).join(''),
+      gs.doors.list.map(d => (d.open ? 1 : gs.doors.missingKeys(d, gs.flags).length ? 2 : 0)).join(''),
       gs.shrines.list.map(s => (s.lit ? 1 : 0)).join(''),
     ].join('|');
     if (sig === this.sig) return;
@@ -115,7 +115,7 @@ export class MapView {
         }
     }
     for (const d of gs.doors.list)
-      if (!d.open && inSeen(d.tx, d.ty)) put(d.tx, d.ty, d.requires && !gs.flags.has(`key:${d.requires}`) ? 'locked' : 'door');
+      if (!d.open && inSeen(d.tx, d.ty)) put(d.tx, d.ty, gs.doors.missingKeys(d, gs.flags).length ? 'locked' : 'door');
     for (const e of gs.exits.list)
       for (let ty = e.y0; ty < e.y1; ty++) for (let tx = e.x0; tx < e.x1; tx++) if (inSeen(tx, ty)) put(tx, ty, 'exit');
     for (const s of gs.shrines.list) {

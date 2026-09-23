@@ -136,7 +136,8 @@ R('abbey_11_nave_approach', [-20, 37], 21, 12)
   .enemy('wickling', 10, 6, 'E').enemy('wickling', 8, 9, 'E').enemy('powder_acolyte', 10, 2, 'S')
   .prop('pot', 1, 1).prop('pot', 19, 10).prop('candles', 1, 10);
 
-// 12 Nave — the boss arena (boss, smoke veil and bar arrive in M6). Empty for now.
+// 12 Nave — the Chandler's arena. Its altar, pews, lift, boss, arena and shrine (and the Approach's great
+// door) were added by hand in the JSON: this only lays out the shell.
 const nave = R('abbey_12_nave', [-20, 20], 21, 18).gap(9, 17, 3, 1);
 for (const [x, y] of [[4, 4], [16, 4], [4, 12], [16, 12]]) nave.pillar(x, y);
 nave.moss(7, 6, 7, 5).prop('candles', 9, 2).prop('candles', 11, 2);

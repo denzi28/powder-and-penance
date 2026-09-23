@@ -78,14 +78,25 @@ export class AttackRunner {
         o.moveBy((Math.cos(this.angle) * l.distance) / l.ticks, (Math.sin(this.angle) * l.distance) / l.ticks);
     }
     if (this.t === s.windup) {
+      if (s.pools) bus.emit('pools', { actor: o, strike: s, target: this.target });
       if (s.summon) bus.emit('summon', { actor: o, strike: s });
+      else if (s.vanish) bus.emit('vanish', { actor: o, strike: s });
       else if (s.projectile) {
+        // `count` shots in an even fan `spreadDeg` wide around the aim (lobs: landing points swung round the
+        // thrower at the same distance), so a volley reads the same every time.
+        const pr = s.projectile;
         const t = this.target ?? { x: o.x + Math.cos(this.angle) * 80, y: o.y + Math.sin(this.angle) * 80 };
-        o.ctx.projectiles.spawn(o, o.x + Math.cos(this.angle) * 8, o.y + Math.sin(this.angle) * 4, this.angle, s.projectile, t);
+        const dist = Math.hypot(t.x - o.x, t.y - o.y);
+        for (let i = 0; i < pr.count; i++) {
+          const a = this.angle + (pr.count > 1 ? (i / (pr.count - 1) - 0.5) * pr.spreadDeg * DEG : 0);
+          const land = pr.count > 1 ? { x: o.x + Math.cos(a) * dist, y: o.y + Math.sin(a) * dist } : t;
+          o.ctx.projectiles.spawn(o, o.x + Math.cos(a) * 8, o.y + Math.sin(a) * 4, a, pr, land);
+        }
         bus.emit('thrown', { actor: o });
       } else bus.emit('swing', { actor: o, strike: s, angle: this.angle, mirror: this.mirror });
     }
-    if (this.phase === 'active' && !this.visualOnly && !s.projectile && !s.summon)
+    const spellOnly = s.summon || s.vanish || (s.pools && s.damage === 0);
+    if (this.phase === 'active' && !this.visualOnly && !s.projectile && !spellOnly)
       o.ctx.combat.add({
         owner: o,
         strike: s,

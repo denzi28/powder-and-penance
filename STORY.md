@@ -55,6 +55,8 @@ The map is in [WORLD.md](WORLD.md).
 | **Mother Tallow** (`mother_tallow_death`): wordless. She sinks back into the vat she never stopped tending, ladle still in her hand. **Seal of Tallow.** | ✅ |
 | **Pip** (Waxmire, `pip_mire` → hub `pip_hub`): slipped off the carts, hides in a ring of candles, heard the singing lady call. Sent to Wick's Rest; gives you a candle stub; later notices the singing has stopped. | ✅ (the Act 2 payoff comes later) |
 | **The Mire Matron** (`matron_death`): the Abbey's midwife. When the Drip came into the cradles she couldn't give the children to the flame, so she brought them down to the mire and sang to them, and never stopped. **Seal of the Mire.** | ✅ |
+| **The Chandler** (Nave). Entrance: kneeling at the altar, he finishes his prayer first: "Kneel, child. It is quicker kneeling." His turn: "Forty years I fed it. Then let it have the last of me." He pours himself onto the altar fire and rises as **the Last Candle**, a black flame on his wick. | ✅ |
+| **The ending** (`chandler_death`): he confesses the rendering and the ledger he signed; *"The Wick was never starving. Something up there is drinking it."* He asks you to climb for him. The lift chains wake; **END OF ACT ONE**. Sets `chandler_rests` and `act1_complete`; the lift opens with `act2`. | ✅ |
 | Brother Aldous | Next, with the Abbey revision |
 
 ## Writing dialogue and cutscenes
@@ -116,5 +118,5 @@ All in-game and short (under 30 s), and skippable.
 2. Arriving at Wick's Rest
 3. The Tollwarden's intro
 4. The Rendering Hall reveal
-5. The Chandler: intro, and his phase-2 turn
-6. Ending: the Chandler's last words, the lift, the Cathedral
+5. The Chandler: intro, and his phase-2 turn ✅ (in-fight, like every boss)
+6. Ending: the Chandler's last words, the lift, the Cathedral ✅ (a `card` step shows END OF ACT ONE over the fade)

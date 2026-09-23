@@ -187,7 +187,7 @@ Enemies hold their weapon like the player does: `handAnchors` in the body manife
 - Drawn facing the viewer; the game mirrors them to turn toward the player. Skin is pale wax (`wax1`).
 
 ### `portraits` (32×32 per frame, ui)
-- Dialogue-box portraits: 0 Oskar, 1 Maudlin, 2 Pip.
+- Dialogue-box portraits: 0 Oskar, 1 Maudlin, 2 Pip, 3 the Tollwarden, 4 the Mire Matron, 5 the Chandler.
 - `data/npcs.json` picks each character's frame.
 
 ### Bosses
@@ -218,6 +218,20 @@ Portrait frame 3 is the Tollwarden.
 | `mire_glob` | 8×8 | Her lobbed wax |
 
 Portrait frame 4 is the Mire Matron.
+
+### The Nave: the Chandler
+| Sheet | Cell | Notes |
+|---|---|---|
+| `chandler` | 64×64, pivot 32,58 | The priest: cream chasuble with a gold orphrey over a red robe, red sleeves, a crown of lit tapers. `idle`, `walk`, `sweep`, `slam` (Extinguish), `jab`, `flick` (plucks a taper from his crown), `censer` (smoke swallows him), `intro` (kneeling at the altar, then rising), `pour` (loop: hands over the altar fire, wax running off them; the snuffer is laid down meanwhile), `stagger`, `death` (unused: he turns instead of falling) |
+| `chandler_wick` | 64×64, pivot 32,58 | The Last Candle: a column of melting wax, flames up one flank, burnt rags at the hips, a melted face with one ember eye, a wick with a **black flame** (dark teardrop, pale rim). `idle`, `walk`, `sweep`, `jab`, `slam`, `leap`, `volley` (the flame swells), `flood` (arms wide; snuffer laid down), `intro` (rising out of the altar fire), `stagger`, `death` (melts into his pool; the flame goes out) |
+| `chandler_snuffer`, `chandler_snuffer_lit` | 64×16, pivot 8,8 (grip) | Iron staff with a brass collar and the snuffer's bell; tip (58,8). The lit one burns with black flame (phase 2). |
+| `taper_shot` | 12×6, pivot 6,3 | A flung lit taper, flame first (rotates with its flight) |
+| `black_flame` | 8×10, pivot 4,6 | Phase 2's projectiles |
+| `decor_nave` | 64×64, pivot 32,62 | 0 `great_altar` (3 tiles, its fire in an iron bowl), 1 `candelabrum`, 2 `pew` (2 tiles), 3 `pew_broken`, 4 `lift_gate` (iron bars over a dark shaft, set in a wall gap) |
+
+Portrait frame 5 is the Chandler.
+
+Spilled wax (`strike.pools`) is drawn at runtime, not from a sheet.
 
 ### Tallow Works
 | Sheet | Cell | Notes |

@@ -65,12 +65,13 @@ export function nearestInteractable(gs: GameScene): Interactable | null {
 
   const near = gs.doors.nearest(p.x, p.y);
   const door = near && !gs.arena.sealed(near.tx, near.ty) ? near : null; // a smoke-sealed doorway can't be opened
-  if (door && door.requires && !gs.flags.has(`key:${door.requires}`)) {
-    const key = DATA.items[door.requires]?.name ?? door.requires;
+  const missing = door ? gs.doors.missingKeys(door, gs.flags) : [];
+  if (door && missing.length) {
+    const held = door.requires.length - missing.length;
     return {
       label: 'LOCKED',
       use: () => {
-        gs.showToast('LOCKED', `It needs the ${key}.`);
+        gs.showToast('LOCKED', `It needs ${keyNames(missing)}.${held ? ` The ${keyNames(door.requires.filter(k => !missing.includes(k)), false)} fits, but it is not enough alone.` : ''}`);
         gs.bus.emit('sfx', { id: 'locked' });
       },
     };
@@ -85,13 +86,15 @@ export function nearestInteractable(gs: GameScene): Interactable | null {
         },
       };
     return {
-      label: door.requires ? `UNLOCK (${DATA.items[door.requires]?.name ?? door.requires})` : door.opensFrom ? 'LIFT THE BAR' : 'OPEN DOOR',
+      label:
+        door.requires.length > 1 ? 'SET THE SEALS' : door.requires.length ? `UNLOCK (${keyNames(door.requires, false).toUpperCase()})` : door.opensFrom ? 'LIFT THE BAR' : 'OPEN DOOR',
       use: () => {
         gs.doors.setOpen(door, gs.grid, true);
         gs.flags.add(`door:${door.id}`);
         gs.bus.emit('sfx', { id: 'door_open', x: door.tx * 16 + 8, y: door.ty * 16 + 8 });
         if (door.opensFrom) gs.showToast('SHORTCUT OPENED', 'The way back is clear.');
-        if (door.requires) gs.showToast('UNLOCKED', `The ${DATA.items[door.requires]?.name ?? 'key'} turns. The gate stays open for good.`);
+        if (door.requires.length === 1) gs.showToast('UNLOCKED', `The ${keyNames(door.requires, false)} turns. The gate stays open for good.`);
+        if (door.requires.length > 1) gs.showToast('UNLOCKED', `The ${keyNames(door.requires, false)} sink into the door together. It opens, and stays open for good.`);
         gs.save();
       },
     };
@@ -133,6 +136,12 @@ export function handleInteract(gs: GameScene) {
   if (!target || !gs.controls.consume('interact')) return;
   target.use();
   gs.bus.emit('sfx', { id: 'pickup' });
+}
+
+/** "the Toll Key", "the Seal of Tallow and the Seal of the Mire" (without "the" when `article` is false). */
+function keyNames(ids: string[], article = true): string {
+  const names = ids.map(id => `${article ? 'the ' : ''}${DATA.items[id]?.name ?? id}`);
+  return names.length > 1 ? `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}` : (names[0] ?? '');
 }
 
 function announce(gs: GameScene, text: string) {

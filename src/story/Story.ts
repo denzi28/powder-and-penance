@@ -24,11 +24,14 @@ type MenuOption = Extract<Step, { menu: unknown }>['menu'][number];
 const TYPE_CHARS_PER_TICK = 1.5;
 const DEFAULT_CAMERA_TICKS = 40;
 const DEFAULT_FADE_TICKS = 30;
+const DEFAULT_CARD_TICKS = 240;
 
 export class Story {
   dialogue: DialogueState | null = null;
   /** 0..1 black overlay driven by `fade` steps. */
   fadeAlpha = 0;
+  /** Title card on screen (`card` step), t counting up to ticks. */
+  card: { title: string; sub: string | null; t: number; ticks: number } | null = null;
 
   private stack: { steps: Step[]; i: number }[] = [];
   private running = false;
@@ -101,11 +104,13 @@ export class Story {
     if (this.skippable && !this.skipping && c.pressed('back')) this.skipping = true;
     this.tickPan();
     this.tickFade();
+    if (this.card && ++this.card.t > this.card.ticks) this.card = null;
 
     for (let guard = 0; guard < 200; guard++) {
       if (this.skipping) {
         this.wait = 0;
         this.dialogue = null;
+        this.card = null;
         if (this.pan) this.pan.t = this.pan.ticks;
         if (this.fade) this.fade.t = this.fade.ticks;
         this.tickPan();
@@ -192,6 +197,10 @@ export class Story {
       grantItem(gs, `script_${s.give}`, s.give, gs.player.x, gs.player.y);
     } else if ('toast' in s) {
       gs.showToast(s.toast[0], s.toast[1]);
+    } else if ('card' in s) {
+      const ticks = s.ticks ?? DEFAULT_CARD_TICKS;
+      this.card = { title: s.card, sub: s.sub ?? null, t: 0, ticks };
+      this.wait = ticks;
     }
   }
 
@@ -266,6 +275,7 @@ export class Story {
   private finish() {
     this.running = false;
     this.dialogue = null;
+    this.card = null;
     this.menu = null;
     this.gs.npcs.speaking = null;
     this.fade = null;

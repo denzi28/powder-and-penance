@@ -49,6 +49,12 @@
     "coffin": { "sprite": "decor_mire", "frame": 5, "flat": true },
     "drowned_candles": { "sprite": "decor_mire", "frame": 6, "flat": true },
     "dead_willow": { "sprite": "decor_mire", "frame": 7, "blocks": [[0, 0]], "tall": true },
-    "sunken_bell": { "sprite": "decor_mire", "frame": 8, "blocks": [[0, 0]] }
+    "sunken_bell": { "sprite": "decor_mire", "frame": 8, "blocks": [[0, 0]] },
+
+    "great_altar": { "sprite": "decor_nave", "frame": 0, "blocks": [[-1, 0], [0, 0], [1, 0]] },
+    "candelabrum": { "sprite": "decor_nave", "frame": 1, "blocks": [[0, 0]] },
+    "pew": { "sprite": "decor_nave", "frame": 2, "blocks": [[-1, 0], [0, 0]] },
+    "pew_broken": { "sprite": "decor_nave", "frame": 3, "blocks": [[-1, 0], [0, 0]] },
+    "lift_gate": { "sprite": "decor_nave", "frame": 4 }
   }
 }

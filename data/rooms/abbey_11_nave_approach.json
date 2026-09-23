@@ -9,7 +9,7 @@
     " ": "void"
   },
   "tiles": [
-    "#########...#########",
+    "##########.##########",
     "#...................#",
     "#...................#",
     "#....##.......##....#",
@@ -23,6 +23,22 @@
     "#####################"
   ],
   "entities": [
+    {
+      "type": "door",
+      "id": "abbey_door_nave",
+      "at": [10, 0],
+      "requires": ["seal_of_tallow", "seal_of_the_mire"]
+    },
+    {
+      "type": "decor",
+      "kind": "candelabrum",
+      "at": [8, 1]
+    },
+    {
+      "type": "decor",
+      "kind": "candelabrum",
+      "at": [12, 1]
+    },
     {
       "type": "enemy",
       "kind": "wickling",

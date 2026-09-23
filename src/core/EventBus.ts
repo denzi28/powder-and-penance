@@ -48,6 +48,10 @@ export interface GameEvents {
   thrown: { actor: Actor };
   /** A summoning strike goes off: the scene spawns the summoned enemies around the caster. */
   summon: { actor: Actor; strike: StrikeDef };
+  /** A smoke strike goes off: the scene hides the attacker and moves it near its target. */
+  vanish: { actor: Actor; strike: StrikeDef };
+  /** A strike spills wax: the scene lays slowing pools (`target` = where the strike was aimed). */
+  pools: { actor: Actor; strike: StrikeDef; target: { x: number; y: number } | null };
   /** Player caught by a grab / released from it. */
   grabbed: { by: Actor };
   propBroken: { prop: Prop };

@@ -76,6 +76,9 @@ function loadAll(src: Record<string, unknown>) {
       const next = e.boss?.next;
       if (next && !data.enemies[next.kind]?.boss) errors.push(`data/enemies/${e.id}.json: next phase "${next.kind}" is not a boss`);
       if (next && !data.items[next.chest.item]) errors.push(`data/enemies/${e.id}.json: next.chest has unknown item "${next.chest.item}"`);
+      const turn = e.boss?.turn;
+      if (turn && !data.enemies[turn.kind]?.boss) errors.push(`data/enemies/${e.id}.json: turn into "${turn.kind}", which is not a boss`);
+      if (turn && next) errors.push(`data/enemies/${e.id}.json: a boss has either "turn" or "next", not both`);
       for (const m of e.moves)
         for (const s of m.strikes)
           if (s.summon && !data.enemies[s.summon.kind]) errors.push(`data/enemies/${e.id}.json: move "${m.id}" summons unknown kind "${s.summon.kind}"`);
@@ -115,8 +118,9 @@ function loadAll(src: Record<string, unknown>) {
         }
         if (en.type === 'item' && !data.items[String(en.item)])
           errors.push(`data/rooms/${r.id}.json: item "${en.id}" has unknown item "${String(en.item)}"`);
-        if (en.type === 'door' && en.requires !== undefined && data.items[String(en.requires)]?.effect.type !== 'key')
-          errors.push(`data/rooms/${r.id}.json: door "${en.id}" requires "${String(en.requires)}", which is not a key item`);
+        if (en.type === 'door' && en.requires !== undefined)
+          for (const k of [en.requires].flat().map(String))
+            if (data.items[k]?.effect.type !== 'key') errors.push(`data/rooms/${r.id}.json: door "${en.id}" requires "${k}", which is not a key item`);
         if (en.type === 'exit') {
           const to = en.to as { area?: string; spawn?: string } | undefined;
           if (!en.id || !to?.area || !to.spawn) errors.push(`data/rooms/${r.id}.json: exit needs "id" and "to": { "area", "spawn" }`);

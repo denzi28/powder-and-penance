@@ -7,6 +7,9 @@
 // holding the item that wakes the next phase (the Igniter); using it on the remains burns them, and the
 // next phase rises there with its own entrance. The smoke stays up throughout.
 //
+// A boss with `boss.turn` doesn't fall when its health runs out: it walks to its altar and gives itself to
+// the fire, and the next phase rises there (see tickTurn).
+//
 // When the last phase falls: the boss stays dead for good (world flag "boss:<first kind>"), the smoke
 // lifts, shrines waiting on that flag appear, and its `deathScript` plays. A `dust` boss crumbles away.
 // If the player dies at any point, the smoke lifts and the whole fight resets with the world. Dying inside
@@ -27,7 +30,7 @@ interface Arena {
 }
 
 type Stage =
-  | { name: 'fight'; boss: Enemy; deathT: number }
+  | { name: 'fight'; boss: Enemy; deathT: number; turning?: boolean }
   | { name: 'remains'; body: Enemy }
   | { name: 'burning'; body: Enemy; t: number }
   | { name: 'done' };
@@ -127,6 +130,10 @@ export class BossArena {
     const gs = this.gs;
     if (st.name === 'fight') {
       const b = st.boss;
+      if (b.stateName === 'turn') {
+        this.tickTurn(st, b);
+        return;
+      }
       if (!b.dead) return;
       if (st.deathT === 0 && b.def.boss?.dust) this.crumble(b, 0);
       st.deathT++;
@@ -170,6 +177,44 @@ export class BossArena {
       risen.startIntro();
       if (risen.def.boss?.introLine) gs.showToast(this.active.title.toUpperCase(), risen.def.boss.introLine);
     }
+  }
+
+  /**
+   * A boss making its turn (boss.turn): it says its line, walks to the altar and gives itself to the fire,
+   * which climbs higher the longer it pours. When it's done, the next phase rises out of the flames.
+   */
+  private tickTurn(st: Extract<Stage, { name: 'fight' }>, b: Enemy) {
+    const gs = this.gs;
+    const tr = b.def.boss!.turn!;
+    if (!st.turning) {
+      st.turning = true;
+      if (tr.line) gs.showToast(b.def.boss!.title.toUpperCase(), tr.line);
+      gs.bus.emit('sfx', { id: 'stagger', x: b.x, y: b.y, pitch: 0.6 });
+    }
+    if (b.turnT >= 0) {
+      const k = Math.min(1, b.turnT / tr.ticks);
+      const ay = b.y - TILE; // the altar, just north of where it stands
+      if (b.turnT === 0) gs.bus.emit('sfx', { id: 'ignite', x: b.x, y: ay });
+      if (b.turnT % 3 === 0)
+        gs.particles.burst(b.x + (Math.random() - 0.5) * 20, ay, 6 + k * 14, -Math.PI / 2, 0.7, 2 + Math.round(k * 5), 40 + k * 70, b.turnT % 2 ? 'flame2' : 'flame1', false);
+      if (b.turnT % 5 === 0 && k > 0.4) gs.particles.burst(b.x, ay - 6, 10 + k * 20, -Math.PI / 2, 0.5, 2, 60, 'dark2', false); // the flame starts to blacken
+      if (b.turnT % 7 === 0) gs.particles.burst(b.x, b.y - 22, 14, -Math.PI / 2, 1.6, 3, 30, 'wax1', true); // wax running off him
+      if (b.turnT % 30 === 0) gs.bus.emit('shake', { trauma: 0.08 + k * 0.25 });
+    }
+    if (!b.turned) return;
+    const x = b.x;
+    const y = b.y;
+    gs.despawn(b);
+    const risen = gs.spawnEnemy(tr.kind, x, y, Math.atan2(gs.player.y - y, gs.player.x - x));
+    if (!risen) return;
+    gs.particles.burst(x, y - 10, 8, -Math.PI / 2, Math.PI * 2, 40, 120, 'flame1', false);
+    gs.particles.burst(x, y - 20, 12, -Math.PI / 2, 1.2, 30, 90, 'dark1', false);
+    gs.bus.emit('shake', { trauma: 0.6 });
+    gs.bus.emit('sfx', { id: 'explosion', x, y });
+    this.active = { enemy: risen, title: risen.def.boss?.title ?? risen.def.name };
+    this.stage = { name: 'fight', boss: risen, deathT: 0 };
+    risen.startIntro();
+    if (risen.def.boss?.introLine) gs.showToast(this.active.title.toUpperCase(), risen.def.boss.introLine);
   }
 
   private begin(a: Arena, boss: Enemy) {

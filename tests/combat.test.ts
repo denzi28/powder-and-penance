@@ -246,4 +246,21 @@ describe('AttackRunner + CombatSystem', () => {
     const next = turnToward(0, Math.PI, (10 * Math.PI) / 180);
     expect(next).toBeCloseTo((10 * Math.PI) / 180);
   });
+
+  it('a thrown strike throws `count` shots in an even fan `spreadDeg` wide', () => {
+    const combat = new CombatSystem();
+    const bus = new EventBus<GameEvents>();
+    const atk = stub('enemy', 0, 20, combat, bus);
+    const proj = new Projectiles();
+    (atk.ctx as unknown as { projectiles: Projectiles }).projectiles = proj;
+    const throwStrike = StrikeDef.parse({
+      damage: 0, poise: 0, windup: 2, active: 1, recovery: 1,
+      hitbox: { shape: 'circle', radius: 1 },
+      projectile: { sprite: 'x', speed: 100, range: 100, damage: 5, poise: 0, radius: 2, count: 3, spreadDeg: 40 },
+    });
+    const r = new AttackRunner(atk, throwStrike, 0);
+    while (r.phase !== 'done') r.tick();
+    const deg = proj.list.map(p => Math.round((p.angle * 180) / Math.PI)).sort((a, b) => a - b);
+    expect(deg).toEqual([-20, 0, 20]);
+  });
 });

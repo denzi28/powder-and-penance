@@ -22,6 +22,8 @@ export interface WorldCtx {
   enemies: () => readonly Enemy[];
   /** Id of the room containing a world position (null outside every room). */
   roomAt: (x: number, y: number) => string | null;
+  /** Extra slowing underfoot from spilled wax pools (1 = none). */
+  slowAt?: (x: number, y: number) => number;
 }
 
 export function mulberry32(seed: number): () => number {

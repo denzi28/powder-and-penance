@@ -1,0 +1,18 @@
+{
+  "image": "chandler_snuffer_lit.png",
+  "cell": [
+    64,
+    16
+  ],
+  "pivot": [
+    8,
+    8
+  ],
+  "layer": "weapon",
+  "points": {
+    "tip": [
+      58,
+      8
+    ]
+  }
+}

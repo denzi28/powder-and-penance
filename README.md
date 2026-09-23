@@ -96,6 +96,11 @@ Act 1 is being built room by room: the plan is in [WORLD.md](WORLD.md) and the s
   - Pip to send home.
   - A sluice shortcut into the Abbey Undercroft.
   - The boss, **the Mire Matron**, who drops the Seal of the Mire.
+- **The finale: the Chandler,** in the Abbey Nave. The great door in the Nave Approach needs **both Seals**.
+  - Phase 1, the priest: wide snuffer sweeps, **Extinguish** (the bell comes down where you stand: unblockable, roll out), **taper volleys** thrown from his crown, and **censer smoke**: he vanishes and steps out behind you.
+  - When his health runs out he doesn't fall. He walks to the altar and pours himself onto the fire, and **the Last Candle** rises out of it: fast combos, a leap slam that rings out black flame, lobbed volleys, and **wax floods** that leave slowing pools across the floor.
+  - His last words, the lift waking, and **END OF ACT ONE**. The lift itself stays sealed until Act 2.
+  - Tuning: `data/enemies/chandler.json` and `chandler_wick.json`.
 - **A shrine appears after every boss.**
 - **Quick travel:** rest at any shrine and choose TRAVEL to go to any other lit shrine, in any area.
 - **Items come in chests** (press E). You keep control while the lid opens. The banner explains the effect in plain numbers (e.g. "phial drinks 3 -> 4"), with the flavour text below.
@@ -117,7 +122,8 @@ Act 1 is being built room by room: the plan is in [WORLD.md](WORLD.md) and the s
 | 8 Chapterhouse | Second shrine, behind a door |
 | 9 Scriptorium | Mixed group. **Lump of Tallow**. |
 | 10 Undercroft | Lift the bar on the gate north to open the shortcut back to the Porch |
-| 11–12 Nave | Approach and the (still empty) boss arena for M6 |
+| 11 Nave Approach | The great door: set both Seals in it |
+| 12 Nave | **The Chandler** (final boss of Act 1), the Nave Wick after him, and the sealed lift to the Cathedral |
 
 - **Doors:** press E. Opened doors stay open (saved).
 - **Props:** crates, pots and candle clusters break from any attack, projectile or firepot blast.
