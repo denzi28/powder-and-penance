@@ -7,11 +7,16 @@ import { tint } from '../player/PlayerView';
 import type { SpriteLib } from '../anim/SpriteLib';
 import type { Enemy } from './Enemy';
 
+/** Animations that need both hands free: the held weapon is laid on the floor meanwhile. */
+const SET_DOWN_ANIMS: ReadonlySet<string> = new Set(['summon', 'channel']);
+
 export class EnemyView {
   private shadow: Phaser.GameObjects.Sprite;
   private body: Phaser.GameObjects.Sprite;
   private pip: Phaser.GameObjects.Sprite;
   readonly weapon: HeldWeapon | null;
+  /** Where the weapon lies while it's been set down (see SET_DOWN_ANIMS), or null while held. */
+  private setDownAt: { x: number; y: number; side: number } | null = null;
   /** Snapped draw position from the last render (for bars, numbers). */
   x = 0;
   y = 0;
@@ -53,7 +58,20 @@ export class EnemyView {
 
     if (this.weapon) {
       this.weapon.setVisible(!e.dead);
-      if (!e.dead && e.weaponAngle !== null) {
+      // Casting and channelling need both hands: the weapon is set down flat on the floor beside the
+      // caster, where it stays until they move or fight again.
+      const setDown = !e.dead && SET_DOWN_ANIMS.has(e.anim.name);
+      if (!setDown) this.setDownAt = null;
+      else if (!this.setDownAt) {
+        const side = f.flip ? -1 : 1;
+        this.setDownAt = { x: feetX + side * 8, y: feetY + 3, side };
+      }
+      if (this.setDownAt) {
+        const g = this.setDownAt;
+        this.weapon.place(g.x, g.y, g.side > 0 ? 0.06 : Math.PI - 0.06, 0, depth);
+        this.weapon.sprite.setDepth(DEPTH.shadow + 1); // lying on the floor, under everyone
+        tint(this.weapon.sprite, false);
+      } else if (!e.dead && e.weaponAngle !== null) {
         const anchor = e.anim.frame.hand ?? this.lib.manifest(sheet).handAnchors?.[f.authoredDir] ?? [0, -10];
         const angle = e.prevWeaponAngle !== null ? lerpAngle(e.prevWeaponAngle, e.weaponAngle, alpha) : e.weaponAngle;
         this.weapon.place(x + (f.flip ? -anchor[0] : anchor[0]), y + anchor[1], angle, e.weaponReach, depth);
