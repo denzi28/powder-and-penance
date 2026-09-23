@@ -1,0 +1,21 @@
+{
+  "id": "pip_hub",
+  "steps": [
+    {
+      "if": "!pip_thanked",
+      "then": [
+        { "say": "You came back! The nun gave me soup. Real soup, with a bit of something in it.", "who": "pip" },
+        { "say": "I've been collecting candle stubs. This one's for you. It's the best one.", "who": "pip" },
+        { "give": "tallow_lump" },
+        { "set": "pip_thanked" }
+      ],
+      "else": [
+        {
+          "if": "boss:mire_matron",
+          "then": [{ "say": "She's stopped singing. I can't hear her anymore, even at night. Thank you.", "who": "pip" }],
+          "else": [{ "say": "Can you hear her? At night, from down there? I can.", "who": "pip" }]
+        }
+      ]
+    }
+  ]
+}

@@ -88,6 +88,14 @@ Act 1 is being built room by room: the plan is in [WORLD.md](WORLD.md) and the s
   - A cracked wall to smash.
   - The Rendering Hall reveal.
   - The boss, **Mother Tallow**, in two phases. When she falls, open the chest that rises from the floor, set her remains alight with the Igniter, then beat what gets up. She drops the Seal of Tallow.
+- **The Waxmire** (west of Wick's Rest), 10 rooms:
+  - Wax pools slow you down.
+  - Drowned Pilgrims rise out of them to ambush you.
+  - Mire Lanterns sweep the reeds with visible cones of light. Stay out of the light.
+  - The Drowned Wick shrine.
+  - Pip to send home.
+  - A sluice shortcut into the Abbey Undercroft.
+  - The boss, **the Mire Matron**, who drops the Seal of the Mire.
 - **A shrine appears after every boss.**
 - **Quick travel:** rest at any shrine and choose TRAVEL to go to any other lit shrine, in any area.
 - **Items come in chests** (press E). You keep control while the lid opens. The banner explains the effect in plain numbers (e.g. "phial drinks 3 -> 4"), with the flavour text below.

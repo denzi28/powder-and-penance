@@ -88,7 +88,7 @@ R('hub_01_yard', [0, 10], 34, 24)
   // people: Maudlin by the shrine; Oskar behind his stall once freed; Pip by the fire once rescued (Act 1, mire)
   .npc('maudlin', 'maudlin', 12, 10, 'maudlin')
   .npc('oskar_stall', 'oskar', 22, 6, 'oskar_hub', 'oskar_freed')
-  .npc('pip', 'pip', 22, 16, null, 'pip_rescued')
+  .npc('pip', 'pip', 22, 16, 'pip_hub', 'pip_rescued')
   .add({ type: 'cutscene', id: 'arrive_wicks_rest', script: 'arrive_wicks_rest', at: [16, 19], size: [4, 4] });
 
 // hub_02 Maudlin's Chapel — a grotto chapel dug into the hollow's side: flagstones, an altar, benches, her

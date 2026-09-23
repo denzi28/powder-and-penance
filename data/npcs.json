@@ -3,6 +3,7 @@
     "oskar": { "name": "Oskar", "sprite": "npc_oskar", "portrait": 0 },
     "maudlin": { "name": "Sister Maudlin", "sprite": "npc_maudlin", "portrait": 1 },
     "pip": { "name": "Pip", "sprite": "npc_pip", "portrait": 2 },
-    "tollwarden": { "name": "The Tollwarden", "sprite": "tollwarden", "portrait": 3 }
+    "tollwarden": { "name": "The Tollwarden", "sprite": "tollwarden", "portrait": 3 },
+    "matron": { "name": "The Mire Matron", "sprite": "mire_matron", "portrait": 4 }
   }
 }

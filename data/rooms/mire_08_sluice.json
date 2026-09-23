@@ -1,0 +1,76 @@
+{
+  "id": "mire_08_sluice",
+  "area": "mire",
+  "origin": [54, 32],
+  "legend": {
+    "#": "wall",
+    ".": "floor",
+    ",": "floor_grass",
+    "~": "floor_wax",
+    ":": "floor_stone",
+    " ": "void"
+  },
+  "tiles": [
+    "#######.######",
+    "#::::::::::::#",
+    "#::::::::::::#",
+    "#::::::::::::#",
+    "#::::::::::::#",
+    ".::::::::::::#",
+    ".::::::::::::#",
+    "#::::::::::::#",
+    "#:~~~~~::::::#",
+    "#:~~~~~::::::#",
+    "#:~~~~~::::::#",
+    "#:~~~~~::::::#",
+    "#::::::::::::#",
+    "##############"
+  ],
+  "entities": [
+    {
+      "type": "exit",
+      "id": "mire_sluice_up",
+      "at": [7, 0],
+      "size": [1, 1],
+      "to": {
+        "area": "abbey",
+        "spawn": "from_mire"
+      },
+      "when": "lever:mire_sluice",
+      "closed": "A sluice gate, shut. Its lever must be down here somewhere."
+    },
+    {
+      "type": "lever",
+      "id": "mire_sluice",
+      "script": "mire_sluice_lever",
+      "at": [9, 2]
+    },
+    {
+      "type": "spawn",
+      "id": "from_abbey",
+      "at": [7, 2]
+    },
+    {
+      "type": "enemy",
+      "kind": "drowned_pilgrim",
+      "at": [4, 9],
+      "facing": "N"
+    },
+    {
+      "type": "decor",
+      "kind": "sunken_bell",
+      "at": [3, 11]
+    },
+    {
+      "type": "decor",
+      "kind": "drowned_candles",
+      "at": [10, 7]
+    },
+    {
+      "type": "item",
+      "id": "mire_salt",
+      "item": "bitter_salt",
+      "at": [11, 11]
+    }
+  ]
+}

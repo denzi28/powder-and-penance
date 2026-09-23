@@ -62,6 +62,7 @@ function loadAll(src: Record<string, unknown>) {
     areas: one(S.Areas, 'areas'),
     decor: one(S.DecorTable, 'decor'),
     npcs: one(S.Npcs, 'npcs'),
+    terrain: one(S.Terrain, 'terrain'),
     scripts: dir(S.ScriptDef, 'scripts'),
   };
 

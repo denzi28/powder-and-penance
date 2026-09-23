@@ -64,6 +64,10 @@ export class Enemy extends Actor {
   summons: Enemy[] = [];
   /** Sitting in a summoning bubble: invulnerable until every summon is dead. */
   bubble = false;
+  get ignoresTerrain() {
+    return this.def.wader;
+  }
+
   /** Where it waits out its bubble (the "channel" state). */
   channelSpot: { x: number; y: number } | null = null;
 
@@ -97,7 +101,7 @@ export class Enemy extends Actor {
     this.anim = new AnimPlayer(SPRITES[this.def.sprite].animations);
     this.anim.play('idle');
     this.dir = dir8FromAngle(facing);
-    this.sm = new StateMachine<Enemy>(this, BRAINS[this.def.ai], 'idle');
+    this.sm = new StateMachine<Enemy>(this, BRAINS[this.def.ai], this.def.ambush ? 'submerged' : 'idle');
     this.sm.start();
   }
 
@@ -189,7 +193,7 @@ export class Enemy extends Actor {
       this.ctx.bus.emit('sfx', { id: 'break_pot', x: this.x, y: this.y });
       this.ctx.bus.emit('shake', { trauma: 0.25 });
     }
-    this.invulnerable = this.bubble && !this.dead;
+    this.invulnerable = (this.bubble || this.sm.name === 'submerged') && !this.dead;
     this.sm.tick();
     this.applyKnockback();
     this.hyperArmor = this.runner?.hyperArmor ?? 0;
@@ -212,7 +216,7 @@ export class Enemy extends Actor {
       if (this.anim.name === 'hit' && this.anim.done) this.anim.play('idle');
       this.anim.tick();
     } else if (
-      st === 'attack' || st === 'stagger' || st === 'dead' || st === 'parried' || st === 'critVictim' || st === 'guardBroken' || st === 'intro'
+      st === 'attack' || st === 'stagger' || st === 'dead' || st === 'parried' || st === 'critVictim' || st === 'guardBroken' || st === 'intro' || st === 'rise'
     ) {
       this.anim.tick();
     } else if (st === 'channel' && speed <= 4 && this.anim.has('channel')) {
@@ -320,6 +324,7 @@ export class Enemy extends Actor {
   /** Become certain and fight immediately (hit, or alerted by the room). */
   aggro() {
     if (!this.isFighter || this.dead || COMBAT_STATES.has(this.sm.name) || this.bossWaiting) return;
+    if (this.sm.name === 'submerged' || this.sm.name === 'rise') return; // it comes up in its own time
     this.awareness = 1;
     this.noteSighting();
     this.sm.change('approach');

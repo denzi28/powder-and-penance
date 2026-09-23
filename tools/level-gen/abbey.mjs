@@ -121,6 +121,10 @@ scrip.moss(13, 7, 5, 2)
 // 10 Undercroft — the shortcut gate up to the porch is in its north wall; it can only be opened from here.
 R('abbey_10_undercroft', [0, 35], 16, 14)
   .gap(8, 0).gap(11, 13, 2, 1).gap(0, 6, 1, 3)
+  // the sluice down to the Waxmire: shut until its lever (down in the mire) is pulled
+  .gap(4, 13)
+  .add({ type: 'exit', id: 'abbey_sluice_down', at: [4, 13], to: { area: 'mire', spawn: 'from_abbey' }, when: 'lever:mire_sluice', closed: 'A sluice channel runs down into the dark, its gate shut from below.' })
+  .add({ type: 'spawn', id: 'from_mire', at: [4, 12] })
   .pillar(4, 4).pillar(11, 4).pillar(4, 9).pillar(11, 9)
   .enemy('taper_hound', 8, 7, 'S').enemy('wickling', 3, 11, 'E')
   .prop('crate', 13, 2).prop('pot', 2, 2).moss(6, 10, 4, 2);

@@ -1,0 +1,65 @@
+{
+  "id": "drowned_pilgrim",
+  "name": "Drowned Pilgrim",
+  "ai": "melee",
+  "sprite": "drowned_pilgrim",
+  "wader": true,
+  "ambush": { "radius": 46, "riseTicks": 42 },
+  "hp": 55,
+  "poise": { "max": 20, "resetTicks": 80 },
+  "tallow": 45,
+  "speed": 38,
+  "strafeSpeed": 24,
+  "accelTicks": 8,
+  "turnDegPerTick": 6,
+  "collider": { "w": 10, "h": 5 },
+  "hurtbox": { "w": 12, "h": 22, "offsetY": -11 },
+  "bodyRadius": 6,
+  "leash": { "distance": 380, "healOnReturn": true },
+  "spacing": { "preferred": 26, "strafeTicks": [30, 70] },
+  "attackGapTicks": [24, 50],
+  "staggerTicks": 30,
+  "deathTicks": 40,
+  "corpseTicks": 100,
+  "blood": "wax1",
+  "moves": [
+    {
+      "id": "claw",
+      "range": [0, 30],
+      "weight": 3,
+      "cooldown": 40,
+      "strikes": [
+        {
+          "damage": 16, "poise": 18,
+          "windup": 20, "active": 5, "recovery": 24,
+          "trackDegPerTick": 5,
+          "telegraph": { "tick": 8, "kind": "normal" },
+          "hitbox": { "shape": "arc", "radius": 28, "halfAngle": 80 },
+          "originY": -10,
+          "sweep": { "fromDeg": -90, "toDeg": 80 },
+          "knockback": 70, "hitstop": 4, "shake": 0.1, "sfx": "swing", "anim": "claw"
+        }
+      ]
+    },
+    {
+      "id": "drag_under",
+      "range": [20, 60],
+      "weight": 1,
+      "cooldown": 110,
+      "strikes": [
+        {
+          "damage": 20, "poise": 24,
+          "windup": 26, "active": 5, "recovery": 34,
+          "trackDegPerTick": 4,
+          "telegraph": { "tick": 10, "kind": "normal" },
+          "lunge": { "distance": 34, "startTick": 22, "ticks": 6 },
+          "hitbox": { "shape": "arc", "radius": 26, "halfAngle": 50 },
+          "originY": -10,
+          "sweep": { "fromDeg": 0, "toDeg": 0, "reach": 8 },
+          "pull": true,
+          "knockback": 120, "hitstop": 5, "shake": 0.15, "sfx": "bite", "anim": "claw"
+        }
+      ]
+    }
+  ]
+}

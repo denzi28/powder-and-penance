@@ -1,0 +1,67 @@
+{
+  "id": "mire_04_chapel",
+  "area": "mire",
+  "origin": [39, 15],
+  "legend": {
+    "#": "wall",
+    ".": "floor",
+    ",": "floor_grass",
+    "~": "floor_wax",
+    ":": "floor_stone",
+    " ": "void"
+  },
+  "tiles": [
+    "################",
+    "#::::::::::::::#",
+    "#::::::::::::::#",
+    "#::::::::::::::#",
+    "#::::::::::::::#",
+    "#::::::::::::::.",
+    ".::::::::::::::#",
+    ".::::::::::::::#",
+    "#::::::::::::::#",
+    "#:~~~~:::::::::#",
+    "#:~~~~:::::~~~:#",
+    "#:~~~~:::::~~~:#",
+    "#::::::::::::::#",
+    "################"
+  ],
+  "entities": [
+    {
+      "type": "shrine",
+      "id": "shrine_drowned",
+      "name": "Drowned Wick",
+      "at": [8, 4]
+    },
+    {
+      "type": "decor",
+      "kind": "stone_angel",
+      "at": [3, 2]
+    },
+    {
+      "type": "decor",
+      "kind": "stone_angel",
+      "at": [12, 2]
+    },
+    {
+      "type": "decor",
+      "kind": "altar",
+      "at": [9, 1]
+    },
+    {
+      "type": "decor",
+      "kind": "prayer_bench",
+      "at": [6, 8]
+    },
+    {
+      "type": "decor",
+      "kind": "prayer_bench",
+      "at": [11, 8]
+    },
+    {
+      "type": "decor",
+      "kind": "drowned_candles",
+      "at": [4, 11]
+    }
+  ]
+}

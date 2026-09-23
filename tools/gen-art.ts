@@ -2173,6 +2173,413 @@ function genWorks() {
   sheet('wax_glob', glob, { cell: [8, 8], pivot: [4, 4], layer: 'fx' });
 }
 
+// =============================================================== THE WAXMIRE
+// --- Drowned Pilgrim: a pilgrim who went into the wax and came back up. Sodden robe, wax dripping from the
+// hood, arms too long. Rises out of the pools to ambush.
+function drawDrowned(c: Img, dir: Dir5, pose: BodyPose & { sink?: number }) {
+  const o = { bob: 0, lean: 0, hunch: 0, step: -1, flinch: false, sway: 0, sink: 0, ...pose };
+  const b = o.bob + o.sink;
+  const { lx, ly, sh } = leanOffsets(dir, o.lean);
+  const cut = 28; // nothing is drawn below the wax surface line
+  const put = (x: number, y: number, w: number, h: number, col: RGBA) => {
+    for (let j = 0; j < h; j++) if (y + j < cut) c.hline(x, y + j, w, col);
+  };
+  const liftL = o.step === 1 ? 2 : 0;
+  const liftR = o.step === 3 ? 2 : 0;
+  put(13, 22 + b, 2, 5 - liftL, P.stone1);
+  put(17, 22 + b, 2, 5 - liftR, P.stone1);
+  put(11 + sh, 12 + b, 10, 12, P.stone2); // sodden robe
+  put(12 + sh, 20 + b, 8, 4, P.wax1); // wax clotted at the hem
+  for (const x of [12, 15, 19]) put(x + sh, 24 + b, 1, 2, P.wax1); // drips
+  put(8 + sh + o.sway, 13 + b, 2, 11, P.stone2); // long arms
+  put(22 + sh + o.sway, 13 + b, 2, 11, P.stone2);
+  put(8 + sh + o.sway, 23 + b, 2, 2, P.wax2); // pale hands
+  put(22 + sh + o.sway, 23 + b, 2, 2, P.wax2);
+  const hx = 16 + lx + (o.flinch ? -1 : 0);
+  const hy = 4 + b + o.hunch + ly;
+  put(hx - 4, hy, 8, 9, P.stone1); // hood
+  put(hx - 3, hy + 1, 6, 2, P.wax1); // wax running off the hood
+  if (dir !== 'N' && dir !== 'NE') {
+    const fx = dir === 'S' ? hx - 2 : dir === 'SE' ? hx - 1 : hx;
+    put(fx, hy + 4, dir === 'E' ? 3 : 4, 4, P.wax2);
+    put(fx + (dir === 'E' ? 1 : 0), hy + 5, 1, 1, o.flinch ? P.ember : P.ink);
+    if (dir !== 'E') put(fx + 3, hy + 5, 1, 1, o.flinch ? P.ember : P.ink);
+  }
+  if (o.sink > 0) c.ellipse(16, cut, 9, 2, P.wax1); // the pool it's coming out of
+}
+function drownedDeath(c: Img, f: number) {
+  if (f < 2) drawDrowned(c, 'S', { sink: 3 + f * 4, flinch: true });
+  else {
+    c.ellipse(16, 27, 9 - f, 2, P.wax1);
+    c.ellipse(14, 26, 3, 1, P.wax2);
+    if (f < 4) c.rect(15, 25, 2, 1, P.stone2);
+  }
+}
+
+// --- Mire Lantern: an iron cage lantern that floats on its own, a pale flame inside, wisps trailing.
+function drawLantern(c: Img, _dir: Dir5, pose: BodyPose) {
+  const o = { bob: 0, flinch: false, sway: 0, ...pose };
+  const y0 = 8 + o.bob;
+  c.ellipse(16, 27, 5, 1.5, withAlpha(P.ink, 90)); // its shadow far below
+  c.vline(16, y0 - 4, 4, P.steel1); // ring
+  c.rect(12, y0, 9, 11, P.dark1);
+  for (const x of [12, 16, 20]) c.vline(x, y0, 11, P.steel1);
+  c.hline(12, y0, 9, P.steel2);
+  c.hline(12, y0 + 10, 9, P.steel2);
+  c.ellipse(16, y0 + 6, 2.5, 3.5, o.flinch ? P.ember : P.cyan); // cold, pale flame
+  c.set(16, y0 + 4, P.white);
+  for (const [x, y] of [[13 + o.sway, y0 + 13], [18 - o.sway, y0 + 15], [15, y0 + 17]]) c.set(x, y, P.teal3); // wisps
+}
+function lanternDeath(c: Img, f: number) {
+  if (f < 2) drawLantern(c, 'S', { bob: 4 + f * 6, flinch: true });
+  else for (const [x, y] of [[10, 26], [14, 27], [19, 26], [22, 27]]) c.rect(x + (f - 2), y, 2, 1, P.steel1);
+}
+
+// --- Mire Matron (64x64): the Abbey's midwife, drowned with the ones she couldn't save, still singing to
+// them. A tall veiled figure in a sodden habit, arms long as oars, her lower half gone into the wax.
+const MATRON_HAND: Record<Dir5, [number, number]> = { S: [47, 36], SE: [46, 35], E: [42, 35], NE: [45, 33], N: [45, 33] };
+
+function drawMatron(c: Img, dir: Dir5, pose: BodyPose & { rise?: number; spread?: number }) {
+  const o = { bob: 0, lean: 0, hunch: 0, step: -1, flinch: false, sway: 0, rise: 0, spread: 0, ...pose };
+  const b = o.bob + o.rise;
+  const { lx, ly, sh } = leanOffsets(dir, o.lean);
+  c.ellipse(32, 57, 20, 4.5, P.wax1); // her pool
+  c.ellipse(24, 56, 7, 1.5, P.wax2);
+  // Body: a long habit that melts into the pool
+  for (let y = 20; y <= 55; y++) {
+    if (y + b > 56) continue;
+    const half = Math.round(7 + (y - 20) * 0.2);
+    c.hline(32 + sh - half, y + b, half * 2, y > 46 ? P.wax1 : P.teal1);
+  }
+  c.vline(32 + sh - 7, 20 + b, 26, P.teal2);
+  c.rect(27 + sh, 24 + b, 10, 4, P.stone3); // collar / apron bib
+  // Arms: long as oars (spread = arms opened wide, singing)
+  const aY = 22 + b - o.spread * 3;
+  for (const side of [-1, 1]) {
+    const ex = 32 + sh + o.sway + side * (12 + o.spread * 6);
+    const hx2 = 32 + sh + o.sway + side * (15 + o.spread * 9);
+    line(c, 32 + sh + side * 6, 22 + b, ex, aY + 12, P.teal1);
+    line(c, 32 + sh + side * 7, 22 + b, ex + side, aY + 12, P.teal1);
+    line(c, ex, aY + 12, hx2, aY + 24 - o.spread * 8, P.wax2);
+  }
+  // Veiled head, face pale and calm
+  const hx = 32 + lx + (o.flinch ? -2 : 0);
+  const hy = 7 + b + o.hunch + ly;
+  c.rect(hx - 6, hy, 12, 15, P.stone1); // veil
+  c.rect(hx - 5, hy + 1, 10, 4, P.wax2); // wimple band
+  if (dir !== 'N' && dir !== 'NE') {
+    const fx = dir === 'S' ? hx : dir === 'SE' ? hx + 1 : hx + 3;
+    c.rect(fx - 3, hy + 5, 6, 7, P.wax1);
+    c.hline(fx - 2, hy + 7, 2, P.ink); // closed eyes
+    c.hline(fx + 1, hy + 7, 2, P.ink);
+    c.rect(fx - 1, hy + 10, 2, o.spread > 0 ? 2 : 1, o.flinch ? P.ember : P.dark2); // singing mouth
+  }
+  const [ax, ay] = MATRON_HAND[dir];
+  if (o.spread === 0) c.rect(ax - 1, ay - 1 + b, 3, 3, P.wax2);
+}
+function matronDeath(c: Img, f: number) {
+  // She lies back into the pool, still, and it closes over her face last.
+  drawMatron(c, 'S', { rise: [2, 8, 16, 26, 34][f], flinch: f < 2, hunch: -f });
+}
+
+function genMire() {
+  const T = 16;
+  const img = new Img(T * 8, T * 4);
+  const at = (idx: number) => [(idx % 8) * T, Math.floor(idx / 8) * T] as const;
+  const speck = (ox: number, oy: number, r: () => number, n: number, col: RGBA) => {
+    for (let i = 0; i < n; i++) img.set(ox + Math.floor(r() * 16), oy + Math.floor(r() * 16), col);
+  };
+  const mix = (a: RGBA, b: RGBA, k: number): RGBA => [0, 1, 2].map(i => Math.round(a[i] + (b[i] - a[i]) * k)).concat(255) as unknown as RGBA;
+  const mud = mix(P.wood1, P.dark2, 0.55);
+  for (let v = 0; v < 4; v++) {
+    // wet mud
+    const [ox, oy] = at(v);
+    const r = rng(4000 + v);
+    img.rect(ox, oy, T, T, mud);
+    speck(ox, oy, r, 12, P.dark1);
+    speck(ox, oy, r, 6, P.wood1);
+    if (v === 2) img.ellipse(ox + 8, oy + 9, 3, 1.5, P.teal1); // a puddle
+    if (v === 3) for (const x of [4, 9, 12]) img.vline(ox + x, oy + 10, 3, P.moss1); // a few blades
+  }
+  for (const v of [4, 5]) {
+    // swamp grass
+    const [ox, oy] = at(v);
+    const r = rng(4100 + v);
+    img.rect(ox, oy, T, T, mix(P.moss1, P.dark2, 0.4));
+    for (let i = 0; i < 10; i++) {
+      const x = ox + Math.floor(r() * 15);
+      const y = oy + 2 + Math.floor(r() * 13);
+      img.vline(x, y, 2, i % 3 ? P.moss1 : P.teal2);
+    }
+  }
+  for (const idx of [6, 7]) {
+    // black water outside the paths, faint ripples
+    const [ox, oy] = at(idx);
+    const r = rng(4200 + idx);
+    img.rect(ox, oy, T, T, P.ink);
+    for (let i = 0; i < 2; i++) img.hline(ox + Math.floor(r() * 10), oy + Math.floor(r() * 14) + 1, 4, P.teal1);
+  }
+  for (const [idx, v] of [[8, 0], [9, 1]]) {
+    // bank of earth held together by roots
+    const [ox, oy] = at(idx);
+    const r = rng(4300 + idx);
+    img.rect(ox, oy, T, T, P.wood1);
+    speck(ox, oy, r, 8, P.dark2);
+    line(img, ox + 2, oy + 1, ox + 5 + v * 3, oy + 12, P.wax1); // pale roots
+    line(img, ox + 11, oy + 2, ox + 9, oy + 13, mix(P.wax1, P.wood1, 0.5));
+    img.hline(ox, oy, T, P.moss1);
+    img.rect(ox, oy + 14, T, 2, P.dark1);
+  }
+  for (const v of [10, 11]) {
+    // WAX POOL: thick pale wax, clearly different from the mud, glossy highlights (it slows you)
+    const [ox, oy] = at(v);
+    const r = rng(4400 + v);
+    const wax = mix(P.wax1, P.wood1, 0.38); // dull, old wax: clearly paler than the mud, not glaring
+    img.rect(ox, oy, T, T, wax);
+    speck(ox, oy, r, 8, mix(wax, P.wood1, 0.3));
+    img.hline(ox + 2 + Math.floor(r() * 6), oy + 4 + Math.floor(r() * 3), 3, mix(P.wax1, wax, 0.3)); // sheen
+    img.hline(ox + 7 + Math.floor(r() * 5), oy + 11 + Math.floor(r() * 3), 2, mix(P.wax1, wax, 0.3));
+    if (v === 11) {
+      img.disc(ox + 11, oy + 5, 1.3, mix(P.wax1, wax, 0.4)); // a bubble
+      img.set(ox + 11, oy + 4, P.wax2);
+    }
+  }
+  for (const v of [14, 15]) {
+    // sunken flagstones (the drowned chapel)
+    const [ox, oy] = at(v);
+    const r = rng(4500 + v);
+    img.rect(ox, oy, T, T, mix(P.stone1, P.teal1, 0.3));
+    img.hline(ox, oy + 7, T, P.dark1);
+    img.hline(ox, oy + 15, T, P.dark1);
+    img.vline(ox + (v === 14 ? 6 : 10), oy, 7, P.dark1);
+    img.vline(ox + (v === 14 ? 11 : 3), oy + 8, 7, P.dark1);
+    speck(ox, oy, r, 4, P.moss1);
+  }
+  for (let mask = 0; mask < 16; mask++) {
+    // bank tops: tangled roots and reeds, dark
+    const [ox, oy] = at(16 + mask);
+    const r = rng(4600 + mask);
+    img.rect(ox, oy, T, T, mix(P.dark1, P.teal1, 0.3));
+    for (let i = 0; i < 5; i++) line(img, ox + Math.floor(r() * 16), oy + Math.floor(r() * 16), ox + Math.floor(r() * 16), oy + Math.floor(r() * 16), P.dark2);
+    speck(ox, oy, r, 4, P.moss1);
+    if (mask & 1) img.hline(ox, oy, T, P.moss1);
+    if (mask & 2) img.vline(ox + 15, oy, T, P.moss1);
+    if (mask & 4) {
+      img.hline(ox, oy + 14, T, P.moss1);
+      img.hline(ox, oy + 15, T, P.dark2);
+    }
+    if (mask & 8) img.vline(ox, oy, T, P.moss1);
+  }
+  sheet('tiles_mire', img, {
+    cell: [T, T],
+    pivot: [0, 0],
+    layer: 'tiles',
+    tiles: {
+      floor: [0, 0, 0, 1, 1, 2, 3],
+      floor_grass: [4, 5],
+      floor_wax: [10, 10, 11],
+      floor_stone: [14, 15],
+      wall_front: [8, 8, 9],
+      wall_cap: Array.from({ length: 16 }, (_, i) => 16 + i),
+      rock: [6, 6, 7],
+    },
+  });
+
+  // ---- decor (64x64, pivot 32,62)
+  const W = 64;
+  const H = 64;
+  const B = 62;
+  const frames: Img[] = [];
+  const cell = () => new Img(W, H);
+  // 0: gravestone, leaning
+  {
+    const c = cell();
+    for (let y = 0; y < 16; y++) c.hline(26 + Math.floor(y / 6), B - 16 + y, 11, y < 3 ? P.stone3 : P.stone2);
+    c.ellipse(31.5, B - 16, 5.5, 3, P.stone3);
+    c.hline(29, B - 10, 5, P.stone1);
+    c.hline(29, B - 7, 4, P.stone1);
+    c.ellipse(32, B - 1, 7, 1.5, P.wax1); // wax pooled at its foot
+    c.outline(P.ink);
+    frames.push(c);
+  }
+  // 1: grave cross
+  {
+    const c = cell();
+    c.rect(31, B - 20, 3, 20, P.wood1);
+    c.rect(26, B - 16, 13, 3, P.wood1);
+    c.set(30, B - 22, P.wax1);
+    c.vline(33, B - 13, 4, P.wax1); // wax drips
+    c.outline(P.ink);
+    frames.push(c);
+  }
+  // 2: reeds (tall enough to hide in; see decor.json)
+  {
+    const c = cell();
+    const r = rng(5100);
+    for (let i = 0; i < 14; i++) {
+      const x = 24 + Math.floor(r() * 16);
+      const h = 14 + Math.floor(r() * 12);
+      line(c, x, B, x + (r() < 0.5 ? -2 : 2), B - h, i % 3 ? P.moss1 : P.moss2);
+      if (i % 4 === 0) c.rect(x + (r() < 0.5 ? -2 : 2) - 1, B - h - 3, 2, 4, P.wood1); // bulrush heads
+    }
+    frames.push(c);
+  }
+  // 3: root tangle (two tiles: anchor and west), tall
+  {
+    const c = cell();
+    const r = rng(5200);
+    for (let i = 0; i < 9; i++) {
+      const x0 = 10 + Math.floor(r() * 28);
+      line(c, x0, B, x0 + Math.floor(r() * 12) - 6, B - 18 - Math.floor(r() * 14), P.wood1);
+      line(c, x0 + 1, B, x0 + Math.floor(r() * 10) - 4, B - 12 - Math.floor(r() * 10), P.wax1);
+    }
+    c.ellipse(24, B - 2, 13, 3, P.wood1);
+    c.outline(P.ink);
+    frames.push(c);
+  }
+  // 4: weeping stone angel, tall
+  {
+    const c = cell();
+    c.rect(26, B - 6, 12, 6, P.stone1); // plinth
+    c.rect(28, B - 26, 8, 20, P.stone3); // robed body
+    c.ellipse(32, B - 29, 3.5, 4, P.stone3); // head bowed
+    c.rect(29, B - 27, 6, 2, P.stone4); // hands to the face
+    for (const s of [-1, 1]) for (let i = 0; i < 12; i++) c.hline(32 + s * (4 + Math.floor(i / 2)), B - 30 + i, 3, P.stone2); // wings folded
+    c.vline(31, B - 24, 5, P.wax1); // wax tears
+    c.outline(P.ink);
+    frames.push(c);
+  }
+  // 5: coffin, half sunk (flat)
+  {
+    const c = cell();
+    for (let y = 0; y < 6; y++) c.hline(20 + (y < 3 ? 3 - y : y - 3), B - 7 + y, 24 - 2 * Math.abs(y - 3), P.wood1);
+    c.hline(21, B - 5, 22, P.wood2);
+    c.ellipse(32, B - 1, 14, 2, P.wax1);
+    c.outline(P.ink);
+    frames.push(c);
+  }
+  // 6: drowned candles (floating stubs, flat)
+  {
+    const c = cell();
+    for (const [x, y] of [[24, 4], [30, 2], [36, 5], [40, 1]]) {
+      c.ellipse(x, B - y, 2, 1, P.wax1);
+      c.rect(x - 1, B - y - 3, 2, 3, P.wax2);
+      c.set(x - 1, B - y - 4, P.flame2);
+    }
+    frames.push(c);
+  }
+  // 7: dead willow, drooping (tall)
+  {
+    const c = cell();
+    c.rect(30, B - 26, 4, 26, P.wood1);
+    line(c, 32, B - 26, 18, B - 36, P.wood1);
+    line(c, 32, B - 24, 46, B - 34, P.wood1);
+    for (const x of [18, 22, 27, 38, 42, 46]) c.vline(x, B - 35 + (x % 3), 12 + (x % 5), P.moss1); // hanging moss
+    c.outline(P.ink);
+    frames.push(c);
+  }
+  // 8: sunken bell, rim above the wax (low)
+  {
+    const c = cell();
+    c.ellipse(32, B - 5, 11, 6, P.flame1);
+    c.ellipse(32, B - 7, 9, 3, P.ember);
+    c.ellipse(32, B - 1, 14, 2.5, P.wax1);
+    c.outline(P.ink);
+    frames.push(c);
+  }
+  const deco = new Img(W * frames.length, H);
+  frames.forEach((f, i) => deco.blit(f, i * W, 0));
+  sheet('decor_mire', deco, { cell: [W, H], pivot: [32, B], layer: 'single' });
+
+  // ---- creatures
+  const P7 = phased7();
+  const frames2 = <T,>(draw: (c: Img, d: Dir5, p: T) => void, poses: T[]) => poses.map(p => (c: Img, d: Dir5) => draw(c, d, p));
+  const walk4 = <T,>(draw: (c: Img, d: Dir5, p: T) => void, mk: (f: number) => T) => [0, 1, 2, 3].map(f => (c: Img, d: Dir5) => draw(c, d, mk(f)));
+  rosterSheet(
+    'drowned_pilgrim',
+    CELL,
+    PIVOT,
+    7,
+    [
+      { name: 'idle', frames: frames2(drawDrowned, [{}, { bob: 1, sway: 1 }]), timing: [{ ticks: 22 }, { ticks: 22 }], loop: true },
+      { name: 'walk', frames: walk4(drawDrowned, f => ({ step: f, bob: f % 2 ? -1 : 0, lean: 1 })), timing: walkT(10), loop: true },
+      {
+        // Up out of the wax: head first, then shoulders, then it's standing.
+        name: 'rise',
+        frames: frames2(drawDrowned, [{ sink: 20 }, { sink: 14 }, { sink: 9 }, { sink: 5 }, { sink: 2, hunch: 2 }, { hunch: 1 }, {}]),
+        timing: [{ ticks: 6 }, { ticks: 6 }, { ticks: 6 }, { ticks: 6 }, { ticks: 6 }, { ticks: 6 }, { ticks: 6 }],
+        loop: false,
+      },
+      {
+        name: 'claw',
+        frames: frames2(drawDrowned, [{ sway: -1, lean: -1 }, { sway: -2, lean: -2 }, { sway: -2, lean: -2, bob: 1 }, { sway: 2, lean: 3 }, { sway: 2, lean: 2 }, { sway: 1 }, {}]),
+        timing: P7,
+        loop: false,
+      },
+      { name: 'stagger', frames: frames2(drawDrowned, [{ lean: -2, flinch: true }, { lean: -1, bob: 1, flinch: true }, { bob: 1 }]), timing: staggerT, loop: false },
+    ],
+    [0, 1, 2, 3, 4].map(f => (c: Img) => drownedDeath(c, f)),
+    null,
+  );
+  rosterSheet(
+    'mire_lantern',
+    CELL,
+    PIVOT,
+    7,
+    [
+      { name: 'idle', frames: frames2(drawLantern, [{}, { bob: 1, sway: 1 }, { bob: 2 }, { bob: 1, sway: -1 }]), timing: [{ ticks: 14 }, { ticks: 14 }, { ticks: 14 }, { ticks: 14 }], loop: true },
+      { name: 'walk', frames: frames2(drawLantern, [{}, { bob: 1, sway: 1 }, { bob: 2 }, { bob: 1, sway: -1 }]), timing: walkT(8), loop: true },
+      { name: 'stagger', frames: frames2(drawLantern, [{ flinch: true, bob: 2 }, { flinch: true, bob: 3 }, { bob: 1 }]), timing: staggerT, loop: false },
+    ],
+    [0, 1, 2, 3, 4].map(f => (c: Img) => lanternDeath(c, f)),
+    null,
+  );
+  rosterSheet(
+    'mire_matron',
+    64,
+    [32, 58],
+    7,
+    [
+      { name: 'idle', frames: frames2(drawMatron, [{}, { bob: 1, sway: 1 }]), timing: [{ ticks: 26 }, { ticks: 26 }], loop: true },
+      { name: 'walk', frames: walk4(drawMatron, f => ({ bob: f % 2 ? 1 : 0, sway: f === 1 ? 1 : f === 3 ? -1 : 0 })), timing: walkT(12), loop: true },
+      {
+        name: 'sweep',
+        frames: frames2(drawMatron, [{ sway: -3, lean: -1 }, { sway: -4, lean: -2 }, { sway: -4, lean: -2, bob: 1 }, { sway: 4, lean: 3 }, { sway: 3, lean: 2 }, { sway: 1 }, {}]),
+        timing: P7,
+        loop: false,
+      },
+      {
+        name: 'embrace',
+        frames: frames2(drawMatron, [{ spread: 0.5 }, { spread: 1, lean: -1 }, { spread: 1.2, lean: -1 }, { spread: 0.2, lean: 4 }, { lean: 4 }, { lean: 2 }, {}]),
+        timing: P7,
+        loop: false,
+      },
+      {
+        name: 'sing',
+        frames: frames2(drawMatron, [{ spread: 0.5 }, { spread: 1, bob: -1 }, { spread: 1.5, bob: -2 }, { spread: 2, bob: -2 }, { spread: 2, bob: -1 }, { spread: 1 }, {}]),
+        timing: P7,
+        loop: false,
+      },
+      {
+        name: 'intro',
+        frames: frames2(drawMatron, [{ rise: 30 }, { rise: 22 }, { rise: 14 }, { rise: 6 }, { spread: 1 }, { spread: 2, bob: -1 }]),
+        timing: [{ ticks: 18 }, { ticks: 18 }, { ticks: 18 }, { ticks: 18 }, { ticks: 20 }, { ticks: 40 }],
+        loop: false,
+      },
+      { name: 'stagger', frames: frames2(drawMatron, [{ lean: -2, flinch: true }, { lean: -1, bob: 1, flinch: true }, { bob: 1 }]), timing: staggerT, loop: false },
+    ],
+    [0, 1, 2, 3, 4].map(f => (c: Img) => matronDeath(c, f)),
+    MATRON_HAND,
+  );
+
+  const glob = new Img(8, 8);
+  glob.disc(4, 4.5, 3, P.stone3);
+  glob.disc(4, 4, 1.5, P.wax1);
+  glob.set(3, 2, P.wax2);
+  glob.outline(P.ink);
+  sheet('mire_glob', glob, { cell: [8, 8], pivot: [4, 4], layer: 'fx' });
+}
+
 function genRoster() {
   const P7 = phased7();
   const walk4 = <T,>(draw: (c: Img, d: Dir5, p: T) => void, mk: (f: number) => T) => [0, 1, 2, 3].map(f => (c: Img, d: Dir5) => draw(c, d, mk(f)));
@@ -2796,9 +3203,21 @@ function drawPip(c: Img, { breath, mouth }: NpcPose) {
 }
 
 /** Head-and-shoulders portraits for the dialogue box, drawn at double detail. */
-function drawPortrait(c: Img, who: 'oskar' | 'maudlin' | 'pip' | 'tollwarden') {
+function drawPortrait(c: Img, who: 'oskar' | 'maudlin' | 'pip' | 'tollwarden' | 'matron') {
   c.rect(0, 0, 32, 32, P.dark1);
-  if (who === 'tollwarden') {
+  if (who === 'matron') {
+    c.rect(4, 24, 24, 8, P.teal1); // sodden habit
+    c.rect(9, 22, 14, 4, P.stone3); // collar
+    c.rect(6, 2, 20, 23, P.stone1); // veil
+    c.rect(8, 4, 16, 4, P.wax2); // wimple band
+    c.rect(10, 8, 12, 14, P.wax1); // face, pale as wax
+    c.hline(12, 13, 3, P.ink); // eyes closed
+    c.hline(18, 13, 3, P.ink);
+    c.rect(15, 18, 3, 2, P.dark2); // singing
+    c.vline(11, 14, 6, P.wax2); // wax tear tracks
+    c.vline(21, 15, 5, P.wax2);
+    for (const x of [7, 25]) c.vline(x, 20, 6, P.wax1); // wax running from the veil's hem
+  } else if (who === 'tollwarden') {
     c.rect(3, 24, 26, 8, P.blood1); // coat collar
     c.ellipse(5, 26, 5, 4, P.steel1); // pauldrons
     c.ellipse(27, 26, 5, 4, P.steel1);
@@ -2874,7 +3293,7 @@ function genNpcs() {
     });
     sheet(`npc_${name}`, img, { cell: [32, 32], pivot: [16, 28], layer: 'single' });
   }
-  const who = ['oskar', 'maudlin', 'pip', 'tollwarden'] as const;
+  const who = ['oskar', 'maudlin', 'pip', 'tollwarden', 'matron'] as const;
   const portraits = new Img(32 * who.length, 32);
   who.forEach((w, i) => {
     const c = new Img(32, 32);
@@ -3346,5 +3765,6 @@ genChest();
 genNpcs();
 genTollwarden();
 genWorks();
+genMire();
 genFont();
 console.log(`gen-art: wrote ${written} file(s), skipped ${skipped} existing${skipped && !FORCE ? ' (use --force to overwrite)' : ''}`);

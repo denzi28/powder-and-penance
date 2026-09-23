@@ -1,0 +1,18 @@
+{
+  "id": "matron_death",
+  "steps": [
+    { "camera": "enemy:mire_matron", "ticks": 45 },
+    { "wait": 20 },
+    { "say": "...There. There now. Hush.", "who": "matron" },
+    { "say": "I was the Abbey's midwife. Forty years of mothers, and every one of them handed me their child and trusted me.", "who": "matron" },
+    { "say": "Then the Drip came into the cradles, and the Chandler said the ones who went to wax should be given to the flame. I couldn't. So I brought them down here instead, where it was quiet.", "who": "matron" },
+    { "say": "I sang to them so they wouldn't be frightened. I think I've been singing ever since.", "who": "matron" },
+    { "wait": 30 },
+    { "say": "Would you... no. No, you're grown. You don't need a lullaby.", "who": "matron" },
+    { "wait": 40 },
+    { "say": "She lies back into the pool as if into a bed. The wax closes over her face last. Around you, the pools go still." },
+    { "give": "seal_of_the_mire" },
+    { "set": "matron_rests" },
+    { "camera": "player", "ticks": 45 }
+  ]
+}

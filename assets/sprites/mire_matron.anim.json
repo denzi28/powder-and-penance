@@ -1,0 +1,286 @@
+{
+  "image": "mire_matron.png",
+  "cell": [
+    64,
+    64
+  ],
+  "pivot": [
+    32,
+    58
+  ],
+  "layer": "single",
+  "animations": {
+    "idle": {
+      "row": 0,
+      "dirs": [
+        "S",
+        "SE",
+        "E",
+        "NE",
+        "N"
+      ],
+      "loop": true,
+      "frames": [
+        {
+          "ticks": 26
+        },
+        {
+          "ticks": 26
+        }
+      ]
+    },
+    "walk": {
+      "row": 5,
+      "dirs": [
+        "S",
+        "SE",
+        "E",
+        "NE",
+        "N"
+      ],
+      "loop": true,
+      "frames": [
+        {
+          "ticks": 12
+        },
+        {
+          "ticks": 12,
+          "events": [
+            "footstep"
+          ]
+        },
+        {
+          "ticks": 12
+        },
+        {
+          "ticks": 12,
+          "events": [
+            "footstep"
+          ]
+        }
+      ]
+    },
+    "sweep": {
+      "row": 10,
+      "dirs": [
+        "S",
+        "SE",
+        "E",
+        "NE",
+        "N"
+      ],
+      "loop": false,
+      "frames": [
+        {
+          "ticks": 1,
+          "phase": "windup"
+        },
+        {
+          "ticks": 2,
+          "phase": "windup"
+        },
+        {
+          "ticks": 2,
+          "phase": "windup"
+        },
+        {
+          "ticks": 1,
+          "phase": "active"
+        },
+        {
+          "ticks": 1,
+          "phase": "active"
+        },
+        {
+          "ticks": 2,
+          "phase": "recovery"
+        },
+        {
+          "ticks": 1,
+          "phase": "recovery"
+        }
+      ]
+    },
+    "embrace": {
+      "row": 15,
+      "dirs": [
+        "S",
+        "SE",
+        "E",
+        "NE",
+        "N"
+      ],
+      "loop": false,
+      "frames": [
+        {
+          "ticks": 1,
+          "phase": "windup"
+        },
+        {
+          "ticks": 2,
+          "phase": "windup"
+        },
+        {
+          "ticks": 2,
+          "phase": "windup"
+        },
+        {
+          "ticks": 1,
+          "phase": "active"
+        },
+        {
+          "ticks": 1,
+          "phase": "active"
+        },
+        {
+          "ticks": 2,
+          "phase": "recovery"
+        },
+        {
+          "ticks": 1,
+          "phase": "recovery"
+        }
+      ]
+    },
+    "sing": {
+      "row": 20,
+      "dirs": [
+        "S",
+        "SE",
+        "E",
+        "NE",
+        "N"
+      ],
+      "loop": false,
+      "frames": [
+        {
+          "ticks": 1,
+          "phase": "windup"
+        },
+        {
+          "ticks": 2,
+          "phase": "windup"
+        },
+        {
+          "ticks": 2,
+          "phase": "windup"
+        },
+        {
+          "ticks": 1,
+          "phase": "active"
+        },
+        {
+          "ticks": 1,
+          "phase": "active"
+        },
+        {
+          "ticks": 2,
+          "phase": "recovery"
+        },
+        {
+          "ticks": 1,
+          "phase": "recovery"
+        }
+      ]
+    },
+    "intro": {
+      "row": 25,
+      "dirs": [
+        "S",
+        "SE",
+        "E",
+        "NE",
+        "N"
+      ],
+      "loop": false,
+      "frames": [
+        {
+          "ticks": 18
+        },
+        {
+          "ticks": 18
+        },
+        {
+          "ticks": 18
+        },
+        {
+          "ticks": 18
+        },
+        {
+          "ticks": 20
+        },
+        {
+          "ticks": 40
+        }
+      ]
+    },
+    "stagger": {
+      "row": 30,
+      "dirs": [
+        "S",
+        "SE",
+        "E",
+        "NE",
+        "N"
+      ],
+      "loop": false,
+      "frames": [
+        {
+          "ticks": 6
+        },
+        {
+          "ticks": 10
+        },
+        {
+          "ticks": 30
+        }
+      ]
+    },
+    "death": {
+      "row": 35,
+      "dirs": [
+        "S"
+      ],
+      "loop": false,
+      "frames": [
+        {
+          "ticks": 8
+        },
+        {
+          "ticks": 10
+        },
+        {
+          "ticks": 12
+        },
+        {
+          "ticks": 30
+        },
+        {
+          "ticks": 60
+        }
+      ]
+    }
+  },
+  "handAnchors": {
+    "S": [
+      15,
+      -22
+    ],
+    "SE": [
+      14,
+      -23
+    ],
+    "E": [
+      10,
+      -23
+    ],
+    "NE": [
+      13,
+      -25
+    ],
+    "N": [
+      13,
+      -25
+    ]
+  }
+}

@@ -278,6 +278,7 @@
       "id": "pip",
       "npc": "pip",
       "at": [22, 16],
+      "talk": "pip_hub",
       "when": "pip_rescued"
     },
     {

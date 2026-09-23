@@ -342,7 +342,8 @@ const roll: State<Player> = {
     const c = DATA.roll;
     p.invulnerable = t >= c.iframeStart && t <= c.iframeEnd;
     if (t < c.travelTicks) {
-      const d = c.distance * (easeOut((t + 1) / c.travelTicks, c.curvePower) - easeOut(t / c.travelTicks, c.curvePower));
+      const d =
+        c.distance * (easeOut((t + 1) / c.travelTicks, c.curvePower) - easeOut(t / c.travelTicks, c.curvePower)) * p.terrainMult(); // wax drags
       p.moveBy(p.rollDirX * d, p.rollDirY * d);
     }
     if (t === c.travelTicks) p.squash.set(DATA.juice.squash.rollLand);

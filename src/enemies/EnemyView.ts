@@ -57,7 +57,7 @@ export class EnemyView {
     }
 
     if (this.weapon) {
-      this.weapon.setVisible(!e.dead);
+      this.weapon.setVisible(!e.dead && e.alpha > 0); // hidden with its owner (e.g. submerged ambushers)
       // Casting and channelling need both hands: the weapon is set down flat on the floor beside the
       // caster, where it stays until they move or fight again.
       const setDown = !e.dead && SET_DOWN_ANIMS.has(e.anim.name);

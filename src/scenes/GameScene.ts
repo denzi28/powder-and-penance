@@ -42,6 +42,7 @@ import { Particles } from '../render/Particles';
 import { FloatingText } from '../render/FloatingText';
 import { ProjectileView } from '../render/ProjectileView';
 import { EnemyBars } from '../render/EnemyBars';
+import { LightCones } from '../render/LightCones';
 import { Sfx } from '../audio/Sfx';
 import { SaveSystem, type SaveData } from '../save/SaveSystem';
 import { MenuNav, type Menu } from '../ui/Menu';
@@ -144,6 +145,7 @@ export class GameScene extends Phaser.Scene {
   private enemyViews = new Map<Enemy, EnemyView>();
   private projectileView!: ProjectileView;
   private enemyBars!: EnemyBars;
+  private lightCones!: LightCones;
   private rng = mulberry32(1234);
   private roomsJson = '';
   private menuNav = new MenuNav();
@@ -224,6 +226,7 @@ export class GameScene extends Phaser.Scene {
     this.numbers = new FloatingText(this);
     this.projectileView = new ProjectileView(this, this.lib);
     this.enemyBars = new EnemyBars(this);
+    this.lightCones = new LightCones(this);
     this.debug = new DebugOverlay(this);
     wirePresentation(this);
     this.wireGameplayEvents();
@@ -680,6 +683,7 @@ export class GameScene extends Phaser.Scene {
     const camY = focus ? Math.round(focus.y) : feet.y;
     this.cam.apply(this.cameras.main, camX, camY, alpha, this.roomBounds(focus ? focus.x : this.player.x, focus ? focus.y : this.player.y), delta);
     this.enemyBars.draw(this.enemyViews.values(), fxDelta);
+    this.lightCones.draw(this.enemies, this.grid);
     this.debug.draw(this, feet.x, feet.y);
   }
 

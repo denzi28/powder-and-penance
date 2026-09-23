@@ -1,0 +1,155 @@
+{
+  "id": "mire_03_lantern_walk",
+  "area": "mire",
+  "origin": [12, 15],
+  "legend": {
+    "#": "wall",
+    ".": "floor",
+    ",": "floor_grass",
+    "~": "floor_wax",
+    ":": "floor_stone",
+    " ": "void"
+  },
+  "tiles": [
+    "##########..################",
+    "#,,,,,,,,,,,,,,,,,,,,,,,,,,#",
+    "#,,,,,,,,~~~~,,,,,,,,,,,,,,#",
+    "#,,,,,,,,~~~~,,,,,,,,,,,,,,#",
+    "#,,,,,,,,~~~~,,,,,,,,,,,,,,#",
+    "#,,,,,,,,,,,,,,,,,,,,,,,,,,#",
+    "#,,,,,,,,,,,,,,,,,,,,,,,,,,.",
+    "#,,,,,,,,,,,,,,,,,,,,,,,,,,.",
+    "#,,,,,,,,,,,,,,,,,~~~~~,,,,#",
+    "#,,,,,,,,,,,,,,,,,~~~~~,,,,#",
+    "#,,,,,,,,,,,,,,,,,~~~~~,,,,#",
+    "#,,,,,,,,,,,,,,,,,,,,,,,,,,#",
+    "#,,~~~~~~,,,,,,,,,,,,,,,,,,#",
+    "#,,~~~~~~,,,,,,,,,,,,,,,,,,#",
+    "#,,~~~~~~,,,,,,,,,,,,,,,,,,#",
+    "#,,,,,,,,,,,,,,,,,,,,,,,,,,#",
+    "#,,,,,,,,,,,,,,,,,,,,,,,,,,#",
+    "######..####################"
+  ],
+  "entities": [
+    {
+      "type": "enemy",
+      "kind": "mire_lantern",
+      "at": [8, 5],
+      "facing": "E"
+    },
+    {
+      "type": "enemy",
+      "kind": "mire_lantern",
+      "at": [20, 12],
+      "facing": "W"
+    },
+    {
+      "type": "enemy",
+      "kind": "wickling",
+      "at": [15, 5],
+      "facing": "S"
+    },
+    {
+      "type": "enemy",
+      "kind": "wickling",
+      "at": [22, 15],
+      "facing": "N"
+    },
+    {
+      "type": "decor",
+      "kind": "reeds",
+      "at": [4, 4]
+    },
+    {
+      "type": "decor",
+      "kind": "reeds",
+      "at": [5, 4]
+    },
+    {
+      "type": "decor",
+      "kind": "reeds",
+      "at": [12, 7]
+    },
+    {
+      "type": "decor",
+      "kind": "reeds",
+      "at": [13, 7]
+    },
+    {
+      "type": "decor",
+      "kind": "reeds",
+      "at": [14, 7]
+    },
+    {
+      "type": "decor",
+      "kind": "reeds",
+      "at": [17, 3]
+    },
+    {
+      "type": "decor",
+      "kind": "reeds",
+      "at": [18, 3]
+    },
+    {
+      "type": "decor",
+      "kind": "reeds",
+      "at": [22, 6]
+    },
+    {
+      "type": "decor",
+      "kind": "reeds",
+      "at": [6, 10]
+    },
+    {
+      "type": "decor",
+      "kind": "reeds",
+      "at": [7, 10]
+    },
+    {
+      "type": "decor",
+      "kind": "reeds",
+      "at": [15, 13]
+    },
+    {
+      "type": "decor",
+      "kind": "reeds",
+      "at": [16, 13]
+    },
+    {
+      "type": "decor",
+      "kind": "reeds",
+      "at": [23, 11]
+    },
+    {
+      "type": "decor",
+      "kind": "reeds",
+      "at": [11, 15]
+    },
+    {
+      "type": "decor",
+      "kind": "reeds",
+      "at": [3, 15]
+    },
+    {
+      "type": "decor",
+      "kind": "root_tangle",
+      "at": [11, 11]
+    },
+    {
+      "type": "decor",
+      "kind": "root_tangle",
+      "at": [25, 9]
+    },
+    {
+      "type": "decor",
+      "kind": "dead_willow",
+      "at": [25, 15]
+    },
+    {
+      "type": "item",
+      "id": "mire_pouch",
+      "item": "ammo_pouch",
+      "at": [25, 2]
+    }
+  ]
+}

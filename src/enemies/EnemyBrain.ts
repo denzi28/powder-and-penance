@@ -15,7 +15,10 @@ import type { Enemy } from './Enemy';
 const idle: State<Enemy> = {
   tick(e) {
     e.steer(0, 0);
-    e.turnTo(e.homeFacing);
+    const scan = e.def.scan;
+    // A lantern sweeps its gaze to and fro across its post; everyone else just faces their post.
+    if (scan) e.turnTo(e.homeFacing + Math.sin((e.age * scan.degPerTick) / scan.arcDeg) * scan.arcDeg * DEG);
+    else e.turnTo(e.homeFacing);
     if (e.awareness >= 1) return 'notice';
     if (e.awareness >= e.def.perception.suspicionAt) return 'suspicious';
   },
@@ -280,6 +283,42 @@ const dummyStagger: State<Enemy> = {
   },
 };
 
+/**
+ * Ambusher, waiting under the surface: unseen and untouchable, ignoring everything but distance. Now and
+ * then a bubble breaks the wax above it (the only tell). It rises when the player comes within `radius`.
+ */
+const submerged: State<Enemy> = {
+  enter(e) {
+    e.alpha = 0;
+  },
+  tick(e, t) {
+    e.steer(0, 0);
+    if (t % 110 === 55) e.ctx.bus.emit('dust', { x: e.x, y: e.y, kind: 'step' });
+    if (!e.player.dead && e.distToPlayer() <= e.def.ambush!.radius) return 'rise';
+  },
+};
+
+const rise: State<Enemy> = {
+  enter(e) {
+    e.alpha = 1;
+    e.vx = e.vy = 0;
+    e.turnTo(e.angleToPlayer());
+    e.anim.play(e.anim.has('rise') ? 'rise' : 'idle', { restart: true });
+    e.ctx.bus.emit('sfx', { id: 'break_pot', x: e.x, y: e.y });
+    e.ctx.bus.emit('dust', { x: e.x, y: e.y, kind: 'roll' });
+  },
+  tick(e, t) {
+    e.steer(0, 0);
+    e.turnTo(e.angleToPlayer());
+    if (t >= e.def.ambush!.riseTicks) {
+      e.awareness = 1;
+      e.trackPlayer();
+      e.alertRoom();
+      return 'approach';
+    }
+  },
+};
+
 /** Boss, before its fight: stands at its post and ignores everything until the arena wakes it. */
 const dormant: State<Enemy> = {
   tick(e) {
@@ -340,7 +379,7 @@ const channel: State<Enemy> = {
   },
 };
 
-const FIGHTER = { idle, suspicious, notice, approach, strafe, attack, stagger, parried, guardBroken, critVictim, return: ret, dead, channel };
+const FIGHTER = { idle, suspicious, notice, approach, strafe, attack, stagger, parried, guardBroken, critVictim, return: ret, dead, channel, submerged, rise };
 const BOSS = { idle: dormant, intro, approach, strafe, attack, stagger, parried, guardBroken, critVictim, dead, channel };
 
 export const BRAINS: Record<'melee' | 'ranged' | 'dummy' | 'rhythm' | 'boss', Record<string, State<Enemy>>> = {

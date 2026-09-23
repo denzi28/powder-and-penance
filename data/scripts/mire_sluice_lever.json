@@ -1,0 +1,11 @@
+{
+  "id": "mire_sluice_lever",
+  "skippable": true,
+  "steps": [
+    { "shake": 0.3 },
+    { "sfx": "door_open" },
+    { "wait": 30 },
+    { "say": "Chains shriek somewhere above. The sluice gate grinds up out of the wax: a stone channel climbs toward the Abbey's undercroft." },
+    { "toast": ["SHORTCUT OPENED", "The sluice now joins the Waxmire and the Abbey Undercroft."] }
+  ]
+}

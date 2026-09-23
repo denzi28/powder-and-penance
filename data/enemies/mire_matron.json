@@ -1,0 +1,141 @@
+{
+  "id": "mire_matron",
+  "name": "Mire Matron",
+  "ai": "boss",
+  "wader": true,
+  "boss": {
+    "title": "The Mire Matron",
+    "introAnim": "intro",
+    "introTicks": 135,
+    "slams": [],
+    "introLine": "Hush now. Have you come to be born again?",
+    "roarSfx": "summon",
+    "deathScript": "matron_death"
+  },
+  "sprite": "mire_matron",
+  "hp": 1100,
+  "poise": { "max": 260, "resetTicks": 280 },
+  "tallow": 2600,
+  "speed": 34,
+  "strafeSpeed": 22,
+  "accelTicks": 12,
+  "turnDegPerTick": 4,
+  "collider": { "w": 18, "h": 7 },
+  "hurtbox": { "w": 22, "h": 46, "offsetY": -24 },
+  "bodyRadius": 12,
+  "knockbackResist": 0.9,
+  "spacing": { "preferred": 60, "strafeTicks": [50, 100] },
+  "attackGapTicks": [14, 36],
+  "staggerTicks": 44,
+  "parriedTicks": 80,
+  "deathTicks": 110,
+  "corpseTicks": 1800,
+  "blood": "wax1",
+  "moves": [
+    {
+      "id": "drowning_sweep",
+      "range": [0, 64],
+      "weight": 3,
+      "cooldown": 50,
+      "strikes": [
+        {
+          "damage": 38, "poise": 50,
+          "windup": 28, "active": 7, "recovery": 30,
+          "trackDegPerTick": 3,
+          "hyperArmor": 50,
+          "telegraph": { "tick": 10, "kind": "normal" },
+          "hitbox": { "shape": "arc", "radius": 60, "halfAngle": 110 },
+          "originY": -14,
+          "sweep": { "fromDeg": -130, "toDeg": 130 },
+          "knockback": 170, "hitstop": 6, "shake": 0.3, "sfx": "swing_heavy", "anim": "sweep"
+        }
+      ]
+    },
+    {
+      "id": "embrace",
+      "range": [0, 60],
+      "weight": 2,
+      "cooldown": 180,
+      "strikes": [
+        {
+          "damage": 10, "poise": 0,
+          "windup": 32, "active": 6, "recovery": 80,
+          "trackDegPerTick": 5,
+          "unblockable": true,
+          "unparryable": true,
+          "telegraph": { "tick": 12, "kind": "danger" },
+          "lunge": { "distance": 26, "startTick": 28, "ticks": 6 },
+          "hitbox": { "shape": "circle", "radius": 18, "offset": 20 },
+          "originY": -12,
+          "sweep": { "fromDeg": 0, "toDeg": 0, "reach": 6 },
+          "grab": { "holdTicks": 80, "damage": 46, "throwKnockback": 220 },
+          "sfx": "grab", "anim": "embrace"
+        }
+      ]
+    },
+    {
+      "id": "lullaby",
+      "range": [50, 220],
+      "weight": 3,
+      "cooldown": 90,
+      "strikes": [
+        {
+          "damage": 0, "poise": 0,
+          "windup": 26, "active": 4, "recovery": 24,
+          "trackDegPerTick": 4,
+          "telegraph": { "tick": 8, "kind": "normal" },
+          "hitbox": { "shape": "circle", "radius": 1, "offset": 0 },
+          "originY": -30,
+          "sweep": { "fromDeg": -30, "toDeg": 30 },
+          "sfx": "throw", "anim": "sing",
+          "projectile": {
+            "sprite": "mire_glob",
+            "speed": 1, "range": 1,
+            "damage": 26, "poise": 26, "knockback": 110, "hitstop": 4, "shake": 0.2,
+            "radius": 4, "count": 4, "spreadDeg": 50,
+            "lob": { "flightTicks": 44, "arcHeight": 44, "blastRadius": 22, "sfx": "break_pot" }
+          }
+        }
+      ]
+    },
+    {
+      "id": "wail",
+      "range": [0, 50],
+      "weight": 2,
+      "cooldown": 150,
+      "strikes": [
+        {
+          "damage": 30, "poise": 60,
+          "windup": 34, "active": 6, "recovery": 40,
+          "trackDegPerTick": 0,
+          "hyperArmor": 80,
+          "unblockable": true,
+          "telegraph": { "tick": 12, "kind": "danger" },
+          "hitbox": { "shape": "circle", "radius": 58, "offset": 0 },
+          "originY": -6,
+          "sweep": { "fromDeg": -90, "toDeg": -90 },
+          "knockback": 280, "hitstop": 8, "shake": 0.5, "sfx": "boss_roar", "anim": "sing"
+        }
+      ]
+    },
+    {
+      "id": "call_the_drowned",
+      "range": [0, 400],
+      "weight": 2,
+      "cooldown": 520,
+      "strikes": [
+        {
+          "damage": 0, "poise": 0,
+          "windup": 34, "active": 6, "recovery": 24,
+          "trackDegPerTick": 0,
+          "hyperArmor": 120,
+          "telegraph": { "tick": 10, "kind": "normal" },
+          "hitbox": { "shape": "circle", "radius": 1, "offset": 0 },
+          "sweep": { "fromDeg": -90, "toDeg": -90 },
+          "summon": { "kind": "drowned_pilgrim", "count": 3, "radius": 70, "shield": false },
+          "sfx": "summon", "anim": "sing"
+        }
+      ]
+    }
+  ]
+}

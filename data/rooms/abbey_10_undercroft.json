@@ -22,9 +22,22 @@
     "#.....,,,,.....#",
     "#.....,,,,.....#",
     "#..............#",
-    "###########..###"
+    "####.######..###"
   ],
   "entities": [
+    {
+      "type": "exit",
+      "id": "abbey_sluice_down",
+      "at": [4, 13],
+      "to": { "area": "mire", "spawn": "from_abbey" },
+      "when": "lever:mire_sluice",
+      "closed": "A sluice channel runs down into the dark, its gate shut from below."
+    },
+    {
+      "type": "spawn",
+      "id": "from_mire",
+      "at": [4, 12]
+    },
     {
       "type": "enemy",
       "kind": "taper_hound",

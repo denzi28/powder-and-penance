@@ -1,0 +1,115 @@
+{
+  "id": "mire_09_choir",
+  "area": "mire",
+  "origin": [31, 47],
+  "legend": {
+    "#": "wall",
+    ".": "floor",
+    ",": "floor_grass",
+    "~": "floor_wax",
+    ":": "floor_stone",
+    " ": "void"
+  },
+  "tiles": [
+    "############..##########",
+    "#,,,,,,,,,,,,,,,,,,,,,,#",
+    "#,,,,,,,,,,,,,,,,,,,,,,#",
+    "#,,~~~~~~~~~~~~~~~~~~,,#",
+    "#,,~~~~~~~~~~~~~~~~~~,,#",
+    "#,,~~~~~~~~~~~~~~~~~~,,#",
+    "#,,~~~~~~~~~~~~~~~~~~,,#",
+    "#,,~~~~~~~~~~~~~~~~~~,,#",
+    "#,,~~~~~~~~~~~~~~~~~~,,#",
+    "#,,~~~~~~~~~~~~~~~~~~,,#",
+    "#,,~~~~~~~~~~~~~~~~~~,,#",
+    "#,,~~~~~~~~~~~~~~~~~~,,#",
+    "#,,~~~~~~~~~~~~~~~~~~,,#",
+    "#,,,,,,,,,,,,,,,,,,,,,,#",
+    "#,,,,,,,,,,,,,,,,,,,,,,#",
+    "###########..###########"
+  ],
+  "entities": [
+    {
+      "type": "enemy",
+      "kind": "mire_lantern",
+      "at": [12, 7],
+      "facing": "S"
+    },
+    {
+      "type": "enemy",
+      "kind": "drowned_pilgrim",
+      "at": [6, 5],
+      "facing": "E"
+    },
+    {
+      "type": "enemy",
+      "kind": "drowned_pilgrim",
+      "at": [11, 4],
+      "facing": "S"
+    },
+    {
+      "type": "enemy",
+      "kind": "drowned_pilgrim",
+      "at": [16, 5],
+      "facing": "W"
+    },
+    {
+      "type": "enemy",
+      "kind": "drowned_pilgrim",
+      "at": [18, 9],
+      "facing": "W"
+    },
+    {
+      "type": "enemy",
+      "kind": "drowned_pilgrim",
+      "at": [12, 11],
+      "facing": "N"
+    },
+    {
+      "type": "enemy",
+      "kind": "drowned_pilgrim",
+      "at": [6, 10],
+      "facing": "E"
+    },
+    {
+      "type": "decor",
+      "kind": "coffin",
+      "at": [4, 13]
+    },
+    {
+      "type": "decor",
+      "kind": "coffin",
+      "at": [19, 13]
+    },
+    {
+      "type": "decor",
+      "kind": "drowned_candles",
+      "at": [3, 2]
+    },
+    {
+      "type": "decor",
+      "kind": "drowned_candles",
+      "at": [20, 2]
+    },
+    {
+      "type": "decor",
+      "kind": "drowned_candles",
+      "at": [9, 13]
+    },
+    {
+      "type": "decor",
+      "kind": "drowned_candles",
+      "at": [15, 13]
+    },
+    {
+      "type": "decor",
+      "kind": "stone_angel",
+      "at": [2, 8]
+    },
+    {
+      "type": "decor",
+      "kind": "stone_angel",
+      "at": [21, 8]
+    }
+  ]
+}

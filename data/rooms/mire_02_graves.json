@@ -1,0 +1,147 @@
+{
+  "id": "mire_02_graves",
+  "area": "mire",
+  "origin": [17, 0],
+  "legend": {
+    "#": "wall",
+    ".": "floor",
+    ",": "floor_grass",
+    "~": "floor_wax",
+    ":": "floor_stone",
+    " ": "void"
+  },
+  "tiles": [
+    "########################",
+    "#,,,,,,,,,,,,,,,,,,,,,,#",
+    "#,,,,,,,,,,,,,,,,,,,,,,#",
+    "#,,,,,,,,,,,,,,,,,,,,,,#",
+    "#,,,,,,,,,,,,,,,,,,,,,,#",
+    "#,,,,,,,,,,,,,,,,,,,,,,#",
+    "#,,,,,,,,,,,,,,,,,,,,,,#",
+    "#,,,,,,,,,,,,,,,,,,,,,,#",
+    "#,~~~~~~~~~~~~~~~~~~~,,#",
+    "#,~~~~~~~~~~~~~~~~~~~,,.",
+    "#,~~~~~~~~~~~~~~~~~~~,,.",
+    "#,,,,,,,,,,,,,,,,,,,,,,#",
+    "#,,,~~~~~~,,,,,,,,,,,,,#",
+    "#,,,~~~~~~,,,,,,,,,,,,,#",
+    "#,,,,,,,,,,,,,,,,,,,,,,#",
+    "#####..#################"
+  ],
+  "entities": [
+    {
+      "type": "decor",
+      "kind": "gravestone",
+      "at": [4, 3]
+    },
+    {
+      "type": "decor",
+      "kind": "gravestone",
+      "at": [7, 3]
+    },
+    {
+      "type": "decor",
+      "kind": "gravestone",
+      "at": [10, 3]
+    },
+    {
+      "type": "decor",
+      "kind": "gravestone",
+      "at": [13, 3]
+    },
+    {
+      "type": "decor",
+      "kind": "gravestone",
+      "at": [16, 3]
+    },
+    {
+      "type": "decor",
+      "kind": "gravestone",
+      "at": [19, 3]
+    },
+    {
+      "type": "decor",
+      "kind": "gravestone",
+      "at": [4, 6]
+    },
+    {
+      "type": "decor",
+      "kind": "gravestone",
+      "at": [8, 6]
+    },
+    {
+      "type": "decor",
+      "kind": "gravestone",
+      "at": [12, 6]
+    },
+    {
+      "type": "decor",
+      "kind": "gravestone",
+      "at": [16, 6]
+    },
+    {
+      "type": "decor",
+      "kind": "gravestone",
+      "at": [20, 6]
+    },
+    {
+      "type": "decor",
+      "kind": "grave_cross",
+      "at": [8, 12]
+    },
+    {
+      "type": "decor",
+      "kind": "grave_cross",
+      "at": [12, 12]
+    },
+    {
+      "type": "decor",
+      "kind": "grave_cross",
+      "at": [16, 12]
+    },
+    {
+      "type": "decor",
+      "kind": "grave_cross",
+      "at": [20, 12]
+    },
+    {
+      "type": "decor",
+      "kind": "stone_angel",
+      "at": [12, 1]
+    },
+    {
+      "type": "decor",
+      "kind": "coffin",
+      "at": [14, 9]
+    },
+    {
+      "type": "decor",
+      "kind": "dead_willow",
+      "at": [2, 13]
+    },
+    {
+      "type": "enemy",
+      "kind": "drowned_pilgrim",
+      "at": [6, 9],
+      "facing": "E"
+    },
+    {
+      "type": "enemy",
+      "kind": "drowned_pilgrim",
+      "at": [15, 9],
+      "facing": "W"
+    },
+    {
+      "type": "enemy",
+      "kind": "drowned_pilgrim",
+      "at": [10, 13],
+      "facing": "N"
+    },
+    {
+      "type": "item",
+      "id": "mire_tallow",
+      "item": "tallow_lump",
+      "at": [21, 1]
+    }
+  ]
+}

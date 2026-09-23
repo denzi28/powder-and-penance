@@ -39,6 +39,16 @@
     "lift_cage": { "sprite": "decor_works", "frame": 8, "flat": true },
     "chain_heap": { "sprite": "decor_works", "frame": 9, "flat": true },
     "tallow_cart": { "sprite": "decor_works", "frame": 10, "blocks": [[-1, 0], [0, 0]] },
-    "toll_booth": { "sprite": "decor_works", "frame": 11, "blocks": [[0, 0]], "tall": true }
+    "toll_booth": { "sprite": "decor_works", "frame": 11, "blocks": [[0, 0]], "tall": true },
+
+    "gravestone": { "sprite": "decor_mire", "frame": 0, "blocks": [[0, 0]] },
+    "grave_cross": { "sprite": "decor_mire", "frame": 1, "blocks": [[0, 0]] },
+    "reeds": { "sprite": "decor_mire", "frame": 2, "blocks": [[0, 0]], "tall": true },
+    "root_tangle": { "sprite": "decor_mire", "frame": 3, "blocks": [[-1, 0], [0, 0]], "tall": true },
+    "stone_angel": { "sprite": "decor_mire", "frame": 4, "blocks": [[0, 0]], "tall": true },
+    "coffin": { "sprite": "decor_mire", "frame": 5, "flat": true },
+    "drowned_candles": { "sprite": "decor_mire", "frame": 6, "flat": true },
+    "dead_willow": { "sprite": "decor_mire", "frame": 7, "blocks": [[0, 0]], "tall": true },
+    "sunken_bell": { "sprite": "decor_mire", "frame": 8, "blocks": [[0, 0]] }
   }
 }

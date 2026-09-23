@@ -488,6 +488,17 @@ export const EnemyDef = z.object({
   deathTicks: int.positive().default(40),
   corpseTicks: int.nonnegative().default(120),
   blood: z.string().default('blood2'),
+  /** Not slowed by terrain (creatures of the mire move freely through its wax). */
+  wader: z.boolean().default(false),
+  /**
+   * Ambusher: waits unseen under the surface (invulnerable, not perceiving) until the player comes within
+   * `radius` px, then rises (anim "rise", `riseTicks`) and fights.
+   */
+  ambush: z.object({ radius: pos, riseTicks: int.positive() }).optional(),
+  /** Sweeps its gaze back and forth by this many degrees each side of its facing while idle (lanterns). */
+  scan: z.object({ arcDeg: pos, degPerTick: pos }).optional(),
+  /** Draw its sight cone in the world as a pale light (lanterns: so the player can read the sweep). */
+  lightCone: z.object({ length: pos, color: z.string().default('flame2') }).optional(),
   /** On death, burst into `count` of another enemy kind (e.g. a wax blob into smaller blobs). */
   splitInto: z.object({ kind: z.string(), count: int.positive() }).optional(),
   moves: z.array(MoveDef).default([]),
@@ -599,6 +610,8 @@ export const DecorDef = z.object({
   flat: z.boolean().default(false),
 });
 export const DecorTable = z.object({ decor: z.record(z.string(), DecorDef) });
+/** data/terrain.json: floor variants that change how things move (e.g. wax pools slow you down). */
+export const Terrain = z.object({ floors: z.record(z.string(), z.object({ speedMult: num.min(0.05).max(2) })) });
 export const RoomEntity = z.object({ type: z.string(), id: z.string().optional(), at: Vec2 }).passthrough();
 export const RoomData = z
   .object({

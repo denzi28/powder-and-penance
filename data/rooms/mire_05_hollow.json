@@ -1,0 +1,73 @@
+{
+  "id": "mire_05_hollow",
+  "area": "mire",
+  "origin": [54, 15],
+  "legend": {
+    "#": "wall",
+    ".": "floor",
+    ",": "floor_grass",
+    "~": "floor_wax",
+    ":": "floor_stone",
+    " ": "void"
+  },
+  "tiles": [
+    "############",
+    "#,,,,,,,,,,#",
+    "#,,,,,,,,,,#",
+    "#,,,,,,,,,,#",
+    "#,,,,,,,,,,#",
+    ".,,,,,,,,,,#",
+    "#,,,,,,,,,,#",
+    "#,,,,,,,,,,#",
+    "#,~~~,,,,,,#",
+    "#,~~~,,,,,,#",
+    "#,,,,,,,,,,#",
+    "############"
+  ],
+  "entities": [
+    {
+      "type": "npc",
+      "id": "pip_mire",
+      "npc": "pip",
+      "talk": "pip_mire",
+      "when": "!pip_rescued",
+      "at": [6, 5]
+    },
+    {
+      "type": "decor",
+      "kind": "drowned_candles",
+      "at": [4, 3]
+    },
+    {
+      "type": "decor",
+      "kind": "drowned_candles",
+      "at": [8, 3]
+    },
+    {
+      "type": "decor",
+      "kind": "drowned_candles",
+      "at": [4, 8]
+    },
+    {
+      "type": "decor",
+      "kind": "drowned_candles",
+      "at": [8, 8]
+    },
+    {
+      "type": "decor",
+      "kind": "reeds",
+      "at": [2, 2]
+    },
+    {
+      "type": "decor",
+      "kind": "reeds",
+      "at": [9, 2]
+    },
+    {
+      "type": "item",
+      "id": "mire_shard",
+      "item": "phial_shard",
+      "at": [10, 9]
+    }
+  ]
+}

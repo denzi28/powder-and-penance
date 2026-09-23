@@ -123,8 +123,22 @@ export abstract class Actor {
     }
   }
 
+  /** Creatures of the mire aren't slowed by its wax. */
+  get ignoresTerrain() {
+    return false;
+  }
+
+  /** Movement multiplier of the floor under the feet (data/terrain.json), e.g. 0.55 in a wax pool. */
+  terrainMult(): number {
+    if (this.ignoresTerrain) return 1;
+    const g = this.ctx.grid();
+    const v = g.variant(Math.floor(this.x / 16), Math.floor(this.y / 16));
+    return DATA.terrain.floors[v]?.speedMult ?? 1;
+  }
+
   integrate() {
-    const r = this.moveBy(this.vx / DATA.game.tickRate, this.vy / DATA.game.tickRate);
+    const k = this.terrainMult();
+    const r = this.moveBy((this.vx * k) / DATA.game.tickRate, (this.vy * k) / DATA.game.tickRate);
     if (r.hitX) this.vx = 0;
     if (r.hitY) this.vy = 0;
   }

@@ -1,0 +1,33 @@
+{
+  "id": "pip_mire",
+  "steps": [
+    {
+      "if": "!pip_met",
+      "then": [
+        { "say": "Don't! Don't... oh. You're not one of them. You've got a face.", "who": "pip" },
+        { "say": "I slipped off the carts. Everyone else stayed on. I've been hiding here with the candles. They keep the drowned ones away, mostly.", "who": "pip" },
+        { "say": "The singing lady comes out at night. She calls them all her little ones. She called me too. I didn't go.", "who": "pip" },
+        { "set": "pip_met" }
+      ],
+      "else": [{ "say": "Are you going to take me somewhere? Somewhere with a fire?", "who": "pip" }]
+    },
+    {
+      "menu": [
+        {
+          "text": "Go to Wick's Rest. There's a fire and a shrine.",
+          "end": true,
+          "do": [
+            { "say": "A real fire? Up the hill? I know the way the carts came down. I'll follow them back up.", "who": "pip" },
+            { "say": "Don't let her sing to you. If she sings, don't listen.", "who": "pip" },
+            { "fade": "out", "ticks": 25 },
+            { "set": "pip_rescued" },
+            { "wait": 20 },
+            { "fade": "in", "ticks": 25 },
+            { "toast": ["PIP", "Pip has gone ahead to Wick's Rest."] }
+          ]
+        },
+        { "text": "Stay hidden for now.", "end": true, "do": [{ "say": "Okay. I'm good at hiding. I'm very good.", "who": "pip" }] }
+      ]
+    }
+  ]
+}

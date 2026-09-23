@@ -207,6 +207,18 @@ The `chest` sheet has 10 frames: 0–4 as below, and 5–9 the same chest half-b
 
 Portrait frame 3 is the Tollwarden.
 
+### The Waxmire
+| Sheet | Cell | Notes |
+|---|---|---|
+| `tiles_mire` | 16×16 | Floors: `floor` (wet mud), `floor_grass` (4–5), **`floor_wax`** (10–11, dull pale wax: slows movement), `floor_stone` (sunken flagstones, 14–15). Earth banks bound with pale roots; tangled root tops; black water outside. |
+| `decor_mire` | 64×64, pivot 32,62 | 0 `gravestone`, 1 `grave_cross`, 2 `reeds` (tall: hide in them), 3 `root_tangle` (2 tiles, tall), 4 `stone_angel` (tall), 5 `coffin` (flat), 6 `drowned_candles` (flat), 7 `dead_willow` (tall), 8 `sunken_bell` |
+| `drowned_pilgrim` | 32×32 | `idle`, `walk`, **`rise`** (up out of the wax, drawn cut off at the surface line), `claw`, `stagger`, `death` |
+| `mire_lantern` | 32×32 | `idle` (bobbing), `walk`, `stagger`, `death` (the cage falls and breaks). Its light cone is drawn at runtime. |
+| `mire_matron` | 64×64, pivot 32,58 | `idle`, `walk`, `sweep`, `embrace`, `sing` (arms open wide), `intro` (rises from her pool), `stagger`, `death` (lies back into the wax) |
+| `mire_glob` | 8×8 | Her lobbed wax |
+
+Portrait frame 4 is the Mire Matron.
+
 ### Tallow Works
 | Sheet | Cell | Notes |
 |---|---|---|

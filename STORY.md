@@ -53,7 +53,9 @@ The map is in [WORLD.md](WORLD.md).
 | **The Rendering Hall reveal** (`rendering_reveal`): the robes with name tags, the carts, "The Tallow in your pouch is warm. It always has been. Now you know why." | ✅ |
 | The Chandler's Ledger (Foreman's Office): names and weights. Showing it to Maudlin: her confession begins. | ✅ (the full forgive/condemn choice comes with the Chandler) |
 | **Mother Tallow** (`mother_tallow_death`): wordless. She sinks back into the vat she never stopped tending, ladle still in her hand. **Seal of Tallow.** | ✅ |
-| Pip, Brother Aldous and the rest | Placed later with their areas |
+| **Pip** (Waxmire, `pip_mire` → hub `pip_hub`): slipped off the carts, hides in a ring of candles, heard the singing lady call. Sent to Wick's Rest; gives you a candle stub; later notices the singing has stopped. | ✅ (the Act 2 payoff comes later) |
+| **The Mire Matron** (`matron_death`): the Abbey's midwife. When the Drip came into the cradles she couldn't give the children to the flame, so she brought them down to the mire and sang to them, and never stopped. **Seal of the Mire.** | ✅ |
+| Brother Aldous | Next, with the Abbey revision |
 
 ## Writing dialogue and cutscenes
 Everything is data; the game hot-reloads it and checks every reference when it loads.

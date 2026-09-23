@@ -57,7 +57,7 @@ Target: **~2 h** first playthrough (2 h 15 min with the optional Powder Vault). 
 | Slain enemies stay dead until you rest or die (`slain:` flags) | ✅ |
 | Bosses: `ai: "boss"` + `boss` block (entrance, slams, line, last-words script), `arena` room entity (smoke seals), boss bar, stays dead (`boss:<kind>`), Tallow drops at the arena door | ✅ Tollwarden |
 | Minimap and large map (M) | ✅ |
-| Slow floors (wax pools) | mire_01 |
+| Slow floors (wax pools, `data/terrain.json`), waders, ambushers (`ambush`), scanning lanterns with visible light cones (`scan`, `lightCone`) | mire ✅ |
 | Secret breakable walls (prop with `secretWall`) | works_03 ✅ |
 | Lift: an `exit` with a `when` condition, opened by a `lever` entity | works_04 ✅ |
 | Hooks that pull (`pull` on a strike), enemies that split on death (`splitInto`), quest items | works ✅ |
@@ -106,7 +106,7 @@ The 13 existing rooms stay. Changes:
   - His name and health bar sit at the bottom of the screen.
   - Die and your Tallow lands just outside the doorway you came through.
   - When he falls, he kneels and speaks his last words.
-- **Undercroft:** gets a sluice gate on its west side, the one-way shortcut up from the Waxmire.
+- **Undercroft:** a sluice down to the Waxmire in its south wall ✅, opened by the lever in the Sluice (mire_08).
 - **Nave Approach → Nave:** the great door needs **both Seals**. The **Chandler** fight, then the ending cutscene and the lift to Act 2 (sealed).
 
 ## Tallow Works (`works`)
@@ -146,24 +146,26 @@ All 10 rooms are built ✅ (`tools/level-gen/works.mjs`).
 **After every boss**, a shrine appears in its arena: the **Gatehouse Wick** (Tollwarden) and the **Great Vat Wick** (Mother Tallow).
 
 ## The Waxmire (`mire`)
-The low ground where the Drip pools: a swamp of melted wax and drowned graves. **Wax pools slow you down.**
+The low ground where the Drip pools: a swamp of melted wax and drowned graves. All 10 rooms are built ✅ (`tools/level-gen/mire.mjs`).
+
+**Wax pools** (`floor_wax`) slow walking and rolling to about half speed (`data/terrain.json`). Creatures of the mire (`wader`) move through them freely.
 
 **New enemies:**
-- **Drowned Pilgrim:** rises out of the wax as an ambush.
-- **Mire Lantern:** a floating light that alerts the whole room when it sees you.
+- **Drowned Pilgrim:** waits hidden under the wax (invulnerable, with a bubble now and then as the only tell) and rises when you come within about 3 tiles. Claws; a lunge that drags you in.
+- **Mire Lantern:** floats at its post and sweeps a narrow cone of cold light back and forth. The cone is drawn in the world, and stops at walls, reeds and roots. Step into it and it sees you almost at once; then the whole room comes for you. Two hits kill it.
 
 | # | Room | Contents |
 |---|---|---|
-| mire_01 | Mire Edge | Entry from the hub. The first wax pools. |
-| mire_02 | Sunken Graves | Drowned Pilgrim ambush |
-| mire_03 | Lantern Walk | Mire Lanterns; a stealth route through the reeds |
-| mire_04 | Drowned Chapel | **Drowned Wick shrine** |
-| mire_05 | Pip's Hollow | Pip, lost (NPC; escort to the hub) |
-| mire_06 | Wax Falls | Vertical room, hounds on the ledges |
-| mire_07 | Hanging Roots | Maze of roots, Wardens stuck in the wax |
-| mire_08 | The Sluice | One-way sluice gate up to the Abbey Undercroft (shortcut) |
-| mire_09 | Choir Pool | Ambush arena: pilgrims rise in waves |
-| mire_10 | Matron's Bath | **Boss: Mire Matron.** Drops the **Seal of the Mire**. |
+| mire_01 | **Mire Edge** ✅ | Down from Wick's Rest. The first wax pools and the first ambush. *Narration on arrival.* |
+| mire_02 | **Sunken Graves** ✅ | Rows of graves half under the wax; three drowned between the stones. Chest: Lump of Tallow. |
+| mire_03 | **Lantern Walk** ✅ | Two Mire Lanterns sweep the reeds (reeds hide you). Two Wicklings. Chest: Powder Pouch. |
+| mire_04 | **Drowned Chapel** ✅ | **Drowned Wick shrine**, weeping angels, sunken benches |
+| mire_05 | **Pip's Hollow** ✅ | Pip, hiding in a ring of floating candles. Send them to Wick's Rest (they thank you there with a candle stub). Chest: Phial Shard. |
+| mire_06 | **Wax Falls** ✅ | Tiered ledges with wax pouring down; two Hounds, an Acolyte, a Drowned Pilgrim |
+| mire_07 | **Hanging Roots** ✅ | A maze of roots; two Wardens knee-deep in wax (slowed); two drowned |
+| mire_08 | **The Sluice** ✅ | Pull the lever: the sluice becomes a two-way shortcut to the **Abbey Undercroft** (shut from both ends until then). Chest: Bitter Salt. |
+| mire_09 | **Choir Pool** ✅ | One great wax pool with six drowned beneath it in a ring, and a Lantern over them |
+| mire_10 | **Matron's Bath** ✅ | **Boss: the Mire Matron.** "Hush now. Have you come to be born again?" Five moves: drowning sweep, an unblockable **embrace** (a grab), lobbed wax, a **wail** that blasts you away, and **calling the drowned** (they sink into the wax and rise around you). Her last words (the Abbey's midwife); **Seal of the Mire**; then the **Matron's Wick** appears. |
 
 ## Powder Vault (`vault`): optional
 Oskar's hidden powder cache under the Tallow Works: the heretics' old workshop.

@@ -1,0 +1,112 @@
+{
+  "id": "mire_07_roots",
+  "area": "mire",
+  "origin": [31, 32],
+  "legend": {
+    "#": "wall",
+    ".": "floor",
+    ",": "floor_grass",
+    "~": "floor_wax",
+    ":": "floor_stone",
+    " ": "void"
+  },
+  "tiles": [
+    "########################",
+    "#,,,,,,,,,,,,,,,,,,,,,,#",
+    "#,,,,,,,,,,,,,,,,,,,,,,#",
+    "#,,,,,,,,,,,,,,,,,,,,,,#",
+    "#,,,,,,,,,,,,,,,,,,,,,,#",
+    "#,,,,,,~~~~~~,,,,,,,,,,.",
+    "#,,,,,,~~~~~~,,,,,,,,,,.",
+    "#,,,,,,~~~~~~,,,,,,,,,,#",
+    "#,,,,,,,,,,,,,,,,,,,,,,#",
+    ".,,,,,,,,,,,,,,,,,,,,,,#",
+    ".,,,,,,,,,,,,~~~~~~,,,,#",
+    "#,,,,,,,,,,,,~~~~~~,,,,#",
+    "#,,,,,,,,,,,,~~~~~~,,,,#",
+    "#,,,,,,,,,,,,,,,,,,,,,,#",
+    "#,,,,,,,,,,,,,,,,,,,,,,#",
+    "############..##########"
+  ],
+  "entities": [
+    {
+      "type": "decor",
+      "kind": "root_tangle",
+      "at": [4, 3]
+    },
+    {
+      "type": "decor",
+      "kind": "root_tangle",
+      "at": [9, 2]
+    },
+    {
+      "type": "decor",
+      "kind": "root_tangle",
+      "at": [15, 3]
+    },
+    {
+      "type": "decor",
+      "kind": "root_tangle",
+      "at": [21, 3]
+    },
+    {
+      "type": "decor",
+      "kind": "root_tangle",
+      "at": [6, 9]
+    },
+    {
+      "type": "decor",
+      "kind": "root_tangle",
+      "at": [12, 8]
+    },
+    {
+      "type": "decor",
+      "kind": "root_tangle",
+      "at": [19, 9]
+    },
+    {
+      "type": "decor",
+      "kind": "root_tangle",
+      "at": [4, 13]
+    },
+    {
+      "type": "decor",
+      "kind": "root_tangle",
+      "at": [10, 13]
+    },
+    {
+      "type": "decor",
+      "kind": "root_tangle",
+      "at": [17, 13]
+    },
+    {
+      "type": "decor",
+      "kind": "root_tangle",
+      "at": [22, 12]
+    },
+    {
+      "type": "enemy",
+      "kind": "bulwark_warden",
+      "at": [9, 6],
+      "facing": "W"
+    },
+    {
+      "type": "enemy",
+      "kind": "bulwark_warden",
+      "at": [15, 11],
+      "facing": "W"
+    },
+    {
+      "type": "enemy",
+      "kind": "drowned_pilgrim",
+      "at": [19, 6],
+      "facing": "W"
+    },
+    {
+      "type": "enemy",
+      "kind": "drowned_pilgrim",
+      "at": [8, 11],
+      "facing": "E"
+    }
+  ]
+}
