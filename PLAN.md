@@ -12,8 +12,9 @@ All timings are in ticks (60/s). Everything tunable lives in `data/`, and edits 
 | 1 Foundation, movement, roll | ✅ Done. Playtested. Fix: walls now block their full visual footprint. |
 | 2 Melee + first enemy | ✅ Done. Wickling vision range tuned after playtest. |
 | 3 Ranged, loadout, shield, criticals, **+ stealth** | ✅ Done. Two-handed weapons lock the other slot; drop/pick up weapons. |
-| 4 Healing, shrines, saving, death loop | ✅ Built. Awaiting playtest. |
-| 5 Full roster + the Guttering Abbey | ⏭ Next. Also adds enemy pathfinding. |
+| 4 Healing, shrines, saving, death loop | ✅ Done |
+| 4.5 Improvement pass | ✅ Built. Enemy A* pathfinding, GameScene split into `src/game/*`, hit feedback (flinch, HP damage trail, directional damage vignette, low-HP pulse), 6–7 frame attacks with a separate windup pose per enemy attack, camera clamped to rooms with rock fill (no void). Project moved to `C:\Users\recep\code\powder-and-penance`. |
+| 5 Full roster + the Guttering Abbey | ⏭ Next |
 | 6–7 | Planned |
 | 8–12 (post-launch roadmap) | Proposed, see the end of this file |
 
