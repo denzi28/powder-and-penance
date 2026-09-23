@@ -1,0 +1,18 @@
+{
+  "image": "fist.png",
+  "cell": [
+    5,
+    5
+  ],
+  "pivot": [
+    2,
+    2
+  ],
+  "layer": "weapon",
+  "points": {
+    "tip": [
+      4,
+      2
+    ]
+  }
+}

@@ -96,7 +96,14 @@ function locomotion(p: Player): string {
   const action = tryStartAction(p);
   if (action) return action;
   const inp = p.input;
-  if (inp.consume('swap')) return 'swap';
+  if (inp.consume('swap')) {
+    if (p.lockedSlot === null) return 'swap';
+    p.ctx.bus.emit('sfx', { id: 'dry_fire' }); // two-handed: the other slot is disabled
+  }
+  if (inp.consume('drop')) {
+    const id = p.dropActive();
+    if (id) p.ctx.bus.emit('weaponDropped', { id, x: p.x, y: p.y });
+  }
   if (inp.held('block') && p.shield) return 'block';
 
   const cfg = DATA.player;

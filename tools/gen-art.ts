@@ -837,6 +837,13 @@ function genArsenal() {
     { cell: [18, 5], pivot: [2, 2], layer: 'weapon', points: { tip: [16, 2] } },
   );
 
+  // Bare hands: not drawn in the world (view.hidden), only exists so the empty slot has a texture.
+  sheet(
+    'fist',
+    outlined(5, 5, c => c.rect(1, 1, 3, 3, P.wood2)),
+    { cell: [5, 5], pivot: [2, 2], layer: 'weapon', points: { tip: [4, 2] } },
+  );
+
   const q = new Img(7, 11);
   for (const [x, y] of [[2, 1], [3, 1], [4, 1], [1, 2], [5, 2], [5, 3], [4, 4], [3, 5], [3, 6], [3, 8]]) q.set(x, y, P.wax2);
   q.outline(P.ink);

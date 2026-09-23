@@ -9,6 +9,7 @@ import { SpriteLib } from '../anim/SpriteLib';
 import { buildGrid, TILE, type TileGrid } from '../world/TileGrid';
 import { WorldView } from '../world/WorldView';
 import { Racks } from '../world/Racks';
+import { GroundItems } from '../world/GroundItems';
 import { Player } from '../player/Player';
 import { PlayerView } from '../player/PlayerView';
 import { Enemy } from '../enemies/Enemy';
@@ -48,6 +49,7 @@ export class GameScene extends Phaser.Scene {
   projectiles = new Projectiles();
   tokens = new AttackTokens();
   racks!: Racks;
+  ground!: GroundItems;
   debug!: DebugOverlay;
   sfx = new Sfx();
   /** Sim ticks (frozen during hit-stop). */
@@ -101,6 +103,7 @@ export class GameScene extends Phaser.Scene {
 
     this.worldView = new WorldView(this, this.lib);
     this.racks = new Racks(this.lib);
+    this.ground = new GroundItems(this.lib);
     this.buildWorld();
 
     const spawn = this.findSpawn();
@@ -159,19 +162,52 @@ export class GameScene extends Phaser.Scene {
     this.cam.tick(lead.x, lead.y);
   }
 
-  private handleInteract() {
+  /** The closest thing the player can interact with right now (floor items win over racks). */
+  nearestInteractable(): { label: string; use: () => void } | null {
     const p = this.player;
-    const rack = CAN_INTERACT.has(p.stateName) ? this.racks.nearest(p.x, p.y) : null;
-    if (!rack || !this.controls.consume('interact')) return;
+    if (!CAN_INTERACT.has(p.stateName)) return null;
+    const item = this.ground.nearest(p.x, p.y);
+    if (item)
+      return {
+        label: `PICK UP ${DATA.weapons[item.weapon].name}`,
+        use: () => {
+          this.ground.remove(item);
+          const released = p.equip(item.weapon);
+          if (released) this.ground.add(released, p.x, p.y + 2); // hands full: swap with the one on the floor
+          this.announce(DATA.weapons[item.weapon].name);
+        },
+      };
+    const rack = this.racks.nearest(p.x, p.y);
+    if (!rack) return null;
     if (rack.kind === 'weapon' && rack.id) {
-      p.slots[p.slot] = rack.id;
-      p.ammoFor(rack.id); // arrives loaded
-      this.numbers.add(DATA.weapons[rack.id].name.toUpperCase(), p.x, p.y - 34, hexToInt(DATA.palette.wax2));
-    } else if (rack.kind === 'shield') {
-      p.shieldId = rack.id;
-      this.numbers.add(rack.id ? DATA.shields[rack.id].name.toUpperCase() : 'NO SHIELD', p.x, p.y - 34, hexToInt(DATA.palette.wax2));
+      const id = rack.id;
+      return {
+        label: `TAKE ${DATA.weapons[id].name}`,
+        use: () => {
+          p.equip(id); // racks never run out; the replaced weapon goes back on the rack
+          this.announce(DATA.weapons[id].name);
+        },
+      };
     }
+    const id = rack.id;
+    return {
+      label: id ? `TAKE ${DATA.shields[id].name}` : 'REMOVE SHIELD',
+      use: () => {
+        p.shieldId = id;
+        this.announce(id ? DATA.shields[id].name : 'no shield');
+      },
+    };
+  }
+
+  private handleInteract() {
+    const target = this.nearestInteractable();
+    if (!target || !this.controls.consume('interact')) return;
+    target.use();
     this.bus.emit('sfx', { id: 'pickup' });
+  }
+
+  private announce(text: string) {
+    this.numbers.add(text.toUpperCase(), this.player.x, this.player.y - 34, hexToInt(DATA.palette.wax2));
   }
 
   /** Soft circle separation so actors don't overlap. Immovable actors (resist 1) push others fully. */
@@ -354,6 +390,11 @@ export class GameScene extends Phaser.Scene {
       const tip = this.weaponTip(e.actor);
       this.fx.spawn('glint', 'normal', tip.x, tip.y, { depth: DEPTH.overlay - 5 });
       this.bus.emit('sfx', { id: 'charge_full' });
+    });
+
+    bus.on('weaponDropped', e => {
+      this.ground.add(e.id, e.x, e.y + 2);
+      this.bus.emit('sfx', { id: 'swap' });
     });
 
     bus.on('died', e => {

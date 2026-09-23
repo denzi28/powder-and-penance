@@ -19,6 +19,7 @@
     "reload": ["KeyR"],
     "swap": ["Tab", "WheelUp", "WheelDown"],
     "interact": ["KeyE"],
+    "drop": ["KeyG"],
     "pause": ["Escape"]
   },
   "gamepad": {
@@ -35,6 +36,7 @@
     "reload": [3],
     "swap": [14, 15],
     "interact": [0],
+    "drop": [13],
     "pause": [9]
   }
 }

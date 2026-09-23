@@ -50,8 +50,9 @@ export class PlayerView {
     tint(this.body, flash);
 
     const anchor = p.body.frame.hand ?? this.lib.manifest('player_body').handAnchors?.[bf.authoredDir] ?? [0, -10];
-    this.weapon.setVisible(p.weaponVisible);
-    if (p.weaponVisible) {
+    const showWeapon = p.weaponVisible && !p.weapon.view.hidden;
+    this.weapon.setVisible(showWeapon);
+    if (showWeapon) {
       const def = p.weapon;
       this.weapon.setSprite(def.view.sprite);
       const hx = x + (bf.flip ? -anchor[0] : anchor[0]);

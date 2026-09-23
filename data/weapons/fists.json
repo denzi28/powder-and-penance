@@ -1,0 +1,41 @@
+{
+  "id": "fists",
+  "name": "Bare Hands",
+  "kind": "melee",
+  "twoHanded": false,
+  "view": { "sprite": "fist", "restAngleOffsetDeg": 0, "hidden": true },
+  "crit": { "backstab": 2.0, "riposte": 2.0 },
+  "light": [
+    {
+      "damage": 6, "poise": 4, "stamina": 8,
+      "windup": 5, "active": 3, "recovery": 12,
+      "comboFrom": 8, "rollCancelFrom": 10,
+      "trackDegPerTick": 10,
+      "lunge": { "distance": 4, "startTick": 3, "ticks": 3 },
+      "hitbox": { "shape": "arc", "radius": 16, "halfAngle": 40 },
+      "sweep": { "fromDeg": 0, "toDeg": 0, "reach": 4 },
+      "knockback": 30, "hitstop": 2, "shake": 0.05, "sfx": "swing"
+    },
+    {
+      "damage": 7, "poise": 5, "stamina": 8,
+      "windup": 5, "active": 3, "recovery": 14,
+      "comboFrom": 9, "rollCancelFrom": 11,
+      "trackDegPerTick": 10,
+      "lunge": { "distance": 4, "startTick": 3, "ticks": 3 },
+      "hitbox": { "shape": "arc", "radius": 16, "halfAngle": 40 },
+      "sweep": { "fromDeg": 0, "toDeg": 0, "reach": 4 },
+      "knockback": 40, "hitstop": 2, "shake": 0.05, "sfx": "swing"
+    }
+  ],
+  "heavy": {
+    "chargeTicks": 0, "chargeDamageMult": 1, "chargePoiseMult": 1,
+    "strike": {
+      "damage": 5, "poise": 20, "stamina": 12,
+      "windup": 10, "active": 3, "recovery": 20,
+      "rollCancelFrom": 18,
+      "hitbox": { "shape": "circle", "radius": 12, "offset": 8 },
+      "sweep": { "fromDeg": 0, "toDeg": 0, "reach": 5 },
+      "knockback": 150, "hitstop": 3, "shake": 0.1, "sfx": "swing"
+    }
+  }
+}

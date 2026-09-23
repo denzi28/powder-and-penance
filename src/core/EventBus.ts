@@ -40,4 +40,5 @@ export interface GameEvents {
   /** A gun/crossbow fires; x/y = muzzle on the ground plane. */
   shot: { actor: Actor; weapon: WeaponDef; x: number; y: number; angle: number };
   projectileEnd: { x: number; y: number; angle: number; wall: boolean };
+  weaponDropped: { id: string; x: number; y: number };
 }

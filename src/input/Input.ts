@@ -5,13 +5,13 @@ import { radialDeadzone } from '../core/math';
 
 export const ACTIONS = [
   'moveUp', 'moveDown', 'moveLeft', 'moveRight',
-  'light', 'heavy', 'block', 'roll', 'sprint', 'heal', 'reload', 'swap', 'interact', 'pause',
+  'light', 'heavy', 'block', 'roll', 'sprint', 'heal', 'reload', 'swap', 'interact', 'drop', 'pause',
 ] as const;
 export type Action = (typeof ACTIONS)[number];
 export type Device = 'kbm' | 'pad';
 
 /** Actions that queue for `bufferTicks` if pressed while the player can't act yet. */
-const BUFFERED: ReadonlySet<Action> = new Set<Action>(['light', 'heavy', 'roll', 'heal', 'reload', 'swap', 'interact']);
+const BUFFERED: ReadonlySet<Action> = new Set<Action>(['light', 'heavy', 'roll', 'heal', 'reload', 'swap', 'interact', 'drop']);
 const ALWAYS_PREVENT = new Set(['Tab', 'Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
   'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10']);
 

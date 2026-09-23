@@ -24,8 +24,11 @@ npm run gen:art    # regenerate missing placeholder art (--force to overwrite al
 | Reload (auto when firing empty) | R | Y / △ |
 | Roll | Space | B / ○ |
 | Sprint (hold) | Shift | L3 or LB |
-| Swap weapon slot | Tab / wheel | D-pad ← → |
-| Interact (weapon racks) | E | A / × |
+| Swap weapon slot (disabled while holding a two-handed weapon) | Tab / wheel | D-pad ← → |
+| Drop the weapon in hand (the slot becomes bare fists) | G | D-pad ↓ |
+| Interact (weapon racks, pick up dropped weapons) | E | A / × |
+
+**Two-handed weapons** (greataxe, heavy crossbow) take both hands. The other slot and the shield are disabled until you drop the two-hander or replace it.
 
 ## Debug keys
 | Key | Effect |

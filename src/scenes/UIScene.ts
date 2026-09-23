@@ -119,13 +119,19 @@ export class UIScene extends Phaser.Scene {
     p.slots.forEach((id, i) => {
       const x = xs[i];
       const active = i === p.slot;
+      const disabled = p.isSlotDisabled(i); // a two-handed weapon occupies both hands
       g.fillStyle(hexToInt(pal.ink), 0.75).fillRect(x, y, bw, bh);
-      g.fillStyle(hexToInt(active ? pal.wax2 : pal.stone2), 1);
+      g.fillStyle(hexToInt(active ? pal.wax2 : pal.stone2), disabled ? 0.4 : 1);
       g.fillRect(x, y, bw, 1).fillRect(x, y + bh - 1, bw, 1).fillRect(x, y, 1, bh).fillRect(x + bw - 1, y, 1, bh);
       const icon = this.slotIcons[i];
-      const sprite = DATA.weapons[id].view.sprite;
-      if (icon.texture.key !== sprite) icon.setTexture(sprite, 0);
-      icon.setPosition(x + bw / 2, y + bh / 2).setAlpha(active ? 1 : 0.5);
+      const def = DATA.weapons[id];
+      icon.setVisible(!def.view.hidden); // bare hands = empty slot
+      if (icon.texture.key !== def.view.sprite) icon.setTexture(def.view.sprite, 0);
+      icon.setPosition(x + bw / 2, y + bh / 2).setAlpha(active ? 1 : disabled ? 0.2 : 0.5);
+      if (disabled) {
+        g.lineStyle(1, hexToInt(pal.ember), 0.9);
+        g.lineBetween(x + 3, y + bh - 3, x + bw - 3, y + 3);
+      }
     });
 
     const w = p.weapon;
@@ -154,13 +160,11 @@ export class UIScene extends Phaser.Scene {
 
   private drawPrompt() {
     const gs = this.gs;
-    const p = gs.player;
-    const rack = !p.dead && ['idle', 'move', 'sprint'].includes(p.stateName) ? gs.racks.nearest(p.x, p.y) : null;
-    this.prompt.setVisible(!!rack);
-    if (!rack) return;
+    const target = gs.player.dead ? null : gs.nearestInteractable();
+    this.prompt.setVisible(!!target);
+    if (!target) return;
     const key = gs.controls.device === 'pad' ? 'A' : 'E';
-    const name = rack.id ? (rack.kind === 'weapon' ? DATA.weapons[rack.id].name : DATA.shields[rack.id].name) : 'no shield';
-    this.prompt.setText(`[${key}] TAKE ${name.toUpperCase()}`);
+    this.prompt.setText(`[${key}] ${target.label.toUpperCase()}`);
     this.prompt.setPosition(Math.round((DATA.game.width - this.prompt.width) / 2), DATA.game.height - 40);
   }
 

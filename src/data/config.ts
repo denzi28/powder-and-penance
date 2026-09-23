@@ -63,6 +63,7 @@ function loadAll(src: Record<string, unknown>) {
       for (const en of r.entities)
         if (en.type === 'enemy' && !data.enemies[String(en.kind)])
           errors.push(`data/rooms/${r.id}.json: unknown enemy kind "${String(en.kind)}"`);
+    if (!data.weapons.fists) errors.push('data/weapons/fists.json: required (an empty weapon slot holds bare fists)');
     for (const w of data.player.loadout.slots)
       if (!data.weapons[w]) errors.push(`data/config/player.json: loadout.slots references unknown weapon "${w}"`);
     const sh = data.player.loadout.shield;

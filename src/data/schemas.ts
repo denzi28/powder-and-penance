@@ -273,7 +273,8 @@ export const WeaponDef = z
     name: z.string(),
     kind: z.enum(['melee', 'ranged']),
     twoHanded: z.boolean(),
-    view: z.object({ sprite: z.string(), restAngleOffsetDeg: num }),
+    /** hidden: no weapon sprite is drawn (bare hands). */
+    view: z.object({ sprite: z.string(), restAngleOffsetDeg: num, hidden: z.boolean().default(false) }),
     light: z.array(StrikeDef).default([]),
     /** Melee: charged heavy. Ranged: the weapon bash (chargeTicks 0). */
     heavy: z

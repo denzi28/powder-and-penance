@@ -12,6 +12,9 @@ import type { Guard, HitInfo } from '../combat/CombatSystem';
 import type { Enemy } from '../enemies/Enemy';
 import { PLAYER_STATES } from './PlayerStates';
 
+/** Weapon id that fills an empty slot. */
+export const FISTS = 'fists';
+
 export interface Ammo {
   clip: number;
   reserve: number;
@@ -71,6 +74,7 @@ export class Player extends Actor {
     this.aimY = y + 32;
     this.slots = [...DATA.player.loadout.slots];
     this.shieldId = DATA.player.loadout.shield;
+    this.enforceTwoHanded();
     this.body.play('idle');
     this.legs.play('idle');
     this.sm = new StateMachine<Player>(this, PLAYER_STATES, 'idle');
@@ -179,8 +183,55 @@ export class Player extends Actor {
     else this.squash.set(DATA.juice.squash.hit);
   }
 
+  /** A two-handed weapon takes both hands: its slot is forced active and the other slot is disabled. */
+  get lockedSlot(): number | null {
+    const i = this.slots.findIndex(id => DATA.weapons[id]?.twoHanded);
+    return i >= 0 ? i : null;
+  }
+
+  isSlotDisabled(i: number) {
+    const l = this.lockedSlot;
+    return l !== null && l !== i;
+  }
+
+  private enforceTwoHanded() {
+    const l = this.lockedSlot;
+    if (l !== null) this.slot = l;
+  }
+
   swapWeapon() {
+    if (this.lockedSlot !== null) return;
     this.slot = (this.slot + 1) % this.slots.length;
+  }
+
+  /** Empty the active slot; the other weapon (if any) comes to hand. Returns the dropped weapon id. */
+  dropActive(): string | null {
+    const id = this.weaponId;
+    if (id === FISTS) return null;
+    this.slots[this.slot] = FISTS;
+    const other = 1 - this.slot;
+    if (this.slots[other] !== FISTS) this.slot = other;
+    this.enforceTwoHanded();
+    return id;
+  }
+
+  /**
+   * Take a weapon into hand: fills the active slot if empty, else the other empty slot; with both full it
+   * replaces the active weapon. Returns the weapon that had to be let go (to drop on the floor), if any.
+   */
+  equip(id: string): string | null {
+    let released: string | null = null;
+    if (this.slots[this.slot] === FISTS) this.slots[this.slot] = id;
+    else if (this.slots[1 - this.slot] === FISTS) {
+      this.slot = 1 - this.slot;
+      this.slots[this.slot] = id;
+    } else {
+      released = this.slots[this.slot];
+      this.slots[this.slot] = id;
+    }
+    this.ammoFor(id);
+    this.enforceTwoHanded();
+    return released;
   }
 
   refill() {
