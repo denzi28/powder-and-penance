@@ -1,0 +1,12 @@
+{
+  "image": "tallow_icon.png",
+  "cell": [
+    8,
+    9
+  ],
+  "pivot": [
+    0,
+    0
+  ],
+  "layer": "ui"
+}

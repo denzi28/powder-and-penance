@@ -1,0 +1,6 @@
+{
+  "id": "tallow_lump",
+  "name": "Lump of Tallow",
+  "description": "Rendered wax, still warm.",
+  "effect": { "type": "tallow", "amount": 150 }
+}

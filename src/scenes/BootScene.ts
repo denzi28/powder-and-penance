@@ -30,6 +30,6 @@ export class BootScene extends Phaser.Scene {
       lineSpacing: 1,
     });
     this.cache.bitmapFont.add('pixel', font);
-    this.scene.start('game');
+    this.scene.start('title');
   }
 }

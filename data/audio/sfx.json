@@ -28,6 +28,17 @@
     "parry":            { "wave": "sawtooth", "freq": 1600, "freqEnd": 900, "duration": 0.25, "volume": 0.45, "filter": 6000 },
     "guard_break":      { "wave": "sawtooth", "freq": 300, "freqEnd": 80, "duration": 0.35, "volume": 0.5, "filter": 1600 },
     "critical":         { "wave": "sawtooth", "freq": 90, "freqEnd": 30, "duration": 0.4, "volume": 0.6, "filter": 900 },
-    "pickup":           { "wave": "sine", "freq": 700, "freqEnd": 1100, "duration": 0.1, "volume": 0.2 }
+    "pickup":           { "wave": "sine", "freq": 700, "freqEnd": 1100, "duration": 0.1, "volume": 0.2 },
+    "drink":            { "wave": "noise", "freq": 0.35, "duration": 0.35, "volume": 0.2, "filter": 700, "filterEnd": 300 },
+    "heal":             { "wave": "sine", "freq": 440, "freqEnd": 880, "duration": 0.4, "volume": 0.3 },
+    "heal_fail":        { "wave": "noise", "freq": 1.4, "duration": 0.18, "volume": 0.35, "filter": 6000, "filterEnd": 1500 },
+    "phial_empty":      { "wave": "square", "freq": 300, "freqEnd": 250, "duration": 0.06, "volume": 0.15 },
+    "shrine_kindle":    { "wave": "sawtooth", "freq": 110, "freqEnd": 330, "duration": 0.9, "volume": 0.35, "filter": 900, "filterEnd": 2400 },
+    "rest":             { "wave": "sine", "freq": 262, "freqEnd": 392, "duration": 0.8, "volume": 0.3 },
+    "tallow":           { "wave": "triangle", "freq": 980, "freqEnd": 1320, "duration": 0.08, "volume": 0.18 },
+    "tallow_recover":   { "wave": "sine", "freq": 523, "freqEnd": 1046, "duration": 0.5, "volume": 0.35 },
+    "item":             { "wave": "sine", "freq": 660, "freqEnd": 1320, "duration": 0.3, "volume": 0.3 },
+    "menu_move":        { "wave": "square", "freq": 880, "duration": 0.03, "volume": 0.12 },
+    "menu_confirm":     { "wave": "square", "freq": 660, "freqEnd": 990, "duration": 0.08, "volume": 0.18 }
   }
 }

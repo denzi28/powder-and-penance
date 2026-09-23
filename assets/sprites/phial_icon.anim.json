@@ -1,0 +1,12 @@
+{
+  "image": "phial_icon.png",
+  "cell": [
+    8,
+    10
+  ],
+  "pivot": [
+    0,
+    0
+  ],
+  "layer": "ui"
+}

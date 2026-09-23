@@ -86,7 +86,7 @@ export class PlayerView {
   private renderShield(x: number, y: number, depth: number, flip: boolean, anchor: readonly number[], flash: boolean) {
     const p = this.p;
     const sh = p.shield;
-    const show = !!sh && p.weaponVisible && !p.dead;
+    const show = !!sh && p.weaponVisible && !p.dead && p.stateName !== 'heal'; // off hand holds the phial
     this.shield?.setVisible(show);
     if (!show) return;
     if (!this.shield) this.shield = this.lib.sprite(sh.sprite);

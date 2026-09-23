@@ -50,6 +50,24 @@
       "at": [18, 2]
     },
     {
+      "type": "shrine",
+      "id": "shrine_arena",
+      "name": "Arena Wick",
+      "at": [22, 3]
+    },
+    {
+      "type": "item",
+      "id": "arena_pouch",
+      "item": "ammo_pouch",
+      "at": [2, 19]
+    },
+    {
+      "type": "item",
+      "id": "arena_tallow",
+      "item": "tallow_lump",
+      "at": [23, 19]
+    },
+    {
       "type": "enemy",
       "kind": "dummy",
       "at": [6, 7],

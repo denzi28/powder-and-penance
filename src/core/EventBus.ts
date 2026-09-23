@@ -41,4 +41,7 @@ export interface GameEvents {
   shot: { actor: Actor; weapon: WeaponDef; x: number; y: number; angle: number };
   projectileEnd: { x: number; y: number; angle: number; wall: boolean };
   weaponDropped: { id: string; x: number; y: number };
+  healed: { actor: Actor };
+  /** Drink interrupted before the heal landed: the charge is wasted. */
+  healFailed: { actor: Actor };
 }

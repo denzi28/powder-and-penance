@@ -1,16 +1,20 @@
-// Owns the simulation (fixed 60 Hz ticks) and world rendering. HUD lives in UIScene on top.
+// Owns the simulation (fixed 60 Hz ticks) and world rendering. HUD and menus live in UIScene on top.
 import Phaser from 'phaser';
 import { DATA, onDataReload } from '../data/config';
 import { FixedLoop } from '../core/FixedLoop';
 import { EventBus, type GameEvents } from '../core/EventBus';
 import { mulberry32, type WorldCtx } from '../core/World';
-import { Input } from '../input/Input';
+import { INPUT } from '../input/instance';
+import type { Input } from '../input/Input';
 import { SpriteLib } from '../anim/SpriteLib';
 import { buildGrid, TILE, type TileGrid } from '../world/TileGrid';
 import { WorldView } from '../world/WorldView';
 import { Racks } from '../world/Racks';
 import { GroundItems } from '../world/GroundItems';
-import { Player } from '../player/Player';
+import { SHRINE_RADIUS, Shrines, type Shrine } from '../world/Shrines';
+import { Pickups } from '../world/Pickups';
+import { DeathMarker } from '../world/DeathMarker';
+import { FISTS, Player } from '../player/Player';
 import { PlayerView } from '../player/PlayerView';
 import { Enemy } from '../enemies/Enemy';
 import { EnemyView } from '../enemies/EnemyView';
@@ -24,6 +28,8 @@ import { FloatingText } from '../render/FloatingText';
 import { ProjectileView } from '../render/ProjectileView';
 import { DEPTH } from '../render/depth';
 import { Sfx } from '../audio/Sfx';
+import { SaveSystem, type SaveData } from '../save/SaveSystem';
+import { firstEnabled, MenuNav, type Menu } from '../ui/Menu';
 import { DebugOverlay } from '../debug/DebugOverlay';
 import { installDebugKeys } from '../debug/DebugKeys';
 import { hexToInt } from '../ui/colors';
@@ -34,8 +40,13 @@ import type { RoomData } from '../data/schemas';
 const DIR_ANGLE: Record<Dir8, number> = { E: 0, SE: 45, S: 90, SW: 135, W: 180, NW: 225, N: 270, NE: 315 };
 /** The arc in slash.png spans this radius; slashes are scaled to the strike's hitbox radius. */
 const SLASH_RADIUS = 22;
-/** Only these player states may interact with racks/objects. */
+/** Only these player states may interact with objects. */
 const CAN_INTERACT = new Set(['idle', 'move', 'sprint']);
+
+export interface GameStartData {
+  /** continue = load the save (falls back to new); new = wipe the save and start fresh. */
+  mode?: 'continue' | 'new';
+}
 
 export class GameScene extends Phaser.Scene {
   loop!: FixedLoop;
@@ -50,9 +61,20 @@ export class GameScene extends Phaser.Scene {
   tokens = new AttackTokens();
   racks!: Racks;
   ground!: GroundItems;
+  shrines!: Shrines;
+  pickups!: Pickups;
+  marker!: DeathMarker;
   debug!: DebugOverlay;
   sfx = new Sfx();
-  /** Sim ticks (frozen during hit-stop). */
+  saves = new SaveSystem();
+  /** Persistent world state: "shrine:<id>" lit, "item:<id>" taken (later: doors, shortcuts, bosses). */
+  flags = new Set<string>();
+  lastShrine: string | null = null;
+  /** Open menu (freezes the simulation). */
+  menu: Menu | null = null;
+  /** Item/event banner for the UI. */
+  toast: { title: string; body: string; t: number } | null = null;
+  /** Sim ticks (frozen during hit-stop and menus). */
   simTick = 0;
   tickCount = 0;
   hitstop = 0;
@@ -73,6 +95,10 @@ export class GameScene extends Phaser.Scene {
   private bars!: Phaser.GameObjects.Graphics;
   private rng = mulberry32(1234);
   private roomsJson = '';
+  private menuNav = new MenuNav();
+  /** Kneeling at a shrine: kindle (first visit) or rest, then the shrine menu opens. */
+  private shrineSeq: { shrine: Shrine; t: number; kindle: boolean } | null = null;
+  private dirty = false;
 
   constructor() {
     super('game');
@@ -82,9 +108,9 @@ export class GameScene extends Phaser.Scene {
     return [this.player, ...this.enemies];
   }
 
-  create() {
+  create(data: GameStartData = {}) {
     this.lib = new SpriteLib(this);
-    this.controls = new Input(() => DATA.input);
+    this.controls = INPUT;
     this.controls.attach(this.game.canvas);
     this.game.canvas.style.cursor = 'none';
 
@@ -101,13 +127,28 @@ export class GameScene extends Phaser.Scene {
       roomAt: (x, y) => this.roomAt(x, y),
     };
 
+    // Load or start fresh.
+    let save: SaveData | null = null;
+    if (data.mode === 'new') this.saves.clear();
+    else {
+      const r = this.saves.load();
+      if (r.ok) save = r.save;
+      else if (r.reason === 'corrupt') this.showToast('SAVE UNREADABLE', 'A backup was kept; starting a new game.');
+    }
+    this.flags = new Set(save?.world.flags ?? []);
+    this.lastShrine = save?.lastShrine ?? null;
+
     this.worldView = new WorldView(this, this.lib);
     this.racks = new Racks(this.lib);
     this.ground = new GroundItems(this.lib);
+    this.shrines = new Shrines(this.lib);
+    this.pickups = new Pickups(this.lib);
+    this.marker = new DeathMarker(this.lib);
     this.buildWorld();
 
-    const spawn = this.findSpawn();
+    const spawn = this.respawnPoint();
     this.player = new Player(this.ctxObj, spawn.x, spawn.y);
+    if (save) this.applySave(save);
     this.playerView = new PlayerView(this, this.player, this.lib);
     this.spawnRoomEnemies();
 
@@ -121,10 +162,13 @@ export class GameScene extends Phaser.Scene {
     this.wireEvents();
 
     this.loop = new FixedLoop(() => DATA.game.tickRate, () => DATA.game.maxStepsPerFrame, () => this.tick());
+    this.respawnT = 0; // fade in
 
     const unlock = () => this.sfx.unlock();
+    const saveOnExit = () => this.save();
     window.addEventListener('keydown', unlock);
     window.addEventListener('mousedown', unlock);
+    window.addEventListener('beforeunload', saveOnExit);
     const offReload = onDataReload(() => this.onDataReload());
     const offKeys = installDebugKeys(this);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
@@ -132,7 +176,7 @@ export class GameScene extends Phaser.Scene {
       offKeys();
       window.removeEventListener('keydown', unlock);
       window.removeEventListener('mousedown', unlock);
-      this.controls.dispose();
+      window.removeEventListener('beforeunload', saveOnExit);
     });
 
     this.scene.launch('ui');
@@ -142,8 +186,13 @@ export class GameScene extends Phaser.Scene {
   private tick() {
     this.tickCount++;
     this.controls.beginTick(this.simTick);
+    this.tickDeath(); // fades keep running under menus
+    if (this.menu) {
+      this.tickMenu();
+      return;
+    }
     this.cam.tickShake();
-    this.tickDeath();
+    if (this.toast && ++this.toast.t > 240) this.toast = null;
     if (this.hitstop > 0) {
       this.hitstop--;
       return;
@@ -157,15 +206,40 @@ export class GameScene extends Phaser.Scene {
     this.resolveBodies();
     this.combat.resolve(this.actors, this.bus);
     this.projectiles.tick(this.actors, this.grid, this.combat, this.bus);
+    this.tickShrineSeq();
+
+    if (!this.player.dead) {
+      const got = this.marker.tryRecover(this.player.x, this.player.y);
+      if (got) {
+        this.player.tallow += got;
+        this.numbers.add(`+${got}`, this.player.x, this.player.y - 34, hexToInt(DATA.palette.flame2));
+        this.showToast('TALLOW RECOVERED', `${got} tallow reclaimed from the guttered candle.`);
+        this.bus.emit('sfx', { id: 'tallow_recover' });
+        this.save();
+      }
+    }
 
     for (const e of this.enemies.filter(en => en.remove)) this.removeEnemy(e);
     this.cam.tick(lead.x, lead.y);
+    if (this.dirty && this.simTick % DATA.shrine.autosaveTicks === 0) this.save();
   }
 
-  /** The closest thing the player can interact with right now (floor items win over racks). */
+  private tickMenu() {
+    const r = this.menuNav.update(this.menu!, this.controls);
+    if (r === 'moved') this.bus.emit('sfx', { id: 'menu_move' });
+    if (r === 'confirmed') this.bus.emit('sfx', { id: 'menu_confirm' });
+  }
+
+  closeMenu() {
+    this.menu = null;
+    this.controls.clearBuffer();
+  }
+
+  // ------------------------------------------------------------------ interaction
+  /** The closest thing the player can interact with right now. */
   nearestInteractable(): { label: string; use: () => void } | null {
     const p = this.player;
-    if (!CAN_INTERACT.has(p.stateName)) return null;
+    if (!CAN_INTERACT.has(p.stateName) || this.shrineSeq) return null;
     const item = this.ground.nearest(p.x, p.y);
     if (item)
       return {
@@ -175,7 +249,20 @@ export class GameScene extends Phaser.Scene {
           const released = p.equip(item.weapon);
           if (released) this.ground.add(released, p.x, p.y + 2); // hands full: swap with the one on the floor
           this.announce(DATA.weapons[item.weapon].name);
+          this.dirty = true;
         },
+      };
+    const pick = this.pickups.nearest(p.x, p.y);
+    if (pick)
+      return {
+        label: `PICK UP ${DATA.items[pick.item].name}`,
+        use: () => this.takePickup(pick.id, pick.item),
+      };
+    const shrine = this.shrines.nearest(p.x, p.y);
+    if (shrine)
+      return {
+        label: shrine.lit ? `REST AT ${shrine.name}` : `KINDLE ${shrine.name}`,
+        use: () => this.beginShrine(shrine),
       };
     const rack = this.racks.nearest(p.x, p.y);
     if (!rack) return null;
@@ -186,6 +273,7 @@ export class GameScene extends Phaser.Scene {
         use: () => {
           p.equip(id); // racks never run out; the replaced weapon goes back on the rack
           this.announce(DATA.weapons[id].name);
+          this.dirty = true;
         },
       };
     }
@@ -195,6 +283,7 @@ export class GameScene extends Phaser.Scene {
       use: () => {
         p.shieldId = id;
         this.announce(id ? DATA.shields[id].name : 'no shield');
+        this.dirty = true;
       },
     };
   }
@@ -206,11 +295,172 @@ export class GameScene extends Phaser.Scene {
     this.bus.emit('sfx', { id: 'pickup' });
   }
 
+  private takePickup(id: string, itemId: string) {
+    const p = this.player;
+    const item = DATA.items[itemId];
+    const pick = this.pickups.list.find(i => i.id === id);
+    if (pick) this.pickups.remove(pick);
+    this.flags.add(`item:${id}`);
+    const e = item.effect;
+    switch (e.type) {
+      case 'phialMax':
+        p.phials.max = Math.min(DATA.phial.maxCharges, p.phials.max + e.amount);
+        p.phials.charges = Math.min(p.phials.max, p.phials.charges + e.amount);
+        break;
+      case 'phialLevel':
+        p.phials.level = Math.min(DATA.phial.maxLevel, p.phials.level + e.amount);
+        break;
+      case 'ammo':
+        for (const wid of new Set(p.slots)) {
+          const r = DATA.weapons[wid]?.ranged;
+          if (!r) continue;
+          const a = p.ammoFor(wid);
+          a.reserve = Math.min(r.reserveMax, a.reserve + Math.ceil(r.reserveMax * e.amount));
+        }
+        break;
+      case 'tallow':
+        p.tallow += e.amount;
+        break;
+    }
+    this.showToast(item.name.toUpperCase(), item.description);
+    this.bus.emit('sfx', { id: 'item' });
+    this.save();
+  }
+
+  showToast(title: string, body: string) {
+    this.toast = { title, body, t: 0 };
+  }
+
   private announce(text: string) {
     this.numbers.add(text.toUpperCase(), this.player.x, this.player.y - 34, hexToInt(DATA.palette.wax2));
   }
 
-  /** Soft circle separation so actors don't overlap. Immovable actors (resist 1) push others fully. */
+  // ------------------------------------------------------------------ shrines, rest, death
+  private beginShrine(s: Shrine) {
+    const p = this.player;
+    const sp = this.shrines.spawnPoint(s);
+    p.moveBy(sp.x - p.x, sp.y - p.y);
+    p.aimAngle = -Math.PI / 2;
+    p.sm.change('rest');
+    this.shrineSeq = { shrine: s, t: 0, kindle: !s.lit };
+    this.bus.emit('sfx', { id: s.lit ? 'rest' : 'shrine_kindle' });
+  }
+
+  private tickShrineSeq() {
+    const q = this.shrineSeq;
+    if (!q) return;
+    q.t++;
+    const c = DATA.shrine;
+    if (q.kindle && q.t === Math.floor(c.kindleTicks / 2)) {
+      this.shrines.light(q.shrine);
+      this.flags.add(`shrine:${q.shrine.id}`);
+      this.particles.burst(q.shrine.x, q.shrine.y, 30, -Math.PI / 2, 3, 16, 60, 'flame2', false);
+      this.showToast('WICK KINDLED', `${q.shrine.name}. Rest here to mend and to be returned here when you fall.`);
+    }
+    if (q.t >= (q.kindle ? c.kindleTicks : c.kneelTicks)) {
+      this.shrineSeq = null;
+      this.rest(q.shrine);
+    }
+  }
+
+  /** Rest: restore everything, respawn enemies, save, open the shrine menu. */
+  private rest(s: Shrine) {
+    this.lastShrine = s.id;
+    this.restoreWorld();
+    this.save();
+    this.particles.burst(this.player.x, this.player.y, 12, -Math.PI / 2, 2.5, 12, 40, 'wax2', false);
+    const items = [
+      { label: 'LEVEL UP', enabled: false, note: 'M7', action: () => {} },
+      { label: 'TRAVEL', enabled: false, note: 'later', action: () => {} },
+      { label: 'LEAVE', enabled: true, action: () => this.leaveShrine() },
+    ];
+    this.menu = { title: s.name.toUpperCase(), subtitle: 'Rested. Progress saved.', items, index: firstEnabled(items), onBack: () => this.leaveShrine() };
+  }
+
+  private leaveShrine() {
+    this.closeMenu();
+    this.player.sm.change('idle');
+  }
+
+  /** Shared by rest and respawn: full restore and a fresh set of (non-boss) enemies. */
+  private restoreWorld() {
+    this.player.refill();
+    this.player.poise.reset();
+    this.resetEnemies();
+    this.projectiles.clear();
+  }
+
+  private tickDeath() {
+    const d = DATA.death;
+    if (this.player.dead) {
+      this.deathT++;
+      if (this.deathT >= d.overlayDelayTicks + d.fadeInTicks + d.holdTicks + d.fadeOutTicks) this.respawn();
+    } else if (this.respawnT >= 0 && ++this.respawnT > d.fadeBackTicks) {
+      this.respawnT = -1;
+    }
+  }
+
+  /** Back at the last shrine (or the start), world reset. */
+  respawn() {
+    const s = this.respawnPoint();
+    this.deathT = -1;
+    this.respawnT = 0;
+    this.shrineSeq = null;
+    this.player.respawn(s.x, s.y);
+    this.restoreWorld();
+    this.particles.clear();
+    this.numbers.clear();
+    this.hitstop = 0;
+    this.save();
+  }
+
+  private respawnPoint() {
+    const shrine = this.shrines.get(this.lastShrine);
+    return shrine ? this.shrines.spawnPoint(shrine) : this.findSpawn();
+  }
+
+  // ------------------------------------------------------------------ save / load
+  snapshot(): SaveData {
+    const p = this.player;
+    const m = this.marker.data;
+    return {
+      version: 1,
+      savedAt: Date.now(),
+      lastShrine: this.lastShrine,
+      tallow: p.tallow,
+      phials: { ...p.phials },
+      stats: { level: 1 },
+      loadout: { slots: [...p.slots], slot: p.slot, shield: p.shieldId },
+      ammo: Object.fromEntries(p.ammo),
+      world: {
+        flags: [...this.flags],
+        groundItems: this.ground.list.map(i => ({ weapon: i.weapon, x: i.x, y: i.y })),
+      },
+      deathMarker: m ? { x: m.x, y: m.y, tallow: m.tallow } : null,
+    };
+  }
+
+  save() {
+    this.saves.write(this.snapshot());
+    this.dirty = false;
+  }
+
+  private applySave(s: SaveData) {
+    const p = this.player;
+    const known = (id: string) => (DATA.weapons[id] ? id : FISTS); // data may have changed since saving
+    p.tallow = s.tallow;
+    p.phials = { ...s.phials };
+    p.slots = [known(s.loadout.slots[0]), known(s.loadout.slots[1])];
+    p.slot = s.loadout.slot;
+    p.shieldId = s.loadout.shield && DATA.shields[s.loadout.shield] ? s.loadout.shield : null;
+    p.enforceTwoHanded();
+    for (const [id, a] of Object.entries(s.ammo)) p.ammo.set(id, { ...a });
+    for (const g of s.world.groundItems) if (DATA.weapons[g.weapon]) this.ground.add(g.weapon, g.x, g.y);
+    this.marker.set(s.deathMarker);
+  }
+
+  // ------------------------------------------------------------------ bodies
+  /** Soft circle separation so actors don't overlap; shrines are immovable obstacles. */
   private resolveBodies() {
     const list = this.actors.filter(a => !a.dead);
     const k = DATA.combat.bodyPush;
@@ -232,29 +482,15 @@ export class GameScene extends Phaser.Scene {
         a.moveBy((-nx * push * wa) / (wa + wb), (-ny * push * wa) / (wa + wb));
         b.moveBy((nx * push * wb) / (wa + wb), (ny * push * wb) / (wa + wb));
       }
-  }
-
-  private tickDeath() {
-    const d = DATA.death;
-    if (this.player.dead) {
-      this.deathT++;
-      if (this.deathT >= d.overlayDelayTicks + d.fadeInTicks + d.holdTicks + d.fadeOutTicks) this.respawn();
-    } else if (this.respawnT >= 0 && ++this.respawnT > d.fadeBackTicks) {
-      this.respawnT = -1;
-    }
-  }
-
-  /** M2/M3: respawn at the room's spawn point; shrines replace this in M4. */
-  respawn() {
-    const s = this.findSpawn();
-    this.deathT = -1;
-    this.respawnT = 0;
-    this.player.respawn(s.x, s.y);
-    this.resetEnemies();
-    this.projectiles.clear();
-    this.particles.clear();
-    this.numbers.clear();
-    this.hitstop = 0;
+    for (const s of this.shrines.list)
+      for (const a of list) {
+        const dx = a.x - s.x;
+        const dy = a.y - s.y;
+        const min = a.bodyRadius + SHRINE_RADIUS;
+        const d = Math.hypot(dx, dy);
+        if (d >= min || d < 0.001) continue;
+        a.moveBy((dx / d) * (min - d), (dy / d) * (min - d));
+      }
   }
 
   // ------------------------------------------------------------------ enemies
@@ -395,12 +631,40 @@ export class GameScene extends Phaser.Scene {
     bus.on('weaponDropped', e => {
       this.ground.add(e.id, e.x, e.y + 2);
       this.bus.emit('sfx', { id: 'swap' });
+      this.dirty = true;
+    });
+
+    bus.on('healed', e => {
+      this.particles.burst(e.actor.x, e.actor.y, 6, -Math.PI / 2, 2.2, 14, 45, 'flame2', false);
+      this.particles.burst(e.actor.x, e.actor.y, 14, -Math.PI / 2, 2.2, 8, 35, 'wax2', false);
+      this.bus.emit('sfx', { id: 'heal' });
+    });
+
+    bus.on('healFailed', e => {
+      this.particles.burst(e.actor.x, e.actor.y, 14, -Math.PI / 2, 3, 8, 70, 'steel2', false);
+      this.bus.emit('sfx', { id: 'heal_fail' });
+      this.numbers.add('WASTED', e.actor.x, e.actor.y - 34, hexToInt(pal().ember));
     });
 
     bus.on('died', e => {
+      if (e.actor instanceof Enemy) {
+        const gain = e.actor.def.tallow;
+        if (gain > 0) {
+          this.player.tallow += gain;
+          this.numbers.add(`+${gain}`, e.actor.x, e.actor.y - 20, hexToInt(pal().flame2));
+          this.bus.emit('sfx', { id: 'tallow' });
+          this.dirty = true;
+        }
+        return;
+      }
       if (e.actor !== this.player) return;
       this.deathT = 0;
       this.cam.addTrauma(0.4);
+      // All carried Tallow stays behind as a Guttered Candle; any older candle is lost for good.
+      const p = this.player;
+      this.marker.set(p.tallow > 0 ? { x: p.x, y: p.y, tallow: p.tallow } : null);
+      p.tallow = 0;
+      this.save();
     });
   }
 
@@ -412,11 +676,14 @@ export class GameScene extends Phaser.Scene {
   // ------------------------------------------------------------------ rendering
   update(_time: number, delta: number) {
     let alpha = this.loop.frame(delta);
-    if (this.hitstop > 0) alpha = 1; // hold still during hit-stop instead of interpolating
+    if (this.hitstop > 0 || this.menu) alpha = 1; // hold still instead of interpolating
     const fxDelta = delta * (this.loop.frozen ? 0 : this.loop.timeScale);
     this.fx.update(fxDelta);
     this.particles.update(fxDelta);
     this.numbers.update(fxDelta);
+    this.shrines.update(delta);
+    this.pickups.update(delta);
+    this.marker.update(delta);
 
     const feet = this.playerView.render(alpha);
     for (const v of this.enemyViews.values()) v.render(alpha);
@@ -511,6 +778,8 @@ export class GameScene extends Phaser.Scene {
     this.grid = buildGrid(this.rooms);
     this.worldView.build(this.grid);
     this.racks.build(this.rooms);
+    this.shrines.build(this.rooms, id => this.flags.has(`shrine:${id}`));
+    this.pickups.build(this.rooms, id => this.flags.has(`item:${id}`));
   }
 
   private findSpawn() {

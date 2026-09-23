@@ -6,13 +6,14 @@ import { radialDeadzone } from '../core/math';
 export const ACTIONS = [
   'moveUp', 'moveDown', 'moveLeft', 'moveRight',
   'light', 'heavy', 'block', 'roll', 'sprint', 'heal', 'reload', 'swap', 'interact', 'drop', 'pause',
+  'confirm', 'back',
 ] as const;
 export type Action = (typeof ACTIONS)[number];
 export type Device = 'kbm' | 'pad';
 
 /** Actions that queue for `bufferTicks` if pressed while the player can't act yet. */
 const BUFFERED: ReadonlySet<Action> = new Set<Action>(['light', 'heavy', 'roll', 'heal', 'reload', 'swap', 'interact', 'drop']);
-const ALWAYS_PREVENT = new Set(['Tab', 'Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
+const ALWAYS_PREVENT = new Set(['Tab', 'Space', 'Backspace', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
   'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10']);
 
 export class Input {
@@ -38,6 +39,7 @@ export class Input {
   constructor(private cfg: () => InputCfg) {}
 
   attach(canvas: HTMLElement) {
+    if (this.cleanup) return; // already attached (shared across scenes)
     const press = (code: string) => this.presses.set(code, (this.presses.get(code) ?? 0) + 1);
     const kd = (e: KeyboardEvent) => {
       if (ALWAYS_PREVENT.has(e.code) || this.isBound(e.code)) e.preventDefault();
@@ -162,6 +164,11 @@ export class Input {
     const t = this.bufferedAt.get(a);
     return t !== undefined && this.tick - t <= this.cfg().bufferTicks;
   }
+  /** Forget all buffered presses (e.g. when a menu closes, so its confirm press doesn't leak into gameplay). */
+  clearBuffer() {
+    this.bufferedAt.clear();
+  }
+
   /** peek() and mark the press as used. */
   consume(a: Action) {
     const ok = this.peek(a);

@@ -125,6 +125,45 @@ export const SfxPreset = z.object({
 });
 export const SfxBank = z.object({ presets: z.record(z.string(), SfxPreset) });
 
+export const PhialCfg = z
+  .object({
+    startCharges: int.nonnegative(),
+    maxCharges: int.positive(),
+    healAmount: num.min(0),
+    healPerLevel: num.min(0),
+    maxLevel: int.nonnegative(),
+    /** Timeline (ticks): raise the phial, drink, heal lands at healApplyTick, lower until totalTicks. */
+    raiseTicks: int.positive(),
+    healApplyTick: int.positive(),
+    totalTicks: int.positive(),
+    moveMult: num.min(0).max(1),
+  })
+  .refine(p => p.raiseTicks < p.healApplyTick && p.healApplyTick < p.totalTicks, {
+    message: 'need raiseTicks < healApplyTick < totalTicks',
+  });
+
+export const ShrineCfg = z.object({
+  reach: pos,
+  kneelTicks: int.positive(),
+  kindleTicks: int.positive(),
+  spawnOffset: Vec2,
+  markerPickupRadius: pos,
+  autosaveTicks: int.positive(),
+});
+
+export const ItemDef = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string(),
+  effect: z.discriminatedUnion('type', [
+    z.object({ type: z.literal('phialMax'), amount: int.positive() }),
+    z.object({ type: z.literal('phialLevel'), amount: int.positive() }),
+    /** Restores this fraction of every carried ranged weapon's reserve. */
+    z.object({ type: z.literal('ammo'), amount: num.positive().max(1) }),
+    z.object({ type: z.literal('tallow'), amount: int.positive() }),
+  ]),
+});
+
 export const DeathCfg = z.object({
   text: z.string(),
   overlayDelayTicks: int.nonnegative(),
@@ -395,6 +434,7 @@ export type InputCfg = z.infer<typeof InputCfg>;
 export type WeaponDef = z.infer<typeof WeaponDef>;
 export type StrikeDef = z.infer<typeof StrikeDef>;
 export type ShieldDef = z.infer<typeof ShieldDef>;
+export type ItemDef = z.infer<typeof ItemDef>;
 export type MoveDef = z.infer<typeof MoveDef>;
 export type EnemyDef = z.infer<typeof EnemyDef>;
 export type SfxPreset = z.infer<typeof SfxPreset>;

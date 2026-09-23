@@ -1,0 +1,11 @@
+{
+  "startCharges": 3,
+  "maxCharges": 8,
+  "healAmount": 45,
+  "healPerLevel": 10,
+  "maxLevel": 5,
+  "raiseTicks": 20,
+  "healApplyTick": 48,
+  "totalTicks": 60,
+  "moveMult": 0.35
+}

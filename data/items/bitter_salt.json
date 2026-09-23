@@ -1,0 +1,6 @@
+{
+  "id": "bitter_salt",
+  "name": "Bitter Salt",
+  "description": "Stirred into the phial, it mends deeper wounds.",
+  "effect": { "type": "phialLevel", "amount": 1 }
+}

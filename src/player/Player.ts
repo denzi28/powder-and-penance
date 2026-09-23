@@ -54,7 +54,14 @@ export class Player extends Actor {
   slots: [string, string];
   slot = 0;
   shieldId: string | null;
-  private ammo = new Map<string, Ammo>();
+  readonly ammo = new Map<string, Ammo>();
+
+  // Resources
+  /** Carried currency: dropped where you die. */
+  tallow = 0;
+  phials = { charges: DATA.phial.startCharges, max: DATA.phial.startCharges, level: 0 };
+  /** Set once the current drink's heal has landed (a hit before that wastes the charge). */
+  healApplied = false;
   /** Gun recoil 0..1 (decays), reload/swap progress 0..1 for the view and HUD. */
   recoil = 0;
   reloadProgress = -1;
@@ -168,11 +175,17 @@ export class Player extends Actor {
     return this.stamina.value <= 0;
   }
 
+  get healAmount() {
+    return DATA.phial.healAmount + this.phials.level * DATA.phial.healPerLevel;
+  }
+
   onHit(h: HitInfo) {
     if (h.killed) {
       this.sm.change('dead');
       return;
     }
+    // Any damage before the heal lands interrupts the drink and wastes the charge.
+    if (this.sm.name === 'heal' && !this.healApplied && h.damage > 0 && !h.staggered) this.sm.change('idle');
     if (h.blocked) {
       if (h.guardBroken) this.sm.change('guardBroken');
       else this.squash.set(DATA.juice.squash.hit);
@@ -194,7 +207,7 @@ export class Player extends Actor {
     return l !== null && l !== i;
   }
 
-  private enforceTwoHanded() {
+  enforceTwoHanded() {
     const l = this.lockedSlot;
     if (l !== null) this.slot = l;
   }
@@ -234,9 +247,11 @@ export class Player extends Actor {
     return released;
   }
 
+  /** Shrine rest / respawn: full HP, stamina, phials and ammo. */
   refill() {
     this.hp = this.maxHp;
     this.stamina.refill();
+    this.phials.charges = this.phials.max;
     this.ammo.clear(); // refilled lazily to full
   }
 
@@ -254,7 +269,8 @@ export class Player extends Actor {
   private updateAnims() {
     const st = this.sm.name;
     if (this.runner) this.bodyDir = dir8FromAngle(this.runner.angle);
-    else if (st !== 'roll' && st !== 'dead' && st !== 'stagger' && st !== 'guardBroken') this.bodyDir = dir8FromAngle(this.aimAngle);
+    else if (st !== 'roll' && st !== 'dead' && st !== 'stagger' && st !== 'guardBroken' && st !== 'rest')
+      this.bodyDir = dir8FromAngle(this.aimAngle);
     this.body.tick(this.animHold ? 0 : 1);
 
     if (!this.legsVisible) return;

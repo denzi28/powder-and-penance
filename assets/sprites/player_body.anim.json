@@ -159,6 +159,47 @@
           "ticks": 60
         }
       ]
+    },
+    "kneel": {
+      "row": 21,
+      "dirs": [
+        "S",
+        "SE",
+        "E",
+        "NE",
+        "N"
+      ],
+      "loop": false,
+      "frames": [
+        {
+          "ticks": 60
+        }
+      ]
+    },
+    "drink": {
+      "row": 26,
+      "dirs": [
+        "S",
+        "SE",
+        "E",
+        "NE",
+        "N"
+      ],
+      "loop": false,
+      "frames": [
+        {
+          "ticks": 1,
+          "phase": "raise"
+        },
+        {
+          "ticks": 1,
+          "phase": "drink"
+        },
+        {
+          "ticks": 1,
+          "phase": "lower"
+        }
+      ]
     }
   }
 }

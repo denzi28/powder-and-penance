@@ -1,0 +1,35 @@
+{
+  "image": "item_glint.png",
+  "cell": [
+    9,
+    9
+  ],
+  "pivot": [
+    4,
+    6
+  ],
+  "layer": "fx",
+  "animations": {
+    "shine": {
+      "row": 0,
+      "dirs": [
+        "S"
+      ],
+      "loop": true,
+      "frames": [
+        {
+          "ticks": 6
+        },
+        {
+          "ticks": 6
+        },
+        {
+          "ticks": 6
+        },
+        {
+          "ticks": 24
+        }
+      ]
+    }
+  }
+}

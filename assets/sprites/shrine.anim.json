@@ -1,0 +1,48 @@
+{
+  "image": "shrine.png",
+  "cell": [
+    24,
+    44
+  ],
+  "pivot": [
+    12,
+    42
+  ],
+  "layer": "single",
+  "animations": {
+    "unlit": {
+      "row": 0,
+      "dirs": [
+        "S"
+      ],
+      "loop": true,
+      "frames": [
+        {
+          "ticks": 60,
+          "col": 0
+        }
+      ]
+    },
+    "lit": {
+      "row": 0,
+      "dirs": [
+        "S"
+      ],
+      "loop": true,
+      "frames": [
+        {
+          "ticks": 8,
+          "col": 1
+        },
+        {
+          "ticks": 7,
+          "col": 2
+        },
+        {
+          "ticks": 9,
+          "col": 3
+        }
+      ]
+    }
+  }
+}

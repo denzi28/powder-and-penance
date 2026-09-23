@@ -284,8 +284,21 @@ function drawPlayerDeath(c: Img, f: number) {
   }
 }
 
+/** Drinking from the Mending Phial (off hand). f: 0 raise, 1 drink (at the mouth), 2 lower. */
+function drawDrink(c: Img, dir: Dir5, f: number) {
+  drawTorso(c, dir, 0, f === 1 ? 'active' : 'idle'); // head tips back while drinking
+  const mouth: Partial<Record<Dir5, [number, number]>> = { S: [15, 9], SE: [16, 9], E: [19, 8] };
+  const hip: Record<Dir5, [number, number]> = { S: [11, 16], SE: [12, 16], E: [14, 16], NE: [12, 16], N: [12, 16] };
+  const at = f === 1 ? mouth[dir] : hip[dir];
+  if (!at || ((dir === 'N' || dir === 'NE') && f !== 1)) return; // flask hidden behind the body
+  const [x, y] = at;
+  c.rect(x, y, 2, 3, P.flame2);
+  c.set(x, y + 2, P.flame1);
+  c.set(x, y - 1, P.wax1); // cork
+}
+
 function genPlayer() {
-  const body = new Img(CELL * 8, CELL * 21);
+  const body = new Img(CELL * 8, CELL * 31);
   const cell = (draw: (c: Img) => void, col: number, row: number) => {
     const c = new Img(CELL, CELL);
     draw(c);
@@ -297,6 +310,8 @@ function genPlayer() {
     for (let f = 0; f < 7; f++) cell(c => drawRoll(c, d, f), f, 5 + row);
     (['windup', 'active', 'idle'] as const).forEach((pose, f) => cell(c => drawTorso(c, d, 0, pose), f, 10 + row));
     (['flinch', 'idle'] as const).forEach((pose, f) => cell(c => drawTorso(c, d, 0, pose), f, 15 + row));
+    cell(c => drawRoll(c, d, 5), 0, 21 + row); // kneel (full body)
+    for (let f = 0; f < 3; f++) cell(c => drawDrink(c, d, f), f, 26 + row);
   });
   for (let f = 0; f < 5; f++) cell(c => drawPlayerDeath(c, f), f, 20);
   const toPivot = ([x, y]: [number, number]) => [x - PIVOT[0], y - PIVOT[1]];
@@ -337,6 +352,17 @@ function genPlayer() {
         dirs: ['S'],
         loop: false,
         frames: [{ ticks: 8 }, { ticks: 8 }, { ticks: 10 }, { ticks: 30 }, { ticks: 60 }],
+      },
+      kneel: { row: 21, dirs: DIR5, loop: false, frames: [{ ticks: 60 }] },
+      drink: {
+        row: 26,
+        dirs: DIR5,
+        loop: false,
+        frames: [
+          { ticks: 1, phase: 'raise' },
+          { ticks: 1, phase: 'drink' },
+          { ticks: 1, phase: 'lower' },
+        ],
       },
     },
   });
@@ -850,6 +876,106 @@ function genArsenal() {
   sheet('question', q, { cell: [7, 11], pivot: [3, 10], layer: 'fx' });
 }
 
+// ---------------------------------------------------------------- shrines & resources (M4)
+function genShrine() {
+  // Wick Shrine: an iron candelabrum with one tall candle. Col 0 = unlit, cols 1..3 = lit flicker.
+  const W = 24;
+  const H = 44;
+  const img = new Img(W * 4, H);
+  for (let f = 0; f < 4; f++) {
+    const c = new Img(W, H);
+    c.rect(5, 38, 14, 4, P.dark1); // base
+    c.hline(5, 38, 14, P.stone3);
+    c.rect(11, 18, 2, 20, P.steel1); // stem
+    c.vline(11, 18, 20, P.stone3);
+    c.rect(9, 26, 6, 2, P.steel1); // knob
+    c.rect(6, 16, 12, 2, P.steel1); // dish
+    c.hline(6, 16, 12, P.steel2);
+    c.rect(9, 7, 6, 9, P.wax1); // candle
+    c.vline(9, 7, 9, P.wax2);
+    c.set(14, 12, P.wax2); // drips
+    c.set(8, 15, P.wax1);
+    c.set(15, 14, P.wax1);
+    c.set(12, 6, P.ink); // wick
+    if (f > 0) {
+      const sway = f === 2 ? 1 : 0;
+      c.ellipse(12 + sway, 3.5, 2, 3 + (f === 3 ? 0.5 : 0), P.flame1);
+      c.ellipse(12 + sway, 4, 1, 1.8, P.flame2);
+      c.set(12 + sway, 4, P.wax2);
+    }
+    c.outline(P.ink);
+    img.blit(c, f * W, 0);
+  }
+  sheet('shrine', img, {
+    cell: [W, H],
+    pivot: [12, 42],
+    layer: 'single',
+    animations: {
+      unlit: { row: 0, dirs: ['S'], loop: true, frames: [{ ticks: 60, col: 0 }] },
+      lit: { row: 0, dirs: ['S'], loop: true, frames: [{ ticks: 8, col: 1 }, { ticks: 7, col: 2 }, { ticks: 9, col: 3 }] },
+    },
+  });
+
+  // Guttered Candle (death marker): a melted stub with a pale, cold flame.
+  const g = new Img(12 * 3, 14);
+  for (let f = 0; f < 3; f++) {
+    const c = new Img(12, 14);
+    c.ellipse(6, 11.5, 5, 2, P.wax1);
+    c.rect(4, 7, 4, 4, P.wax1);
+    c.vline(4, 7, 4, P.wax2);
+    c.set(6, 6, P.ink);
+    const h = [2, 3, 2][f];
+    for (let i = 1; i <= h; i++) c.set(6 + (f === 1 && i === h ? 1 : 0), 6 - i, i === 1 ? P.white : P.cyan);
+    c.outline(P.ink);
+    g.blit(c, f * 12, 0);
+  }
+  sheet('guttered', g, {
+    cell: [12, 14],
+    pivot: [6, 12],
+    layer: 'single',
+    animations: { flicker: { row: 0, dirs: ['S'], loop: true, frames: [{ ticks: 7 }, { ticks: 6 }, { ticks: 8 }] } },
+  });
+
+  // Item glint: a twinkle marking a pickup on the floor.
+  const it = new Img(9 * 4, 9);
+  [1, 2, 3, 1].forEach((r, f) => {
+    const c = new Img(9, 9);
+    for (let i = 1; i <= r; i++) for (const [dx, dy] of [[i, 0], [-i, 0], [0, i], [0, -i]]) c.set(4 + dx, 4 + dy, i === r ? P.flame1 : P.flame2);
+    c.set(4, 4, P.wax2);
+    it.blit(c, f * 9, 0);
+  });
+  sheet('item_glint', it, {
+    cell: [9, 9],
+    pivot: [4, 6],
+    layer: 'fx',
+    animations: { shine: { row: 0, dirs: ['S'], loop: true, frames: [{ ticks: 6 }, { ticks: 6 }, { ticks: 6 }, { ticks: 24 }] } },
+  });
+
+  // HUD icons
+  const ph = new Img(8 * 2, 10);
+  [true, false].forEach((full, f) => {
+    const c = new Img(8, 10);
+    c.set(3, 1, P.wax1); // cork
+    c.set(4, 1, P.wax1);
+    c.rect(3, 2, 2, 1, P.stone3); // neck
+    c.rect(1, 3, 6, 6, full ? P.flame2 : P.dark2);
+    if (full) {
+      c.hline(1, 8, 6, P.flame1);
+      c.set(2, 4, P.wax2);
+    }
+    c.outline(P.ink);
+    ph.blit(c, f * 8, 0);
+  });
+  sheet('phial_icon', ph, { cell: [8, 10], pivot: [0, 0], layer: 'ui' });
+  const tw = new Img(8, 9);
+  tw.disc(4, 5.5, 2.6, P.wax1);
+  tw.set(4, 2, P.wax1);
+  tw.set(4, 3, P.wax1);
+  tw.set(3, 4, P.wax2);
+  tw.outline(P.ink);
+  sheet('tallow_icon', tw, { cell: [8, 9], pivot: [0, 0], layer: 'ui' });
+}
+
 // ---------------------------------------------------------------- tiles
 function genTiles() {
   const T = 16;
@@ -1014,6 +1140,7 @@ genMisc();
 genEnemies();
 genCombatFx();
 genArsenal();
+genShrine();
 genTiles();
 genFont();
 console.log(`gen-art: wrote ${written} file(s), skipped ${skipped} existing${skipped && !FORCE ? ' (use --force to overwrite)' : ''}`);

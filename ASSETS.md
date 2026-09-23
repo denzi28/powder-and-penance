@@ -120,7 +120,19 @@ Draw the legs and boots in roughly rows 21–27 of the cell. The torso layer cov
 | `stagger` | 15 | S SE E NE N | 2 (10t, 16t) | Flinch. Legs stay visible. |
 | `death` | 20 | S | 5 | **Full body** collapse. Legs and weapon are hidden. |
 
+| `kneel` | 21 | S SE E NE N | 1 | **Full body.** Resting or kindling at a shrine. |
+| `drink` | 26 | S SE E NE N | 3 phased: `raise` / `drink` / `lower` | The phial is drawn in the off hand and at the mouth on the `drink` frame. Timing comes from `data/config/phial.json`. |
+
 `handAnchors` must match where the weapon hand is drawn in each direction.
+
+### Shrines and resources (M4)
+| Sheet | Cell | Pivot | Animations |
+|---|---|---|---|
+| `shrine` | 24×44 | 12,42 | `unlit` (col 0), `lit` (cols 1–3, flame flicker) |
+| `guttered` | 12×14 | 6,12 | `flicker`: the death-marker candle with a pale flame |
+| `item_glint` | 9×9 | 4,6 | `shine`: twinkle marking a pickup |
+| `phial_icon` | 8×10 | 0,0 | HUD icon. Frame 0 = full, frame 1 = spent. |
+| `tallow_icon` | 8×9 | 0,0 | HUD icon |
 
 ### `wickling` (enemy, single layer, 32×32, pivot 16,28, 5 columns)
 | Animation | Row | Dirs | Frames |

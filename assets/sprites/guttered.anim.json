@@ -1,0 +1,32 @@
+{
+  "image": "guttered.png",
+  "cell": [
+    12,
+    14
+  ],
+  "pivot": [
+    6,
+    12
+  ],
+  "layer": "single",
+  "animations": {
+    "flicker": {
+      "row": 0,
+      "dirs": [
+        "S"
+      ],
+      "loop": true,
+      "frames": [
+        {
+          "ticks": 7
+        },
+        {
+          "ticks": 6
+        },
+        {
+          "ticks": 8
+        }
+      ]
+    }
+  }
+}

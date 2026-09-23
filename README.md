@@ -26,7 +26,9 @@ npm run gen:art    # regenerate missing placeholder art (--force to overwrite al
 | Sprint (hold) | Shift | L3 or LB |
 | Swap weapon slot (disabled while holding a two-handed weapon) | Tab / wheel | D-pad ← → |
 | Drop the weapon in hand (the slot becomes bare fists) | G | D-pad ↓ |
-| Interact (weapon racks, pick up dropped weapons) | E | A / × |
+| Drink a Mending Phial (about 1 s; a hit before it lands wastes the charge) | Q | X / □ |
+| Interact: shrines, items, racks, dropped weapons | E | A / × |
+| Menus: choose / confirm / back | W S or arrows / Enter, E, Space / Esc | stick or D-pad / A / B |
 
 **Two-handed weapons** (greataxe, heavy crossbow) take both hands. The other slot and the shield are disabled until you drop the two-hander or replace it.
 
@@ -48,6 +50,21 @@ npm run gen:art    # regenerate missing placeholder art (--force to overwrite al
   - **2 training dummies:** damage/poise numbers, and you can backstab them from behind (they face south).
   - **A sparring post** that swings on a fixed rhythm, for block, parry and riposte practice.
   - **2 Wicklings** and a pillar to hide behind.
+
+## Shrines, saving and death (M4)
+- The game opens on a **title screen**: Continue, or New Game (it asks before erasing an existing save).
+- **Wick Shrines:** the test room and the arena each have one.
+  - The first use kindles the shrine.
+  - Resting restores HP, phials and ammo, respawns the enemies, **saves**, and opens the shrine menu.
+  - Dying returns you to the last shrine you rested at.
+- **Tallow:** you gain it from kills.
+  - On death, everything you carry drops as a **Guttered Candle** where you fell. Walk into it to recover the Tallow.
+  - If you die again before reaching it, it is replaced and the old Tallow is gone.
+- **Saving:** to `localStorage`.
+  - It happens on rest, death, item pickups and candle recovery, plus every 5 s when something changed, and on closing the tab.
+  - Loading always puts you at your last shrine.
+  - To wipe your progress, choose New Game on the title screen.
+- **Test items:** test room: Phial Shard (+1 phial, south-west corner) and Bitter Salt (+heal, east of the thick block). Arena: Powder Pouch (ammo) and a Lump of Tallow. Each can be picked up once per save.
 
 ## Tuning
 All tuning lives in `data/`. Save a file and the running game picks it up instantly: no restart, and you keep your position. Invalid values show an on-screen error and the last good values stay active. Timings are in ticks (60 per second).

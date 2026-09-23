@@ -66,6 +66,10 @@ function critStrike(ticks: number, hitTick: number): StrikeDef {
 function tryStartAction(p: Player): string | undefined {
   const inp = p.input;
   if (p.stamina.canAct() && inp.consume('roll')) return 'roll';
+  if (inp.consume('heal')) {
+    if (p.phials.charges > 0) return 'heal';
+    p.ctx.bus.emit('sfx', { id: 'phial_empty' });
+  }
   const w = p.weapon;
   if (inp.peek('light')) {
     const crit = findCritical(p);
@@ -408,6 +412,53 @@ const critical: State<Player> = {
   },
 };
 
+// ------------------------------------------------------------------ healing & shrines
+// Committed ~1 s drink at reduced speed. The charge is spent up front; the heal lands at healApplyTick.
+const heal: State<Player> = {
+  enter(p) {
+    const c = DATA.phial;
+    p.phials.charges--;
+    p.healApplied = false;
+    p.weaponLowered = true;
+    p.body.play('drink', {
+      restart: true,
+      phases: { raise: c.raiseTicks, drink: c.healApplyTick - c.raiseTicks, lower: c.totalTicks - c.healApplyTick },
+    });
+    p.ctx.bus.emit('sfx', { id: 'drink' });
+  },
+  tick(p, t) {
+    const c = DATA.phial;
+    moveFree(p, c.moveMult);
+    if (t === c.healApplyTick) {
+      p.hp = Math.min(p.maxHp, p.hp + p.healAmount);
+      p.healApplied = true;
+      p.ctx.bus.emit('healed', { actor: p });
+    }
+    if (t >= c.totalTicks) return 'idle';
+  },
+  exit(p) {
+    p.weaponLowered = false;
+    p.body.play('idle');
+    if (!p.healApplied) p.ctx.bus.emit('healFailed', { actor: p });
+  },
+};
+
+/** Kneeling at a shrine (kindling or resting). The scene decides when to stand up again. */
+const rest: State<Player> = {
+  enter(p) {
+    p.vx = p.vy = 0;
+    p.legsVisible = false;
+    p.weaponVisible = false;
+    p.body.play('kneel', { restart: true });
+  },
+  tick() {},
+  exit(p) {
+    p.legsVisible = true;
+    p.weaponVisible = true;
+    p.body.play('idle');
+  },
+};
+
 // ------------------------------------------------------------------ being hit
 const stagger: State<Player> = {
   enter(p) {
@@ -462,6 +513,8 @@ export const PLAYER_STATES: Record<string, State<Player>> = {
   reload,
   swap,
   block,
+  heal,
+  rest,
   critical,
   stagger,
   guardBroken,

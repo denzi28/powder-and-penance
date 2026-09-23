@@ -20,7 +20,9 @@
     "swap": ["Tab", "WheelUp", "WheelDown"],
     "interact": ["KeyE"],
     "drop": ["KeyG"],
-    "pause": ["Escape"]
+    "pause": ["Escape"],
+    "confirm": ["Enter", "KeyE", "Space"],
+    "back": ["Escape", "Backspace"]
   },
   "gamepad": {
     "moveUp": [],
@@ -37,6 +39,8 @@
     "swap": [14, 15],
     "interact": [0],
     "drop": [13],
-    "pause": [9]
+    "pause": [9],
+    "confirm": [0],
+    "back": [1]
   }
 }

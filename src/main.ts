@@ -4,6 +4,7 @@ import { ASSET_ERRORS, SPRITES } from './data/assets';
 import { showFatal } from './core/fatal';
 import { installPixelScaler } from './render/PixelScaler';
 import { BootScene } from './scenes/BootScene';
+import { TitleScene } from './scenes/TitleScene';
 import { GameScene } from './scenes/GameScene';
 import { UIScene } from './scenes/UIScene';
 
@@ -36,7 +37,7 @@ if (errors.length) {
     banner: false,
     scale: { mode: Phaser.Scale.NONE, autoCenter: Phaser.Scale.NO_CENTER },
     fps: { smoothStep: false },
-    scene: [BootScene, GameScene, UIScene],
+    scene: [BootScene, TitleScene, GameScene, UIScene],
   });
   installPixelScaler(game, DATA.game.width, DATA.game.height);
   if (import.meta.env.DEV) (window as unknown as { __game: Phaser.Game }).__game = game; // console debugging

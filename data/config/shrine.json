@@ -1,0 +1,8 @@
+{
+  "reach": 22,
+  "kneelTicks": 50,
+  "kindleTicks": 70,
+  "spawnOffset": [0, 18],
+  "markerPickupRadius": 12,
+  "autosaveTicks": 300
+}

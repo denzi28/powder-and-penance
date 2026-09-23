@@ -15,6 +15,24 @@
       "at": [8, 10]
     },
     {
+      "type": "shrine",
+      "id": "shrine_test",
+      "name": "Vestibule Wick",
+      "at": [8, 7]
+    },
+    {
+      "type": "item",
+      "id": "test_shard",
+      "item": "phial_shard",
+      "at": [2, 20]
+    },
+    {
+      "type": "item",
+      "id": "test_salt",
+      "item": "bitter_salt",
+      "at": [29, 6]
+    },
+    {
       "type": "enemy",
       "kind": "wickling",
       "at": [29, 18],

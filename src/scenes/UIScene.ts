@@ -2,6 +2,7 @@
 import Phaser from 'phaser';
 import { DATA, onDataError, onDataReload } from '../data/config';
 import { hexToInt } from '../ui/colors';
+import { MenuRenderer, wrap } from '../ui/MenuRenderer';
 import type { GameScene } from './GameScene';
 
 export class UIScene extends Phaser.Scene {
@@ -17,6 +18,13 @@ export class UIScene extends Phaser.Scene {
   private ammoText!: Phaser.GameObjects.BitmapText;
   private shieldIcon!: Phaser.GameObjects.Sprite;
   private prompt!: Phaser.GameObjects.BitmapText;
+  private phialIcons: Phaser.GameObjects.Sprite[] = [];
+  private tallowIcon!: Phaser.GameObjects.Sprite;
+  private tallowText!: Phaser.GameObjects.BitmapText;
+  private tallowShown = 0;
+  private toastTitle!: Phaser.GameObjects.BitmapText;
+  private toastBody!: Phaser.GameObjects.BitmapText;
+  private menuUi!: MenuRenderer;
 
   constructor() {
     super('ui');
@@ -29,7 +37,7 @@ export class UIScene extends Phaser.Scene {
     this.g = this.add.graphics();
     this.cross = this.add.sprite(0, 0, 'crosshair', 0);
     this.gs.lib.applyOrigin(this.cross, 'crosshair');
-    this.info = this.add.bitmapText(DATA.hud.x, 30, 'pixel', '');
+    this.info = this.add.bitmapText(DATA.hud.x, 44, 'pixel', '');
     this.status = this.add.bitmapText(0, 4, 'pixel', '').setTint(hexToInt(DATA.palette.flame2));
     this.veil = this.add.rectangle(0, 0, W, H, 0x000000, 1).setOrigin(0, 0).setAlpha(0).setDepth(20);
     this.deathText = this.add
@@ -43,6 +51,12 @@ export class UIScene extends Phaser.Scene {
     this.shieldIcon = this.add.sprite(0, 0, '__DEFAULT').setOrigin(0.5).setDepth(2);
     this.ammoText = this.add.bitmapText(0, 0, 'pixel', '').setDepth(2);
     this.prompt = this.add.bitmapText(0, 0, 'pixel', '').setTint(hexToInt(DATA.palette.wax2)).setDepth(2);
+    this.tallowIcon = this.add.sprite(0, 0, 'tallow_icon', 0).setOrigin(0, 0).setDepth(2);
+    this.tallowText = this.add.bitmapText(0, 0, 'pixel', '0').setTint(hexToInt(DATA.palette.wax2)).setDepth(2);
+    this.tallowShown = this.gs.player.tallow;
+    this.toastTitle = this.add.bitmapText(0, 0, 'pixel', '').setScale(2).setTint(hexToInt(DATA.palette.flame2)).setDepth(15);
+    this.toastBody = this.add.bitmapText(0, 0, 'pixel', '').setTint(hexToInt(DATA.palette.wax2)).setDepth(15);
+    this.menuUi = new MenuRenderer(this, 16);
     const offErr = onDataError(msg => this.err.setText(`DATA ERROR (see console)\n${msg.split('\n').slice(0, 6).join('\n')}`));
     const offOk = onDataReload(() => this.err.setText(''));
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
@@ -100,9 +114,47 @@ export class UIScene extends Phaser.Scene {
       );
     }
 
+    this.drawPhials(stY + hud.staminaHeight + 3);
+    this.drawTallow();
     this.drawLoadout();
     this.drawPrompt();
+    this.drawToast();
+    this.menuUi.draw(this.gs.menu);
     this.drawDeath();
+  }
+
+  /** Phial charges under the bars: lit icon per charge left, dark icon per spent charge. */
+  private drawPhials(y: number) {
+    const p = this.gs.player.phials;
+    while (this.phialIcons.length < p.max) this.phialIcons.push(this.add.sprite(0, 0, 'phial_icon', 0).setOrigin(0, 0).setDepth(2));
+    this.phialIcons.forEach((s, i) => {
+      s.setVisible(i < p.max);
+      s.setFrame(i < p.charges ? 0 : 1).setPosition(DATA.hud.x + i * 8, y);
+    });
+  }
+
+  /** Top-right: carried Tallow; the number rolls toward the real value. */
+  private drawTallow() {
+    const target = this.gs.player.tallow;
+    const diff = target - this.tallowShown;
+    this.tallowShown = Math.abs(diff) < 1 ? target : this.tallowShown + Math.sign(diff) * Math.max(1, Math.abs(diff) * 0.15);
+    const W = DATA.game.width;
+    this.tallowText.setText(String(Math.round(this.tallowShown)));
+    this.tallowText.setPosition(W - 8 - this.tallowText.width, 14);
+    this.tallowIcon.setPosition(W - 8 - this.tallowText.width - 10, 13);
+  }
+
+  private drawToast() {
+    const t = this.gs.menu ? null : this.gs.toast; // menus take the centre of the screen
+    this.toastTitle.setVisible(!!t);
+    this.toastBody.setVisible(!!t);
+    if (!t) return;
+    const a = t.t < 15 ? t.t / 15 : t.t > 200 ? Math.max(0, (240 - t.t) / 40) : 1;
+    const W = DATA.game.width;
+    this.toastTitle.setText(t.title).setAlpha(a);
+    this.toastTitle.setPosition(Math.round((W - this.toastTitle.width) / 2), 44);
+    this.toastBody.setText(wrap(t.body, 60)).setAlpha(a);
+    this.toastBody.setPosition(Math.round((W - this.toastBody.width) / 2), 64);
   }
 
   /** Bottom-right: two weapon slots (active highlighted), ammo, reload bar, shield icon. */

@@ -48,10 +48,13 @@ function loadAll(src: Record<string, unknown>) {
     ai: one(S.AiCfg, 'config/ai'),
     audio: one(S.AudioCfg, 'config/audio'),
     death: one(S.DeathCfg, 'config/death'),
+    phial: one(S.PhialCfg, 'config/phial'),
+    shrine: one(S.ShrineCfg, 'config/shrine'),
     sfx: one(S.SfxBank, 'audio/sfx'),
     palette: one(S.Palette, 'palette'),
     weapons: dir(S.WeaponDef, 'weapons'),
     shields: dir(S.ShieldDef, 'shields'),
+    items: dir(S.ItemDef, 'items'),
     enemies: dir(S.EnemyDef, 'enemies'),
     rooms: dir(S.RoomData, 'rooms'),
   };
@@ -68,8 +71,17 @@ function loadAll(src: Record<string, unknown>) {
       if (!data.weapons[w]) errors.push(`data/config/player.json: loadout.slots references unknown weapon "${w}"`);
     const sh = data.player.loadout.shield;
     if (sh && !data.shields[sh]) errors.push(`data/config/player.json: loadout.shield references unknown shield "${sh}"`);
+    // Persistent entities (shrines, items) need world-unique ids: they key the save's world flags.
+    const ids = new Set<string>();
     for (const r of Object.values(data.rooms))
       for (const en of r.entities) {
+        if (en.type === 'shrine' || en.type === 'item') {
+          if (!en.id) errors.push(`data/rooms/${r.id}.json: ${en.type} needs an "id"`);
+          else if (ids.has(en.id)) errors.push(`data/rooms/${r.id}.json: duplicate entity id "${en.id}"`);
+          else ids.add(en.id);
+        }
+        if (en.type === 'item' && !data.items[String(en.item)])
+          errors.push(`data/rooms/${r.id}.json: item "${en.id}" has unknown item "${String(en.item)}"`);
         if (en.type === 'weapon_rack' && !data.weapons[String(en.weapon)])
           errors.push(`data/rooms/${r.id}.json: weapon_rack has unknown weapon "${String(en.weapon)}"`);
         if (en.type === 'shield_rack' && en.shield !== null && !data.shields[String(en.shield)])
