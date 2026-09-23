@@ -6,6 +6,14 @@ Each milestone ends with a playable build. I stop after each one and hand you:
 
 All timings are in ticks (60/s). Everything tunable lives in `data/`, and edits hot-reload while the game runs.
 
+## Status
+| Milestone | State |
+|---|---|
+| 1 Foundation, movement, roll | ✅ Done. Playtested. Fix: walls now block their full visual footprint. |
+| 2 Melee + first enemy | ⏭ Next |
+| 3–7 | Planned |
+| 8–12 (post-launch roadmap) | Proposed, see the end of this file |
+
 ---
 
 ## Milestone 1: Foundation, movement and roll
@@ -206,5 +214,43 @@ All timings are in ticks (60/s). Everything tunable lives in `data/`, and edits 
 
 ---
 
-## Later (not scheduled)
-Smith NPC and weapon upgrades with materials, fast travel (if not done in M7), equip weight, more areas, real art and audio drop-in.
+## Roadmap after Milestone 7 (proposed; reorder or cut freely)
+
+### Milestone 8: Smith and gear depth
+- Smith NPC at a shrine hub. Weapon upgrade levels +1…+5 using found materials (Tallow Ingots, Ember Salts), with data-driven cost tables.
+- **Armour** (head/body) with defence, poise and weight. **Equip load** changes roll feel: light rolls far, heavy rolls short and slow. Everything lives in `data/`.
+- Rings/charms, 2 slots, small passive effects: +stamina regen, a longer parry window, backstab heal.
+- Fast travel between lit shrines (if not already done in M7).
+
+### Milestone 9: Second area, *The Sunken Foundry*
+- A new tileset (gen-art variant), 10–14 rooms and 2 shrines, connected back to the Abbey by a lift or shortcut.
+- 3 new archetypes that test new skills:
+  - a shield-bashing charger (bait, then roll behind it)
+  - a mortar crew (area-denial markers)
+  - an ambusher that hides in pots (breaking props becomes risky)
+- 1 new boss, with an arena hazard such as molten channels that pulse.
+- Environmental hazards: pits (fall damage plus respawn at the edge), traps triggered by pressure plates.
+
+### Milestone 10: NPCs, lore and secrets
+- A simple dialogue system (data-driven lines, choices limited to "talk / leave").
+- 2–3 NPCs with small questlines that change the world state (a merchant who moves to the shrine, a rival who can be summoned or invaded).
+- A merchant shop: ammo, phial shards, consumables (firebombs, throwing knives, warding incense).
+- Item descriptions with lore, illusory walls (hit to reveal), hidden items.
+
+### Milestone 11: Feel and presentation polish
+- A real art and audio drop-in pass using ASSETS.md; music per area and a boss theme with a phase-2 layer.
+- Controller rumble, better aim assist, and a lock-on toggle option for gamepad.
+- Accessibility: screenshake %, flash reduction, colour-blind-safe telegraph palette, hold-vs-toggle options, a UI scale of 1× or 2× HUD.
+- Title screen, credits, settings menu, save slots (3).
+
+### Milestone 12: Replayability
+- **New Game+**: enemy stats scale, and a few extra enemy placements.
+- Challenge options: no-phial run, hardcore (one death wipes the save).
+- A stats screen at the end: deaths, time, bosses and most-killed-by.
+
+### Ideas parking lot (not scheduled)
+- Magic-like "rites" using a candle resource (a short-range flame burst, a smoke-veil dodge).
+- Two-handing toggle for one-handed weapons (more damage, no shield).
+- Weapon special arts on heavy + block.
+- Co-op or online play: very expensive, and not recommended for this scope.
+- A procedural "trial crypt" side mode for combat practice.
