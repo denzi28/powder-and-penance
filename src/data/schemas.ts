@@ -403,6 +403,10 @@ export const HudCfg = z.object({
   toast: z.object({ y: int.nonnegative(), cols: int.positive(), titleScale: int.positive() }).default({ y: 14, cols: 60, titleScale: 1 }),
   /** Area name shown on arrival: vertical position (px), text scale, how long it stays (ticks, fades included). */
   areaBanner: z.object({ y: int.nonnegative(), scale: int.positive(), ticks: int.positive() }).default({ y: 72, scale: 1, ticks: 180 }),
+  /** Corner minimap: on/off, box size (px), pixels per tile. The large map (M) scales itself to fit. */
+  minimap: z
+    .object({ enabled: z.boolean(), w: int.positive(), h: int.positive(), scale: int.positive() })
+    .default({ enabled: true, w: 72, h: 48, scale: 2 }),
 });
 
 export const Palette = z.record(z.string(), z.string().regex(/^#[0-9a-fA-F]{6}$/));

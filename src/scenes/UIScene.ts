@@ -4,6 +4,7 @@ import { DATA, onDataError, onDataReload } from '../data/config';
 import { hexToInt } from '../ui/colors';
 import { MenuRenderer, wrap } from '../ui/MenuRenderer';
 import { TrailBar } from '../ui/TrailBar';
+import { MapView } from '../ui/MapView';
 import type { GameScene } from './GameScene';
 
 export class UIScene extends Phaser.Scene {
@@ -28,6 +29,7 @@ export class UIScene extends Phaser.Scene {
   private toastNote!: Phaser.GameObjects.BitmapText;
   private toastPanel!: Phaser.GameObjects.Rectangle;
   private areaText!: Phaser.GameObjects.BitmapText;
+  private mapView!: MapView;
   private menuUi!: MenuRenderer;
   private hpTrail!: TrailBar;
   private vignette!: Phaser.GameObjects.Graphics;
@@ -65,6 +67,7 @@ export class UIScene extends Phaser.Scene {
     this.toastNote = this.add.bitmapText(0, 0, 'pixel', '').setTint(hexToInt(DATA.palette.stone4)).setDepth(15);
     this.toastPanel = this.add.rectangle(0, 0, 10, 10, hexToInt(DATA.palette.ink), 0.7).setOrigin(0, 0).setDepth(14);
     this.areaText = this.add.bitmapText(0, 0, 'pixel', '').setTint(hexToInt(DATA.palette.wax2)).setDepth(16);
+    this.mapView = new MapView(this);
     this.menuUi = new MenuRenderer(this, 16);
     this.hpTrail = new TrailBar(this.gs.player.hp);
     this.vignette = this.add.graphics().setDepth(12);
@@ -137,6 +140,7 @@ export class UIScene extends Phaser.Scene {
     this.drawPrompt();
     this.drawToast();
     this.drawAreaBanner();
+    this.mapView.update(this.gs, dt);
     this.menuUi.draw(this.gs.menu);
     this.drawDeath();
   }

@@ -120,6 +120,8 @@ export class GameScene extends Phaser.Scene {
   travel: { exit: Exit; t: number; fade: number } | null = null;
   /** Area name shown on arrival (t in ticks). */
   areaBanner: { name: string; t: number } | null = null;
+  /** Large map open (M): the world is paused. */
+  mapOpen = false;
 
   private ctxObj!: WorldCtx;
   private rooms: RoomData[] = [];
@@ -231,6 +233,18 @@ export class GameScene extends Phaser.Scene {
     this.tickCount++;
     this.controls.beginTick(this.simTick);
     this.tickDeath(); // fades keep running under menus
+    if (this.mapOpen) {
+      // The large map pauses the world, like a menu.
+      if (this.controls.pressed('map') || this.controls.pressed('back')) {
+        this.mapOpen = false;
+        this.controls.clearBuffer();
+      }
+      return;
+    }
+    if (this.controls.pressed('map') && !this.menu && !this.player.dead && !this.shrineSeq && !this.travel) {
+      this.mapOpen = true;
+      return;
+    }
     if (this.menu) {
       const r = this.menuNav.update(this.menu, this.controls);
       if (r === 'moved') this.bus.emit('sfx', { id: 'menu_move' });
@@ -257,6 +271,7 @@ export class GameScene extends Phaser.Scene {
     tickShrineSeq(this);
     for (const c of this.pickups.tick()) grantItem(this, c.id, c.item, c.x, c.y);
     this.tryRecoverMarker();
+    this.markSeen();
     this.tickTravel();
     if (!this.player.dead) for (const d of this.loot.tick(this.player.x, this.player.y)) this.collectLoot(d);
 
@@ -347,6 +362,21 @@ export class GameScene extends Phaser.Scene {
   save() {
     this.saves.write(snapshot(this));
     this.dirty = false;
+  }
+
+  // ------------------------------------------------------------------ map
+  /** Rooms appear on the map once visited (world flag "seen:<room id>", saved). */
+  private markSeen() {
+    const room = this.roomAt(this.player.x, this.player.y);
+    if (room && !this.flags.has(`seen:${room}`)) {
+      this.flags.add(`seen:${room}`);
+      this.dirty = true;
+    }
+  }
+
+  /** Rooms of the current area (for the map). */
+  get areaRoomList(): readonly RoomData[] {
+    return this.rooms;
   }
 
   // ------------------------------------------------------------------ area exits

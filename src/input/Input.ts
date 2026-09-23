@@ -5,7 +5,7 @@ import { radialDeadzone } from '../core/math';
 
 export const ACTIONS = [
   'moveUp', 'moveDown', 'moveLeft', 'moveRight',
-  'light', 'heavy', 'block', 'roll', 'sprint', 'heal', 'reload', 'swap', 'interact', 'drop', 'pause',
+  'light', 'heavy', 'block', 'roll', 'sprint', 'heal', 'reload', 'swap', 'interact', 'drop', 'pause', 'map',
   'confirm', 'back',
 ] as const;
 export type Action = (typeof ACTIONS)[number];

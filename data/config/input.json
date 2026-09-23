@@ -21,6 +21,7 @@
     "interact": ["KeyE"],
     "drop": ["KeyG"],
     "pause": ["Escape"],
+    "map": ["KeyM"],
     "confirm": ["Enter", "KeyE", "Space"],
     "back": ["Escape", "Backspace"]
   },
@@ -40,6 +41,7 @@
     "interact": [0],
     "drop": [13],
     "pause": [9],
+    "map": [8],
     "confirm": [0],
     "back": [1]
   }
