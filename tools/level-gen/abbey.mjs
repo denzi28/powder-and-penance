@@ -79,7 +79,7 @@ R('abbey_05_crypt_stair', [86, 29], 12, 16)
   .gap(4, 0, 3, 1).gap(4, 15, 3, 1)
   .pillar(2, 5).pillar(9, 5).pillar(2, 10).pillar(9, 10)
   .enemy('taper_hound', 4, 8, 'N').enemy('taper_hound', 8, 11, 'N')
-  .prop('candles', 1, 1).prop('candles', 10, 14);
+  .prop('candles', 1, 1).prop('candles', 10, 13);
 
 // 6 Ossuary — the Belfry Brute, and Bitter Salt behind it.
 R('abbey_06_ossuary', [74, 44], 26, 18)

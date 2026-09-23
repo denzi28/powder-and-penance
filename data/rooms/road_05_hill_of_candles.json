@@ -1,0 +1,130 @@
+{
+  "id": "road_05_hill_of_candles",
+  "area": "road",
+  "origin": [120, 16],
+  "legend": {
+    "#": "wall",
+    ".": "floor",
+    ",": "floor_grass",
+    "=": "floor_road",
+    " ": "void"
+  },
+  "tiles": [
+    "##########==##########",
+    "#########,==,#########",
+    "#########,==,#########",
+    "#########,==,#########",
+    "#########,==,#########",
+    "#########============#",
+    "#########============#",
+    "#,,,,,,#############=#",
+    "=====================#",
+    "====================,#",
+    "#######,,,,,,,,,....,#",
+    "################,...,#",
+    "#######,,,,,,,,,....,#",
+    "#######,............,#",
+    "#######,,,,,,,,,,,,,,#",
+    "######################",
+    "######################",
+    "######################",
+    "######################",
+    "######################"
+  ],
+  "entities": [
+    {
+      "type": "decor",
+      "kind": "candle_cairn",
+      "at": [2, 7]
+    },
+    {
+      "type": "decor",
+      "kind": "candle_cairn",
+      "at": [5, 7]
+    },
+    {
+      "type": "decor",
+      "kind": "candle_cairn",
+      "at": [14, 5]
+    },
+    {
+      "type": "decor",
+      "kind": "candle_cairn",
+      "at": [17, 5]
+    },
+    {
+      "type": "decor",
+      "kind": "candle_cairn",
+      "at": [9, 2]
+    },
+    {
+      "type": "decor",
+      "kind": "candle_cairn",
+      "at": [12, 2]
+    },
+    {
+      "type": "decor",
+      "kind": "candle_cairn",
+      "at": [9, 13]
+    },
+    {
+      "type": "decor",
+      "kind": "candle_cairn",
+      "at": [12, 14]
+    },
+    {
+      "type": "decor",
+      "kind": "candle_cairn",
+      "at": [15, 12]
+    },
+    {
+      "type": "decor",
+      "kind": "candle_cairn",
+      "at": [18, 13]
+    },
+    {
+      "type": "decor",
+      "kind": "signpost",
+      "at": [20, 9]
+    },
+    {
+      "type": "decor",
+      "kind": "dead_tree",
+      "at": [17, 13]
+    },
+    {
+      "type": "decor",
+      "kind": "grass_tuft",
+      "at": [3, 7]
+    },
+    {
+      "type": "decor",
+      "kind": "grass_tuft",
+      "at": [20, 11]
+    },
+    {
+      "type": "decor",
+      "kind": "grass_tuft",
+      "at": [14, 13]
+    },
+    {
+      "type": "decor",
+      "kind": "grass_tuft",
+      "at": [10, 3]
+    },
+    {
+      "type": "cutscene",
+      "id": "abbey_view",
+      "at": [19, 6]
+    },
+    {
+      "type": "exit",
+      "id": "road_to_hub",
+      "at": [10, 0],
+      "to": {
+        "area": "hub",
+        "spawn": "from_road"
+      }
+    }
+  ]
+}

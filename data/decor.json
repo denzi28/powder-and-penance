@@ -3,10 +3,15 @@
     "wagon": { "sprite": "decor_road", "frame": 0, "blocks": [[-1, 0], [0, 0], [1, 0], [-1, -1], [0, -1], [1, -1]] },
     "horse": { "sprite": "decor_road", "frame": 1, "blocks": [[-1, 0], [0, 0]] },
     "guard_dead": { "sprite": "decor_road", "frame": 2, "flat": true },
-    "boulder": { "sprite": "decor_road", "frame": 3, "blocks": [[0, 0]] },
+    "boulder": { "sprite": "decor_road", "frame": 3, "blocks": [[0, 0]], "tall": true },
     "dead_tree": { "sprite": "decor_road", "frame": 4, "blocks": [[0, 0]] },
     "wheel_debris": { "sprite": "decor_road", "frame": 5, "flat": true },
     "signpost": { "sprite": "decor_road", "frame": 6, "blocks": [[0, 0]] },
-    "candle_cairn": { "sprite": "decor_road", "frame": 7, "blocks": [[0, 0]] }
+    "candle_cairn": { "sprite": "decor_road", "frame": 7, "blocks": [[0, 0]] },
+    "gibbet": { "sprite": "decor_road", "frame": 8, "blocks": [[0, 0]] },
+    "rock_large": { "sprite": "decor_road", "frame": 9, "blocks": [[-1, 0], [0, 0]], "tall": true },
+    "pillar_ruin": { "sprite": "decor_road", "frame": 10, "blocks": [[0, 0]], "tall": true },
+    "lintel": { "sprite": "decor_road", "frame": 11, "blocks": [[-1, 0], [0, 0], [1, 0]] },
+    "grass_tuft": { "sprite": "decor_road", "frame": 12 }
   }
 }

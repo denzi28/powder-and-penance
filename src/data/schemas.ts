@@ -468,12 +468,14 @@ export const AreaDef = z.object({ name: z.string(), tileset: z.string() });
 export const Areas = z.object({ areas: z.record(z.string(), AreaDef) });
 /**
  * data/decor.json: static scenery. `blocks` are tile offsets from the entity's tile that become solid
- * (movement and bullets stop; sight passes, so solid decor is low cover). `flat` decor lies on the floor.
+ * (movement and bullets stop). Sight passes over them (low cover) unless `tall` (hiding spots).
+ * `flat` decor lies on the floor.
  */
 export const DecorDef = z.object({
   sprite: z.string(),
   frame: int.nonnegative().default(0),
   blocks: z.array(Vec2).default([]),
+  tall: z.boolean().default(false),
   flat: z.boolean().default(false),
 });
 export const DecorTable = z.object({ decor: z.record(z.string(), DecorDef) });

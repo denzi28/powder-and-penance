@@ -32,7 +32,7 @@ export class Decor {
         this.sprites.push(s);
         for (const [dx, dy] of def.blocks) {
           const bx = tx + (en.flip === true ? -dx : dx);
-          if (grid.get(bx, ty + dy) === Cell.Floor) grid.set(bx, ty + dy, Cell.Block);
+          if (grid.get(bx, ty + dy) === Cell.Floor) grid.set(bx, ty + dy, def.tall ? Cell.Tall : Cell.Block);
         }
       }
   }

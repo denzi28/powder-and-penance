@@ -1941,6 +1941,70 @@ function genRoadDecor() {
     c.outline(P.ink);
     frames.push(c);
   }
+  // 8: gibbet: a post with an arm and a hanging iron cage
+  {
+    const c = cell();
+    c.rect(24, B - 40, 3, 40, P.wood1);
+    c.rect(24, B - 40, 18, 3, P.wood1);
+    c.vline(38, B - 37, 5, P.steel1); // chain
+    c.rect(34, B - 32, 9, 13, P.dark1);
+    for (let x = 34; x <= 42; x += 2) c.vline(x, B - 32, 13, P.steel1);
+    c.hline(34, B - 32, 9, P.steel1);
+    c.hline(34, B - 20, 9, P.steel1);
+    c.rect(37, B - 27, 3, 4, P.wax1); // something waxy inside
+    c.outline(P.ink);
+    frames.push(c);
+  }
+  // 9: large rock (two tiles wide, tall enough to hide behind)
+  {
+    const c = cell();
+    // Drawn 8 px left of the pivot so it covers exactly its two blocking tiles (the anchor and the one west).
+    c.ellipse(18, B - 11, 11, 11, P.stone2);
+    c.ellipse(31, B - 8, 9, 8, P.stone2);
+    c.ellipse(15, B - 15, 7, 5, P.stone3);
+    c.ellipse(30, B - 11, 5, 3, P.stone3);
+    c.set(12, B - 18, P.stone4);
+    c.set(28, B - 13, P.stone4);
+    c.hline(9, B - 1, 30, P.stone1);
+    c.ellipse(22, B - 3, 3, 2, P.moss1);
+    c.outline(P.ink);
+    frames.push(c);
+  }
+  // 10: ruined gate pillar
+  {
+    const c = cell();
+    c.rect(26, B - 36, 12, 36, P.stone2);
+    for (const y of [B - 30, B - 22, B - 14, B - 6]) c.hline(26, y, 12, P.stone1);
+    c.vline(31, B - 30, 8, P.stone1);
+    c.vline(34, B - 14, 8, P.stone1);
+    c.rect(26, B - 36, 12, 2, P.stone3);
+    for (const [x, y] of [[26, B - 37], [30, B - 38], [35, B - 37]]) c.rect(x, y, 3, 2, P.stone3); // broken top
+    c.vline(26, B - 34, 34, P.stone3);
+    c.ellipse(30, B - 2, 5, 2, P.moss1);
+    c.outline(P.ink);
+    frames.push(c);
+  }
+  // 11: fallen lintel: the gate's beam lying across the road (low cover, three tiles)
+  {
+    const c = cell();
+    c.rect(9, B - 10, 46, 10, P.stone2);
+    c.rect(9, B - 10, 46, 3, P.stone3);
+    for (const x of [21, 36, 47]) c.vline(x, B - 7, 7, P.stone1);
+    c.rect(18, B - 9, 12, 2, P.wax1); // carved letters, half worn away
+    c.outline(P.ink);
+    frames.push(c);
+  }
+  // 12: tall grass tuft (decoration only)
+  {
+    const c = cell();
+    const r = rng(4242);
+    for (let i = 0; i < 9; i++) {
+      const x = 26 + Math.floor(r() * 12);
+      const h = 4 + Math.floor(r() * 6);
+      line(c, x, B - 1, x + (r() < 0.5 ? -1 : 1), B - h, i % 3 ? P.moss1 : P.moss2);
+    }
+    frames.push(c);
+  }
 
   const img = new Img(W * frames.length, H);
   frames.forEach((f, i) => img.blit(f, i * W, 0));

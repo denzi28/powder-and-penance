@@ -69,6 +69,72 @@ R('road_01_wreck', [0, 0], 30, 17)
   .add({ type: 'cutscene', id: 'wreck_intro', at: [12, 11] })
   .add({ type: 'npc', id: 'oskar', at: [8, 7] });
 
+// road_02 The Cutting — a narrow, winding road between cliffs. One Wickling stands on the road facing you:
+// the first fight (attack, roll). A guard who ran this way didn't make it.
+R('road_02_cutting', [29, 3], 36, 12)
+  .open(0, 6, 1, 2).open(35, 4, 1, 2)
+  .cliff(1, 1, 34, 2).cliff(1, 9, 34, 2)
+  .cliff(1, 3, 6, 2).cliff(1, 8, 4, 1).cliff(9, 3, 5, 1).cliff(14, 7, 6, 2).cliff(20, 3, 4, 2)
+  .cliff(26, 7, 9, 2).cliff(30, 3, 5, 1)
+  .grassEdges()
+  .paint(0, 6, 14, 2, '=').paint(14, 4, 6, 2, '=').paint(20, 5, 6, 2, '=').paint(26, 4, 10, 2, '=')
+  .enemy('wickling', 12, 6, 'W')
+  .decor('guard_dead', 5, 6, true).decor('boulder', 7, 4).decor('boulder', 18, 6).decor('dead_tree', 24, 4)
+  .decor('grass_tuft', 3, 5).decor('grass_tuft', 16, 3).decor('grass_tuft', 28, 6).decor('grass_tuft', 33, 6)
+  .prop('pot', 33, 6).prop('pot', 22, 7);
+
+// road_03 Gibbet Bend — the road bends down into a wide hollow hung with gibbets. Three Wicklings keep
+// watch; the first stands at the bend with its back to you (backstab). Tall rocks hide you; once one sees
+// you, the whole hollow knows. A side path along the northern ledge leads to a Powder Pouch.
+R('road_03_gibbet_bend', [64, 2], 32, 22)
+  .open(0, 5, 1, 2).open(31, 15, 1, 2)
+  .cliff(1, 1, 30, 2).cliff(1, 3, 8, 2).cliff(1, 7, 5, 3).cliff(1, 10, 3, 9)
+  .cliff(9, 3, 5, 4).cliff(14, 7, 14, 1) // the ledge: open above row 7, reached only from its east end
+  .cliff(1, 19, 12, 2).cliff(13, 20, 13, 1).cliff(26, 19, 5, 2)
+  .grassEdges()
+  .paint(0, 5, 9, 2, '=').paint(6, 7, 2, 5, '=').paint(6, 12, 19, 2, '=').paint(24, 14, 2, 1, '=').paint(24, 15, 8, 2, '=')
+  .enemy('wickling', 10, 11, 'E').enemy('wickling', 18, 14, 'N').enemy('wickling', 26, 17, 'W')
+  .decor('gibbet', 13, 10).decor('gibbet', 19, 18).decor('gibbet', 27, 11)
+  .decor('rock_large', 12, 16).decor('rock_large', 21, 10).decor('rock_large', 23, 17).decor('boulder', 16, 16).decor('boulder', 8, 14)
+  .decor('dead_tree', 24, 9).decor('dead_tree', 5, 16)
+  .decor('grass_tuft', 7, 18).decor('grass_tuft', 15, 9).decor('grass_tuft', 29, 17).decor('grass_tuft', 20, 4).decor('grass_tuft', 26, 5)
+  .add({ type: 'item', id: 'road_pouch', item: 'ammo_pouch', at: [16, 4] })
+  .prop('crate', 29, 13).prop('pot', 4, 12);
+
+// road_04 Collapsed Gate — the old toll arch has fallen across the road. A Taper Hound and a Wickling hold
+// the far side: the first fight against two at once. A Phial Shard lies on the ledge to the north-east.
+R('road_04_collapsed_gate', [95, 12], 26, 18)
+  .open(0, 5, 1, 2).open(25, 12, 1, 2)
+  .cliff(1, 1, 24, 2).cliff(1, 3, 4, 2).cliff(12, 3, 2, 3).cliff(14, 5, 9, 1) // the ledge, open at its east end
+  .cliff(1, 9, 2, 5).cliff(1, 14, 10, 3).cliff(18, 15, 7, 2)
+  .grassEdges()
+  .paint(0, 5, 7, 2, '=').paint(5, 7, 2, 2, '=').paint(5, 9, 17, 2, '=').paint(20, 11, 2, 1, '=').paint(20, 12, 6, 2, '=')
+  // the gate: two broken pillars, rubble between them, the lintel lying on the road's west side
+  .decor('pillar_ruin', 11, 6).decor('pillar_ruin', 11, 12).decor('boulder', 11, 7).decor('boulder', 11, 11)
+  .decor('lintel', 7, 12)
+  .enemy('taper_hound', 17, 8, 'W').enemy('wickling', 19, 11, 'W')
+  .add({ type: 'item', id: 'road_shard', item: 'phial_shard', at: [16, 3] })
+  .decor('guard_dead', 14, 12).decor('dead_tree', 21, 7).decor('candle_cairn', 3, 7)
+  .decor('grass_tuft', 6, 12).decor('grass_tuft', 15, 13).decor('grass_tuft', 23, 9).decor('grass_tuft', 19, 3)
+  .prop('crate', 22, 14).prop('pot', 4, 12);
+
+// road_05 Hill of Candles — the road climbs in switchbacks toward Wick's Rest, lined with pilgrims' candle
+// cairns. No enemies: a breather, and the first view of the Abbey (cutscene). Exit north to the hub.
+R('road_05_hill_of_candles', [120, 16], 22, 20)
+  .open(0, 8, 1, 2).open(10, 0, 2, 1)
+  .cliff(1, 1, 8, 6).cliff(13, 1, 8, 4).cliff(1, 10, 6, 9).cliff(7, 15, 14, 4)
+  .cliff(7, 11, 9, 1).cliff(7, 7, 13, 1) // switchback ridges
+  .grassEdges()
+  .paint(0, 8, 20, 2, '=').paint(19, 5, 2, 4, '=').paint(9, 5, 11, 2, '=').paint(10, 0, 2, 5, '=')
+  .decor('candle_cairn', 2, 7).decor('candle_cairn', 5, 7).decor('candle_cairn', 14, 5).decor('candle_cairn', 17, 5)
+  .decor('candle_cairn', 9, 2).decor('candle_cairn', 12, 2)
+  .decor('candle_cairn', 9, 13).decor('candle_cairn', 12, 14).decor('candle_cairn', 15, 12).decor('candle_cairn', 18, 13)
+  .decor('signpost', 20, 9).decor('dead_tree', 17, 13)
+  .decor('grass_tuft', 3, 7).decor('grass_tuft', 20, 11).decor('grass_tuft', 14, 13).decor('grass_tuft', 10, 3)
+  .add({ type: 'cutscene', id: 'abbey_view', at: [19, 6] })
+  // leads to the hub (area exits arrive with the hub)
+  .add({ type: 'exit', id: 'road_to_hub', at: [10, 0], to: { area: 'hub', spawn: 'from_road' } });
+
 // ---- write
 fs.mkdirSync('data/rooms', { recursive: true });
 for (const r of rooms) {

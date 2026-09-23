@@ -1,12 +1,12 @@
-import { Cell, TILE, type TileGrid } from '../world/TileGrid';
+import { TILE, type TileGrid } from '../world/TileGrid';
 
-/** Walls block sight (low wall caps do not). Samples the segment every 4 px. */
+/** Walls and tall decor block sight (low wall caps and low decor do not). Samples the segment every 4 px. */
 export function lineOfSight(g: TileGrid, x0: number, y0: number, x1: number, y1: number): boolean {
   const d = Math.hypot(x1 - x0, y1 - y0);
   const steps = Math.ceil(d / 4);
   for (let i = 1; i < steps; i++) {
     const k = i / steps;
-    if (g.get(Math.floor((x0 + (x1 - x0) * k) / TILE), Math.floor((y0 + (y1 - y0) * k) / TILE)) === Cell.Wall) return false;
+    if (g.blocksSight(Math.floor((x0 + (x1 - x0) * k) / TILE), Math.floor((y0 + (y1 - y0) * k) / TILE))) return false;
   }
   return true;
 }

@@ -3,8 +3,12 @@ import type { RoomData } from '../data/schemas';
 import { hash2 } from '../core/math';
 
 export const TILE = 16;
-/** Block: floor under solid decor. Stops movement and bullets like a wall, but not sight, and draws as floor. */
-export const Cell = { Void: 0, Floor: 1, Wall: 2, Block: 3 } as const;
+/**
+ * Block: floor under low solid decor (a wagon): stops movement and bullets like a wall, but not sight.
+ * Tall: floor under tall decor (a boulder): also blocks sight, so you can hide behind it.
+ * Both draw as floor; the decor sprite supplies the look.
+ */
+export const Cell = { Void: 0, Floor: 1, Wall: 2, Block: 3, Tall: 4 } as const;
 export type Cell = (typeof Cell)[keyof typeof Cell];
 
 /** Floor variant names ("floor", "floor_moss"...) share one global index so grids stay plain byte arrays. */
@@ -39,10 +43,16 @@ export class TileGrid {
     return VARIANTS[this.variants[y * this.w + x]];
   }
 
-  /** Walkable ground, drawn as floor (plain floor or floor under decor). */
+  /** Ground drawn as floor (plain floor, or floor under decor). */
   isGround(tx: number, ty: number) {
     const c = this.get(tx, ty);
-    return c === Cell.Floor || c === Cell.Block;
+    return c === Cell.Floor || c === Cell.Block || c === Cell.Tall;
+  }
+
+  /** Walls and tall decor block line of sight. */
+  blocksSight(tx: number, ty: number) {
+    const c = this.get(tx, ty);
+    return c === Cell.Wall || c === Cell.Tall;
   }
 
   /**

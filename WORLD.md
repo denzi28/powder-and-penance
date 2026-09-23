@@ -47,7 +47,7 @@ Target: **~2 h** first playthrough (2 h 15 min with the optional Powder Vault). 
 |---|---|
 | Per-area tileset (`data/areas.json`) | road_01 ✅ |
 | Named floor variants (`floor_dirt`, `floor_grass`...) | road_01 ✅ |
-| `decor` entities: static scenery sprites, optionally solid (blocks movement and bullets, not sight = low cover) | road_01 ✅ |
+| `decor` entities: static scenery sprites, optionally solid: low (blocks movement and bullets) or tall (also blocks sight) | road_01 ✅, tall in road_03 ✅ |
 | `weapon` entity: a weapon lying on the floor | road_01 ✅ |
 | `exit` entity: walk into it to change area | road_05 |
 | Area name banner on entering an area | road_05 |
@@ -65,10 +65,16 @@ Dusk. A dirt road through a ravine toward the Abbey on its hill. It teaches the 
 | # | Room | Contents | Teaches |
 |---|---|---|---|
 | road_01 | **The Wreck** ✅ | Start. The prison wagon lies on its side; dead guards and a dead horse. A sword lies by one guard, a flintlock in the cart. Oskar is locked in the wagon cage (NPC comes with the story systems). *Cutscene: wagon crash (story systems).* | Move, aim, pick up a weapon (E) |
-| road_02 | The Cutting | Narrow road between cliffs. Wickling 1 blocks the road facing you; Wickling 2 further on, facing away. | Attack, roll, then backstab |
-| road_03 | Gibbet Bend | Wider bend with hanging cages and boulders for cover. 3 Wicklings on watch. Side path to a Powder Pouch. | Stealth: hide behind cover; alerts spread across the room |
-| road_04 | Collapsed Gate | A fallen toll arch. A Taper Hound and a Wickling together. A Phial Shard on the ledge. | Fighting two at once; heal with the phial |
-| road_05 | Hill of Candles | Candle-lit shrines line the path up to the hub. *Cutscene: camera pans to the Abbey on the hill.* Exit east to the hub. | None (breather) |
+| road_02 | **The Cutting** ✅ | Narrow, winding road between cliffs. One Wickling stands on the road facing you. A dead guard who ran this way. | Attack and roll: the first fight |
+| road_03 | **Gibbet Bend** ✅ | The road bends down into a hollow hung with gibbets. 3 Wicklings: the first stands at the bend with its back to you. Tall rocks block sight; once one sees you, the whole hollow knows. A ledge path to a **Powder Pouch**. | Backstab, then stealth |
+| road_04 | **Collapsed Gate** ✅ | The fallen toll arch: two broken pillars, rubble, the lintel across the road. A Taper Hound and a Wickling together. A **Phial Shard** on the north-east ledge. | Fighting two at once; heal with the phial |
+| road_05 | **Hill of Candles** ✅ | Switchback climb lined with candle cairns, and a lower terrace of cairns. *Cutscene: the Abbey on its hill.* Exit north to the hub (connected when the hub is built). | None (breather) |
+
+Scenery comes in two heights:
+- **Low** (the wagon, the lintel, signposts, cairns): stops movement and bullets, but enemies see over it.
+- **Tall** (boulders, large rocks, pillars): also blocks sight, so you can hide behind it.
+
+With no shrine on the road, dying anywhere on it returns you to the Wreck.
 
 ## Wick's Rest (`hub`)
 A half-ruined pilgrims' waystation in a hollow below the Abbey. Every Act 1 area opens from here.
