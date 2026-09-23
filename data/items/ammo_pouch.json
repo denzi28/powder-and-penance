@@ -1,6 +1,6 @@
 {
   "id": "ammo_pouch",
   "name": "Powder Pouch",
-  "description": "Shot, powder and bolts. Restores half the reserve of your ranged weapons.",
+  "description": "Shot, powder and bolts, wrapped in oilcloth against the damp.",
   "effect": { "type": "ammo", "amount": 0.5 }
 }

@@ -1,66 +1,115 @@
-// Placed items (data/items). Each is picked up once, ever: taking it sets the world flag "item:<id>".
+// Placed items (data/items), each inside a chest. Press E to open it: the lid rises over OPEN_TICKS while
+// the player keeps full control, and the item pops out at POP_TICK. Opening sets the world flag
+// "item:<id>"; opened chests stay open (and empty) for good. Chests are solid.
 import Phaser from 'phaser';
-import { DATA } from '../data/config';
-import { AnimPlayer } from '../anim/AnimPlayer';
 import { DEPTH } from '../render/depth';
-import { TILE } from './TileGrid';
+import { Cell, TILE, type TileGrid } from './TileGrid';
 import type { SpriteLib } from '../anim/SpriteLib';
 import type { RoomData } from '../data/schemas';
 
-export interface Pickup {
+export interface Chest {
   id: string;
   item: string;
   x: number;
   y: number;
+  state: 'closed' | 'opening' | 'open';
+  /** Ticks since opening started. */
+  t: number;
   sprite: Phaser.GameObjects.Sprite;
-  anim: AnimPlayer;
+  glint: Phaser.GameObjects.Sprite;
 }
 
-const REACH = 16;
+/** Reach from the player's feet to the chest's base (the chest is solid, so you stand beside it). */
+const REACH = 22;
+export const OPEN_TICKS = 25;
+export const POP_TICK = 10;
+/** Frame by opening tick: lid lifting (1), light spilling (2, 3), then open and empty (4). */
+const OPEN_FRAMES: [number, number][] = [
+  [0, 1],
+  [4, 2],
+  [10, 3],
+  [OPEN_TICKS, 4],
+];
 
 export class Pickups {
-  list: Pickup[] = [];
+  list: Chest[] = [];
+  private glintT = 0;
 
   constructor(private lib: SpriteLib) {}
 
-  build(rooms: RoomData[], taken: (id: string) => boolean) {
-    this.list.forEach(p => p.sprite.destroy());
-    this.list = [];
+  build(rooms: RoomData[], grid: TileGrid, taken: (id: string) => boolean) {
+    this.clear();
     for (const r of rooms)
       for (const en of r.entities) {
-        if (en.type !== 'item' || !en.id || taken(en.id)) continue;
-        const x = (r.origin[0] + en.at[0]) * TILE + TILE / 2;
-        const y = (r.origin[1] + en.at[1]) * TILE + TILE - 4;
-        const anim = new AnimPlayer(this.lib.manifest('item_glint').animations);
-        anim.play('shine');
-        const sprite = this.lib.sprite('item_glint').setPosition(x, y).setDepth(DEPTH.actor(y));
-        this.list.push({ id: en.id, item: String(en.item), x, y, sprite, anim });
+        if (en.type !== 'item' || !en.id) continue;
+        const tx = r.origin[0] + en.at[0];
+        const ty = r.origin[1] + en.at[1];
+        const x = tx * TILE + TILE / 2;
+        const y = ty * TILE + TILE - 2;
+        const open = taken(en.id);
+        const sprite = this.lib.sprite('chest').setFrame(open ? 4 : 0).setPosition(x, y).setDepth(DEPTH.actor(y));
+        const glint = this.lib.sprite('item_glint').setPosition(x + 4, y - 11).setDepth(DEPTH.actor(y) + 0.1).setVisible(!open);
+        this.list.push({ id: en.id, item: String(en.item), x, y, state: open ? 'open' : 'closed', t: 0, sprite, glint });
+        if (grid.get(tx, ty) === Cell.Floor) grid.set(tx, ty, Cell.Block);
       }
   }
 
-  nearest(x: number, y: number): Pickup | null {
-    let best: Pickup | null = null;
+  /** Nearest closed chest within reach. */
+  nearest(x: number, y: number): Chest | null {
+    let best: Chest | null = null;
     let bd = REACH;
-    for (const p of this.list) {
-      const d = Math.hypot(p.x - x, p.y - y);
+    for (const c of this.list) {
+      if (c.state !== 'closed') continue;
+      const d = Math.hypot(c.x - x, c.y - y);
       if (d <= bd) {
         bd = d;
-        best = p;
+        best = c;
       }
     }
     return best;
   }
 
-  remove(p: Pickup) {
-    p.sprite.destroy();
-    this.list = this.list.filter(i => i !== p);
+  open(c: Chest) {
+    c.state = 'opening';
+    c.t = 0;
+    c.glint.setVisible(false);
+  }
+
+  /** Per sim tick: advance opening chests. Returns the chests whose item pops out this tick. */
+  tick(): Chest[] {
+    const popped: Chest[] = [];
+    for (const c of this.list) {
+      if (c.state !== 'opening') continue;
+      c.t++;
+      if (c.t === POP_TICK) popped.push(c);
+      if (c.t >= OPEN_TICKS) c.state = 'open';
+    }
+    return popped;
   }
 
   update(deltaMs: number) {
-    const speed = deltaMs / (1000 / DATA.game.tickRate);
-    for (const p of this.list) {
-      p.anim.tick(speed);
-      p.sprite.setFrame(this.lib.frame('item_glint', 'shine', 'S', p.anim.index).frame);
+    this.glintT += deltaMs;
+    // The glint twinkles now and then so closed chests catch the eye without constant noise.
+    const cycle = this.glintT % 1600;
+    const glintFrame = cycle < 400 ? Math.floor(cycle / 100) % 4 : -1;
+    for (const c of this.list) {
+      if (c.state === 'closed') {
+        c.sprite.setFrame(0);
+        c.glint.setVisible(glintFrame >= 0);
+        if (glintFrame >= 0) c.glint.setFrame(this.lib.frame('item_glint', 'shine', 'S', glintFrame).frame);
+      } else {
+        let f = 4;
+        if (c.state === 'opening') for (const [at, frame] of OPEN_FRAMES) if (c.t >= at) f = frame;
+        c.sprite.setFrame(f);
+      }
     }
+  }
+
+  clear() {
+    for (const c of this.list) {
+      c.sprite.destroy();
+      c.glint.destroy();
+    }
+    this.list = [];
   }
 }

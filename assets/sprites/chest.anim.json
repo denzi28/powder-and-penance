@@ -1,0 +1,39 @@
+{
+  "image": "chest.png",
+  "cell": [
+    20,
+    18
+  ],
+  "pivot": [
+    10,
+    16
+  ],
+  "layer": "single",
+  "animations": {
+    "open": {
+      "row": 0,
+      "dirs": [
+        "S"
+      ],
+      "loop": false,
+      "frames": [
+        {
+          "ticks": 4,
+          "col": 1
+        },
+        {
+          "ticks": 6,
+          "col": 2
+        },
+        {
+          "ticks": 14,
+          "col": 3
+        },
+        {
+          "ticks": 1,
+          "col": 4
+        }
+      ]
+    }
+  }
+}

@@ -1,4 +1,4 @@
-// "Press E" interactions: dropped weapons, placed items, shrines and racks (nearest wins, in that priority).
+// "Press E" interactions: dropped weapons, chests, doors, shrines and racks (in that priority).
 import { DATA } from '../data/config';
 import { hexToInt } from '../ui/colors';
 import { beginShrine } from './ShrineFlow';
@@ -29,8 +29,16 @@ export function nearestInteractable(gs: GameScene): Interactable | null {
       },
     };
 
-  const pick = gs.pickups.nearest(p.x, p.y);
-  if (pick) return { label: `PICK UP ${DATA.items[pick.item].name}`, use: () => takePickup(gs, pick.id, pick.item) };
+  const chest = gs.pickups.nearest(p.x, p.y);
+  if (chest)
+    return {
+      label: 'OPEN CHEST',
+      // The lid opens over a few ticks while the player keeps moving; the item pops out in GameScene.tick.
+      use: () => {
+        gs.pickups.open(chest);
+        gs.bus.emit('sfx', { id: 'chest_open', x: chest.x, y: chest.y });
+      },
+    };
 
   const door = gs.doors.nearest(p.x, p.y);
   if (door) {
@@ -90,38 +98,6 @@ export function handleInteract(gs: GameScene) {
   if (!target || !gs.controls.consume('interact')) return;
   target.use();
   gs.bus.emit('sfx', { id: 'pickup' });
-}
-
-function takePickup(gs: GameScene, id: string, itemId: string) {
-  const p = gs.player;
-  const item = DATA.items[itemId];
-  const pick = gs.pickups.list.find(i => i.id === id);
-  if (pick) gs.pickups.remove(pick);
-  gs.flags.add(`item:${id}`);
-  const e = item.effect;
-  switch (e.type) {
-    case 'phialMax':
-      p.phials.max = Math.min(DATA.phial.maxCharges, p.phials.max + e.amount);
-      p.phials.charges = Math.min(p.phials.max, p.phials.charges + e.amount);
-      break;
-    case 'phialLevel':
-      p.phials.level = Math.min(DATA.phial.maxLevel, p.phials.level + e.amount);
-      break;
-    case 'ammo':
-      for (const wid of new Set(p.slots)) {
-        const r = DATA.weapons[wid]?.ranged;
-        if (!r) continue;
-        const a = p.ammoFor(wid);
-        a.reserve = Math.min(r.reserveMax, a.reserve + Math.ceil(r.reserveMax * e.amount));
-      }
-      break;
-    case 'tallow':
-      p.tallow += e.amount;
-      break;
-  }
-  gs.showToast(item.name.toUpperCase(), item.description);
-  gs.bus.emit('sfx', { id: 'item' });
-  gs.save();
 }
 
 function announce(gs: GameScene, text: string) {

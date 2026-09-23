@@ -119,7 +119,8 @@ R('road_04_collapsed_gate', [95, 12], 26, 18)
   .prop('crate', 22, 14).prop('pot', 4, 12);
 
 // road_05 Hill of Candles — the road climbs in switchbacks toward Wick's Rest, lined with pilgrims' candle
-// cairns. No enemies: a breather, and the first view of the Abbey (cutscene). Exit north to the hub.
+// cairns. No enemies: a breather, and the first view of the Abbey (cutscene). The pilgrims' terrace below the
+// path holds the road's only shrine. Exit north to the hub.
 R('road_05_hill_of_candles', [120, 16], 22, 20)
   .open(0, 8, 1, 2).open(10, 0, 2, 1)
   .cliff(1, 1, 8, 6).cliff(13, 1, 8, 4).cliff(1, 10, 6, 9).cliff(7, 15, 14, 4)
@@ -131,6 +132,7 @@ R('road_05_hill_of_candles', [120, 16], 22, 20)
   .decor('candle_cairn', 9, 13).decor('candle_cairn', 12, 14).decor('candle_cairn', 15, 12).decor('candle_cairn', 18, 13)
   .decor('signpost', 20, 9).decor('dead_tree', 17, 13)
   .decor('grass_tuft', 3, 7).decor('grass_tuft', 20, 11).decor('grass_tuft', 14, 13).decor('grass_tuft', 10, 3)
+  .add({ type: 'shrine', id: 'shrine_hill', name: 'Hill Wick', at: [13, 12] })
   .add({ type: 'cutscene', id: 'abbey_view', at: [19, 6] })
   // leads to the hub (area exits arrive with the hub)
   .add({ type: 'exit', id: 'road_to_hub', at: [10, 0], to: { area: 'hub', spawn: 'from_road' } });

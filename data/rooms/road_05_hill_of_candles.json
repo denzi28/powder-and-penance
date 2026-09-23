@@ -113,6 +113,12 @@
       "at": [10, 3]
     },
     {
+      "type": "shrine",
+      "id": "shrine_hill",
+      "name": "Hill Wick",
+      "at": [13, 12]
+    },
+    {
       "type": "cutscene",
       "id": "abbey_view",
       "at": [19, 6]

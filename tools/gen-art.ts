@@ -1732,6 +1732,54 @@ function line(img: Img, x0: number, y0: number, x1: number, y1: number, c: RGBA)
   }
 }
 
+// ---------------------------------------------------------------- chest (20x18 cells, pivot = ground centre)
+// Frames: 0 closed, 1-3 opening (lid rising, light spilling out), 4 open and empty.
+function genChest() {
+  const W = 20;
+  const H = 18;
+  const body = (c: Img) => {
+    c.rect(2, 9, 16, 7, P.wood1);
+    c.hline(2, 12, 16, P.wood2);
+    c.vline(5, 9, 7, P.steel1);
+    c.vline(14, 9, 7, P.steel1);
+    c.hline(2, 15, 16, P.dark2);
+  };
+  const frames: Img[] = [];
+  for (let f = 0; f < 5; f++) {
+    const c = new Img(W, H);
+    body(c);
+    if (f === 0) {
+      c.rect(2, 5, 16, 4, P.wood2); // lid
+      c.hline(3, 4, 14, P.wood2);
+      c.vline(5, 4, 5, P.steel1);
+      c.vline(14, 4, 5, P.steel1);
+      c.rect(9, 8, 2, 3, P.flame2); // lock
+    } else {
+      const lift = [0, 2, 4, 5, 5][f];
+      const inside = f === 4 ? P.dark1 : f === 1 ? P.flame1 : P.flame2;
+      c.rect(3, 9, 14, 2, inside); // the open mouth of the chest
+      c.rect(2, 8 - lift, 16, Math.max(1, 5 - lift), P.wood1); // lid tipping back: seen from below, shorter
+      c.hline(3, 7 - lift, 14, P.wood2);
+      if (f >= 2 && f <= 3) {
+        c.rect(5, 6 - lift, 10, lift + 2, withAlpha(P.wax2, 150)); // light spilling up
+        c.set(10, 1, P.wax2);
+      }
+    }
+    c.outline(P.ink);
+    frames.push(c);
+  }
+  const img = new Img(W * frames.length, H);
+  frames.forEach((f, i) => img.blit(f, i * W, 0));
+  sheet('chest', img, {
+    cell: [W, H],
+    pivot: [10, 16],
+    layer: 'single',
+    animations: {
+      open: { row: 0, dirs: ['S'], loop: false, frames: [{ ticks: 4, col: 1 }, { ticks: 6, col: 2 }, { ticks: 14, col: 3 }, { ticks: 1, col: 4 }] },
+    },
+  });
+}
+
 // ---------------------------------------------------------------- Penance Road tileset (same index layout as `tiles`)
 // Dirt floor, grass, a packed cart road, earth cliffs with grassy tops, and dark forest outside the ravine.
 function genRoadTiles() {
@@ -2109,5 +2157,6 @@ genWorldBits();
 genTiles();
 genRoadTiles();
 genRoadDecor();
+genChest();
 genFont();
 console.log(`gen-art: wrote ${written} file(s), skipped ${skipped} existing${skipped && !FORCE ? ' (use --force to overwrite)' : ''}`);

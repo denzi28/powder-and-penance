@@ -182,6 +182,9 @@ Enemies hold their weapon like the player does: `handAnchors` in the body manife
 | `prop_crate`, `prop_pot`, `prop_candles` | 16×16 | 8,14 | none | Frame 0 = intact, frame 1 = rubble |
 | `loot` | 7×7 | 3,5 | none | Frame 0 = Tallow drop, frame 1 = powder drop |
 
+### `chest` (20×18, pivot 10,16)
+Frames: 0 closed; 1–3 opening (lid rising, light spilling out); 4 open and empty. The game picks the frame from the opening tick (`OPEN_TICKS` in `src/world/Pickups.ts`). The item pops out at `POP_TICK`. Closed chests show an occasional `item_glint` twinkle on the lid.
+
 ### Area tilesets
 Each area picks its tileset in `data/areas.json`. Every tileset uses the same index layout as `tiles` (§ tiles below), so autotiling works unchanged. Floor variants are extra keys in the manifest's `tiles` block, used by room legends as `floor_<name>`; a variant a tileset lacks falls back to `floor`.
 

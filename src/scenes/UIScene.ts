@@ -25,6 +25,8 @@ export class UIScene extends Phaser.Scene {
   private tallowShown = 0;
   private toastTitle!: Phaser.GameObjects.BitmapText;
   private toastBody!: Phaser.GameObjects.BitmapText;
+  private toastNote!: Phaser.GameObjects.BitmapText;
+  private toastPanel!: Phaser.GameObjects.Rectangle;
   private menuUi!: MenuRenderer;
   private hpTrail!: TrailBar;
   private vignette!: Phaser.GameObjects.Graphics;
@@ -59,6 +61,8 @@ export class UIScene extends Phaser.Scene {
     this.tallowShown = this.gs.player.tallow;
     this.toastTitle = this.add.bitmapText(0, 0, 'pixel', '').setScale(2).setTint(hexToInt(DATA.palette.flame2)).setDepth(15);
     this.toastBody = this.add.bitmapText(0, 0, 'pixel', '').setTint(hexToInt(DATA.palette.wax2)).setDepth(15);
+    this.toastNote = this.add.bitmapText(0, 0, 'pixel', '').setTint(hexToInt(DATA.palette.stone4)).setDepth(15);
+    this.toastPanel = this.add.rectangle(0, 0, 10, 10, hexToInt(DATA.palette.ink), 0.7).setOrigin(0, 0).setDepth(14);
     this.menuUi = new MenuRenderer(this, 16);
     this.hpTrail = new TrailBar(this.gs.player.hp);
     this.vignette = this.add.graphics().setDepth(12);
@@ -201,15 +205,20 @@ export class UIScene extends Phaser.Scene {
 
   private drawToast() {
     const t = this.gs.menu ? null : this.gs.toast; // menus take the centre of the screen
-    this.toastTitle.setVisible(!!t);
-    this.toastBody.setVisible(!!t);
+    for (const o of [this.toastTitle, this.toastBody, this.toastNote, this.toastPanel]) o.setVisible(!!t);
     if (!t) return;
-    const a = t.t < 15 ? t.t / 15 : t.t > 200 ? Math.max(0, (240 - t.t) / 40) : 1;
+    const a = t.t < 15 ? t.t / 15 : t.t > t.life - 40 ? Math.max(0, (t.life - t.t) / 40) : 1;
     const W = DATA.game.width;
     this.toastTitle.setText(t.title).setAlpha(a);
     this.toastTitle.setPosition(Math.round((W - this.toastTitle.width) / 2), 44);
     this.toastBody.setText(wrap(t.body, 60)).setAlpha(a);
     this.toastBody.setPosition(Math.round((W - this.toastBody.width) / 2), 64);
+    this.toastNote.setText(t.note ? wrap(t.note, 60) : '').setAlpha(a);
+    const noteY = 64 + this.toastBody.height + 6;
+    this.toastNote.setPosition(Math.round((W - this.toastNote.width) / 2), noteY);
+    const bottom = t.note ? noteY + this.toastNote.height : 64 + this.toastBody.height;
+    const w = Math.max(this.toastTitle.width, this.toastBody.width, this.toastNote.width) + 16;
+    this.toastPanel.setPosition(Math.round((W - w) / 2), 38).setSize(w, bottom - 38 + 6).setAlpha(a);
   }
 
   /** Bottom-right: two weapon slots (active highlighted), ammo, reload bar, shield icon. */

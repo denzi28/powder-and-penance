@@ -42,6 +42,7 @@ import { installDebugKeys } from '../debug/DebugKeys';
 import { hexToInt } from '../ui/colors';
 import { wirePresentation } from '../game/Presentation';
 import { handleInteract, nearestInteractable } from '../game/Interactions';
+import { grantItem } from '../game/Items';
 import { tickShrineSeq } from '../game/ShrineFlow';
 import { applySave, snapshot } from '../game/Persistence';
 import { updateAim } from '../game/aim';
@@ -50,6 +51,8 @@ import type { Dir8 } from '../core/math';
 import type { RoomData } from '../data/schemas';
 
 const DIR_ANGLE: Record<Dir8, number> = { E: 0, SE: 45, S: 90, SW: 135, W: 180, NW: 225, N: 270, NE: 315 };
+/** How long an item banner stays up (ticks), fade included: long enough to read the explanation. */
+const TOAST_TICKS = 360;
 
 export interface GameStartData {
   /** continue = load the save (falls back to new); new = wipe the save and start fresh. */
@@ -98,7 +101,7 @@ export class GameScene extends Phaser.Scene {
   /** Open menu (freezes the simulation). */
   menu: Menu | null = null;
   /** Item/event banner for the UI. */
-  toast: { title: string; body: string; t: number } | null = null;
+  toast: { title: string; body: string; note?: string; t: number; life: number } | null = null;
   /** Last hit taken by the player, for the UI damage vignette (t in ms since the hit). */
   hurt: { angle: number; strength: number; t: number } | null = null;
   /** Kneeling at a shrine: kindle (first visit) or rest, then the shrine menu opens. */
@@ -227,7 +230,7 @@ export class GameScene extends Phaser.Scene {
       return;
     }
     this.cam.tickShake();
-    if (this.toast && ++this.toast.t > 240) this.toast = null;
+    if (this.toast && ++this.toast.t > this.toast.life) this.toast = null;
     if (this.hitstop > 0) {
       this.hitstop--;
       return;
@@ -243,6 +246,7 @@ export class GameScene extends Phaser.Scene {
     this.combat.resolve(this.actors, this.bus);
     this.projectiles.tick(this.actors, this.grid, this.combat, this.bus);
     tickShrineSeq(this);
+    for (const c of this.pickups.tick()) grantItem(this, c.id, c.item, c.x, c.y);
     this.tryRecoverMarker();
     if (!this.player.dead) for (const d of this.loot.tick(this.player.x, this.player.y)) this.collectLoot(d);
 
@@ -317,8 +321,9 @@ export class GameScene extends Phaser.Scene {
     this.controls.clearBuffer();
   }
 
-  showToast(title: string, body: string) {
-    this.toast = { title, body, t: 0 };
+  /** Banner: title, what happened, and an optional dimmer note (flavour text). */
+  showToast(title: string, body: string, note?: string) {
+    this.toast = { title, body, note, t: 0, life: note ? TOAST_TICKS : 240 };
   }
 
   nearestInteractable() {
@@ -580,7 +585,7 @@ export class GameScene extends Phaser.Scene {
     this.worldView.build(this.grid, DATA.areas.areas[this.area].tileset);
     this.racks.build(this.rooms);
     this.shrines.build(this.rooms, id => this.flags.has(`shrine:${id}`));
-    this.pickups.build(this.rooms, id => this.flags.has(`item:${id}`));
+    this.pickups.build(this.rooms, this.grid, id => this.flags.has(`item:${id}`));
     this.doors.build(this.rooms, this.grid, id => this.flags.has(`door:${id}`));
     this.props.build(this.ctxObj, this.rooms);
     this.placeWeapons();

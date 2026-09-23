@@ -71,6 +71,7 @@ npm run gen:art    # regenerate missing placeholder art (--force to overwrite al
 ## Act 1 (in progress)
 Act 1 is being built room by room: the plan is in [WORLD.md](WORLD.md) and the story in [STORY.md](STORY.md).
 - **New games start on the Penance Road** (`road_01_wreck`) with bare fists. A sword and a flintlock lie in the wreck.
+- **Items come in chests** (press E). You keep control while the lid opens. The banner explains the effect in plain numbers (e.g. "phial drinks 3 -> 4"), with the flavour text below.
 - The road isn't connected to the Abbey yet. Use the debug menu (`) to jump to any abbey room, or to area `test` for the weapon racks and training dummies.
 
 ## The Guttering Abbey (M5)

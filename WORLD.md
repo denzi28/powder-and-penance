@@ -34,7 +34,8 @@ Target: **~2 h** first playthrough (2 h 15 min with the optional Powder Vault). 
 4. Tallow Works and the Waxmire, in either order. Each boss drops a **Seal**. The Waxmire is open from the start but hard.
 5. With both Seals, the Nave door opens: the **Chandler**, then the Act 1 ending.
 
-**Shrines (6):**
+**Shrines (7):**
+- Hill Wick (road) ✅
 - Wick's Rest (hub)
 - Porch Wick (abbey)
 - Chapterhouse Wick (abbey)
@@ -68,13 +69,15 @@ Dusk. A dirt road through a ravine toward the Abbey on its hill. It teaches the 
 | road_02 | **The Cutting** ✅ | Narrow, winding road between cliffs. One Wickling stands on the road facing you. A dead guard who ran this way. | Attack and roll: the first fight |
 | road_03 | **Gibbet Bend** ✅ | The road bends down into a hollow hung with gibbets. 3 Wicklings: the first stands at the bend with its back to you. Tall rocks block sight; once one sees you, the whole hollow knows. A ledge path to a **Powder Pouch**. | Backstab, then stealth |
 | road_04 | **Collapsed Gate** ✅ | The fallen toll arch: two broken pillars, rubble, the lintel across the road. A Taper Hound and a Wickling together. A **Phial Shard** on the north-east ledge. | Fighting two at once; heal with the phial |
-| road_05 | **Hill of Candles** ✅ | Switchback climb lined with candle cairns, and a lower terrace of cairns. *Cutscene: the Abbey on its hill.* Exit north to the hub (connected when the hub is built). | None (breather) |
+| road_05 | **Hill of Candles** ✅ | Switchback climb lined with candle cairns. The pilgrims' terrace below the path holds the **Hill Wick shrine**. *Cutscene: the Abbey on its hill.* Exit north to the hub (connected when the hub is built). | Shrines (breather) |
 
 Scenery comes in two heights:
 - **Low** (the wagon, the lintel, signposts, cairns): stops movement and bullets, but enemies see over it.
 - **Tall** (boulders, large rocks, pillars): also blocks sight, so you can hide behind it.
 
-With no shrine on the road, dying anywhere on it returns you to the Wreck.
+Until you kindle the Hill Wick, dying anywhere on the road returns you to the Wreck.
+
+**Items are in chests.** Press E: the lid opens while you keep moving, and the item pops out. The banner says exactly what changed, in numbers, with the item's flavour text underneath. Opened chests stay open.
 
 ## Wick's Rest (`hub`)
 A half-ruined pilgrims' waystation in a hollow below the Abbey. Every Act 1 area opens from here.

@@ -1,6 +1,6 @@
 {
   "id": "phial_shard",
   "name": "Phial Shard",
-  "description": "A sliver of stained glass. Your Mending Phial holds one more draught.",
+  "description": "A sliver of stained glass from a chapel window, still warm.",
   "effect": { "type": "phialMax", "amount": 1 }
 }
