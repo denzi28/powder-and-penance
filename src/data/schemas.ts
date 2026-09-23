@@ -169,6 +169,30 @@ export const ShrineCfg = z.object({
   autosaveTicks: int.positive(),
 });
 
+/** Breakable scenery (data/props/*.json). Props respawn on rest; their loot drops only the first time. */
+export const PropDef = z.object({
+  id: z.string(),
+  name: z.string(),
+  sprite: z.string(),
+  hp: pos,
+  /** Blocking circle radius (px). */
+  radius: pos,
+  hurtbox: HurtBox,
+  /** Palette key for the break burst. */
+  debris: z.string(),
+  loot: z.string().default('none'),
+  sfx: z.string().default('break'),
+});
+
+/** One weighted outcome of a loot roll. */
+export const LootEntry = z.object({
+  weight: pos,
+  tallow: Vec2.optional(),
+  /** Restores this fraction of every carried ranged weapon's reserve. */
+  ammo: num.positive().max(1).optional(),
+});
+export const LootTables = z.object({ tables: z.record(z.string(), z.array(LootEntry).min(1)) });
+
 export const ItemDef = z.object({
   id: z.string(),
   name: z.string(),
@@ -197,6 +221,28 @@ const HitShape = z.discriminatedUnion('shape', [
   z.object({ shape: z.literal('arc'), radius: pos, halfAngle: num.min(0).max(180), offset: num.default(0), inner: num.min(0).default(0) }),
   z.object({ shape: z.literal('circle'), radius: pos, offset: num.default(0) }),
 ]);
+export const ProjectileDef = z.object({
+  sprite: z.string(),
+  speed: pos,
+  range: pos,
+  damage: num.min(0),
+  poise: num.min(0),
+  pierce: int.nonnegative().default(0),
+  knockback: num.min(0).default(0),
+  hitstop: int.nonnegative().default(0),
+  shake: num.min(0).max(1).default(0.05),
+  radius: pos,
+  spreadDeg: num.min(0).default(0),
+  count: int.positive().default(1),
+  /**
+   * Lobbed: arcs over obstacles to the target point (speed/range ignored), a warning marker shows where it
+   * will land, and it bursts there for area damage. Can't be blocked by walls; can be rolled through.
+   */
+  lob: z
+    .object({ flightTicks: int.positive(), arcHeight: num.min(0), blastRadius: pos, sfx: z.string().default('explosion') })
+    .optional(),
+});
+
 export const StrikeDef = z.object({
   damage: num.min(0),
   poise: num.min(0),
@@ -227,6 +273,13 @@ export const StrikeDef = z.object({
   sfx: z.string().default('swing'),
   /** Body animation to play (phased windup/active/recovery). Default: "attack" ("thrust" for player thrusts). */
   anim: z.string().optional(),
+  /** Thrown instead of swung: launched at the target when the active frames start (no melee hitbox). */
+  projectile: ProjectileDef.optional(),
+  /**
+   * Grab: on a clean hit the target is held for holdTicks (helpless), then takes `damage` and is thrown.
+   * The strike's own damage is applied on contact. Pair with unblockable + a "danger" telegraph.
+   */
+  grab: z.object({ holdTicks: int.positive(), damage: num.min(0), throwKnockback: num.min(0) }).optional(),
 });
 
 export const MoveDef = z.object({
@@ -240,8 +293,27 @@ export const MoveDef = z.object({
 export const EnemyDef = z.object({
   id: z.string(),
   name: z.string(),
-  /** melee = full AI; dummy = never acts or dies; rhythm = stands still and repeats its first move every intervalTicks. */
-  ai: z.enum(['melee', 'dummy', 'rhythm']),
+  /**
+   * melee = full AI; ranged = full AI that keeps its distance (spacing.retreatBelow) and needs line of sight
+   * to throw; dummy = never acts or dies; rhythm = stands still and repeats its first move every interval.
+   */
+  ai: z.enum(['melee', 'ranged', 'dummy', 'rhythm']),
+  /**
+   * Shield guard (frontal arc) that blocks hits and projectiles while not attacking or staggered. Blocked hits
+   * drain `max` guard points (damage x (1 - stability) x blockStaminaMult); at zero the guard breaks and the
+   * enemy reels for breakTicks, open to a riposte. Guard points regenerate after regenDelayTicks.
+   */
+  guard: z
+    .object({
+      max: pos,
+      regenPerSec: num.min(0),
+      regenDelayTicks: int.nonnegative(),
+      arcDeg: num.min(0).max(360),
+      stability: num.min(0).max(1),
+      absorption: num.min(0).max(1),
+      breakTicks: int.positive(),
+    })
+    .optional(),
   rhythmIntervalTicks: int.positive().default(120),
   /** Long stagger after being parried (riposte window). */
   parriedTicks: int.positive().default(80),
@@ -296,7 +368,10 @@ export const EnemyDef = z.object({
       loseTicks: 240,
     }),
   leash: z.object({ distance: pos, healOnReturn: z.boolean() }).default({ distance: 200, healOnReturn: true }),
-  spacing: z.object({ preferred: pos, strafeTicks: Vec2 }).default({ preferred: 30, strafeTicks: [40, 90] }),
+  /** preferred: circling distance; retreatBelow: back off when the player is closer than this (0 = never). */
+  spacing: z
+    .object({ preferred: pos, strafeTicks: Vec2, retreatBelow: num.min(0).default(0) })
+    .default({ preferred: 30, strafeTicks: [40, 90], retreatBelow: 0 }),
   /** Random pause [min, max] ticks after finishing an attack before trying another. */
   attackGapTicks: Vec2.default([20, 50]),
   staggerTicks: int.positive().default(30),
@@ -355,20 +430,7 @@ export const WeaponDef = z
           sfx: z.string(),
         }),
         reload: z.object({ ticks: int.positive(), stamina: num.min(0), moveMult: num.min(0).max(1) }),
-        projectile: z.object({
-          sprite: z.string(),
-          speed: pos,
-          range: pos,
-          damage: num.min(0),
-          poise: num.min(0),
-          pierce: int.nonnegative(),
-          knockback: num.min(0),
-          hitstop: int.nonnegative(),
-          shake: num.min(0).max(1).default(0.05),
-          radius: pos,
-          spreadDeg: num.min(0),
-          count: int.positive().default(1),
-        }),
+        projectile: ProjectileDef,
         casing: z.boolean().default(false),
         muzzle: z.enum(['small', 'large', 'none']).default('small'),
       })
@@ -454,6 +516,9 @@ export type InputCfg = z.infer<typeof InputCfg>;
 export type WeaponDef = z.infer<typeof WeaponDef>;
 export type StrikeDef = z.infer<typeof StrikeDef>;
 export type ShieldDef = z.infer<typeof ShieldDef>;
+export type ProjectileDef = z.infer<typeof ProjectileDef>;
+export type PropDef = z.infer<typeof PropDef>;
+export type LootEntry = z.infer<typeof LootEntry>;
 export type ItemDef = z.infer<typeof ItemDef>;
 export type MoveDef = z.infer<typeof MoveDef>;
 export type EnemyDef = z.infer<typeof EnemyDef>;

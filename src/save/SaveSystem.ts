@@ -25,9 +25,9 @@ export const SaveV1 = z.object({
   world: z.object({
     /** "shrine:<id>" lit shrines, "item:<id>" picked-up items; later shortcuts, doors, bosses. */
     flags: z.array(z.string()),
-    groundItems: z.array(z.object({ weapon: z.string(), x: z.number(), y: z.number() })),
+    groundItems: z.array(z.object({ weapon: z.string(), x: z.number(), y: z.number(), area: z.string().optional() })),
   }),
-  deathMarker: z.object({ x: z.number(), y: z.number(), tallow: z.number().int().min(1) }).nullable(),
+  deathMarker: z.object({ x: z.number(), y: z.number(), tallow: z.number().int().min(1), area: z.string().optional() }).nullable(),
 });
 export type SaveData = z.infer<typeof SaveV1>;
 

@@ -1,0 +1,12 @@
+{
+  "image": "door.png",
+  "cell": [
+    16,
+    32
+  ],
+  "pivot": [
+    8,
+    32
+  ],
+  "layer": "single"
+}

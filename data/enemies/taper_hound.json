@@ -1,0 +1,91 @@
+{
+  "id": "taper_hound",
+  "name": "Taper Hound",
+  "ai": "melee",
+  "sprite": "hound",
+  "hp": 40,
+  "poise": { "max": 14, "resetTicks": 60 },
+  "tallow": 30,
+  "speed": 95,
+  "strafeSpeed": 70,
+  "accelTicks": 4,
+  "turnDegPerTick": 12,
+  "collider": { "w": 10, "h": 5 },
+  "hurtbox": { "w": 14, "h": 10, "offsetY": -6 },
+  "bodyRadius": 6,
+  "perception": {
+    "halfAngleDeg": 80,
+    "nearDistance": 48,
+    "farDistance": 320,
+    "detectTicksNear": 14,
+    "detectTicksFar": 110,
+    "suspicionAt": 0.3,
+    "forgetPerTick": 0.005,
+    "investigateTicks": 160,
+    "reactionTicks": [6, 12],
+    "loseTicks": 200
+  },
+  "leash": { "distance": 420, "healOnReturn": true },
+  "spacing": { "preferred": 56, "strafeTicks": [30, 60] },
+  "attackGapTicks": [30, 60],
+  "staggerTicks": 34,
+  "deathTicks": 40,
+  "corpseTicks": 150,
+  "blood": "blood2",
+  "moves": [
+    {
+      "id": "lunge_bite",
+      "range": [30, 72],
+      "weight": 3,
+      "cooldown": 80,
+      "strikes": [
+        {
+          "damage": 18, "poise": 20,
+          "windup": 18, "active": 5, "recovery": 36,
+          "trackDegPerTick": 6,
+          "telegraph": { "tick": 6, "kind": "normal" },
+          "lunge": { "distance": 56, "startTick": 16, "ticks": 7 },
+          "hitbox": { "shape": "arc", "radius": 16, "halfAngle": 50 },
+          "sweep": { "fromDeg": 0, "toDeg": 0 },
+          "knockback": 90, "hitstop": 4, "shake": 0.15, "sfx": "bite", "anim": "lunge"
+        }
+      ]
+    },
+    {
+      "id": "flurry",
+      "range": [0, 24],
+      "weight": 2,
+      "cooldown": 110,
+      "strikes": [
+        {
+          "damage": 8, "poise": 7,
+          "windup": 12, "active": 3, "recovery": 5,
+          "trackDegPerTick": 8,
+          "telegraph": { "tick": 4, "kind": "normal" },
+          "lunge": { "distance": 6, "startTick": 10, "ticks": 3 },
+          "hitbox": { "shape": "arc", "radius": 16, "halfAngle": 60 },
+          "sweep": { "fromDeg": 0, "toDeg": 0 },
+          "knockback": 40, "hitstop": 2, "shake": 0.06, "sfx": "bite", "anim": "bite"
+        },
+        {
+          "damage": 8, "poise": 7,
+          "windup": 8, "active": 3, "recovery": 5,
+          "trackDegPerTick": 8,
+          "lunge": { "distance": 6, "startTick": 6, "ticks": 3 },
+          "hitbox": { "shape": "arc", "radius": 16, "halfAngle": 60 },
+          "sweep": { "fromDeg": 0, "toDeg": 0 },
+          "knockback": 40, "hitstop": 2, "shake": 0.06, "sfx": "bite", "anim": "bite"
+        },
+        {
+          "damage": 10, "poise": 9,
+          "windup": 8, "active": 3, "recovery": 30,
+          "trackDegPerTick": 6,
+          "lunge": { "distance": 8, "startTick": 6, "ticks": 3 },
+          "hitbox": { "shape": "arc", "radius": 16, "halfAngle": 60 },
+          "sweep": { "fromDeg": 0, "toDeg": 0 },
+          "knockback": 70, "hitstop": 3, "shake": 0.1, "sfx": "bite", "anim": "bite"
+        }
+      ]
+    }
+  ]
+}

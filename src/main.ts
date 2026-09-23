@@ -18,6 +18,9 @@ if (!DATA_ERROR) {
     if (w.ranged) need(w.ranged.projectile.sprite, `data/weapons/${w.id}.json`);
   }
   for (const s of Object.values(DATA.shields)) need(s.sprite, `data/shields/${s.id}.json`);
+  for (const pr of Object.values(DATA.props)) need(pr.sprite, `data/props/${pr.id}.json`);
+  for (const e of Object.values(DATA.enemies))
+    for (const m of e.moves) for (const s of m.strikes) if (s.projectile) need(s.projectile.sprite, `data/enemies/${e.id}.json`);
   for (const e of Object.values(DATA.enemies)) {
     need(e.sprite, `data/enemies/${e.id}.json`);
     if (e.weaponSprite) need(e.weaponSprite, `data/enemies/${e.id}.json`);

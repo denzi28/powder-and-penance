@@ -73,6 +73,8 @@ export class Player extends Actor {
 
   // Critical (riposte / backstab) in progress
   crit: { victim: Enemy; kind: 'riposte' | 'backstab' } | null = null;
+  /** Held by a grab strike. */
+  grabbedBy: { by: Actor; holdTicks: number; damage: number; throwKnockback: number } | null = null;
 
   constructor(ctx: WorldCtx, x: number, y: number) {
     super(ctx, x, y);
@@ -212,6 +214,12 @@ export class Player extends Actor {
     if (l !== null) this.slot = l;
   }
 
+  onGrabbed(by: Actor, grab: { holdTicks: number; damage: number; throwKnockback: number }) {
+    if (this.dead || this.sm.name === 'grabbed') return;
+    this.grabbedBy = { by, ...grab };
+    this.sm.change('grabbed');
+  }
+
   swapWeapon() {
     if (this.lockedSlot !== null) return;
     this.slot = (this.slot + 1) % this.slots.length;
@@ -269,7 +277,7 @@ export class Player extends Actor {
   private updateAnims() {
     const st = this.sm.name;
     if (this.runner) this.bodyDir = dir8FromAngle(this.runner.angle);
-    else if (st !== 'roll' && st !== 'dead' && st !== 'stagger' && st !== 'guardBroken' && st !== 'rest')
+    else if (st !== 'roll' && st !== 'dead' && st !== 'stagger' && st !== 'guardBroken' && st !== 'rest' && st !== 'grabbed')
       this.bodyDir = dir8FromAngle(this.aimAngle);
     this.body.tick(this.animHold ? 0 : 1);
 

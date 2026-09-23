@@ -27,7 +27,11 @@ export class MenuRenderer {
 
     const W = DATA.game.width;
     const lineH = 12;
-    const h = 30 + (menu.subtitle ? 12 : 0) + menu.items.length * lineH + 8;
+    // Long menus scroll: show a window of rows around the selection.
+    const maxRows = 14;
+    const first = Math.max(0, Math.min(menu.index - Math.floor(maxRows / 2), menu.items.length - maxRows));
+    const shown = menu.items.slice(first, first + maxRows);
+    const h = 30 + (menu.subtitle ? 12 : 0) + shown.length * lineH + 8;
     const top = Math.round(centerY - h / 2);
     this.title.setText(menu.title).setTint(hexToInt(pal.flame2));
     if (this.panel) {
@@ -46,10 +50,10 @@ export class MenuRenderer {
       this.subtitle.setPosition(Math.round((W - this.subtitle.width) / 2), y);
       y += 12;
     }
-    menu.items.forEach((item, i) => {
+    shown.forEach((item, i) => {
       while (this.rows.length <= i) this.rows.push(this.scene.add.bitmapText(0, 0, 'pixel', '').setDepth(this.depth + 1));
       const row = this.rows[i];
-      const sel = i === menu.index;
+      const sel = first + i === menu.index;
       row.setText(this.rowText(item, sel)).setVisible(true);
       row.setTint(hexToInt(!item.enabled ? pal.stone2 : sel ? pal.wax2 : pal.stone4));
       row.setPosition(Math.round((W - row.width) / 2), y + i * lineH);

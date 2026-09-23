@@ -1,0 +1,11 @@
+{
+  "id": "pot",
+  "name": "Clay Pot",
+  "sprite": "prop_pot",
+  "hp": 8,
+  "radius": 5,
+  "hurtbox": { "w": 10, "h": 10, "offsetY": -6 },
+  "debris": "stone3",
+  "loot": "common_small",
+  "sfx": "break_pot"
+}

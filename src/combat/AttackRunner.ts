@@ -23,6 +23,8 @@ export class AttackRunner {
   damageMult = 1;
   poiseMult = 1;
   readonly hitSet = new Set<Actor>();
+  /** Where thrown strikes (strike.projectile) aim; set by the owner each tick. */
+  target: { x: number; y: number } | null = null;
   /** -1 when attacking toward the left half, so swings mirror and always read top-to-bottom. */
   readonly mirror: number;
 
@@ -75,8 +77,14 @@ export class AttackRunner {
       if (this.t >= l.startTick && this.t < l.startTick + l.ticks)
         o.moveBy((Math.cos(this.angle) * l.distance) / l.ticks, (Math.sin(this.angle) * l.distance) / l.ticks);
     }
-    if (this.t === s.windup) bus.emit('swing', { actor: o, strike: s, angle: this.angle, mirror: this.mirror });
-    if (this.phase === 'active' && !this.visualOnly)
+    if (this.t === s.windup) {
+      if (s.projectile) {
+        const t = this.target ?? { x: o.x + Math.cos(this.angle) * 80, y: o.y + Math.sin(this.angle) * 80 };
+        o.ctx.projectiles.spawn(o, o.x + Math.cos(this.angle) * 8, o.y + Math.sin(this.angle) * 4, this.angle, s.projectile, t);
+        bus.emit('thrown', { actor: o });
+      } else bus.emit('swing', { actor: o, strike: s, angle: this.angle, mirror: this.mirror });
+    }
+    if (this.phase === 'active' && !this.visualOnly && !s.projectile)
       o.ctx.combat.add({
         owner: o,
         strike: s,

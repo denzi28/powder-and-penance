@@ -1,0 +1,13 @@
+{
+  "tables": {
+    "common_small": [
+      { "weight": 5 },
+      { "weight": 4, "tallow": [5, 15] },
+      { "weight": 1, "ammo": 0.15 }
+    ],
+    "tallow_small": [
+      { "weight": 2 },
+      { "weight": 3, "tallow": [10, 25] }
+    ]
+  }
+}

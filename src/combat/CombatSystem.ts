@@ -32,6 +32,7 @@ export interface HitSource {
   angle: number;
   unblockable: boolean;
   unparryable: boolean;
+  grab?: { holdTicks: number; damage: number; throwKnockback: number };
 }
 
 /** An actor's active guard (raised shield). */
@@ -76,6 +77,7 @@ export function sourceFromStrike(owner: Actor, s: StrikeDef, angle: number, dama
     angle,
     unblockable: s.unblockable,
     unparryable: s.unparryable,
+    grab: s.grab,
   };
 }
 
@@ -102,6 +104,7 @@ export class CombatSystem {
       let best: ActiveHitbox | null = null;
       for (const b of this.boxes) {
         if (b.owner.team === target.team || b.owner.dead || b.hitSet.has(target)) continue;
+        if (target.team === 'prop' && b.strike.grab) continue; // grabs only catch creatures
         if (!shapeHitsRect(b.shape, rect)) continue;
         if (!best || b.strike.damage * b.damageMult > best.strike.damage * best.damageMult) best = b;
       }
@@ -155,6 +158,7 @@ export class CombatSystem {
     };
     target.onHit(info);
     bus.emit('hit', info);
+    if (src.grab && !killed && !target.dead) target.onGrabbed(attacker, src.grab);
     return info;
   }
 

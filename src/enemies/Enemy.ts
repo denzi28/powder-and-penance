@@ -17,7 +17,7 @@ import type { MoveDef } from '../data/schemas';
 /** States in which the enemy is actively fighting (knows where you are). */
 export const COMBAT_STATES: ReadonlySet<string> = new Set(['approach', 'strafe', 'attack']);
 /** States in which it is not expecting you: backstabs allowed from behind. */
-const UNAWARE_STATES: ReadonlySet<string> = new Set(['idle', 'suspicious', 'return', 'stagger', 'parried']);
+const UNAWARE_STATES: ReadonlySet<string> = new Set(['idle', 'suspicious', 'return', 'stagger', 'parried', 'guardBroken']);
 
 export class Enemy extends Actor {
   readonly team = 'enemy' as const;
@@ -67,6 +67,7 @@ export class Enemy extends Actor {
     this.room = ctx.roomAt(x, y);
     this.poise = new Poise(() => this.def.poise);
     this.hp = this.def.hp;
+    this.guardPoints = this.def.guard?.max ?? 0;
     this.anim = new AnimPlayer(SPRITES[this.def.sprite].animations);
     this.anim.play('idle');
     this.dir = dir8FromAngle(facing);
@@ -101,16 +102,39 @@ export class Enemy extends Actor {
   get stateTick() {
     return this.sm.t;
   }
-  /** Can be riposted right now. */
+  /** Can be riposted right now (parried, or reeling from a broken guard). */
   get critOpen() {
-    return this.sm.name === 'parried';
+    return this.sm.name === 'parried' || this.sm.name === 'guardBroken';
+  }
+  /** Has the full combat AI (perception, room alerts, health bar). */
+  get isFighter() {
+    return this.def.ai === 'melee' || this.def.ai === 'ranged';
+  }
+
+  // Shield guard
+  guardPoints = 0;
+  private guardDelay = 0;
+  private static readonly GUARD_STATES: ReadonlySet<string> = new Set(['idle', 'suspicious', 'notice', 'approach', 'strafe', 'return']);
+
+  guard() {
+    const g = this.def.guard;
+    if (!g || this.dead || !Enemy.GUARD_STATES.has(this.sm.name)) return null;
+    return { facing: this.facing, arcDeg: g.arcDeg, parry: false, stability: g.stability, absorption: g.absorption };
+  }
+
+  spendGuardStamina(cost: number): boolean {
+    const g = this.def.guard;
+    if (!g) return false;
+    this.guardPoints = Math.max(0, this.guardPoints - cost);
+    this.guardDelay = g.regenDelayTicks;
+    return this.guardPoints <= 0;
   }
   get backstabbable() {
     return !this.dead && UNAWARE_STATES.has(this.sm.name);
   }
   /** State to fall back to after a stagger/parry/critical. */
   get recoverState() {
-    return this.def.ai === 'melee' ? 'approach' : 'idle';
+    return this.isFighter ? 'approach' : 'idle';
   }
 
   tick() {
@@ -119,8 +143,13 @@ export class Enemy extends Actor {
     for (const [k, v] of this.cooldowns) if (v > 0) this.cooldowns.set(k, v - 1);
     if (this.attackGap > 0) this.attackGap--;
     if (this.barTicks > 0) this.barTicks--;
+    const g = this.def.guard;
+    if (g) {
+      if (this.guardDelay > 0) this.guardDelay--;
+      else this.guardPoints = Math.min(g.max, this.guardPoints + g.regenPerSec / DATA.game.tickRate);
+    }
 
-    if (this.def.ai === 'melee' && !this.dead && this.sm.name !== 'critVictim') this.perceive();
+    if (this.isFighter && !this.dead && this.sm.name !== 'critVictim') this.perceive();
     this.sm.tick();
     this.applyKnockback();
     this.hyperArmor = this.runner?.hyperArmor ?? 0;
@@ -139,7 +168,7 @@ export class Enemy extends Actor {
     if (this.def.ai === 'dummy') {
       if (this.anim.name === 'hit' && this.anim.done) this.anim.play('idle');
       this.anim.tick();
-    } else if (st === 'attack' || st === 'stagger' || st === 'dead' || st === 'parried' || st === 'critVictim') {
+    } else if (st === 'attack' || st === 'stagger' || st === 'dead' || st === 'parried' || st === 'critVictim' || st === 'guardBroken') {
       this.anim.tick();
     } else if (speed > 4) {
       this.anim.play('walk');
@@ -204,7 +233,11 @@ export class Enemy extends Actor {
     }
     if (h.killed) this.sm.change('dead');
     else if (st === 'critVictim') return; // locked in the paired animation
-    else if (h.staggered) this.sm.change('stagger', true);
+    else if (h.guardBroken) this.sm.change('guardBroken', true);
+    else if (h.blocked) {
+      this.squash.set(DATA.juice.squash.hit);
+      this.aggro();
+    } else if (h.staggered) this.sm.change('stagger', true);
     else {
       this.squash.set(DATA.juice.squash.hit);
       this.aggro();
@@ -222,7 +255,7 @@ export class Enemy extends Actor {
 
   /** Become certain and fight immediately (hit, or alerted by the room). */
   aggro() {
-    if (this.def.ai !== 'melee' || this.dead || COMBAT_STATES.has(this.sm.name)) return;
+    if (!this.isFighter || this.dead || COMBAT_STATES.has(this.sm.name)) return;
     this.awareness = 1;
     this.noteSighting();
     this.sm.change('approach');
@@ -233,7 +266,7 @@ export class Enemy extends Actor {
   alertRoom() {
     if (this.room === null) return;
     for (const o of this.ctx.enemies()) {
-      if (o === this || o.dead || o.room !== this.room || o.def.ai !== 'melee') continue;
+      if (o === this || o.dead || o.room !== this.room || !o.isFighter) continue;
       const st = o.sm.name;
       if (st === 'idle' || st === 'suspicious' || st === 'return') {
         o.awareness = 1;
@@ -320,7 +353,13 @@ export class Enemy extends Actor {
     const d = this.distToPlayer();
     const a = this.angleToPlayer();
     if (Math.abs(Math.atan2(Math.sin(a - this.facing), Math.cos(a - this.facing))) > 70 * DEG) return false;
-    const options = this.def.moves.filter(m => d >= m.range[0] && d <= m.range[1] && !(this.cooldowns.get(m.id) ?? 0));
+    const options = this.def.moves.filter(
+      m =>
+        d >= m.range[0] &&
+        d <= m.range[1] &&
+        !(this.cooldowns.get(m.id) ?? 0) &&
+        (!m.strikes[0].projectile || this.visible), // throwing needs a clear view of the target
+    );
     if (!options.length || !this.ctx.tokens.acquire(this)) return false;
     let roll = this.ctx.rng() * options.reduce((s, m) => s + m.weight, 0);
     this.move = options[options.length - 1];

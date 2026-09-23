@@ -1,0 +1,12 @@
+{
+  "image": "loot.png",
+  "cell": [
+    7,
+    7
+  ],
+  "pivot": [
+    3,
+    5
+  ],
+  "layer": "fx"
+}

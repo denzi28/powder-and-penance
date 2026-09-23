@@ -121,6 +121,30 @@ export function wirePresentation(gs: GameScene) {
     bus.emit('sfx', { id: 'charge_full' });
   });
 
+  bus.on('blast', e => {
+    gs.fx.spawn('blast', 'burst', e.x, e.y, { depth: DEPTH.actor(e.y) + 1, scaleX: e.radius / 20, scaleY: e.radius / 20 });
+    gs.particles.burst(e.x, e.y, 4, -Math.PI / 2, Math.PI * 2, 14, 110, 'flame1', false);
+    gs.particles.burst(e.x, e.y, 2, -Math.PI / 2, Math.PI * 2, 8, 70, 'stone4', false);
+    gs.cam.addTrauma(Math.max(0, 0.45 - Math.hypot(e.x - gs.player.x, e.y - gs.player.y) / 400));
+    bus.emit('sfx', { id: e.sfx, x: e.x, y: e.y });
+  });
+
+  bus.on('thrown', e => bus.emit('sfx', { id: 'throw', x: e.actor.x, y: e.actor.y }));
+
+  bus.on('propBroken', e => {
+    const p = e.prop;
+    gs.particles.burst(p.x, p.y, 6, -Math.PI / 2, Math.PI * 2, 14, 90, p.def.debris, true);
+    gs.fx.spawn('dust', 'puff', p.x, p.y);
+    bus.emit('sfx', { id: p.def.sfx, x: p.x, y: p.y });
+  });
+
+  bus.on('grabbed', e => {
+    gs.cam.addTrauma(0.3);
+    gs.hitstop = Math.max(gs.hitstop, 5);
+    bus.emit('sfx', { id: 'grab', x: e.by.x, y: e.by.y });
+    gs.numbers.add('GRABBED', gs.player.x, gs.player.y - 34, hexToInt(pal().ember));
+  });
+
   bus.on('healed', e => {
     gs.particles.burst(e.actor.x, e.actor.y, 6, -Math.PI / 2, 2.2, 14, 45, 'flame2', false);
     gs.particles.burst(e.actor.x, e.actor.y, 14, -Math.PI / 2, 2.2, 8, 35, 'wax2', false);

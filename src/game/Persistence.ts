@@ -18,9 +18,9 @@ export function snapshot(gs: GameScene): SaveData {
     ammo: Object.fromEntries(p.ammo),
     world: {
       flags: [...gs.flags],
-      groundItems: gs.ground.list.map(i => ({ weapon: i.weapon, x: i.x, y: i.y })),
+      groundItems: gs.ground.list.map(i => ({ weapon: i.weapon, x: i.x, y: i.y, area: i.area })),
     },
-    deathMarker: m ? { x: m.x, y: m.y, tallow: m.tallow } : null,
+    deathMarker: m ? { x: m.x, y: m.y, tallow: m.tallow, area: m.area ?? gs.area } : null,
   };
 }
 
@@ -35,6 +35,6 @@ export function applySave(gs: GameScene, s: SaveData) {
   p.shieldId = s.loadout.shield && DATA.shields[s.loadout.shield] ? s.loadout.shield : null;
   p.enforceTwoHanded();
   for (const [id, a] of Object.entries(s.ammo)) p.ammo.set(id, { ...a });
-  for (const g of s.world.groundItems) if (DATA.weapons[g.weapon]) gs.ground.add(g.weapon, g.x, g.y);
-  gs.marker.set(s.deathMarker);
+  for (const g of s.world.groundItems) if (DATA.weapons[g.weapon]) gs.ground.add(g.weapon, g.x, g.y, g.area ?? gs.area);
+  gs.marker.set(s.deathMarker ? { ...s.deathMarker, area: s.deathMarker.area ?? gs.area } : null);
 }

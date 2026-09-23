@@ -55,6 +55,8 @@ function loadAll(src: Record<string, unknown>) {
     weapons: dir(S.WeaponDef, 'weapons'),
     shields: dir(S.ShieldDef, 'shields'),
     items: dir(S.ItemDef, 'items'),
+    props: dir(S.PropDef, 'props'),
+    loot: one(S.LootTables, 'loot'),
     enemies: dir(S.EnemyDef, 'enemies'),
     rooms: dir(S.RoomData, 'rooms'),
   };
@@ -66,6 +68,10 @@ function loadAll(src: Record<string, unknown>) {
       for (const en of r.entities)
         if (en.type === 'enemy' && !data.enemies[String(en.kind)])
           errors.push(`data/rooms/${r.id}.json: unknown enemy kind "${String(en.kind)}"`);
+    for (const pr of Object.values(data.props)) {
+      if (pr.loot !== 'none' && !data.loot.tables[pr.loot]) errors.push(`data/props/${pr.id}.json: unknown loot table "${pr.loot}"`);
+      if (!data.palette[pr.debris]) errors.push(`data/props/${pr.id}.json: debris "${pr.debris}" is not a palette colour`);
+    }
     if (!data.weapons.fists) errors.push('data/weapons/fists.json: required (an empty weapon slot holds bare fists)');
     for (const w of data.player.loadout.slots)
       if (!data.weapons[w]) errors.push(`data/config/player.json: loadout.slots references unknown weapon "${w}"`);
@@ -75,7 +81,9 @@ function loadAll(src: Record<string, unknown>) {
     const ids = new Set<string>();
     for (const r of Object.values(data.rooms))
       for (const en of r.entities) {
-        if (en.type === 'shrine' || en.type === 'item') {
+        if (en.type === 'prop' && !data.props[String(en.kind)])
+          errors.push(`data/rooms/${r.id}.json: unknown prop kind "${String(en.kind)}"`);
+        if (en.type === 'shrine' || en.type === 'item' || en.type === 'door') {
           if (!en.id) errors.push(`data/rooms/${r.id}.json: ${en.type} needs an "id"`);
           else if (ids.has(en.id)) errors.push(`data/rooms/${r.id}.json: duplicate entity id "${en.id}"`);
           else ids.add(en.id);

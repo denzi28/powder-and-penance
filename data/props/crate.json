@@ -1,0 +1,11 @@
+{
+  "id": "crate",
+  "name": "Crate",
+  "sprite": "prop_crate",
+  "hp": 20,
+  "radius": 6,
+  "hurtbox": { "w": 14, "h": 12, "offsetY": -7 },
+  "debris": "wood2",
+  "loot": "common_small",
+  "sfx": "break_wood"
+}

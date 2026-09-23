@@ -33,6 +33,11 @@ export class DebugOverlay {
 
     let i = 0;
     for (const a of gs.actors) {
+      if (a.team === 'prop') {
+        const hb = a.hurtbox;
+        box(g, a.x - hb.w / 2, a.y + hb.offsetY - hb.h / 2, hb.w, hb.h, hexToInt(pal.stone4), 0.7);
+        continue;
+      }
       // Player uses its snapped render position; enemies are close enough using sim position.
       const x = a === gs.player ? px : Math.round(a.x);
       const y = a === gs.player ? py : Math.round(a.y);
@@ -49,7 +54,7 @@ export class DebugOverlay {
       const tags = [a.invulnerable ? 'IFR' : '', a.hyperArmor ? 'ARMOR' : '', a === gs.player && gs.player.stamina.locked ? 'EXH' : '']
         .filter(Boolean)
         .join(' ');
-      const aw = a instanceof Enemy && a.def.ai === 'melee' ? ` A${Math.round(a.awareness * 100)}` : '';
+      const aw = a instanceof Enemy && a.isFighter ? ` A${Math.round(a.awareness * 100)}` : '';
       label
         .setText(`${a.stateName.toUpperCase()} ${a.stateTick}\nHP${Math.ceil(a.hp)} P${Math.round(a.poise.damage)}/${a.poise.max}${aw}${tags ? `\n${tags}` : ''}`)
         .setVisible(true);

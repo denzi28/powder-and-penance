@@ -174,6 +174,23 @@ Enemies hold their weapon like the player does: `handAnchors` in the body manife
 | `rack` | 18×22 | 9,20 | none | Its weapon/shield is drawn on top at runtime |
 | `sparring` + `stick` | 32×32 / 18×5 | feet / grip | none | S only, 3 columns: rest, wind back, swing through |
 | `question` | 7×11 | 3,10 | none | "Suspicious" pip (the "!" pip is `exclaim`) |
+| `warden_spear` | 29×7 | 6,3 | tip | Bulwark Warden's spear. The Warden's shield is part of its body sheet. |
+| `bell_hammer` | 32×16 | 4,8 | tip (30,8) | Belfry Brute's weapon |
+| `firepot` | 8×8 | 4,4 | none | Acolyte's lobbed pot. It tumbles in flight; the landing ring and shadow are drawn at runtime. |
+| `blast` | 40×40 | 20,24 | none | `burst`: firepot explosion |
+| `door` | 16×32 | 8,32 | none | Frame 0 = in a horizontal wall (face-on), frame 1 = in a vertical wall (seen from above). Hidden when open. |
+| `prop_crate`, `prop_pot`, `prop_candles` | 16×16 | 8,14 | none | Frame 0 = intact, frame 1 = rubble |
+| `loot` | 7×7 | 3,5 | none | Frame 0 = Tallow drop, frame 1 = powder drop |
+
+### Abbey enemies (single-layer sheets, dirs S SE E NE N)
+| Sheet | Cell | Pivot | Animations |
+|---|---|---|---|
+| `warden` | 32×32 | 16,28 | `idle`, `walk`, `bash`, `thrust`, `overhead`, `stagger`, `death` |
+| `acolyte` | 32×32 | 16,28 | `idle`, `walk`, `throw`, `shove`, `stagger`, `death` |
+| `hound` | 32×32 | 16,28 | `idle`, `walk`, `lunge`, `bite`, `stagger`, `death` |
+| `brute` | 48×48 | 24,44 | `idle`, `walk`, `slam`, `sweep`, `grab`, `stagger`, `death` |
+
+Attack animations are phased (`windup` / `active` / `recovery`) and stretched to each strike's ticks. A strike picks its animation with `anim`.
 
 Shell casings, gun smoke and wall sparks are pixel particles, not sprites.
 

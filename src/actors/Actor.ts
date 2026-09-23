@@ -8,7 +8,8 @@ import type { Rect } from '../combat/shapes';
 import type { AttackRunner } from '../combat/AttackRunner';
 import type { Guard, HitInfo } from '../combat/CombatSystem';
 
-export type Team = 'player' | 'enemy';
+/** 'prop' = breakable scenery: anyone's attacks can hit it. */
+export type Team = 'player' | 'enemy' | 'prop';
 export interface HurtBox {
   w: number;
   h: number;
@@ -79,6 +80,8 @@ export abstract class Actor {
   }
   /** This actor's melee attack was parried by `_by`. */
   onParried(_by: Actor) {}
+  /** Caught by a grab strike (only the player reacts). */
+  onGrabbed(_by: Actor, _grab: { holdTicks: number; damage: number; throwKnockback: number }) {}
 
   protected beginTick() {
     this.prevX = this.x;

@@ -1,6 +1,7 @@
 import type { HitInfo } from '../combat/CombatSystem';
 import type { Actor } from '../actors/Actor';
 import type { StrikeDef, WeaponDef } from '../data/schemas';
+import type { Prop } from '../world/Props';
 
 type Handler<T> = (payload: T) => void;
 
@@ -41,6 +42,13 @@ export interface GameEvents {
   shot: { actor: Actor; weapon: WeaponDef; x: number; y: number; angle: number };
   projectileEnd: { x: number; y: number; angle: number; wall: boolean };
   weaponDropped: { id: string; x: number; y: number };
+  /** A lobbed projectile bursts (area damage already applied). */
+  blast: { x: number; y: number; radius: number; sfx: string };
+  /** A thrown strike releases its projectile (throw sound). */
+  thrown: { actor: Actor };
+  /** Player caught by a grab / released from it. */
+  grabbed: { by: Actor };
+  propBroken: { prop: Prop };
   healed: { actor: Actor };
   /** Drink interrupted before the heal landed: the charge is wasted. */
   healFailed: { actor: Actor };

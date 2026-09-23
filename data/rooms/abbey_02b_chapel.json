@@ -1,0 +1,52 @@
+{
+  "id": "abbey_02b_chapel",
+  "area": "abbey",
+  "origin": [26, 39],
+  "legend": {
+    "#": "wall",
+    ".": "floor",
+    ",": "floor_moss",
+    " ": "void"
+  },
+  "tiles": [
+    "#####..#####",
+    "#..........#",
+    "#..........#",
+    "#..........#",
+    "#..........#",
+    "#..........#",
+    "#,,,.......#",
+    "#,,,.......#",
+    "#..........#",
+    "############"
+  ],
+  "entities": [
+    {
+      "type": "item",
+      "id": "abbey_shard",
+      "item": "phial_shard",
+      "at": [6, 6]
+    },
+    {
+      "type": "enemy",
+      "kind": "taper_hound",
+      "at": [3, 5],
+      "facing": "E"
+    },
+    {
+      "type": "prop",
+      "kind": "candles",
+      "at": [2, 2]
+    },
+    {
+      "type": "prop",
+      "kind": "candles",
+      "at": [9, 2]
+    },
+    {
+      "type": "prop",
+      "kind": "candles",
+      "at": [9, 7]
+    }
+  ]
+}

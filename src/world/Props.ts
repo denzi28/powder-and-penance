@@ -1,0 +1,103 @@
+// Breakable scenery (crates, pots, candle clusters). Props are Actors on the 'prop' team, so any attack or
+// projectile can break them; they are immovable bodies. They respawn on rest; loot drops only the first time
+// (world flag "loot:<uid>").
+import Phaser from 'phaser';
+import { DATA } from '../data/config';
+import { Actor } from '../actors/Actor';
+import { Poise } from '../actors/Poise';
+import { DEPTH } from '../render/depth';
+import { lerp } from '../core/math';
+import { TILE } from './TileGrid';
+import { tint } from '../player/PlayerView';
+import type { WorldCtx } from '../core/World';
+import type { HitInfo } from '../combat/CombatSystem';
+import type { SpriteLib } from '../anim/SpriteLib';
+import type { RoomData } from '../data/schemas';
+
+export class Prop extends Actor {
+  readonly team = 'prop' as const;
+  readonly poise = new Poise(() => ({ max: 1e9, resetTicks: 0 }));
+
+  /** @param uid stable id ("<room>#<entity index>") used for the one-time loot flag */
+  constructor(ctx: WorldCtx, readonly kind: string, readonly uid: string, x: number, y: number) {
+    super(ctx, x, y);
+    this.hp = this.def.hp;
+  }
+
+  get def() {
+    return DATA.props[this.kind];
+  }
+  get maxHp() {
+    return this.def.hp;
+  }
+  get collider() {
+    return { w: this.def.radius * 2, h: 4 };
+  }
+  get hurtbox() {
+    return this.def.hurtbox;
+  }
+  get bodyRadius() {
+    return this.def.radius;
+  }
+  get bloodColor() {
+    return this.def.debris;
+  }
+  get knockbackResist() {
+    return 1;
+  }
+  get stateName() {
+    return this.dead ? 'broken' : 'prop';
+  }
+  get stateTick() {
+    return 0;
+  }
+
+  tick() {
+    this.beginTick();
+    this.squash.tick();
+  }
+
+  onHit(h: HitInfo) {
+    if (h.killed) {
+      this.dead = true;
+      this.ctx.bus.emit('propBroken', { prop: this });
+    } else this.squash.set([1.15, 0.85, 5]);
+  }
+}
+
+export class Props {
+  list: Prop[] = [];
+  private sprites = new Map<Prop, Phaser.GameObjects.Sprite>();
+
+  constructor(private lib: SpriteLib) {}
+
+  build(ctx: WorldCtx, rooms: RoomData[]) {
+    this.clear();
+    for (const r of rooms)
+      r.entities.forEach((en, i) => {
+        if (en.type !== 'prop') return;
+        const x = (r.origin[0] + en.at[0]) * TILE + TILE / 2;
+        const y = (r.origin[1] + en.at[1]) * TILE + TILE - 3;
+        const p = new Prop(ctx, String(en.kind), `${r.id}#${i}`, x, y);
+        this.list.push(p);
+        this.sprites.set(p, this.lib.sprite(p.def.sprite).setPosition(x, y).setDepth(DEPTH.actor(y)));
+      });
+  }
+
+  clear() {
+    this.sprites.forEach(s => s.destroy());
+    this.sprites.clear();
+    this.list = [];
+  }
+
+  render(alpha: number) {
+    for (const [p, s] of this.sprites) {
+      // Frame 0 = intact, frame 1 = rubble (stays until the props respawn).
+      s.setFrame(p.dead ? 1 : 0)
+        .setPosition(Math.round(lerp(p.prevX, p.x, alpha) + p.flinchX), Math.round(p.y + p.flinchY))
+        .setScale(p.squash.sx, p.squash.sy)
+        .setDepth(p.dead ? DEPTH.shadow + 1 : DEPTH.actor(p.y));
+      tint(s, p.flash > 0);
+    }
+  }
+}

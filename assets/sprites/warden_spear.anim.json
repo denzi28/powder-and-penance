@@ -1,0 +1,18 @@
+{
+  "image": "warden_spear.png",
+  "cell": [
+    29,
+    7
+  ],
+  "pivot": [
+    6,
+    3
+  ],
+  "layer": "weapon",
+  "points": {
+    "tip": [
+      27,
+      3
+    ]
+  }
+}

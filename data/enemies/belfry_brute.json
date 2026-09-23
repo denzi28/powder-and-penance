@@ -1,0 +1,98 @@
+{
+  "id": "belfry_brute",
+  "name": "Belfry Brute",
+  "ai": "melee",
+  "sprite": "brute",
+  "weaponSprite": "bell_hammer",
+  "weaponRestDeg": 70,
+  "hp": 260,
+  "poise": { "max": 70, "resetTicks": 150 },
+  "tallow": 150,
+  "speed": 30,
+  "strafeSpeed": 18,
+  "accelTicks": 12,
+  "turnDegPerTick": 3.5,
+  "collider": { "w": 16, "h": 6 },
+  "hurtbox": { "w": 22, "h": 34, "offsetY": -18 },
+  "bodyRadius": 11,
+  "knockbackResist": 0.85,
+  "perception": {
+    "halfAngleDeg": 60,
+    "nearDistance": 48,
+    "farDistance": 320,
+    "detectTicksNear": 30,
+    "detectTicksFar": 200,
+    "suspicionAt": 0.3,
+    "forgetPerTick": 0.004,
+    "investigateTicks": 200,
+    "reactionTicks": [20, 30],
+    "loseTicks": 300
+  },
+  "leash": { "distance": 420, "healOnReturn": true },
+  "spacing": { "preferred": 40, "strafeTicks": [60, 120] },
+  "attackGapTicks": [40, 80],
+  "staggerTicks": 50,
+  "deathTicks": 60,
+  "corpseTicks": 200,
+  "blood": "blood1",
+  "moves": [
+    {
+      "id": "bell_slam",
+      "range": [0, 44],
+      "weight": 3,
+      "cooldown": 90,
+      "strikes": [
+        {
+          "damage": 42, "poise": 60,
+          "windup": 40, "active": 5, "recovery": 44,
+          "trackDegPerTick": 3,
+          "hyperArmor": 60,
+          "telegraph": { "tick": 18, "kind": "normal" },
+          "hitbox": { "shape": "circle", "radius": 26, "offset": 24 },
+          "originY": -4,
+          "sweep": { "fromDeg": -160, "toDeg": 10 },
+          "knockback": 220, "hitstop": 8, "shake": 0.5, "sfx": "bell_slam", "anim": "slam"
+        }
+      ]
+    },
+    {
+      "id": "sweep",
+      "range": [0, 40],
+      "weight": 2,
+      "cooldown": 70,
+      "strikes": [
+        {
+          "damage": 30, "poise": 40,
+          "windup": 28, "active": 6, "recovery": 36,
+          "trackDegPerTick": 3,
+          "hyperArmor": 30,
+          "telegraph": { "tick": 12, "kind": "normal" },
+          "hitbox": { "shape": "arc", "radius": 40, "halfAngle": 100 },
+          "sweep": { "fromDeg": -110, "toDeg": 110 },
+          "knockback": 180, "hitstop": 6, "shake": 0.35, "sfx": "swing_heavy", "anim": "sweep"
+        }
+      ]
+    },
+    {
+      "id": "grab",
+      "range": [0, 48],
+      "weight": 2,
+      "cooldown": 200,
+      "strikes": [
+        {
+          "damage": 8, "poise": 0,
+          "windup": 26, "active": 5, "recovery": 90,
+          "trackDegPerTick": 5,
+          "unblockable": true,
+          "unparryable": true,
+          "telegraph": { "tick": 10, "kind": "danger" },
+          "lunge": { "distance": 22, "startTick": 22, "ticks": 6 },
+          "hitbox": { "shape": "circle", "radius": 14, "offset": 16 },
+          "sweep": { "fromDeg": 0, "toDeg": 0, "reach": 4 },
+          "grab": { "holdTicks": 60, "damage": 40, "throwKnockback": 260 },
+          "sfx": "swing", "anim": "grab"
+        }
+      ]
+    }
+  ]
+}

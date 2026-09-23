@@ -1049,6 +1049,587 @@ function genShrine() {
   sheet('tallow_icon', tw, { cell: [8, 9], pivot: [0, 0], layer: 'ui' });
 }
 
+// ---------------------------------------------------------------- roster (M5)
+type BodyPose = { bob?: number; lean?: number; hunch?: number; step?: number; flinch?: boolean; sway?: number };
+const leanOffsets = (dir: Dir5, lean: number) => {
+  const [fx, fy] = FACE_VEC[dir];
+  return { lx: Math.round(lean * fx), ly: Math.round(lean * fy * 0.7), sh: Math.round(lean * fx * 0.5) };
+};
+
+/** Build a sheet: named 5-direction animations of `cols` frames, plus a 5-frame S-only death row. */
+function rosterSheet(
+  name: string,
+  cell: number,
+  pivot: [number, number],
+  cols: number,
+  anims: { name: string; frames: ((c: Img, d: Dir5) => void)[]; timing: { ticks: number; phase?: string; events?: string[] }[]; loop: boolean }[],
+  death: ((c: Img) => void)[],
+  hand: Record<Dir5, [number, number]> | null,
+) {
+  const img = new Img(cell * cols, cell * (anims.length * 5 + 1));
+  const put = (draw: (c: Img) => void, col: number, row: number) => {
+    const c = new Img(cell, cell);
+    draw(c);
+    c.outline(P.ink);
+    img.blit(c, col * cell, row * cell);
+  };
+  const animations: Record<string, object> = {};
+  anims.forEach((a, i) => {
+    DIR5.forEach((d, r) => a.frames.forEach((f, col) => put(c => f(c, d), col, i * 5 + r)));
+    animations[a.name] = { row: i * 5, dirs: DIR5, loop: a.loop, frames: a.timing };
+  });
+  const deathRow = anims.length * 5;
+  death.forEach((f, col) => put(f, col, deathRow));
+  animations.death = { row: deathRow, dirs: ['S'], loop: false, frames: [{ ticks: 8 }, { ticks: 10 }, { ticks: 12 }, { ticks: 30 }, { ticks: 60 }] };
+  const manifest: Record<string, unknown> = { cell: [cell, cell], pivot, layer: 'single', animations };
+  if (hand) manifest.handAnchors = Object.fromEntries(DIR5.map(d => [d, [hand[d][0] - pivot[0], hand[d][1] - pivot[1]]]));
+  sheet(name, img, manifest);
+}
+
+const idleT = [{ ticks: 16 }, { ticks: 16 }];
+const walkT = (fps = 8) => [{ ticks: fps }, { ticks: fps, events: ['footstep'] }, { ticks: fps }, { ticks: fps, events: ['footstep'] }];
+const staggerT = [{ ticks: 6 }, { ticks: 10 }, { ticks: 30 }];
+
+// --- Bulwark Warden: plate armour, red tabard, tower shield, spear.
+const WARDEN_HAND: Record<Dir5, [number, number]> = { S: [21, 18], SE: [21, 17], E: [16, 17], NE: [20, 16], N: [20, 16] };
+
+function drawWarden(c: Img, dir: Dir5, pose: BodyPose & { shield?: number }) {
+  const o = { bob: 0, lean: 0, hunch: 0, step: -1, shield: 0, flinch: false, ...pose };
+  const b = o.bob;
+  const { lx, ly, sh } = leanOffsets(dir, o.lean);
+  const [fx] = FACE_VEC[dir];
+  const towerShield = (sx: number, sy: number, w: number) => {
+    c.rect(sx, sy, w, 14, P.wood2);
+    c.vline(sx, sy, 14, P.steel2);
+    c.vline(sx + w - 1, sy, 14, P.steel2);
+    c.hline(sx, sy, w, P.steel2);
+    c.hline(sx, sy + 13, w, P.steel2);
+    if (w >= 4) {
+      c.rect(sx + Math.floor(w / 2) - 1, sy + 3, 2, 3, P.blood1);
+      c.set(sx + Math.floor(w / 2), sy + 7, P.steel2);
+    }
+  };
+  if (dir === 'N') towerShield(9, 13 + b, 3); // carried in front, mostly hidden by the body
+  // Legs
+  const liftL = o.step === 1 ? 2 : 0;
+  const liftR = o.step === 3 ? 2 : 0;
+  c.rect(13, 22 + b, 2, 4 - liftL, P.stone2);
+  c.rect(12, 26 - liftL, 3, 2, P.dark1);
+  c.rect(17, 22 + b, 2, 4 - liftR, P.stone2);
+  c.rect(17, 26 - liftR, 3, 2, P.dark1);
+  // Torso plates
+  c.rect(11 + sh, 13 + b, 10, 10, P.steel1);
+  c.vline(11 + sh, 13 + b, 10, P.steel2);
+  c.vline(20 + sh, 13 + b, 10, P.stone2);
+  c.hline(11 + sh, 19 + b, 10, P.dark2);
+  if (dir === 'S' || dir === 'SE') {
+    c.rect(14 + sh + (dir === 'SE' ? 1 : 0), 14 + b, 4, 9, P.blood1);
+    c.vline(14 + sh + (dir === 'SE' ? 1 : 0), 14 + b, 9, P.blood2);
+  } else if (dir === 'E') c.rect(17 + sh, 14 + b, 3, 9, P.blood1);
+  else for (const y of [15, 17]) c.hline(12 + sh, y + b, 8, P.stone2);
+  // Helm with crest; cold cyan eyes behind the visor slit
+  const hx = 16 + lx + (o.flinch ? -1 : 0);
+  const hy = 5 + b + o.hunch + ly;
+  c.rect(hx - 3, hy, 6, 1, P.steel1);
+  c.rect(hx - 4, hy + 1, 8, 7, P.steel1);
+  c.hline(hx - 3, hy + 1, 3, P.steel2);
+  c.rect(hx - 1, hy - 2, 2, 2, P.ember);
+  const eye = o.flinch ? P.ember : P.cyan;
+  if (dir === 'S') {
+    c.hline(hx - 3, hy + 4, 6, P.ink);
+    c.set(hx - 2, hy + 4, eye);
+    c.set(hx + 1, hy + 4, eye);
+  } else if (dir === 'SE') {
+    c.hline(hx - 2, hy + 4, 5, P.ink);
+    c.set(hx - 1, hy + 4, eye);
+    c.set(hx + 2, hy + 4, eye);
+  } else if (dir === 'E') {
+    c.hline(hx, hy + 4, 4, P.ink);
+    c.set(hx + 2, hy + 4, eye);
+  } else if (dir === 'NE') c.hline(hx + 2, hy + 4, 2, P.dark1);
+  // Tower shield on the guard side (faces where the warden faces; pushed forward for a bash)
+  const push = Math.round(o.shield * fx);
+  if (dir === 'S') towerShield(6 - Math.max(0, -o.shield), 12 + b + Math.max(0, o.shield), 5);
+  else if (dir === 'SE') towerShield(17 + push, 12 + b, 4);
+  else if (dir === 'E') towerShield(21 + push, 12 + b, 2);
+  else if (dir === 'NE') towerShield(18 + push, 11 + b, 3);
+  const [ax, ay] = WARDEN_HAND[dir];
+  c.rect(ax - 1, ay - 1 + b, 2, 2, P.steel2);
+}
+
+function wardenDeath(c: Img, f: number) {
+  if (f < 2) {
+    drawWarden(c, 'S', { bob: 2 + f, hunch: 2 + f, flinch: true });
+    return;
+  }
+  c.ellipse(16, 25, 9, 3, P.steel1);
+  c.ellipse(15, 24.5, 5, 1.5, P.steel2);
+  c.rect(8, 24, 5, 3, P.wood2);
+  c.rect(20, 23, 3, 3, P.blood1);
+  if (f === 4) c.set(22, 22, P.dark2);
+}
+
+// --- Powder Acolyte: dark robe, porcelain mask, bandolier of little pots; throws firepots.
+type PotPos = 'hip' | 'raised' | 'forward' | 'none';
+function drawAcolyte(c: Img, dir: Dir5, pose: BodyPose & { pot?: PotPos }) {
+  const o = { bob: 0, lean: 0, hunch: 0, step: -1, pot: 'hip' as PotPos, flinch: false, ...pose };
+  const b = o.bob;
+  const { lx, ly, sh } = leanOffsets(dir, o.lean);
+  const [fx, fy] = FACE_VEC[dir];
+  const liftL = o.step === 1 ? 2 : 0;
+  const liftR = o.step === 3 ? 2 : 0;
+  c.rect(13, 25 - liftL + b, 2, 2, P.dark1);
+  c.rect(17, 25 - liftR + b, 2, 2, P.dark1);
+  for (let y = 13; y <= 25; y++) {
+    const w = 6 + Math.floor((y - 13) / 2);
+    const x = 16 - Math.floor(w / 2) + (y < 19 ? sh : 0);
+    c.hline(x, y + b, w, P.dark2);
+    c.set(x, y + b, P.stone1);
+  }
+  // Ember sash + bandolier of tiny pots
+  for (let i = 0; i < 5; i++) c.set(12 + i * 2 + sh, 15 + i + b, dir === 'N' ? P.dark1 : P.flame1);
+  c.hline(11 + sh, 20 + b, 10, P.ember);
+  // Hood and porcelain mask
+  const hx = 16 + lx + (o.flinch ? -1 : 0);
+  const hy = 6 + b + o.hunch + ly;
+  c.disc(hx, hy + 3, 4, P.dark1);
+  c.set(hx, hy - 2, P.dark1);
+  if (dir !== 'N' && dir !== 'NE') {
+    const mx = dir === 'S' ? hx - 2 : dir === 'SE' ? hx - 1 : hx;
+    c.rect(mx, hy + 2, dir === 'E' ? 3 : 4, 4, P.wax2);
+    c.set(mx + 1, hy + 3, o.flinch ? P.ember : P.ink);
+    if (dir !== 'E') c.set(mx + 3, hy + 3, o.flinch ? P.ember : P.ink);
+  }
+  // The pot in hand
+  const pot = (px: number, py: number) => {
+    c.rect(px - 1, py - 1, 3, 3, P.wood2);
+    c.set(px - 1, py, P.wood1);
+    c.set(px, py - 2, P.flame2); // lit fuse
+  };
+  if (o.pot === 'hip') pot(21, 19 + b);
+  else if (o.pot === 'raised') pot(hx + 3, hy - 3);
+  else if (o.pot === 'forward') pot(16 + Math.round(fx * 8), 14 + Math.round(fy * 6) + b);
+  else c.rect(20, 18 + b, 2, 2, P.wax1); // empty hand
+}
+
+function acolyteDeath(c: Img, f: number) {
+  if (f < 2) {
+    drawAcolyte(c, 'S', { bob: 2 + f, hunch: 2 + f, flinch: true, pot: 'none' });
+    return;
+  }
+  c.ellipse(16, 25, 8, 3, P.dark2);
+  c.rect(12, 23, 4, 3, P.wax2);
+  if (f < 4) c.set(21, 24, P.flame2);
+}
+
+// --- Taper Hound: lean black dog with a lit taper candle on its back.
+function drawHound(c: Img, dir: Dir5, pose: { crouch?: number; stretch?: number; head?: number; step?: number; flinch?: boolean }) {
+  const o = { crouch: 0, stretch: 0, head: 0, step: -1, flinch: false, ...pose };
+  const cr = o.crouch;
+  const candle = (x: number, y: number) => {
+    c.rect(x, y, 2, 4, P.wax2);
+    c.set(x, y - 1, P.flame2);
+    c.set(x + 1, y - 2, P.flame1);
+  };
+  const eye = o.flinch ? P.wax2 : P.ember;
+  if (dir === 'S' || dir === 'N') {
+    const legs = [13, 18];
+    legs.forEach((x, i) => c.rect(x, 22 + cr, 2, 5 - cr - (o.step === (i ? 3 : 1) ? 1 : 0), P.dark1));
+    c.ellipse(16, 20 + cr, 5, 3.5, P.dark1);
+    if (dir === 'S') {
+      c.disc(16, 16 + cr + (o.head > 0 ? 2 : 0), 3.5, P.dark1);
+      c.set(14, 13 + cr, P.dark1);
+      c.set(18, 13 + cr, P.dark1);
+      c.set(14, 15 + cr, eye);
+      c.set(17, 15 + cr, eye);
+      c.rect(15, 18 + cr + (o.head > 0 ? 2 : 0), 2, 2, P.stone1);
+      c.set(15, 19 + cr + (o.head > 0 ? 2 : 0), P.ink);
+      if (o.head > 1) c.hline(14, 21 + cr, 4, P.wax2); // bared teeth
+    } else {
+      c.vline(16, 23 + cr, 3, P.dark1); // tail
+      c.disc(16, 16 + cr, 3, P.dark1);
+    }
+    candle(15, 12 + cr);
+    return;
+  }
+  // Side views (E / SE / NE), facing right.
+  const s = o.stretch;
+  const bodyX = 15;
+  const bodyY = 20 + cr;
+  c.ellipse(bodyX, bodyY, 7 + s, 3, P.dark1);
+  c.hline(bodyX - 5, bodyY - 2, 9 + s, P.stone1);
+  // Legs: back pair and front pair, alternating stride
+  const stride = o.step === 1 ? 1 : o.step === 3 ? -1 : 0;
+  const legTop = bodyY + 2;
+  const legLen = Math.max(2, 27 - legTop);
+  for (const [x, d] of [[bodyX - 5 - Math.max(0, s), stride], [bodyX - 3 - Math.max(0, s), -stride], [bodyX + 4 + s, -stride], [bodyX + 6 + s, stride]] as const)
+    c.vline(x + d, legTop, s > 1 ? legLen - 2 : legLen, P.dark1);
+  c.set(bodyX - 8 - s, bodyY - 2, P.dark1); // tail
+  c.set(bodyX - 9 - s, bodyY - 3, P.dark1);
+  // Head + snout
+  const hx = bodyX + 8 + s + o.head;
+  const hy = bodyY - 3 + (dir === 'NE' ? -1 : 0) + (o.head < 0 ? 1 : 0);
+  c.disc(hx, hy, 2.6, P.dark1);
+  c.rect(hx + 2, hy, 3, 2, P.dark1);
+  c.set(hx + 4, hy, P.ink);
+  c.set(hx - 1, hy - 3, P.dark1); // ear
+  c.set(hx + 1, hy - 1, eye);
+  if (o.head > 1) c.hline(hx + 2, hy + 2, 3, P.wax2); // open jaws
+  candle(bodyX - 1, bodyY - 7);
+}
+
+function houndDeath(c: Img, f: number) {
+  if (f < 2) {
+    drawHound(c, 'E', { crouch: 1 + f, flinch: true });
+    return;
+  }
+  c.ellipse(16, 25, 8, 2.5, P.dark1);
+  c.disc(24, 24, 2.5, P.dark1);
+  c.rect(11, 22, 2, 3, P.wax2);
+  if (f < 4) c.set(11, 21, P.flame1);
+}
+
+// --- Belfry Brute (48x48): a hulking bell-ringer wearing a bronze bell as a helm.
+const BRUTE_HAND: Record<Dir5, [number, number]> = { S: [36, 30], SE: [35, 29], E: [32, 29], NE: [34, 27], N: [34, 27] };
+
+function drawBrute(c: Img, dir: Dir5, pose: BodyPose) {
+  const o = { bob: 0, lean: 0, hunch: 0, step: -1, flinch: false, sway: 0, ...pose };
+  const b = o.bob;
+  const { lx, ly, sh } = leanOffsets(dir, o.lean);
+  const liftL = o.step === 1 ? 2 : 0;
+  const liftR = o.step === 3 ? 2 : 0;
+  // Legs
+  c.rect(16, 34 + b, 6, 7 - liftL, P.dark2);
+  c.rect(15, 41 - liftL, 7, 3, P.dark1);
+  c.rect(26, 34 + b, 6, 7 - liftR, P.dark2);
+  c.rect(26, 41 - liftR, 7, 3, P.dark1);
+  // Barrel chest, leather apron, huge arms
+  c.ellipse(24 + sh, 26 + b, 12, 10, P.wax1);
+  c.ellipse(20 + sh, 23 + b, 5, 4, P.wax2);
+  c.rect(17 + sh, 29 + b, 14, 7, P.wood1);
+  c.hline(17 + sh, 29 + b, 14, P.wood2);
+  c.ellipse(11 + sh + o.sway, 28 + b, 3.5, 7, P.wax1);
+  c.ellipse(37 + sh + o.sway, 28 + b, 3.5, 7, P.wax1);
+  // Bronze bell helm
+  const hx = 24 + lx + (o.flinch ? -2 : 0);
+  const top = 6 + b + o.hunch + ly;
+  for (let y = 0; y <= 13; y++) {
+    const half = Math.round(4 + y * 0.45);
+    c.hline(hx - half, top + y, half * 2, P.flame1);
+    c.set(hx - half, top + y, P.flame2);
+    c.set(hx + half - 1, top + y, P.ember);
+  }
+  c.hline(hx - 10, top + 14, 20, P.dark2); // rim
+  c.rect(hx - 1, top - 2, 2, 2, P.ember); // crown loop
+  if (dir !== 'N' && dir !== 'NE') {
+    const sx = dir === 'S' ? hx - 3 : dir === 'SE' ? hx - 1 : hx + 2;
+    c.hline(sx, top + 10, dir === 'E' ? 4 : 6, P.ink);
+    c.set(sx + 1, top + 10, o.flinch ? P.wax2 : P.flame2);
+    if (dir !== 'E') c.set(sx + 4, top + 10, o.flinch ? P.wax2 : P.flame2);
+  }
+  const [ax, ay] = BRUTE_HAND[dir];
+  c.rect(ax - 2, ay - 2 + b, 4, 4, P.wax1);
+}
+
+function bruteDeath(c: Img, f: number) {
+  if (f < 2) {
+    drawBrute(c, 'S', { bob: 3 + f * 2, hunch: 3 + f, flinch: true });
+    return;
+  }
+  c.ellipse(24, 40, 16, 5, P.wax1);
+  c.rect(15, 37, 18, 4, P.wood1);
+  c.ellipse(36, 37, 6, 4, P.flame1);
+  c.set(40, 37, P.ember);
+}
+
+function genRoster() {
+  const P7 = phased7();
+  const walk4 = <T,>(draw: (c: Img, d: Dir5, p: T) => void, mk: (f: number) => T) => [0, 1, 2, 3].map(f => (c: Img, d: Dir5) => draw(c, d, mk(f)));
+  const frames = <T,>(draw: (c: Img, d: Dir5, p: T) => void, poses: T[]) => poses.map(p => (c: Img, d: Dir5) => draw(c, d, p));
+
+  rosterSheet(
+    'warden',
+    CELL,
+    PIVOT,
+    7,
+    [
+      { name: 'idle', frames: frames(drawWarden, [{}, { bob: 1 }]), timing: idleT, loop: true },
+      { name: 'walk', frames: walk4(drawWarden, f => ({ step: f, bob: f % 2 ? -1 : 0 })), timing: walkT(9), loop: true },
+      {
+        name: 'bash',
+        frames: frames(drawWarden, [
+          { lean: -1, shield: -1 }, { lean: -2, shield: -1 }, { lean: -2, shield: -1, bob: 1 },
+          { lean: 2, shield: 3 }, { lean: 2, shield: 3 }, { lean: 1, shield: 1 }, {},
+        ]),
+        timing: P7,
+        loop: false,
+      },
+      {
+        name: 'thrust',
+        frames: frames(drawWarden, [{ lean: -1 }, { lean: -2 }, { lean: -2, bob: 1 }, { lean: 2 }, { lean: 3 }, { lean: 1 }, {}]),
+        timing: P7,
+        loop: false,
+      },
+      {
+        name: 'overhead',
+        frames: frames(drawWarden, [
+          { lean: -1, hunch: -1, bob: -1 }, { lean: -2, hunch: -2, bob: -1 }, { lean: -2, hunch: -2, bob: -1, flinch: false },
+          { lean: 2, bob: 1, hunch: 1 }, { lean: 2, bob: 1, hunch: 2 }, { lean: 1, bob: 1 }, {},
+        ]),
+        timing: P7,
+        loop: false,
+      },
+      { name: 'stagger', frames: frames(drawWarden, [{ lean: -2, flinch: true }, { lean: -1, bob: 1, flinch: true }, { bob: 1 }]), timing: staggerT, loop: false },
+    ],
+    [0, 1, 2, 3, 4].map(f => (c: Img) => wardenDeath(c, f)),
+    WARDEN_HAND,
+  );
+
+  rosterSheet(
+    'acolyte',
+    CELL,
+    PIVOT,
+    7,
+    [
+      { name: 'idle', frames: frames(drawAcolyte, [{}, { bob: 1 }]), timing: idleT, loop: true },
+      { name: 'walk', frames: walk4(drawAcolyte, f => ({ step: f, bob: f % 2 ? -1 : 0 })), timing: walkT(8), loop: true },
+      {
+        name: 'throw',
+        frames: frames(drawAcolyte, [
+          { lean: -1, pot: 'hip' as PotPos }, { lean: -1, pot: 'raised' as PotPos }, { lean: -2, bob: -1, pot: 'raised' as PotPos },
+          { lean: 2, pot: 'forward' as PotPos }, { lean: 2, pot: 'none' as PotPos }, { lean: 1, pot: 'none' as PotPos }, { pot: 'hip' as PotPos },
+        ]),
+        timing: P7,
+        loop: false,
+      },
+      {
+        name: 'shove',
+        frames: frames(drawAcolyte, [{ bob: 1, hunch: 1 }, { bob: 1, hunch: 2, lean: -1 }, { bob: 1, hunch: 2, lean: -1 }, { lean: 2 }, { lean: 3 }, { lean: 1 }, {}]),
+        timing: P7,
+        loop: false,
+      },
+      { name: 'stagger', frames: frames(drawAcolyte, [{ lean: -2, flinch: true }, { lean: -1, bob: 1, flinch: true }, { bob: 1 }]), timing: staggerT, loop: false },
+    ],
+    [0, 1, 2, 3, 4].map(f => (c: Img) => acolyteDeath(c, f)),
+    null,
+  );
+
+  rosterSheet(
+    'hound',
+    CELL,
+    PIVOT,
+    7,
+    [
+      { name: 'idle', frames: frames(drawHound, [{}, { crouch: 1 }]), timing: idleT, loop: true },
+      { name: 'walk', frames: walk4(drawHound, f => ({ step: f })), timing: walkT(5), loop: true },
+      {
+        name: 'lunge',
+        frames: frames(drawHound, [
+          { crouch: 1, stretch: -1, head: -1 }, { crouch: 2, stretch: -1, head: -1 }, { crouch: 3, stretch: -1, head: -1 },
+          { crouch: -1, stretch: 3, head: 2 }, { stretch: 2, head: 2 }, { stretch: 1 }, {},
+        ]),
+        timing: P7,
+        loop: false,
+      },
+      {
+        name: 'bite',
+        frames: frames(drawHound, [{ head: -1 }, { head: -2, crouch: 1 }, { head: -2, crouch: 1 }, { head: 3 }, { head: 2 }, { head: 0 }, {}]),
+        timing: P7,
+        loop: false,
+      },
+      { name: 'stagger', frames: frames(drawHound, [{ crouch: 1, head: -1, flinch: true }, { crouch: 2, flinch: true }, { crouch: 1 }]), timing: staggerT, loop: false },
+    ],
+    [0, 1, 2, 3, 4].map(f => (c: Img) => houndDeath(c, f)),
+    null,
+  );
+
+  const BIG = 48;
+  rosterSheet(
+    'brute',
+    BIG,
+    [24, 44],
+    7,
+    [
+      { name: 'idle', frames: frames(drawBrute, [{}, { bob: 1 }]), timing: [{ ticks: 24 }, { ticks: 24 }], loop: true },
+      { name: 'walk', frames: walk4(drawBrute, f => ({ step: f, bob: f % 2 ? -1 : 0 })), timing: walkT(12), loop: true },
+      {
+        name: 'slam',
+        frames: frames(drawBrute, [
+          { lean: -2, bob: -2, hunch: -2 }, { lean: -3, bob: -2, hunch: -2 }, { lean: -3, bob: -2, hunch: -2, sway: 1 },
+          { lean: 3, bob: 2, hunch: 2 }, { lean: 3, bob: 3, hunch: 2 }, { lean: 2, bob: 2 }, {},
+        ]),
+        timing: P7,
+        loop: false,
+      },
+      {
+        name: 'sweep',
+        frames: frames(drawBrute, [{ sway: -2, lean: -1 }, { sway: -2, lean: -2 }, { sway: -2, lean: -2, bob: 1 }, { sway: 2, lean: 2 }, { sway: 2, lean: 2 }, { sway: 1, lean: 1 }, {}]),
+        timing: P7,
+        loop: false,
+      },
+      {
+        name: 'grab',
+        frames: frames(drawBrute, [{ lean: -1 }, { lean: 1, bob: 1, hunch: 1 }, { lean: 1, bob: 1, hunch: 1 }, { lean: 3 }, { lean: 3 }, { lean: 2 }, { lean: 2 }]),
+        timing: P7,
+        loop: false,
+      },
+      { name: 'stagger', frames: frames(drawBrute, [{ lean: -2, flinch: true }, { lean: -1, bob: 1, flinch: true }, { bob: 1 }]), timing: staggerT, loop: false },
+    ],
+    [0, 1, 2, 3, 4].map(f => (c: Img) => bruteDeath(c, f)),
+    BRUTE_HAND,
+  );
+
+  // Weapons / thrown pot
+  const spear = new Img(29, 7);
+  spear.hline(1, 3, 21, P.wood2);
+  spear.hline(1, 4, 21, P.wood1);
+  spear.rect(22, 2, 4, 3, P.steel2);
+  spear.set(26, 3, P.steel2);
+  spear.set(22, 4, P.steel1);
+  spear.outline(P.ink);
+  sheet('warden_spear', spear, { cell: [29, 7], pivot: [6, 3], layer: 'weapon', points: { tip: [27, 3] } });
+
+  const hammer = new Img(32, 16);
+  hammer.hline(1, 8, 22, P.wood1);
+  hammer.hline(1, 7, 22, P.wood2);
+  for (let x = 22; x <= 29; x++) {
+    const half = Math.round(2 + (x - 22) * 0.7);
+    hammer.vline(x, 8 - half, half * 2, P.flame1);
+    hammer.set(x, 8 - half, P.flame2);
+    hammer.set(x, 8 + half - 1, P.ember);
+  }
+  hammer.vline(30, 2, 12, P.dark2);
+  hammer.outline(P.ink);
+  sheet('bell_hammer', hammer, { cell: [32, 16], pivot: [4, 8], layer: 'weapon', points: { tip: [30, 8] } });
+
+  const firepot = new Img(8, 8);
+  firepot.disc(4, 4.5, 3, P.wood2);
+  firepot.hline(1, 4, 6, P.dark2);
+  firepot.set(4, 1, P.flame2);
+  firepot.set(3, 0, P.flame1);
+  firepot.outline(P.ink);
+  sheet('firepot', firepot, { cell: [8, 8], pivot: [4, 4], layer: 'fx' });
+}
+
+// ---------------------------------------------------------------- world bits (M5)
+function genWorldBits() {
+  // Props: frame 0 intact, frame 1 rubble. Pivot = base centre.
+  const prop = (name: string, intact: (c: Img) => void, rubble: (c: Img) => void) => {
+    const img = new Img(32, 16);
+    [intact, rubble].forEach((draw, f) => {
+      const c = new Img(16, 16);
+      draw(c);
+      c.outline(P.ink);
+      img.blit(c, f * 16, 0);
+    });
+    sheet(name, img, { cell: [16, 16], pivot: [8, 14], layer: 'single' });
+  };
+  prop(
+    'prop_crate',
+    c => {
+      c.rect(2, 4, 12, 10, P.wood1);
+      c.rect(2, 3, 12, 3, P.wood2);
+      for (const y of [8, 11]) c.hline(3, y, 10, P.dark2);
+      c.vline(2, 4, 10, P.wood2);
+      c.set(12, 9, P.steel1);
+    },
+    c => {
+      c.rect(2, 12, 5, 2, P.wood1);
+      c.rect(8, 11, 6, 2, P.wood2);
+      c.rect(5, 13, 4, 1, P.dark2);
+    },
+  );
+  prop(
+    'prop_pot',
+    c => {
+      c.ellipse(8, 9.5, 5, 4.5, P.wood2);
+      c.ellipse(6.5, 8, 2, 2, P.flame1);
+      c.rect(6, 3, 4, 2, P.wood2);
+      c.hline(5, 3, 6, P.wood1);
+      c.hline(4, 11, 8, P.wood1);
+    },
+    c => {
+      c.rect(3, 12, 3, 2, P.wood2);
+      c.rect(9, 11, 4, 2, P.wood2);
+      c.set(7, 13, P.wood1);
+    },
+  );
+  prop(
+    'prop_candles',
+    c => {
+      c.ellipse(8, 13, 6, 2, P.wax1);
+      for (const [x, h] of [[4, 5], [7, 8], [11, 6]] as const) {
+        c.rect(x, 13 - h, 2, h, P.wax2);
+        c.set(x, 12 - h, P.flame2);
+        c.set(x + 1, 11 - h, P.flame1);
+      }
+    },
+    c => {
+      c.ellipse(8, 13, 6, 2, P.wax1);
+      c.rect(5, 11, 5, 2, P.wax2);
+    },
+  );
+
+  // Door: frame 0 = in a horizontal wall (face-on, with the wall cap above), frame 1 = in a vertical wall
+  // (seen from above). Cell 16x32, pivot at the bottom of the door's tile.
+  const door = new Img(32, 32);
+  {
+    const c = new Img(16, 32);
+    c.rect(0, 0, 16, 16, P.dark1); // cap above
+    c.hline(0, 0, 16, P.stone3);
+    c.rect(0, 16, 16, 16, P.stone3); // stone frame
+    c.rect(2, 17, 12, 13, P.wood1); // planks
+    for (const x of [5, 8, 11]) c.vline(x, 17, 13, P.wood2);
+    for (const y of [20, 26]) c.hline(2, y, 12, P.dark2);
+    c.set(11, 23, P.flame1); // ring handle
+    c.rect(0, 30, 16, 2, P.dark2);
+    door.blit(c, 0, 0);
+  }
+  {
+    const c = new Img(16, 32);
+    c.rect(0, 16, 16, 16, P.dark1);
+    c.rect(4, 16, 8, 16, P.wood1);
+    c.vline(4, 16, 16, P.wood2);
+    for (const y of [19, 28]) c.hline(4, y, 8, P.dark2);
+    c.set(10, 24, P.flame1);
+    door.blit(c, 16, 0);
+  }
+  sheet('door', door, { cell: [16, 32], pivot: [8, 32], layer: 'single' });
+
+  // Loot drops: frame 0 tallow, frame 1 powder pouch
+  const loot = new Img(14, 7);
+  loot.disc(3.5, 4, 2, P.wax1);
+  loot.set(3, 1, P.wax1);
+  loot.set(3, 2, P.wax1);
+  loot.set(2, 3, P.wax2);
+  loot.rect(8, 2, 4, 4, P.wood2);
+  loot.hline(8, 2, 4, P.dark2);
+  loot.outline(P.ink);
+  sheet('loot', loot, { cell: [7, 7], pivot: [3, 5], layer: 'fx' });
+
+  // Explosion burst
+  const R = 40;
+  const blast = new Img(R * 4, R);
+  [8, 13, 17, 19].forEach((r, f) => {
+    const c = new Img(R, R);
+    if (f === 0) {
+      c.disc(20, 24, r, P.flame2);
+      c.disc(20, 24, r - 4, P.wax2);
+    } else if (f === 1) {
+      c.disc(20, 24, r, P.flame1);
+      c.disc(20, 24, r - 5, P.flame2);
+    } else if (f === 2) c.ellipse(20, 24, r, r * 0.8, P.ember, (x, y) => (x + y) % 2 === 0);
+    else c.ellipse(20, 22, r, r * 0.7, P.stone4, (x, y) => x % 2 === 0 && y % 2 === 0);
+    blast.blit(c, f * R, 0);
+  });
+  sheet('blast', blast, {
+    cell: [R, R],
+    pivot: [20, 24],
+    layer: 'fx',
+    animations: { burst: { row: 0, dirs: ['S'], loop: false, frames: [{ ticks: 3 }, { ticks: 4 }, { ticks: 5 }, { ticks: 8 }] } },
+  });
+}
+
 // ---------------------------------------------------------------- tiles
 function genTiles() {
   const T = 16;
@@ -1224,6 +1805,8 @@ genEnemies();
 genCombatFx();
 genArsenal();
 genShrine();
+genRoster();
+genWorldBits();
 genTiles();
 genFont();
 console.log(`gen-art: wrote ${written} file(s), skipped ${skipped} existing${skipped && !FORCE ? ' (use --force to overwrite)' : ''}`);

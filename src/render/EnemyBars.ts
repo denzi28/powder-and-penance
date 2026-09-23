@@ -23,7 +23,7 @@ export class EnemyBars {
     g.clear();
     for (const v of views) {
       const e = v.e;
-      if (e.dead || e.def.ai !== 'melee') continue;
+      if (e.dead || !e.isFighter) continue;
       let trail = this.trails.get(e);
       if (!trail) this.trails.set(e, (trail = new TrailBar(e.hp)));
       trail.update(e.hp, e.maxHp, dtMs, fb.trailHoldMs, fb.trailDrainPerSec);
@@ -37,6 +37,13 @@ export class EnemyBars {
         g.fillStyle(hexToInt(pal.wax2), 1).fillRect(x, y, Math.round((w * trail.value) / e.maxHp), 2);
         g.fillStyle(hexToInt(pal.blood2), 1).fillRect(x, y, Math.max(1, Math.round((w * e.hp) / e.maxHp)), 2);
         y -= 4;
+      }
+      const guard = e.def.guard;
+      if (guard && e.guardPoints < guard.max) {
+        // Shield guard left (steel), shown while it's been worn down.
+        g.fillStyle(hexToInt(pal.ink), 1).fillRect(x - 1, y - 1, w + 2, 3);
+        g.fillStyle(hexToInt(pal.steel2), 1).fillRect(x, y, Math.round((w * e.guardPoints) / guard.max), 1);
+        y -= 3;
       }
       const st = e.stateName;
       if (e.awareness > 0 && (st === 'idle' || st === 'suspicious' || st === 'return')) {

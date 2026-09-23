@@ -32,6 +32,28 @@ export function nearestInteractable(gs: GameScene): Interactable | null {
   const pick = gs.pickups.nearest(p.x, p.y);
   if (pick) return { label: `PICK UP ${DATA.items[pick.item].name}`, use: () => takePickup(gs, pick.id, pick.item) };
 
+  const door = gs.doors.nearest(p.x, p.y);
+  if (door) {
+    if (!gs.doors.canOpenFrom(door, p.x, p.y))
+      return {
+        label: 'BARRED FROM BEYOND',
+        use: () => {
+          gs.showToast('BARRED FROM BEYOND', 'It will not open from this side.');
+          gs.bus.emit('sfx', { id: 'locked' });
+        },
+      };
+    return {
+      label: door.opensFrom ? 'LIFT THE BAR' : 'OPEN DOOR',
+      use: () => {
+        gs.doors.setOpen(door, gs.grid, true);
+        gs.flags.add(`door:${door.id}`);
+        gs.bus.emit('sfx', { id: 'door_open', x: door.tx * 16 + 8, y: door.ty * 16 + 8 });
+        if (door.opensFrom) gs.showToast('SHORTCUT OPENED', 'The way back is clear.');
+        gs.save();
+      },
+    };
+  }
+
   const shrine = gs.shrines.nearest(p.x, p.y);
   if (shrine)
     return {

@@ -1,0 +1,35 @@
+{
+  "image": "blast.png",
+  "cell": [
+    40,
+    40
+  ],
+  "pivot": [
+    20,
+    24
+  ],
+  "layer": "fx",
+  "animations": {
+    "burst": {
+      "row": 0,
+      "dirs": [
+        "S"
+      ],
+      "loop": false,
+      "frames": [
+        {
+          "ticks": 3
+        },
+        {
+          "ticks": 4
+        },
+        {
+          "ticks": 5
+        },
+        {
+          "ticks": 8
+        }
+      ]
+    }
+  }
+}

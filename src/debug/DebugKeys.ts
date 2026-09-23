@@ -1,10 +1,19 @@
 // Debug hotkeys (not rebindable, not part of the action map).
 //   F1 overlay   F2 god mode   F3 refill HP/stamina   F4 kill all enemies   F5 time: normal -> slow -> frozen
-//   F6 step one tick   F8 test shake   1 spawn Wickling at cursor   2 spawn training dummy at cursor
+//   F6 step one tick   F8 test shake   ` debug menu (teleport, world flags)
+//   1-7 spawn at cursor: Wickling, dummy, sparring post, Bulwark Warden, Powder Acolyte, Taper Hound, Belfry Brute
 import { DATA } from '../data/config';
 import type { GameScene } from '../scenes/GameScene';
 
-const SPAWN_KEYS: Record<string, string> = { Digit1: 'wickling', Digit2: 'dummy', Digit3: 'sparring_dummy' };
+const SPAWN_KEYS: Record<string, string> = {
+  Digit1: 'wickling',
+  Digit2: 'dummy',
+  Digit3: 'sparring_dummy',
+  Digit4: 'bulwark_warden',
+  Digit5: 'powder_acolyte',
+  Digit6: 'taper_hound',
+  Digit7: 'belfry_brute',
+};
 
 export function installDebugKeys(scene: GameScene): () => void {
   const onKey = (e: KeyboardEvent) => {
@@ -37,6 +46,10 @@ export function installDebugKeys(scene: GameScene): () => void {
         break;
       case 'F8':
         scene.bus.emit('shake', { trauma: DATA.juice.shake.debugTrauma });
+        break;
+      case 'Backquote':
+        if (scene.menu) scene.closeMenu();
+        else scene.openDebugMenu();
         break;
       default:
         if (SPAWN_KEYS[e.code]) {

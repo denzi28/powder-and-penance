@@ -1,0 +1,75 @@
+{
+  "id": "powder_acolyte",
+  "name": "Powder Acolyte",
+  "ai": "ranged",
+  "sprite": "acolyte",
+  "hp": 45,
+  "poise": { "max": 18, "resetTicks": 90 },
+  "tallow": 40,
+  "speed": 42,
+  "strafeSpeed": 30,
+  "accelTicks": 6,
+  "turnDegPerTick": 8,
+  "collider": { "w": 8, "h": 5 },
+  "hurtbox": { "w": 10, "h": 16, "offsetY": -9 },
+  "bodyRadius": 5,
+  "perception": {
+    "halfAngleDeg": 70,
+    "nearDistance": 48,
+    "farDistance": 320,
+    "detectTicksNear": 20,
+    "detectTicksFar": 140,
+    "suspicionAt": 0.3,
+    "forgetPerTick": 0.004,
+    "investigateTicks": 200,
+    "reactionTicks": [12, 20],
+    "loseTicks": 240
+  },
+  "leash": { "distance": 400, "healOnReturn": true },
+  "spacing": { "preferred": 110, "strafeTicks": [50, 100], "retreatBelow": 60 },
+  "attackGapTicks": [60, 110],
+  "staggerTicks": 40,
+  "deathTicks": 50,
+  "corpseTicks": 150,
+  "blood": "blood2",
+  "moves": [
+    {
+      "id": "firepot",
+      "range": [50, 220],
+      "weight": 3,
+      "cooldown": 100,
+      "strikes": [
+        {
+          "damage": 0, "poise": 0,
+          "windup": 30, "active": 3, "recovery": 26,
+          "trackDegPerTick": 8,
+          "telegraph": { "tick": 10, "kind": "normal" },
+          "hitbox": { "shape": "circle", "radius": 1 },
+          "sweep": { "fromDeg": -120, "toDeg": 40 },
+          "anim": "throw",
+          "projectile": {
+            "sprite": "firepot", "speed": 1, "range": 1,
+            "damage": 24, "poise": 30, "knockback": 140, "hitstop": 4, "shake": 0.3, "radius": 3,
+            "lob": { "flightTicks": 48, "arcHeight": 40, "blastRadius": 22, "sfx": "explosion" }
+          }
+        }
+      ]
+    },
+    {
+      "id": "shove",
+      "range": [0, 18],
+      "weight": 1,
+      "cooldown": 120,
+      "strikes": [
+        {
+          "damage": 6, "poise": 30,
+          "windup": 14, "active": 3, "recovery": 20,
+          "telegraph": { "tick": 4, "kind": "normal" },
+          "hitbox": { "shape": "circle", "radius": 12, "offset": 8 },
+          "sweep": { "fromDeg": 0, "toDeg": 0, "reach": 4 },
+          "knockback": 200, "hitstop": 3, "shake": 0.12, "anim": "shove"
+        }
+      ]
+    }
+  ]
+}

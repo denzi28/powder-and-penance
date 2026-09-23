@@ -474,6 +474,49 @@ const stagger: State<Player> = {
   },
 };
 
+/** Held by a grab: helpless, pinned in front of the grabber, then slammed and thrown. */
+const grabbed: State<Player> = {
+  enter(p) {
+    p.vx = p.vy = p.kbx = p.kby = 0;
+    p.invulnerable = true; // only the grab itself hurts while held
+    p.weaponVisible = false;
+    p.body.play('stagger', { restart: true });
+    p.ctx.bus.emit('grabbed', { by: p.grabbedBy!.by });
+  },
+  tick(p, t) {
+    const g = p.grabbedBy!;
+    const by = g.by;
+    // Released early if the grabber is interrupted (killed, staggered, parried...).
+    if (by.dead || by.stateName !== 'attack') return 'idle';
+    const reach = by.bodyRadius + p.bodyRadius + 2;
+    p.moveBy(by.x + Math.cos(by.facing) * reach - p.x, by.y + Math.sin(by.facing) * reach - p.y);
+    if (t < g.holdTicks) return;
+    p.invulnerable = false;
+    p.ctx.combat.applyHit(
+      {
+        owner: by,
+        kind: 'critical',
+        damage: g.damage,
+        poise: 0,
+        knockback: g.throwKnockback,
+        hitstop: 6,
+        shake: 0.45,
+        angle: by.facing,
+        unblockable: true,
+        unparryable: true,
+      },
+      p,
+      p.ctx.bus,
+    );
+    if (!p.dead) return 'stagger';
+  },
+  exit(p) {
+    p.invulnerable = false;
+    p.weaponVisible = true;
+    p.grabbedBy = null;
+  },
+};
+
 const guardBroken: State<Player> = {
   enter(p) {
     p.vx = p.vy = 0;
@@ -520,5 +563,6 @@ export const PLAYER_STATES: Record<string, State<Player>> = {
   critical,
   stagger,
   guardBroken,
+  grabbed,
   dead,
 };

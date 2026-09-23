@@ -1,0 +1,12 @@
+{
+  "image": "prop_candles.png",
+  "cell": [
+    16,
+    16
+  ],
+  "pivot": [
+    8,
+    14
+  ],
+  "layer": "single"
+}

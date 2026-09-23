@@ -14,7 +14,7 @@ All timings are in ticks (60/s). Everything tunable lives in `data/`, and edits 
 | 3 Ranged, loadout, shield, criticals, **+ stealth** | ✅ Done. Two-handed weapons lock the other slot; drop/pick up weapons. |
 | 4 Healing, shrines, saving, death loop | ✅ Done |
 | 4.5 Improvement pass | ✅ Built. Enemy A* pathfinding, GameScene split into `src/game/*`, hit feedback (flinch, HP damage trail, directional damage vignette, low-HP pulse), 6–7 frame attacks with a separate windup pose per enemy attack, camera clamped to rooms with rock fill (no void). Project moved to `C:\Users\recep\code\powder-and-penance`. |
-| 5 Full roster + the Guttering Abbey | ⏭ Next |
+| 5 Full roster + the Guttering Abbey | ✅ Built, awaiting playtest. 4 new enemies (Warden guard/guard break, Acolyte lobbed firepots with AoE, Hound lunge, Brute grab), 13-room abbey with 2 shrines, doors and a one-way shortcut gate, breakable props with one-time loot, debug teleport menu and flag editor. Level integrity covered by `tests/abbey.test.ts`. |
 | 6–7 | Planned |
 | 8–12 (post-launch roadmap) | Proposed, see the end of this file |
 

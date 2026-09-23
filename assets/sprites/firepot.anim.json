@@ -1,0 +1,12 @@
+{
+  "image": "firepot.png",
+  "cell": [
+    8,
+    8
+  ],
+  "pivot": [
+    4,
+    4
+  ],
+  "layer": "fx"
+}

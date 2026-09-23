@@ -16,6 +16,9 @@ import { GroundItems } from '../world/GroundItems';
 import { SHRINE_RADIUS, Shrines, type Shrine } from '../world/Shrines';
 import { Pickups } from '../world/Pickups';
 import { DeathMarker } from '../world/DeathMarker';
+import { Doors } from '../world/Doors';
+import { Props } from '../world/Props';
+import { LootDrops, rollLoot, type LootDrop } from '../world/LootDrops';
 import { Pathfinder } from '../world/Pathfinder';
 import { Player } from '../player/Player';
 import { PlayerView } from '../player/PlayerView';
@@ -72,7 +75,12 @@ export class GameScene extends Phaser.Scene {
   ground!: GroundItems;
   shrines!: Shrines;
   pickups!: Pickups;
+  doors!: Doors;
+  props!: Props;
+  loot!: LootDrops;
   marker!: DeathMarker;
+  /** Current area (rooms with this `area` are built into one world). */
+  area = '';
 
   // Presentation
   cam!: CameraRig;
@@ -117,8 +125,9 @@ export class GameScene extends Phaser.Scene {
     super('game');
   }
 
+  /** Everything combat can touch: player, enemies and intact props. */
   get actors(): Actor[] {
-    return [this.player, ...this.enemies];
+    return [this.player, ...this.enemies, ...this.props.list.filter(p => !p.dead)];
   }
 
   create(data: GameStartData = {}) {
@@ -157,12 +166,18 @@ export class GameScene extends Phaser.Scene {
     this.ground = new GroundItems(this.lib);
     this.shrines = new Shrines(this.lib);
     this.pickups = new Pickups(this.lib);
+    this.doors = new Doors(this.lib);
+    this.props = new Props(this.lib);
+    this.loot = new LootDrops(this.lib);
     this.marker = new DeathMarker(this.lib);
+    const spawn = this.respawnPoint();
+    this.area = spawn.area;
     this.buildWorld();
 
-    const spawn = this.respawnPoint();
     this.player = new Player(this.ctxObj, spawn.x, spawn.y);
     if (save) applySave(this, save);
+    this.ground.setArea(this.area);
+    this.marker.setArea(this.area);
     this.playerView = new PlayerView(this, this.player, this.lib);
     this.spawnRoomEnemies();
 
@@ -220,15 +235,33 @@ export class GameScene extends Phaser.Scene {
     handleInteract(this);
     this.player.tick();
     for (const e of this.enemies) e.tick();
+    for (const p of this.props.list) p.tick();
     this.resolveBodies();
     this.combat.resolve(this.actors, this.bus);
     this.projectiles.tick(this.actors, this.grid, this.combat, this.bus);
     tickShrineSeq(this);
     this.tryRecoverMarker();
+    if (!this.player.dead) for (const d of this.loot.tick(this.player.x, this.player.y)) this.collectLoot(d);
 
     for (const e of this.enemies.filter(en => en.remove)) this.removeEnemy(e);
     this.cam.tick(lead.x, lead.y);
     if (this.dirty && this.simTick % DATA.shrine.autosaveTicks === 0) this.save();
+  }
+
+  private collectLoot(d: LootDrop) {
+    const p = this.player;
+    if (d.kind === 'tallow') {
+      p.tallow += d.amount;
+      this.numbers.add(`+${d.amount}`, p.x, p.y - 30, hexToInt(DATA.palette.flame2));
+    } else {
+      for (const wid of new Set(p.slots)) {
+        const r = DATA.weapons[wid]?.ranged;
+        if (r) p.ammoFor(wid).reserve = Math.min(r.reserveMax, p.ammoFor(wid).reserve + Math.ceil(r.reserveMax * d.amount));
+      }
+      this.numbers.add('POWDER', p.x, p.y - 30, hexToInt(DATA.palette.wax2));
+    }
+    this.bus.emit('sfx', { id: 'tallow' });
+    this.dirty = true;
   }
 
   private tryRecoverMarker() {
@@ -304,6 +337,8 @@ export class GameScene extends Phaser.Scene {
     this.player.refill();
     this.player.poise.reset();
     this.resetEnemies();
+    this.props.build(this.ctxObj, this.rooms); // props respawn; their loot flags don't
+    this.loot.clear();
     this.projectiles.clear();
   }
 
@@ -323,6 +358,7 @@ export class GameScene extends Phaser.Scene {
     this.deathT = -1;
     this.respawnT = 0;
     this.shrineSeq = null;
+    if (s.area !== this.area) this.loadArea(s.area);
     this.player.respawn(s.x, s.y);
     this.restoreWorld();
     this.particles.clear();
@@ -332,9 +368,19 @@ export class GameScene extends Phaser.Scene {
     this.save();
   }
 
-  private respawnPoint() {
-    const shrine = this.shrines.get(this.lastShrine);
-    return shrine ? this.shrines.spawnPoint(shrine) : this.findSpawn();
+  /** The last shrine rested at (in whichever area it is), else the start room's spawn point. */
+  private respawnPoint(): { area: string; x: number; y: number } {
+    for (const r of Object.values(DATA.rooms))
+      for (const en of r.entities)
+        if (en.type === 'shrine' && en.id === this.lastShrine) {
+          const [ox, oy] = DATA.shrine.spawnOffset;
+          return {
+            area: r.area,
+            x: (r.origin[0] + en.at[0]) * TILE + TILE / 2 + ox,
+            y: (r.origin[1] + en.at[1]) * TILE + TILE - 2 + oy,
+          };
+        }
+    return { area: DATA.rooms[DATA.game.startRoom].area, ...this.findSpawn() };
   }
 
   /** Gameplay consequences of events (presentation lives in game/Presentation). */
@@ -360,9 +406,17 @@ export class GameScene extends Phaser.Scene {
       this.cam.addTrauma(0.4);
       // All carried Tallow stays behind as a Guttered Candle; any older candle is lost for good.
       const p = this.player;
-      this.marker.set(p.tallow > 0 ? { x: p.x, y: p.y, tallow: p.tallow } : null);
+      this.marker.set(p.tallow > 0 ? { x: p.x, y: p.y, tallow: p.tallow, area: this.area } : null);
       p.tallow = 0;
       this.save();
+    });
+    this.bus.on('propBroken', e => {
+      const p = e.prop;
+      const flag = `loot:${p.uid}`;
+      if (p.def.loot === 'none' || this.flags.has(flag)) return;
+      this.flags.add(flag); // loot is one-time; the prop itself respawns on rest
+      this.loot.spawn(rollLoot(DATA.loot.tables[p.def.loot], this.rng), p.x, p.y, this.rng);
+      this.dirty = true;
     });
   }
 
@@ -418,6 +472,8 @@ export class GameScene extends Phaser.Scene {
 
     const feet = this.playerView.render(alpha);
     for (const v of this.enemyViews.values()) v.render(alpha);
+    this.props.render(alpha);
+    this.loot.render();
     this.projectileView.render(this.projectiles.list, alpha);
     this.cam.apply(this.cameras.main, feet.x, feet.y, alpha, this.roomBounds(this.player.x, this.player.y), delta);
     this.enemyBars.draw(this.enemyViews.values(), fxDelta);
@@ -426,8 +482,63 @@ export class GameScene extends Phaser.Scene {
 
   // ------------------------------------------------------------------ world
   private areaRooms() {
-    const start = DATA.rooms[DATA.game.startRoom];
-    return Object.values(DATA.rooms).filter(r => r.area === start.area);
+    return Object.values(DATA.rooms).filter(r => r.area === this.area);
+  }
+
+  /** Swap the whole world to another area (rooms, doors, props, enemies...). */
+  loadArea(area: string) {
+    this.area = area;
+    this.buildWorld();
+    this.resetEnemies();
+    this.loot.clear();
+    this.projectiles.clear();
+    this.ground.setArea(area);
+    this.marker.setArea(area);
+    this.cam.snap();
+  }
+
+  /** Debug: jump to any room (in any area). */
+  teleportTo(room: RoomData) {
+    if (room.area !== this.area) this.loadArea(room.area);
+    // Nearest walkable tile to the room centre.
+    const cx = room.origin[0] + Math.floor(room.tiles[0].length / 2);
+    const cy = room.origin[1] + Math.floor(room.tiles.length / 2);
+    for (let r = 0; r < 12; r++)
+      for (let dy = -r; dy <= r; dy++)
+        for (let dx = -r; dx <= r; dx++)
+          if (!this.grid.isSolid(cx + dx, cy + dy)) {
+            this.player.respawn((cx + dx) * TILE + TILE / 2, (cy + dy) * TILE + TILE - 2);
+            this.cam.snap();
+            return;
+          }
+  }
+
+  /** Debug menu (` key): teleport to rooms, inspect/clear world flags. */
+  openDebugMenu() {
+    const close = () => this.closeMenu();
+    const rooms = Object.values(DATA.rooms).sort((a, b) => (a.area + a.id).localeCompare(b.area + b.id));
+    const items = [
+      ...rooms.map(r => ({ label: `${r.area} / ${r.id}`, enabled: true, action: () => (close(), this.teleportTo(r)) })),
+      { label: `WORLD FLAGS (${this.flags.size})...`, enabled: true, action: () => this.openFlagMenu() },
+      { label: 'CLOSE', enabled: true, action: close },
+    ];
+    this.menu = { title: 'DEBUG', subtitle: `area: ${this.area}`, items, index: 0, onBack: close };
+  }
+
+  private openFlagMenu() {
+    const flags = [...this.flags].sort();
+    const items = [
+      ...flags.map(f => ({ label: `clear ${f}`, enabled: true, action: () => (this.flags.delete(f), this.save(), this.openFlagMenu()) })),
+      { label: 'CLEAR ALL FLAGS', enabled: flags.length > 0, action: () => (this.flags.clear(), this.save(), this.openFlagMenu()) },
+      { label: 'BACK', enabled: true, action: () => this.openDebugMenu() },
+    ];
+    this.menu = {
+      title: 'WORLD FLAGS',
+      subtitle: 'reload the area (rest or teleport) to see changes',
+      items,
+      index: items.length - 1,
+      onBack: () => this.openDebugMenu(),
+    };
   }
 
   /** Room containing a world position; shared wall tiles belong to the first room listed. */
@@ -466,9 +577,11 @@ export class GameScene extends Phaser.Scene {
     this.racks.build(this.rooms);
     this.shrines.build(this.rooms, id => this.flags.has(`shrine:${id}`));
     this.pickups.build(this.rooms, id => this.flags.has(`item:${id}`));
+    this.doors.build(this.rooms, this.grid, id => this.flags.has(`door:${id}`));
+    this.props.build(this.ctxObj, this.rooms);
   }
 
-  private findSpawn() {
+  private findSpawn(): { x: number; y: number } {
     const room = DATA.rooms[DATA.game.startRoom];
     const e = room.entities.find(en => en.type === 'spawn') ?? { at: [1, 1] as [number, number] };
     return { x: (room.origin[0] + e.at[0]) * TILE + TILE / 2, y: (room.origin[1] + e.at[1]) * TILE + TILE - 2 };

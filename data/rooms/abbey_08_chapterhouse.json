@@ -1,0 +1,58 @@
+{
+  "id": "abbey_08_chapterhouse",
+  "area": "abbey",
+  "origin": [38, 50],
+  "legend": {
+    "#": "wall",
+    ".": "floor",
+    ",": "floor_moss",
+    " ": "void"
+  },
+  "tiles": [
+    "#############",
+    "#...........#",
+    "#...........#",
+    "#...........#",
+    "............#",
+    ".............",
+    "............#",
+    "#...........#",
+    "#...........#",
+    "#...........#",
+    "#...........#",
+    "#############"
+  ],
+  "entities": [
+    {
+      "type": "door",
+      "id": "abbey_door_chapter",
+      "at": [12, 5]
+    },
+    {
+      "type": "shrine",
+      "id": "shrine_chapter",
+      "name": "Chapterhouse Wick",
+      "at": [6, 4]
+    },
+    {
+      "type": "prop",
+      "kind": "candles",
+      "at": [3, 2]
+    },
+    {
+      "type": "prop",
+      "kind": "candles",
+      "at": [9, 2]
+    },
+    {
+      "type": "prop",
+      "kind": "candles",
+      "at": [3, 9]
+    },
+    {
+      "type": "prop",
+      "kind": "candles",
+      "at": [9, 9]
+    }
+  ]
+}

@@ -77,6 +77,16 @@ function combatExit(e: Enemy): string | undefined {
   }
 }
 
+/** Ranged enemies back away (while facing you) when you get closer than spacing.retreatBelow. */
+function retreat(e: Enemy, d: number): boolean {
+  const r = e.def.spacing.retreatBelow;
+  if (!r || d >= r) return false;
+  const away = Math.atan2(e.y - e.player.y, e.x - e.player.x);
+  e.navigateTo(e.x + Math.cos(away) * 48, e.y + Math.sin(away) * 48, e.def.speed);
+  e.turnTo(e.angleToPlayer());
+  return true;
+}
+
 const approach: State<Enemy> = {
   tick(e) {
     const exit = combatExit(e);
@@ -85,6 +95,7 @@ const approach: State<Enemy> = {
     if (e.visible) e.turnTo(e.angleToPlayer());
     if (e.tryAttack()) return 'attack';
     const d = e.distToPlayer();
+    if (retreat(e, d)) return;
     // Not ready to attack: hold at the preferred spacing and circle. Ready: keep closing until in range.
     if (!e.readyToAttack() && d <= e.def.spacing.preferred && e.visible) return 'strafe';
     if (d > e.bodyRadius + e.player.bodyRadius + 2) {
@@ -106,8 +117,9 @@ const strafe: State<Enemy> = {
     e.turnTo(a);
     if (e.tryAttack()) return 'attack';
     const d = e.distToPlayer();
+    if (retreat(e, d)) return;
     const pref = e.def.spacing.preferred;
-    if (d > pref + 24 || e.readyToAttack()) return 'approach';
+    if (d > pref + 24 || !e.visible || e.readyToAttack()) return 'approach';
     if (--e.strafeLeft <= 0) {
       e.strafeLeft = e.randRange(e.def.spacing.strafeTicks);
       e.strafeDir = -e.strafeDir;
@@ -128,6 +140,7 @@ const attack: State<Enemy> = {
   },
   tick(e) {
     const r = e.runner!;
+    r.target = { x: e.player.x, y: e.player.y }; // thrown strikes land where you stand at release
     r.tick(e.angleToPlayer());
     e.facing = r.angle;
     if (r.phase !== 'done') return;
@@ -137,7 +150,7 @@ const attack: State<Enemy> = {
     }
     e.cooldowns.set(e.move!.id, e.move!.cooldown);
     e.attackGap = e.randRange(e.def.attackGapTicks);
-    return e.def.ai === 'melee' ? 'strafe' : 'idle';
+    return e.isFighter ? 'strafe' : 'idle';
   },
   exit(e) {
     e.runner = null;
@@ -155,7 +168,7 @@ const stagger: State<Enemy> = {
   tick(e, t) {
     if (t >= e.def.staggerTicks) {
       e.attackGap = Math.max(e.attackGap, 10);
-      if (e.def.ai === 'melee') e.aggro();
+      if (e.isFighter) e.aggro();
       return e.recoverState;
     }
   },
@@ -170,7 +183,24 @@ const parried: State<Enemy> = {
   },
   tick(e, t) {
     if (t >= e.def.parriedTicks) {
-      if (e.def.ai === 'melee') e.aggro();
+      if (e.isFighter) e.aggro();
+      return e.recoverState;
+    }
+  },
+};
+
+/** Shield guard broken: reels for guard.breakTicks, open to a riposte; the guard comes back full. */
+const guardBroken: State<Enemy> = {
+  enter(e) {
+    e.vx = e.vy = 0;
+    e.anim.play('stagger', { restart: true });
+    e.squash.set(DATA.juice.squash.hit);
+    e.ctx.bus.emit('sfx', { id: 'guard_break', x: e.x, y: e.y });
+  },
+  tick(e, t) {
+    if (t >= (e.def.guard?.breakTicks ?? 60)) {
+      e.guardPoints = e.def.guard?.max ?? 0;
+      e.aggro();
       return e.recoverState;
     }
   },
@@ -184,7 +214,7 @@ const critVictim: State<Enemy> = {
   },
   tick(e, t) {
     if (t >= e.critTicks) {
-      if (e.def.ai === 'melee') e.aggro();
+      if (e.isFighter) e.aggro();
       return e.recoverState;
     }
   },
@@ -243,8 +273,12 @@ const dummyStagger: State<Enemy> = {
   },
 };
 
-export const BRAINS: Record<'melee' | 'dummy' | 'rhythm', Record<string, State<Enemy>>> = {
-  melee: { idle, suspicious, notice, approach, strafe, attack, stagger, parried, critVictim, return: ret, dead },
+const FIGHTER = { idle, suspicious, notice, approach, strafe, attack, stagger, parried, guardBroken, critVictim, return: ret, dead };
+
+export const BRAINS: Record<'melee' | 'ranged' | 'dummy' | 'rhythm', Record<string, State<Enemy>>> = {
+  // Ranged differs only through data: spacing.retreatBelow and moves whose strikes throw projectiles.
+  melee: FIGHTER,
+  ranged: FIGHTER,
   rhythm: { idle: rhythmIdle, attack, stagger, parried, critVictim },
   dummy: { idle: { tick: () => {} }, stagger: dummyStagger, critVictim },
 };

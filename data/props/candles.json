@@ -1,0 +1,11 @@
+{
+  "id": "candles",
+  "name": "Candle Cluster",
+  "sprite": "prop_candles",
+  "hp": 6,
+  "radius": 5,
+  "hurtbox": { "w": 10, "h": 10, "offsetY": -6 },
+  "debris": "wax1",
+  "loot": "tallow_small",
+  "sfx": "break_pot"
+}
