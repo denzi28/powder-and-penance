@@ -1,0 +1,12 @@
+{
+  "image": "shadow.png",
+  "cell": [
+    12,
+    5
+  ],
+  "pivot": [
+    6,
+    2
+  ],
+  "layer": "fx"
+}

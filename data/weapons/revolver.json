@@ -1,0 +1,7 @@
+{
+  "id": "revolver",
+  "name": "Revolver",
+  "kind": "ranged",
+  "twoHanded": false,
+  "view": { "sprite": "revolver", "restAngleOffsetDeg": 0 }
+}

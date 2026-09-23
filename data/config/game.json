@@ -1,0 +1,7 @@
+{
+  "width": 480,
+  "height": 270,
+  "tickRate": 60,
+  "maxStepsPerFrame": 5,
+  "startRoom": "test_room"
+}

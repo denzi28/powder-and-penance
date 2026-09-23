@@ -1,0 +1,7 @@
+{
+  "aimLeadFactor": 0.25,
+  "aimLeadMax": 40,
+  "leadLerp": 0.15,
+  "padLeadDistance": 36,
+  "centerOffsetY": -12
+}

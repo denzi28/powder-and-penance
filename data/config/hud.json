@@ -1,0 +1,9 @@
+{
+  "x": 8,
+  "y": 8,
+  "hpPxPerPoint": 1.0,
+  "hpHeight": 5,
+  "staminaPxPerPoint": 0.9,
+  "staminaHeight": 3,
+  "gap": 3
+}

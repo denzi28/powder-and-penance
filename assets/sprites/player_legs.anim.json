@@ -1,0 +1,61 @@
+{
+  "image": "player_legs.png",
+  "cell": [
+    32,
+    32
+  ],
+  "pivot": [
+    16,
+    28
+  ],
+  "layer": "legs",
+  "animations": {
+    "idle": {
+      "row": 0,
+      "dirs": [
+        "S",
+        "E",
+        "N"
+      ],
+      "loop": true,
+      "frames": [
+        {
+          "ticks": 60
+        }
+      ]
+    },
+    "walk": {
+      "row": 3,
+      "dirs": [
+        "S",
+        "E",
+        "N"
+      ],
+      "loop": true,
+      "frames": [
+        {
+          "ticks": 6,
+          "torsoDy": 0,
+          "events": [
+            "footstep"
+          ]
+        },
+        {
+          "ticks": 6,
+          "torsoDy": -1
+        },
+        {
+          "ticks": 6,
+          "torsoDy": 0,
+          "events": [
+            "footstep"
+          ]
+        },
+        {
+          "ticks": 6,
+          "torsoDy": -1
+        }
+      ]
+    }
+  }
+}

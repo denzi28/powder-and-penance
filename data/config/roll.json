@@ -1,0 +1,11 @@
+{
+  "stamina": 22,
+  "distance": 56,
+  "travelTicks": 20,
+  "totalTicks": 30,
+  "iframeStart": 2,
+  "iframeEnd": 13,
+  "curvePower": 2,
+  "cancelFrom": 24,
+  "moveCancelFrom": 26
+}

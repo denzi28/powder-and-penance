@@ -1,0 +1,40 @@
+{
+  "bufferTicks": 8,
+  "stickDeadzone": 0.2,
+  "aimStickDeadzone": 0.35,
+  "triggerThreshold": 0.4,
+  "padAimDistance": 48,
+  "padAimFollowsMove": true,
+  "keyboard": {
+    "moveUp": ["KeyW", "ArrowUp"],
+    "moveDown": ["KeyS", "ArrowDown"],
+    "moveLeft": ["KeyA", "ArrowLeft"],
+    "moveRight": ["KeyD", "ArrowRight"],
+    "light": ["Mouse0"],
+    "heavy": ["KeyF", "Mouse3"],
+    "block": ["Mouse2"],
+    "roll": ["Space"],
+    "sprint": ["ShiftLeft", "ShiftRight"],
+    "heal": ["KeyQ"],
+    "reload": ["KeyR"],
+    "swap": ["Tab", "WheelUp", "WheelDown"],
+    "interact": ["KeyE"],
+    "pause": ["Escape"]
+  },
+  "gamepad": {
+    "moveUp": [],
+    "moveDown": [],
+    "moveLeft": [],
+    "moveRight": [],
+    "light": [7],
+    "heavy": [5],
+    "block": [6],
+    "roll": [1],
+    "sprint": [10, 4],
+    "heal": [2],
+    "reload": [3],
+    "swap": [14, 15],
+    "interact": [0],
+    "pause": [9]
+  }
+}

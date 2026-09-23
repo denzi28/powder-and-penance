@@ -1,0 +1,56 @@
+{
+  "image": "dust.png",
+  "cell": [
+    10,
+    10
+  ],
+  "pivot": [
+    5,
+    8
+  ],
+  "layer": "fx",
+  "animations": {
+    "puff": {
+      "row": 0,
+      "dirs": [
+        "S"
+      ],
+      "loop": false,
+      "frames": [
+        {
+          "ticks": 3
+        },
+        {
+          "ticks": 4
+        },
+        {
+          "ticks": 5
+        },
+        {
+          "ticks": 6
+        }
+      ]
+    },
+    "step": {
+      "row": 0,
+      "dirs": [
+        "S"
+      ],
+      "loop": false,
+      "frames": [
+        {
+          "ticks": 3,
+          "col": 0
+        },
+        {
+          "ticks": 4,
+          "col": 1
+        },
+        {
+          "ticks": 4,
+          "col": 3
+        }
+      ]
+    }
+  }
+}

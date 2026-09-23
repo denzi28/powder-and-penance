@@ -1,0 +1,7 @@
+{
+  "max": 100,
+  "regenDelayTicks": 30,
+  "regenPerSec": 50,
+  "minToAct": 1,
+  "sprintPerSec": 12
+}

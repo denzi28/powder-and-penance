@@ -1,0 +1,7 @@
+{
+  "id": "straight_sword",
+  "name": "Straight Sword",
+  "kind": "melee",
+  "twoHanded": false,
+  "view": { "sprite": "sword", "restAngleOffsetDeg": 0 }
+}

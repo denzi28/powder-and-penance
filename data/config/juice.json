@@ -1,0 +1,8 @@
+{
+  "shake": { "maxOffset": 5, "decayPerTick": 0.035, "debugTrauma": 0.6 },
+  "squash": {
+    "rollStart": [1.25, 0.75, 5],
+    "rollLand": [0.85, 1.15, 5]
+  },
+  "dust": { "footstep": "sprint" }
+}

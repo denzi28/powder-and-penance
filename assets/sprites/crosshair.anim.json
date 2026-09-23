@@ -1,0 +1,12 @@
+{
+  "image": "crosshair.png",
+  "cell": [
+    13,
+    13
+  ],
+  "pivot": [
+    6,
+    6
+  ],
+  "layer": "ui"
+}

@@ -1,0 +1,17 @@
+{
+  "maxHp": 100,
+  "walkSpeed": 88,
+  "accelTicks": 3,
+  "decelTicks": 2,
+  "sprintMult": 1.4,
+  "aimOriginY": -12,
+  "collider": { "w": 8, "h": 5 },
+  "hurtbox": { "w": 10, "h": 18, "offsetY": -10 },
+  "legs": {
+    "backpedal": "reverse",
+    "backpedalDot": -0.35,
+    "walkAnimSpeedAt": 88
+  },
+  "weaponBehindArcDeg": [200, 340],
+  "startWeapons": ["straight_sword", "revolver"]
+}

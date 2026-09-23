@@ -1,0 +1,96 @@
+{
+  "image": "player_body.png",
+  "cell": [
+    32,
+    32
+  ],
+  "pivot": [
+    16,
+    28
+  ],
+  "layer": "torso",
+  "handAnchors": {
+    "S": [
+      4,
+      -11
+    ],
+    "SE": [
+      4,
+      -12
+    ],
+    "E": [
+      2,
+      -12
+    ],
+    "NE": [
+      3,
+      -13
+    ],
+    "N": [
+      3,
+      -13
+    ]
+  },
+  "animations": {
+    "idle": {
+      "row": 0,
+      "dirs": [
+        "S",
+        "SE",
+        "E",
+        "NE",
+        "N"
+      ],
+      "loop": true,
+      "frames": [
+        {
+          "ticks": 36
+        },
+        {
+          "ticks": 36
+        }
+      ]
+    },
+    "roll": {
+      "row": 5,
+      "dirs": [
+        "S",
+        "SE",
+        "E",
+        "NE",
+        "N"
+      ],
+      "loop": false,
+      "frames": [
+        {
+          "ticks": 3,
+          "phase": "roll"
+        },
+        {
+          "ticks": 4,
+          "phase": "roll"
+        },
+        {
+          "ticks": 4,
+          "phase": "roll"
+        },
+        {
+          "ticks": 4,
+          "phase": "roll"
+        },
+        {
+          "ticks": 5,
+          "phase": "roll"
+        },
+        {
+          "ticks": 5,
+          "phase": "recover"
+        },
+        {
+          "ticks": 5,
+          "phase": "recover"
+        }
+      ]
+    }
+  }
+}
