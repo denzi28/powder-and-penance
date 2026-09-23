@@ -48,7 +48,7 @@ npm run gen:art    # regenerate missing placeholder art (--force to overwrite al
 | F8 | Test screen shake |
 | 1 / 2 / 3 | Spawn a Wickling / training dummy / sparring post at the cursor |
 | 4 / 5 / 6 / 7 | Spawn a Bulwark Warden / Powder Acolyte / Taper Hound / Belfry Brute at the cursor |
-| ` (backquote) | Debug menu: teleport to any room in any area; **World flags** lists every flag (shrines, items, doors, loot) and can clear them one by one or all at once. Cleared flags take effect after the area reloads (rest or teleport). |
+| ` (backquote) | Debug menu. **BOSSES...** (top): jump to the doorway of any boss arena, and walk in to start the fight. A beaten boss is revived first, so you can refight it. Below that: teleport to any room in any area; **World flags** lists every flag (shrines, items, doors, loot) and can clear them one by one or all at once. Cleared flags take effect after the area reloads (rest or teleport). |
 
 - **Test room:** one Wickling stands facing the east wall in the south-east corner. Sneak up and backstab it.
 - **Debug arena** (through the test room's east doorway):

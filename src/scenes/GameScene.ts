@@ -722,11 +722,67 @@ export class GameScene extends Phaser.Scene {
     const close = () => this.closeMenu();
     const rooms = Object.values(DATA.rooms).sort((a, b) => (a.area + a.id).localeCompare(b.area + b.id));
     const items = [
+      { label: 'BOSSES...', enabled: true, action: () => this.openBossMenu() },
       ...rooms.map(r => ({ label: `${r.area} / ${r.id}`, enabled: true, action: () => (close(), this.teleportTo(r)) })),
       { label: `WORLD FLAGS (${this.flags.size})...`, enabled: true, action: () => this.openFlagMenu() },
       { label: 'CLOSE', enabled: true, action: close },
     ];
     this.menu = { title: 'DEBUG', subtitle: `area: ${this.area}`, items, index: 0, onBack: close };
+  }
+
+  /** Debug: jump to the doorway of any boss arena (walk in to start the fight); beaten bosses come back. */
+  private openBossMenu() {
+    const back = () => this.openDebugMenu();
+    const arenas = Object.values(DATA.rooms).flatMap(r => r.entities.filter(e => e.type === 'arena').map(e => ({ r, kind: String(e.boss), e })));
+    const items = [
+      ...arenas.map(({ r, kind, e }) => {
+        const beaten = this.flags.has(`boss:${kind}`);
+        const title = DATA.enemies[kind].boss?.title ?? kind;
+        return {
+          label: `${title.toUpperCase()}  (${DATA.areas.areas[r.area].name})${beaten ? '  - BEATEN, REVIVE' : ''}`,
+          enabled: true,
+          action: () => {
+            this.closeMenu();
+            this.teleportToBoss(r, kind, e.seals as [number, number][]);
+          },
+        };
+      }),
+      { label: 'BACK', enabled: true, action: back },
+    ];
+    this.menu = {
+      title: 'BOSSES',
+      subtitle: 'You arrive outside the arena door: walk in to start the fight.',
+      items,
+      index: 0,
+      onBack: back,
+    };
+  }
+
+  private teleportToBoss(room: RoomData, kind: string, seals: [number, number][]) {
+    // A beaten boss comes back (its arena shrine goes away again until it falls).
+    if (this.flags.delete(`boss:${kind}`)) {
+      const next = DATA.enemies[kind].boss?.next;
+      if (next) this.flags.delete(`boss:${next.kind}`);
+    }
+    if (room.area !== this.area) this.loadArea(room.area);
+    this.arena.reset();
+    this.resetEnemies();
+    this.rebuildShrines();
+    // Stand one tile outside the first doorway, beyond the smoke's reach.
+    const w = room.tiles[0].length;
+    const h = room.tiles.length;
+    const [sx, sy] = seals[0];
+    const dx = sx === 0 ? -1 : sx === w - 1 ? 1 : 0;
+    const dy = sy === 0 ? -1 : sy === h - 1 ? 1 : 0;
+    let tx = room.origin[0] + sx + dx;
+    let ty = room.origin[1] + sy + dy;
+    if (this.grid.isSolid(tx, ty)) {
+      tx += dx;
+      ty += dy;
+    }
+    this.player.respawn(tx * TILE + TILE / 2, ty * TILE + TILE - 2);
+    this.cam.snap();
+    this.showToast('BOSS', `${DATA.enemies[kind].boss?.title ?? kind} is through the doorway.`);
   }
 
   private openFlagMenu() {
