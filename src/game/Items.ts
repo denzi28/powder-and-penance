@@ -1,7 +1,6 @@
 // Applying placed items (data/items) and telling the player, in plain words and real numbers, what changed.
 // The item's own `description` is flavour text, shown under the explanation.
 import { DATA } from '../data/config';
-import { hexToInt } from '../ui/colors';
 import type { GameScene } from '../scenes/GameScene';
 
 export function grantItem(gs: GameScene, id: string, itemId: string, x: number, y: number) {
@@ -56,7 +55,7 @@ export function grantItem(gs: GameScene, id: string, itemId: string, x: number, 
       break;
   }
   gs.showToast(item.name.toUpperCase(), what, item.description);
-  gs.numbers.add(item.name.toUpperCase(), x, y - 26, hexToInt(DATA.palette.wax2));
+  gs.particles.burst(x, y, 10, -Math.PI / 2, 1.6, 12, 60, 'flame2', false); // sparks from the open chest
   gs.bus.emit('sfx', { id: 'item' });
   gs.save();
 }

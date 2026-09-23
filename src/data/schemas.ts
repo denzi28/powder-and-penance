@@ -397,6 +397,8 @@ export const DebugCfg = z.object({ overlayOnStart: z.boolean(), slowmoScale: pos
 export const HudCfg = z.object({
   x: int, y: int, hpPxPerPoint: pos, hpHeight: int.positive(),
   staminaPxPerPoint: pos, staminaHeight: int.positive(), gap: int.nonnegative(),
+  /** Item/event banner: top edge (px), wrap width (characters), title scale (1 = same size as the body). */
+  toast: z.object({ y: int.nonnegative(), cols: int.positive(), titleScale: int.positive() }).default({ y: 14, cols: 60, titleScale: 1 }),
 });
 
 export const Palette = z.record(z.string(), z.string().regex(/^#[0-9a-fA-F]{6}$/));

@@ -59,7 +59,7 @@ export class UIScene extends Phaser.Scene {
     this.tallowIcon = this.add.sprite(0, 0, 'tallow_icon', 0).setOrigin(0, 0).setDepth(2);
     this.tallowText = this.add.bitmapText(0, 0, 'pixel', '0').setTint(hexToInt(DATA.palette.wax2)).setDepth(2);
     this.tallowShown = this.gs.player.tallow;
-    this.toastTitle = this.add.bitmapText(0, 0, 'pixel', '').setScale(2).setTint(hexToInt(DATA.palette.flame2)).setDepth(15);
+    this.toastTitle = this.add.bitmapText(0, 0, 'pixel', '').setTint(hexToInt(DATA.palette.flame2)).setDepth(15);
     this.toastBody = this.add.bitmapText(0, 0, 'pixel', '').setTint(hexToInt(DATA.palette.wax2)).setDepth(15);
     this.toastNote = this.add.bitmapText(0, 0, 'pixel', '').setTint(hexToInt(DATA.palette.stone4)).setDepth(15);
     this.toastPanel = this.add.rectangle(0, 0, 10, 10, hexToInt(DATA.palette.ink), 0.7).setOrigin(0, 0).setDepth(14);
@@ -209,16 +209,19 @@ export class UIScene extends Phaser.Scene {
     if (!t) return;
     const a = t.t < 15 ? t.t / 15 : t.t > t.life - 40 ? Math.max(0, (t.life - t.t) / 40) : 1;
     const W = DATA.game.width;
-    this.toastTitle.setText(t.title).setAlpha(a);
-    this.toastTitle.setPosition(Math.round((W - this.toastTitle.width) / 2), 44);
-    this.toastBody.setText(wrap(t.body, 60)).setAlpha(a);
-    this.toastBody.setPosition(Math.round((W - this.toastBody.width) / 2), 64);
-    this.toastNote.setText(t.note ? wrap(t.note, 60) : '').setAlpha(a);
-    const noteY = 64 + this.toastBody.height + 6;
+    const cfg = DATA.hud.toast;
+    const top = cfg.y + 3; // text starts 3 px inside the panel
+    this.toastTitle.setScale(cfg.titleScale).setText(t.title).setAlpha(a);
+    this.toastTitle.setPosition(Math.round((W - this.toastTitle.width) / 2), top);
+    const bodyY = top + this.toastTitle.height + 3;
+    this.toastBody.setText(wrap(t.body, cfg.cols)).setAlpha(a);
+    this.toastBody.setPosition(Math.round((W - this.toastBody.width) / 2), bodyY);
+    const noteY = bodyY + this.toastBody.height + 2;
+    this.toastNote.setText(t.note ? wrap(t.note, cfg.cols) : '').setAlpha(a);
     this.toastNote.setPosition(Math.round((W - this.toastNote.width) / 2), noteY);
-    const bottom = t.note ? noteY + this.toastNote.height : 64 + this.toastBody.height;
-    const w = Math.max(this.toastTitle.width, this.toastBody.width, this.toastNote.width) + 16;
-    this.toastPanel.setPosition(Math.round((W - w) / 2), 38).setSize(w, bottom - 38 + 6).setAlpha(a);
+    const bottom = t.note ? noteY + this.toastNote.height : bodyY + this.toastBody.height;
+    const w = Math.max(this.toastTitle.width, this.toastBody.width, this.toastNote.width) + 10;
+    this.toastPanel.setPosition(Math.round((W - w) / 2), cfg.y).setSize(w, bottom - cfg.y + 3).setAlpha(a);
   }
 
   /** Bottom-right: two weapon slots (active highlighted), ammo, reload bar, shield icon. */
