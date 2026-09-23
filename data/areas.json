@@ -3,7 +3,7 @@
     "road": { "name": "Penance Road", "tileset": "tiles_road" },
     "hub": { "name": "Wick's Rest", "tileset": "tiles_road" },
     "abbey": { "name": "The Guttering Abbey", "tileset": "tiles" },
-    "works": { "name": "The Tallow Works", "tileset": "tiles" },
+    "works": { "name": "The Tallow Works", "tileset": "tiles_works" },
     "mire": { "name": "The Waxmire", "tileset": "tiles_road" },
     "vault": { "name": "The Powder Vault", "tileset": "tiles" },
     "test": { "name": "Test Grounds", "tileset": "tiles" }

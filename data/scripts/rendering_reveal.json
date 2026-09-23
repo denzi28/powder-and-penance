@@ -1,0 +1,14 @@
+{
+  "id": "rendering_reveal",
+  "steps": [
+    { "camera": "point:vats", "ticks": 70 },
+    { "say": "The Rendering Hall. Vats the size of houses, and the heat of them on your face like a hand." },
+    { "say": "On the racks by the nearest vat hang pilgrim robes. Dozens. Hundreds. Each one has a tag, and each tag has a name." },
+    { "say": "Carts full going in. Carts empty going out. Tallow stacked to the rafters, stamped with the Abbey's candle." },
+    { "wait": 40 },
+    { "say": "The Tallow in your pouch is warm. It always has been." },
+    { "say": "Now you know why." },
+    { "set": "works_reveal" },
+    { "camera": "player", "ticks": 50 }
+  ]
+}

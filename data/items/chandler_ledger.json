@@ -1,0 +1,6 @@
+{
+  "id": "chandler_ledger",
+  "name": "The Chandler's Ledger",
+  "description": "Columns of names, and beside each a weight in pounds of tallow. The last page is signed by the Chandler himself.",
+  "effect": { "type": "quest", "note": "Proof of what the Works does, in the Chandler's own hand. Sister Maudlin should see this." }
+}

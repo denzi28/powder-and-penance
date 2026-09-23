@@ -1,0 +1,82 @@
+{
+  "id": "works_04_lift",
+  "area": "works",
+  "origin": [44, 13],
+  "legend": {
+    "#": "wall",
+    ".": "floor",
+    ",": "floor_grate",
+    "~": "floor_grease",
+    "_": "floor_plank",
+    " ": "void"
+  },
+  "tiles": [
+    "############",
+    "#..........#",
+    "#..,,,,....#",
+    "#..,,,,....#",
+    "#..,,,,....#",
+    "#..........#",
+    "#..........#",
+    "...........#",
+    "...........#",
+    "#..........#",
+    "#..........#",
+    "#..........#",
+    "#..........#",
+    "#..........#",
+    "#..........#",
+    "####..######"
+  ],
+  "entities": [
+    {
+      "type": "decor",
+      "kind": "lift_cage",
+      "at": [4, 3]
+    },
+    {
+      "type": "decor",
+      "kind": "pipe",
+      "at": [1, 12]
+    },
+    {
+      "type": "decor",
+      "kind": "pipe",
+      "at": [10, 12]
+    },
+    {
+      "type": "decor",
+      "kind": "chain_heap",
+      "at": [9, 6]
+    },
+    {
+      "type": "exit",
+      "id": "works_lift_up",
+      "at": [4, 3],
+      "size": [2, 1],
+      "to": {
+        "area": "hub",
+        "spawn": "from_works_lift"
+      },
+      "when": "lever:works_lift",
+      "closed": "The lift cage hangs somewhere far above. The lever beside the shaft will call it down."
+    },
+    {
+      "type": "lever",
+      "id": "works_lift",
+      "script": "works_lift_lever",
+      "at": [7, 3]
+    },
+    {
+      "type": "spawn",
+      "id": "from_hub_lift",
+      "at": [4, 5]
+    },
+    {
+      "type": "enemy",
+      "kind": "renderer",
+      "at": [6, 10],
+      "facing": "N"
+    }
+  ]
+}

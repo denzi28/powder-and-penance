@@ -81,6 +81,13 @@ Act 1 is being built room by room: the plan is in [WORLD.md](WORLD.md) and the s
   - Watch his delayed thrust: it flashes early and strikes late. The red-glint slam can't be blocked.
   - Beat him for the Toll Key, which opens the Toll Gate at Wick's Rest.
   - Tuning: `data/enemies/tollwarden.json`.
+- **The Tallow Works** (through the Toll Gate east of Wick's Rest), 10 rooms:
+  - New enemies: Renderers (their hook drags you in) and Vat Crawlers (they split in two).
+  - The Foreman's Wick shrine, and the Chandler's Ledger.
+  - A lift back up to the hub once you pull its lever.
+  - A cracked wall to smash.
+  - The Rendering Hall reveal.
+  - The boss, **Mother Tallow**, who drops the Seal of Tallow.
 - **Items come in chests** (press E). You keep control while the lid opens. The banner explains the effect in plain numbers (e.g. "phial drinks 3 -> 4"), with the flavour text below.
 - **The route is walkable end to end:** Penance Road, then Wick's Rest (the hub), then up the Hill Stair to the Abbey Porch. Walking into an area exit fades to the next area and shows its name.
 - The Toll Gate (east of the hub) needs the **Toll Key**, which the Tollwarden will drop. The Waxmire and Tallow Works exits say they aren't open yet.

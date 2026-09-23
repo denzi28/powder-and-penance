@@ -9,7 +9,7 @@ import { mulberry32, type WorldCtx } from '../core/World';
 import { INPUT } from '../input/instance';
 import type { Input } from '../input/Input';
 import { SpriteLib } from '../anim/SpriteLib';
-import { buildGrid, TILE, type TileGrid } from '../world/TileGrid';
+import { buildGrid, Cell, TILE, type TileGrid } from '../world/TileGrid';
 import { WorldView } from '../world/WorldView';
 import { Racks } from '../world/Racks';
 import { GroundItems } from '../world/GroundItems';
@@ -23,6 +23,8 @@ import { markObstacles } from '../world/Obstacles';
 import { Npcs } from '../story/Npcs';
 import { Story } from '../story/Story';
 import { BossArena } from '../game/BossArena';
+import { Levers } from '../world/Levers';
+import { check } from '../story/conditions';
 import { Exits, findSpawn, type Exit } from '../world/Exits';
 import { LootDrops, rollLoot, type LootDrop } from '../world/LootDrops';
 import { Pathfinder } from '../world/Pathfinder';
@@ -93,6 +95,7 @@ export class GameScene extends Phaser.Scene {
   /** Boss arenas of the current area; `arena.active` drives the boss bar. */
   arena = new BossArena(this);
   exits = new Exits();
+  levers!: Levers;
   loot!: LootDrops;
   marker!: DeathMarker;
   /** Current area (rooms with this `area` are built into one world). */
@@ -142,6 +145,10 @@ export class GameScene extends Phaser.Scene {
   private roomsJson = '';
   private menuNav = new MenuNav();
   private dirty = false;
+  /** Secret walls already smashed stay open ("wall:<room>#<index>"). */
+  private brokenWall = (uid: string) => this.flags.has(`wall:${uid}`);
+  /** Levers stay pulled for good ("lever:<id>"). */
+  leverPulled = (id: string) => this.flags.has(`lever:${id}`);
 
   constructor() {
     super('game');
@@ -194,6 +201,7 @@ export class GameScene extends Phaser.Scene {
     this.npcs = new Npcs(this.lib);
     this.story = new Story(this);
     this.arena = new BossArena(this);
+    this.levers = new Levers(this.lib);
     this.loot = new LootDrops(this.lib);
     this.marker = new DeathMarker(this.lib);
     const spawn = this.respawnPoint();
@@ -418,6 +426,12 @@ export class GameScene extends Phaser.Scene {
     if (p.dead || this.shrineSeq) return;
     const exit = this.exits.check(p.x, p.y);
     if (!exit) return;
+    if (!check(this.flags, exit.when)) {
+      this.exits.disarm();
+      this.showToast('NOT YET', exit.closed ?? 'It will not move.');
+      this.bus.emit('sfx', { id: 'locked' });
+      return;
+    }
     if (!Object.values(DATA.rooms).some(r => r.area === exit.to.area)) {
       // The target area isn't built yet: say so, and don't trigger again until the player steps off.
       this.exits.disarm();
@@ -455,7 +469,7 @@ export class GameScene extends Phaser.Scene {
     for (const f of [...this.flags]) if (f.startsWith('slain:')) this.flags.delete(f); // every enemy returns
     this.arena.reset();
     this.resetEnemies();
-    this.props.build(this.ctxObj, this.rooms); // props respawn; their loot flags don't
+    this.props.build(this.ctxObj, this.rooms, this.brokenWall); // props respawn; their loot flags don't
     this.loot.clear();
     this.projectiles.clear();
   }
@@ -512,6 +526,17 @@ export class GameScene extends Phaser.Scene {
       if (e.actor instanceof Enemy) {
         // Slain enemies stay dead (across areas and reloads) until the player rests or dies.
         if (e.actor.spawnId) this.flags.add(`slain:${e.actor.spawnId}`);
+        // Some burst into smaller ones (wax blobs); they come out angry, spread around the body.
+        const split = e.actor.def.splitInto;
+        if (split)
+          for (let i = 0; i < split.count; i++) {
+            const a = (i / split.count) * Math.PI * 2 + this.rng();
+            const kid = this.spawnEnemy(split.kind, e.actor.x + Math.cos(a) * 8, e.actor.y + Math.sin(a) * 5, a);
+            if (kid) {
+              kid.knock(a, 90);
+              kid.aggro();
+            }
+          }
         const gain = e.actor.def.tallow;
         if (gain > 0) {
           this.player.tallow += gain;
@@ -534,6 +559,15 @@ export class GameScene extends Phaser.Scene {
     });
     this.bus.on('propBroken', e => {
       const p = e.prop;
+      if (p.def.secretWall) {
+        // A hidden way: the wall tile opens for good, and the world is redrawn around it.
+        this.flags.add(`wall:${p.uid}`);
+        this.grid.set(Math.floor(p.x / TILE), Math.floor(p.y / TILE), Cell.Floor);
+        this.worldView.build(this.grid, DATA.areas.areas[this.area].tileset);
+        this.showToast('A HIDDEN WAY', 'The cracked wall gives way.');
+        this.save();
+        return;
+      }
       const flag = `loot:${p.uid}`;
       if (p.def.loot === 'none' || this.flags.has(flag)) return;
       this.flags.add(flag); // loot is one-time; the prop itself respawns on rest
@@ -707,17 +741,18 @@ export class GameScene extends Phaser.Scene {
     this.rooms = this.areaRooms();
     this.roomsJson = JSON.stringify(this.rooms);
     this.grid = buildGrid(this.rooms);
-    markObstacles(this.grid, this.rooms);
+    markObstacles(this.grid, this.rooms, this.brokenWall);
     this.decor.build(this.rooms);
     this.worldView.build(this.grid, DATA.areas.areas[this.area].tileset);
     this.racks.build(this.rooms);
     this.shrines.build(this.rooms, id => this.flags.has(`shrine:${id}`));
     this.pickups.build(this.rooms, id => this.flags.has(`item:${id}`));
     this.doors.build(this.rooms, this.grid, id => this.flags.has(`door:${id}`));
-    this.props.build(this.ctxObj, this.rooms);
+    this.props.build(this.ctxObj, this.rooms, this.brokenWall);
     this.exits.build(this.rooms);
     this.npcs.build(this.rooms, this.flags);
     this.arena.build(this.rooms);
+    this.levers.build(this.rooms, this.leverPulled);
     this.placeWeapons();
   }
 

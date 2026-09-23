@@ -15,7 +15,7 @@ describe('reachability', () => {
     if (!start) continue;
 
     it(`${area}: chests, weapons, shrines, spawns and exits can all be walked to`, () => {
-      const grid = levelGrid(rooms);
+      const grid = levelGrid(rooms, true); // cracked walls can be smashed
       const pf = new Pathfinder(() => grid);
       const sx = (start.r.origin[0] + start.e.at[0]) * TILE + 8;
       const sy = (start.r.origin[1] + start.e.at[1]) * TILE + 10;

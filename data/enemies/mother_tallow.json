@@ -1,0 +1,132 @@
+{
+  "id": "mother_tallow",
+  "name": "Mother Tallow",
+  "ai": "boss",
+  "boss": {
+    "title": "Mother Tallow",
+    "introAnim": "intro",
+    "introTicks": 130,
+    "slams": [100],
+    "slamShake": 0.35,
+    "slamSfx": "bell_slam",
+    "introLine": "(She hums a work song, and lifts her ladle.)",
+    "roarSfx": "boss_roar",
+    "deathScript": "mother_tallow_death"
+  },
+  "sprite": "mother_tallow",
+  "weaponSprite": "mother_ladle",
+  "weaponRestDeg": 45,
+  "hp": 1000,
+  "poise": { "max": 280, "resetTicks": 300 },
+  "tallow": 2000,
+  "speed": 22,
+  "strafeSpeed": 14,
+  "accelTicks": 16,
+  "turnDegPerTick": 3,
+  "collider": { "w": 24, "h": 8 },
+  "hurtbox": { "w": 30, "h": 46, "offsetY": -24 },
+  "bodyRadius": 15,
+  "knockbackResist": 0.95,
+  "spacing": { "preferred": 70, "strafeTicks": [60, 120] },
+  "attackGapTicks": [15, 40],
+  "staggerTicks": 50,
+  "parriedTicks": 90,
+  "deathTicks": 100,
+  "corpseTicks": 1800,
+  "blood": "wax1",
+  "moves": [
+    {
+      "id": "ladle_sweep",
+      "range": [0, 64],
+      "weight": 3,
+      "cooldown": 60,
+      "strikes": [
+        {
+          "damage": 36, "poise": 50,
+          "windup": 34, "active": 8, "recovery": 36,
+          "trackDegPerTick": 2.5,
+          "hyperArmor": 60,
+          "telegraph": { "tick": 14, "kind": "normal" },
+          "hitbox": { "shape": "arc", "radius": 62, "halfAngle": 110 },
+          "originY": -14,
+          "sweep": { "fromDeg": -130, "toDeg": 130 },
+          "knockback": 180, "hitstop": 6, "shake": 0.3, "sfx": "swing_heavy", "anim": "sweep"
+        }
+      ]
+    },
+    {
+      "id": "wax_spit",
+      "range": [50, 200],
+      "weight": 3,
+      "cooldown": 100,
+      "strikes": [
+        {
+          "damage": 0, "poise": 0,
+          "windup": 30, "active": 4, "recovery": 26,
+          "trackDegPerTick": 4,
+          "telegraph": { "tick": 10, "kind": "normal" },
+          "hitbox": { "shape": "circle", "radius": 1, "offset": 0 },
+          "originY": -30,
+          "sweep": { "fromDeg": -20, "toDeg": 20 },
+          "sfx": "throw", "anim": "spit",
+          "projectile": {
+            "sprite": "wax_glob",
+            "speed": 1, "range": 1,
+            "damage": 26, "poise": 30, "knockback": 120, "hitstop": 4, "shake": 0.2,
+            "radius": 4, "count": 3, "spreadDeg": 26,
+            "lob": { "flightTicks": 48, "arcHeight": 46, "blastRadius": 22, "sfx": "break_pot" }
+          }
+        }
+      ]
+    },
+    {
+      "id": "crush",
+      "range": [0, 54],
+      "weight": 2,
+      "cooldown": 130,
+      "strikes": [
+        {
+          "damage": 52, "poise": 80,
+          "windup": 46, "active": 6, "recovery": 56,
+          "trackDegPerTick": 2,
+          "hyperArmor": 80,
+          "unblockable": true,
+          "telegraph": { "tick": 18, "kind": "danger" },
+          "hitbox": { "shape": "circle", "radius": 40, "offset": 26 },
+          "originY": -4,
+          "sweep": { "fromDeg": -150, "toDeg": 20 },
+          "knockback": 240, "hitstop": 9, "shake": 0.6, "sfx": "bell_slam", "anim": "crush"
+        }
+      ]
+    },
+    {
+      "id": "stir",
+      "range": [0, 60],
+      "weight": 2,
+      "cooldown": 110,
+      "strikes": [
+        {
+          "damage": 24, "poise": 30,
+          "windup": 22, "active": 6, "recovery": 8,
+          "trackDegPerTick": 4,
+          "hyperArmor": 40,
+          "telegraph": { "tick": 8, "kind": "normal" },
+          "hitbox": { "shape": "arc", "radius": 58, "halfAngle": 100 },
+          "originY": -14,
+          "sweep": { "fromDeg": -120, "toDeg": 120 },
+          "knockback": 100, "hitstop": 4, "shake": 0.2, "sfx": "swing_heavy", "anim": "sweep"
+        },
+        {
+          "damage": 24, "poise": 30,
+          "windup": 14, "active": 6, "recovery": 40,
+          "trackDegPerTick": 4,
+          "hyperArmor": 40,
+          "hitbox": { "shape": "arc", "radius": 58, "halfAngle": 100 },
+          "originY": -14,
+          "sweep": { "fromDeg": 120, "toDeg": -120 },
+          "knockback": 160, "hitstop": 6, "shake": 0.3, "sfx": "swing_heavy", "anim": "sweep"
+        }
+      ]
+    }
+  ]
+}

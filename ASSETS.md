@@ -197,7 +197,21 @@ Enemies hold their weapon like the player does: `handAnchors` in the body manife
 | `toll_halberd` | 46×13 | 9,6 (grip) | tip (44,6) |
 | `smoke_veil` | 16×32 | 8,32 | 4 looping frames of pale smoke in a sealed doorway |
 
+| `mother_tallow` | 64×64 | 32,58 | `idle`, `walk`, `sweep`, `spit`, `crush`, `intro` (rises out of her vat's pool), `stagger`, `death` (sinks back into the wax) |
+| `mother_ladle` | 48×16 | 8,8 (grip) | tip (46,8) |
+
 Portrait frame 3 is the Tollwarden.
+
+### Tallow Works
+| Sheet | Cell | Notes |
+|---|---|---|
+| `tiles_works` | 16×16 | Same index layout as `tiles`. Floors: `floor` (soot flagstones), `floor_grate` (4–5), `floor_grease` (spilled tallow; 10–11), `floor_plank` (12–13). Soot-brick walls, iron-topped caps, black rock. |
+| `decor_works` | 64×64, pivot 32,62 | 0 `vat` (3 tiles, tall), 1 `hook_chain` (hangs, no footprint), 2 `cage`, 3 `tallow_stack` (tall), 4 `furnace` (tall), 5 `pipe` (tall), 6 `robe_rack`, 7 `desk`, 8 `lift_cage` (flat, anchor + east), 9 `chain_heap`, 10 `tallow_cart`, 11 `toll_booth` |
+| `renderer` | 32×32 | Animations: `idle`, `walk`, `throw`, `swipe`, `stagger`, `death`. Weapon `renderer_hook` (40×9, a chain and hook; the throw's `reach` slides it out). |
+| `vat_crawler`, `vat_spawn` | 32×32 | The same blob at two sizes: `idle`, `walk`, `engulf`, `stagger`, `death` |
+| `wax_glob` | 8×8 | Mother Tallow's lobbed wax |
+| `lever` | 16×24, pivot 8,23 | Frame 0 up, 1 pulled |
+| `prop_cracked_wall` | 16×16, pivot 8,16 | Frame 0 = cracks drawn over a wall face, 1 = rubble |
 
 ### `chest` (20×18, pivot 10,16)
 Frames: 0 closed; 1–3 opening (lid rising, light spilling out); 4 open and empty. The game picks the frame from the opening tick (`OPEN_TICKS` in `src/world/Pickups.ts`). The item pops out at `POP_TICK`. Closed chests show an occasional `item_glint` twinkle on the lid.

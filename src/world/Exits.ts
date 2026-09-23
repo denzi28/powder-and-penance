@@ -1,8 +1,9 @@
 // Area exits: tiles (usually a gap in a room's outer wall) that take you to another area when you walk into
 // them. Entity: { "type": "exit", "id", "at": [x, y], "size": [w, h] (tiles, default 1x1),
 //                 "to": { "area", "spawn" } } where "spawn" names a spawn entity in the target area.
+// Optional "when" (a story condition) and "closed" (the message while it doesn't hold) make a lift or gate.
 import { TILE } from './TileGrid';
-import type { RoomData } from '../data/schemas';
+import type { Cond, RoomData } from '../data/schemas';
 
 export interface Exit {
   id: string;
@@ -12,6 +13,10 @@ export interface Exit {
   x1: number;
   y1: number;
   to: { area: string; spawn: string };
+  /** Only usable while this condition holds (e.g. a lift that must be called first). */
+  when?: Cond;
+  /** What the player is told while `when` doesn't hold. */
+  closed?: string;
 }
 
 export class Exits {
@@ -27,7 +32,16 @@ export class Exits {
         const [w, h] = (en.size as [number, number] | undefined) ?? [1, 1];
         const x0 = r.origin[0] + en.at[0];
         const y0 = r.origin[1] + en.at[1];
-        this.list.push({ id: en.id, x0, y0, x1: x0 + w, y1: y0 + h, to: en.to as Exit['to'] });
+        this.list.push({
+          id: en.id,
+          x0,
+          y0,
+          x1: x0 + w,
+          y1: y0 + h,
+          to: en.to as Exit['to'],
+          when: en.when as Cond | undefined,
+          closed: en.closed === undefined ? undefined : String(en.closed),
+        });
       }
     this.armed = false;
   }

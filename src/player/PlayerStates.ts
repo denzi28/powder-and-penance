@@ -57,6 +57,7 @@ function critStrike(ticks: number, hitTick: number): StrikeDef {
     hyperArmor: 0,
     unblockable: true,
     unparryable: true,
+    pull: false,
     sfx: 'swing_heavy',
   };
 }

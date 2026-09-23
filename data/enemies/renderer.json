@@ -1,0 +1,64 @@
+{
+  "id": "renderer",
+  "name": "Renderer",
+  "ai": "melee",
+  "sprite": "renderer",
+  "weaponSprite": "renderer_hook",
+  "weaponRestDeg": 70,
+  "hp": 70,
+  "poise": { "max": 26, "resetTicks": 90 },
+  "tallow": 60,
+  "speed": 40,
+  "strafeSpeed": 26,
+  "accelTicks": 8,
+  "turnDegPerTick": 6,
+  "collider": { "w": 10, "h": 5 },
+  "hurtbox": { "w": 12, "h": 22, "offsetY": -11 },
+  "bodyRadius": 6,
+  "leash": { "distance": 420, "healOnReturn": true },
+  "spacing": { "preferred": 70, "strafeTicks": [40, 80] },
+  "attackGapTicks": [30, 60],
+  "staggerTicks": 32,
+  "deathTicks": 40,
+  "corpseTicks": 150,
+  "blood": "blood1",
+  "moves": [
+    {
+      "id": "hook_throw",
+      "range": [40, 92],
+      "weight": 3,
+      "cooldown": 100,
+      "strikes": [
+        {
+          "damage": 12, "poise": 20,
+          "windup": 32, "active": 6, "recovery": 36,
+          "trackDegPerTick": 4,
+          "telegraph": { "tick": 12, "kind": "normal" },
+          "hitbox": { "shape": "arc", "radius": 90, "halfAngle": 9, "inner": 20 },
+          "originY": -10,
+          "sweep": { "fromDeg": 0, "toDeg": 0, "reach": 58 },
+          "pull": true,
+          "knockback": 480, "hitstop": 5, "shake": 0.2, "sfx": "throw", "anim": "throw"
+        }
+      ]
+    },
+    {
+      "id": "flense",
+      "range": [0, 30],
+      "weight": 2,
+      "cooldown": 50,
+      "strikes": [
+        {
+          "damage": 18, "poise": 22,
+          "windup": 20, "active": 5, "recovery": 26,
+          "trackDegPerTick": 5,
+          "telegraph": { "tick": 8, "kind": "normal" },
+          "hitbox": { "shape": "arc", "radius": 28, "halfAngle": 80 },
+          "originY": -10,
+          "sweep": { "fromDeg": -100, "toDeg": 80 },
+          "knockback": 80, "hitstop": 4, "shake": 0.1, "sfx": "swing", "anim": "swipe"
+        }
+      ]
+    }
+  ]
+}

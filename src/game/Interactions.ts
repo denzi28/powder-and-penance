@@ -35,6 +35,20 @@ export function nearestInteractable(gs: GameScene): Interactable | null {
     return { label: `TALK TO ${DATA.npcs.npcs[npc.npc].name}`, use: () => gs.story.start(talk) };
   }
 
+  const lever = gs.levers.nearest(p.x, p.y, gs.leverPulled);
+  if (lever)
+    return {
+      label: 'PULL LEVER',
+      use: () => {
+        gs.flags.add(`lever:${lever.id}`);
+        gs.levers.refresh(gs.leverPulled);
+        gs.bus.emit('sfx', { id: 'door_open', x: lever.x, y: lever.y });
+        gs.cam.addTrauma(0.15);
+        if (lever.script) gs.story.start(lever.script);
+        gs.save();
+      },
+    };
+
   const chest = gs.pickups.nearest(p.x, p.y);
   if (chest)
     return {

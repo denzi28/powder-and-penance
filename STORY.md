@@ -49,6 +49,10 @@ The map is in [WORLD.md](WORLD.md).
 | Maudlin at the shrine (`maudlin`): first meeting (warm hands), the Drip, the Abbey, the Toll Gate | ✅ (levelling comes later) |
 | **The Tollwarden** (Abbey Gatehouse). His entrance line: "Toll is paid in tallow, pilgrim. And tallow is paid in you." His last words (`tollwarden_death`): he kept count of every pilgrim sent to the Works so they wouldn't be only tallow. His name was **Anselm**. He gives you the Toll Key. | ✅ |
 | Maudlin hears of Anselm's death (a new option once you've heard his last words) | ✅ |
+| Arriving at the Works (`works_arrive`) | ✅ |
+| **The Rendering Hall reveal** (`rendering_reveal`): the robes with name tags, the carts, "The Tallow in your pouch is warm. It always has been. Now you know why." | ✅ |
+| The Chandler's Ledger (Foreman's Office): names and weights. Showing it to Maudlin: her confession begins. | ✅ (the full forgive/condemn choice comes with the Chandler) |
+| **Mother Tallow** (`mother_tallow_death`): wordless. She sinks back into the vat she never stopped tending, ladle still in her hand. **Seal of Tallow.** | ✅ |
 | Pip, Brother Aldous and the rest | Placed later with their areas |
 
 ## Writing dialogue and cutscenes

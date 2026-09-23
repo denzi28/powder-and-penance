@@ -57,6 +57,10 @@ export function grantItem(gs: GameScene, id: string, itemId: string, x: number, 
       gs.flags.add(`key:${item.id}`);
       what = `A key. It opens ${e.opens}. Keys are kept for good, even if you die.`;
       break;
+    case 'quest':
+      gs.flags.add(`key:${item.id}`);
+      what = `${e.note} Kept for good, even if you die.`;
+      break;
   }
   gs.showToast(item.name.toUpperCase(), what, item.description);
   gs.particles.burst(x, y, 10, -Math.PI / 2, 1.6, 12, 60, 'flame2', false); // sparks from the open chest

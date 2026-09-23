@@ -182,6 +182,11 @@ export const PropDef = z.object({
   debris: z.string(),
   loot: z.string().default('none'),
   sfx: z.string().default('break'),
+  /**
+   * A cracked section of wall: placed in a wall tile, it is part of the wall (solid, drawn as wall) until
+   * broken, then the tile opens for good (world flag "wall:<room>#<index>") and never respawns.
+   */
+  secretWall: z.boolean().default(false),
 });
 
 /** One weighted outcome of a loot roll. */
@@ -205,6 +210,8 @@ export const ItemDef = z.object({
     z.object({ type: z.literal('tallow'), amount: int.positive() }),
     /** A key: kept for good (world flag "key:<item id>"). Doors with `requires: <item id>` open with it. */
     z.object({ type: z.literal('key'), opens: z.string() }),
+    /** A quest item, kept for good (world flag "key:<item id>", so scripts can check it); `note` says what it's for. */
+    z.object({ type: z.literal('quest'), note: z.string() }),
   ]),
 });
 
@@ -339,6 +346,8 @@ export const StrikeDef = z.object({
    * The strike's own damage is applied on contact. Pair with unblockable + a "danger" telegraph.
    */
   grab: z.object({ holdTicks: int.positive(), damage: num.min(0), throwKnockback: num.min(0) }).optional(),
+  /** Hook: the knockback drags the target toward the attacker instead of pushing it away. */
+  pull: z.boolean().default(false),
 });
 
 export const MoveDef = z.object({
@@ -456,6 +465,8 @@ export const EnemyDef = z.object({
   deathTicks: int.positive().default(40),
   corpseTicks: int.nonnegative().default(120),
   blood: z.string().default('blood2'),
+  /** On death, burst into `count` of another enemy kind (e.g. a wax blob into smaller blobs). */
+  splitInto: z.object({ kind: z.string(), count: int.positive() }).optional(),
   moves: z.array(MoveDef).default([]),
 });
 

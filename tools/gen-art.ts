@@ -1487,6 +1487,505 @@ function genTollwarden() {
   sheet('smoke_veil', veil, { cell: [16, 32], pivot: [8, 32], layer: 'fx' });
 }
 
+// =============================================================== THE TALLOW WORKS
+// --- Renderer: a gaunt worker in a leather apron and hood, a hook on a chain.
+const RENDER_HAND: Record<Dir5, [number, number]> = { S: [21, 18], SE: [21, 17], E: [18, 17], NE: [20, 16], N: [20, 16] };
+
+function drawRenderer(c: Img, dir: Dir5, pose: BodyPose) {
+  const o = { bob: 0, lean: 0, hunch: 0, step: -1, flinch: false, sway: 0, ...pose };
+  const b = o.bob;
+  const { lx, ly, sh } = leanOffsets(dir, o.lean);
+  const liftL = o.step === 1 ? 2 : 0;
+  const liftR = o.step === 3 ? 2 : 0;
+  c.rect(13, 22 + b, 2, 5 - liftL, P.dark2); // thin legs
+  c.rect(12, 27 - liftL, 3, 1, P.dark1);
+  c.rect(17, 22 + b, 2, 5 - liftR, P.dark2);
+  c.rect(17, 27 - liftR, 3, 1, P.dark1);
+  c.rect(12 + sh, 12 + b, 8, 11, P.stone1); // tall narrow body
+  c.rect(13 + sh, 14 + b, 6, 9, P.wood2); // leather apron, stained
+  c.set(15 + sh, 17 + b, P.wax1);
+  c.set(16 + sh, 20 + b, P.wax1);
+  c.rect(10 + sh + o.sway, 13 + b, 2, 8, P.stone1); // long arms
+  c.rect(20 + sh + o.sway, 13 + b, 2, 8, P.stone1);
+  const hx = 16 + lx + (o.flinch ? -1 : 0);
+  const hy = 4 + b + o.hunch + ly;
+  c.rect(hx - 3, hy, 6, 8, P.dark2); // hood
+  c.rect(hx - 2, hy - 1, 4, 1, P.dark2);
+  if (dir !== 'N' && dir !== 'NE') {
+    const fx = dir === 'S' ? hx - 2 : dir === 'SE' ? hx - 1 : hx;
+    c.rect(fx, hy + 3, dir === 'E' ? 3 : 4, 3, P.wax1); // pale face, a mouth-cloth
+    c.hline(fx, hy + 5, dir === 'E' ? 3 : 4, P.stone3);
+    c.set(fx + 1, hy + 3, o.flinch ? P.ember : P.ink);
+    if (dir !== 'E') c.set(fx + 3, hy + 3, o.flinch ? P.ember : P.ink);
+  }
+}
+function rendererDeath(c: Img, f: number) {
+  if (f < 2) {
+    drawRenderer(c, 'S', { bob: 2 + f, hunch: 2 + f, flinch: true });
+    return;
+  }
+  c.rect(8, 23, 16, 4, P.stone1);
+  c.rect(10, 23, 8, 3, P.wood2);
+  c.rect(22, 22, 4, 4, P.dark2);
+}
+
+// --- Vat Crawler: a heap of half-rendered wax that drags itself along; a guttering wick on top.
+function drawCrawler(c: Img, _dir: Dir5, pose: BodyPose & { size?: number }) {
+  const o = { bob: 0, lean: 0, hunch: 0, step: -1, flinch: false, sway: 0, size: 1, ...pose };
+  const s = o.size;
+  const sq = o.bob * 0.6; // squash: wider and lower as it gathers itself
+  const w = 9 * s + sq;
+  const h = 6 * s - sq * 0.6;
+  const cx = 16 + o.lean;
+  const cy = 26 - h;
+  c.ellipse(cx, cy + h * 0.4, w, h, P.wax1);
+  c.ellipse(cx - w * 0.3, cy, w * 0.5, h * 0.6, P.wax2);
+  for (const d of [-0.6, 0.1, 0.7]) c.vline(Math.round(cx + w * d), Math.round(cy + h * 0.9), 2, P.wax1); // drips
+  c.set(Math.round(cx - 2 * s), Math.round(cy), o.flinch ? P.ember : P.ink); // sunken eyes
+  c.set(Math.round(cx + 2 * s), Math.round(cy), o.flinch ? P.ember : P.ink);
+  c.vline(Math.round(cx + 1), Math.round(cy - h - 1), 2, P.dark2); // wick
+  if (!o.flinch) c.set(Math.round(cx + 1), Math.round(cy - h - 2), P.flame2);
+}
+function crawlerDeath(c: Img, f: number, size: number) {
+  if (f < 2) {
+    drawCrawler(c, 'S', { bob: 3 + f * 2, flinch: true, size });
+    return;
+  }
+  c.ellipse(16, 26, 9 * size + f, 2.5, P.wax1);
+  c.ellipse(13, 25, 3 * size, 1.5, P.wax2);
+}
+
+// --- Mother Tallow (64x64): the Works' keeper, drowned in her own vat long ago and never stopped working.
+// A vast shape of wax in a rendering-woman's smock, a dozen guttering wicks along her shoulders, a ladle.
+const MOTHER_HAND: Record<Dir5, [number, number]> = { S: [48, 36], SE: [47, 35], E: [43, 35], NE: [46, 33], N: [46, 33] };
+
+function drawMother(c: Img, dir: Dir5, pose: BodyPose & { rise?: number }) {
+  const o = { bob: 0, lean: 0, hunch: 0, step: -1, flinch: false, sway: 0, rise: 0, ...pose };
+  const b = o.bob + o.rise; // rise: sunk into her wax pool (intro), 0 = full height
+  const { lx, ly, sh } = leanOffsets(dir, o.lean);
+  // Her pool of wax, always around her
+  c.ellipse(32, 58, 22, 5, P.wax1);
+  c.ellipse(26, 57, 8, 2, P.wax2);
+  // Body: a great bell of wax under a stained smock
+  for (let y = 22; y <= 56; y++) {
+    if (y + b > 57) continue;
+    const half = Math.round(10 + (y - 22) * 0.38);
+    c.hline(32 + sh - half, y + b, half * 2, y > 44 ? P.wax1 : P.stone2);
+  }
+  c.rect(24 + sh, 30 + b, 16, 12, P.wood2); // smock bib, stained
+  c.set(28 + sh, 34 + b, P.blood1);
+  c.set(34 + sh, 38 + b, P.blood1);
+  // Arms
+  c.ellipse(17 + sh + o.sway, 36 + b, 4, 9, P.wax1);
+  c.ellipse(47 + sh + o.sway, 36 + b, 4, 9, P.wax1);
+  // Head: half melted, the face slid to one side; hair of wicks
+  const hx = 32 + lx + (o.flinch ? -2 : 0);
+  const hy = 10 + b + o.hunch + ly;
+  c.ellipse(hx, hy + 7, 8, 9, P.wax1);
+  c.ellipse(hx + 3, hy + 13, 5, 4, P.wax1); // the slid-down cheek
+  if (dir !== 'N' && dir !== 'NE') {
+    const fx = dir === 'S' ? hx : dir === 'SE' ? hx + 2 : hx + 4;
+    c.set(fx - 3, hy + 6, P.ink);
+    c.set(fx + 2, hy + 7, P.ink);
+    c.hline(fx - 2, hy + 11, 4, o.flinch ? P.ember : P.dark2); // a humming mouth
+  }
+  for (const [x, y] of [[-7, 0], [-4, -3], [0, -4], [4, -3], [7, 0], [-12, 8], [12, 8]]) {
+    c.vline(hx + x, hy + y, 2, P.dark2);
+    c.set(hx + x, hy + y - 1, o.flinch ? P.ember : P.flame2);
+  }
+  const [ax, ay] = MOTHER_HAND[dir];
+  c.rect(ax - 2, ay - 2 + b, 5, 5, P.wax1);
+}
+function motherDeath(c: Img, f: number) {
+  // She sinks back into her wax and the wicks go out one by one.
+  const rise = [2, 6, 14, 22, 30][f];
+  drawMother(c, 'S', { rise, flinch: f < 2, hunch: f });
+}
+
+function genWorks() {
+  const T = 16;
+  // ---- tileset: soot-black flagstones, iron grates, tallow spills, soot brick walls with iron tops
+  const img = new Img(T * 8, T * 4);
+  const at = (idx: number) => [(idx % 8) * T, Math.floor(idx / 8) * T] as const;
+  const speck = (ox: number, oy: number, r: () => number, n: number, col: RGBA) => {
+    for (let i = 0; i < n; i++) img.set(ox + Math.floor(r() * 16), oy + Math.floor(r() * 16), col);
+  };
+  for (let v = 0; v < 4; v++) {
+    const [ox, oy] = at(v);
+    const r = rng(3000 + v);
+    img.rect(ox, oy, T, T, P.stone1);
+    img.hline(ox, oy + 15, T, P.dark1);
+    img.vline(ox + 15, oy, T, P.dark1);
+    if (v % 2) img.vline(ox + 7, oy, 15, P.dark1);
+    speck(ox, oy, r, 12, P.dark2);
+    speck(ox, oy, r, 4, P.ink);
+    if (v === 3) img.ellipse(ox + 8, oy + 8, 4, 2, P.dark2); // soot stain
+  }
+  for (const v of [4, 5]) {
+    // iron grate over a dark drain
+    const [ox, oy] = at(v);
+    img.rect(ox, oy, T, T, P.ink);
+    for (let x = 1; x < T; x += 4) img.vline(ox + x, oy, T, P.steel1);
+    img.hline(ox, oy, T, P.stone2);
+    img.hline(ox, oy + 8, T, P.stone2);
+    if (v === 5) img.set(ox + 6, oy + 11, P.ember); // a glow from below
+  }
+  for (const idx of [6, 7]) {
+    const [ox, oy] = at(idx);
+    const r = rng(3100 + idx);
+    img.rect(ox, oy, T, T, P.ink);
+    speck(ox, oy, r, 6, P.dark1);
+    if (idx === 7) img.set(ox + 9, oy + 5, P.ember);
+  }
+  for (const [idx, v] of [[8, 0], [9, 1]]) {
+    // soot brick
+    const [ox, oy] = at(idx);
+    const r = rng(3200 + idx);
+    img.rect(ox, oy, T, T, P.wood1);
+    for (const y of [3, 7, 11]) img.hline(ox, oy + y, T, P.dark2);
+    for (const [x, y, h] of [[5, 0, 3], [13, 0, 3], [1, 4, 3], [9, 4, 3], [5, 8, 3], [13, 8, 3]]) img.vline(ox + x + v * 2, oy + y, h, P.dark2);
+    speck(ox, oy, r, 6, P.dark1);
+    speck(ox, oy, r, 2, P.ember);
+    img.hline(ox, oy, T, P.steel1);
+    img.rect(ox, oy + 13, T, 3, P.dark1);
+  }
+  for (const v of [10, 11]) {
+    // tallow spilled on the stones: a flat, faint, greasy sheen across the whole tile (no blob shapes, which
+    // would read as Vat Crawlers)
+    const [ox, oy] = at(v);
+    const r = rng(3300 + v);
+    const mix = (a: RGBA, b: RGBA, k: number): RGBA => [0, 1, 2].map(i => Math.round(a[i] + (b[i] - a[i]) * k)).concat(255) as unknown as RGBA;
+    img.rect(ox, oy, T, T, mix(P.stone1, P.wax1, 0.28));
+    img.hline(ox, oy + 15, T, mix(P.stone1, P.dark1, 0.6));
+    speck(ox, oy, r, 7, mix(P.stone1, P.wax2, 0.5)); // glints of grease (dots, so big spills don't stripe)
+    speck(ox, oy, r, 5, P.dark2);
+  }
+  for (const v of [12, 13]) {
+    const [ox, oy] = at(v);
+    const r = rng(3400 + v);
+    img.rect(ox, oy, T, T, P.wood1);
+    for (const y of [0, 4, 8, 12]) img.hline(ox, oy + y, T, P.dark2);
+    speck(ox, oy, r, 5, P.wood2);
+  }
+  for (let mask = 0; mask < 16; mask++) {
+    const [ox, oy] = at(16 + mask);
+    const r = rng(3500 + mask);
+    img.rect(ox, oy, T, T, P.dark1);
+    speck(ox, oy, r, 5, P.ink);
+    if (mask & 1) img.hline(ox, oy, T, P.steel1);
+    if (mask & 2) img.vline(ox + 15, oy, T, P.steel1);
+    if (mask & 4) {
+      img.hline(ox, oy + 14, T, P.steel1);
+      img.hline(ox, oy + 15, T, P.stone1);
+      for (const x of [3, 11]) img.set(ox + x, oy + 14, P.ember); // rivets
+    }
+    if (mask & 8) img.vline(ox, oy, T, P.steel1);
+  }
+  sheet('tiles_works', img, {
+    cell: [T, T],
+    pivot: [0, 0],
+    layer: 'tiles',
+    tiles: {
+      floor: [0, 0, 0, 1, 1, 2, 3],
+      floor_grate: [4, 4, 5],
+      floor_grease: [10, 11],
+      floor_plank: [12, 13],
+      wall_front: [8, 8, 9],
+      wall_cap: Array.from({ length: 16 }, (_, i) => 16 + i),
+      rock: [6, 6, 7],
+    },
+  });
+
+  // ---- decor (64x64, pivot 32,62)
+  const W = 64;
+  const H = 64;
+  const B = 62;
+  const frames: Img[] = [];
+  const cell = () => new Img(W, H);
+  // 0: rendering vat (three tiles wide, tall): an iron cauldron full of glowing wax
+  {
+    const c = cell();
+    c.ellipse(32, B - 10, 23, 10, P.dark1);
+    c.rect(9, B - 30, 46, 22, P.steel1);
+    c.vline(9, B - 30, 22, P.steel2);
+    c.vline(54, B - 30, 22, P.stone1);
+    for (const y of [B - 26, B - 16]) c.hline(9, y, 46, P.stone1);
+    c.ellipse(32, B - 31, 23, 6, P.stone1); // rim
+    c.ellipse(32, B - 31, 20, 4.5, P.wax1); // molten tallow
+    c.ellipse(26, B - 32, 7, 2, P.wax2);
+    c.set(40, B - 31, P.flame2);
+    c.rect(28, B - 8, 8, 5, P.ember); // fire under it
+    c.rect(30, B - 7, 4, 3, P.flame2);
+    c.outline(P.ink);
+    frames.push(c);
+  }
+  // 1: hook on a chain, hanging from above (no footprint)
+  {
+    const c = cell();
+    for (let y = 0; y < 44; y += 3) c.rect(31, y, 2, 2, P.steel1);
+    c.rect(30, 44, 4, 3, P.steel2);
+    line(c, 33, 47, 35, 52, P.steel2);
+    line(c, 35, 52, 31, 54, P.steel2);
+    c.set(30, 52, P.steel2);
+    c.ellipse(32, B - 1, 3, 1, withAlpha(P.ink, 120)); // shadow on the floor
+    frames.push(c);
+  }
+  // 2: empty pilgrim cage (two tiles: anchor and west)
+  {
+    const c = cell();
+    c.rect(9, B - 26, 30, 26, P.dark1);
+    for (let x = 9; x <= 38; x += 4) c.vline(x, B - 26, 26, P.steel1);
+    c.hline(9, B - 26, 30, P.steel2);
+    c.hline(9, B - 1, 30, P.steel2);
+    c.rect(20, B - 6, 6, 3, P.stone3); // a dropped robe
+    c.outline(P.ink);
+    frames.push(c);
+  }
+  // 3: tallow blocks stacked on a pallet
+  {
+    const c = cell();
+    c.rect(22, B - 3, 20, 3, P.wood1);
+    for (const [x, y] of [[23, 11], [32, 11], [27, 19]]) {
+      c.rect(x, B - y, 9, 8, P.wax1);
+      c.hline(x, B - y, 9, P.wax2);
+      c.rect(x + 3, B - y + 3, 3, 2, P.stone3); // a stamped mark
+    }
+    c.outline(P.ink);
+    frames.push(c);
+  }
+  // 4: furnace (two tiles: anchor and west), tall, fire in its mouth
+  {
+    const c = cell();
+    c.rect(9, B - 36, 30, 36, P.wood1);
+    for (const y of [B - 30, B - 22, B - 14]) c.hline(9, y, 30, P.dark2);
+    c.rect(15, B - 14, 18, 12, P.ink);
+    c.rect(17, B - 11, 14, 9, P.ember);
+    c.rect(20, B - 9, 8, 6, P.flame2);
+    c.rect(20, B - 44, 8, 8, P.dark1); // flue
+    c.outline(P.ink);
+    frames.push(c);
+  }
+  // 5: iron pipe rising into the dark
+  {
+    const c = cell();
+    c.rect(28, B - 46, 8, 46, P.steel1);
+    c.vline(28, B - 46, 46, P.steel2);
+    for (const y of [B - 34, B - 12]) c.rect(26, y, 12, 3, P.stone1);
+    c.set(33, B - 20, P.ember);
+    c.outline(P.ink);
+    frames.push(c);
+  }
+  // 6: rack of pilgrim robes with name tags (two tiles: anchor and west)
+  {
+    const c = cell();
+    c.rect(9, B - 32, 30, 2, P.wood1);
+    c.rect(9, B - 32, 2, 32, P.wood1);
+    c.rect(37, B - 32, 2, 32, P.wood1);
+    for (let i = 0; i < 5; i++) {
+      const x = 12 + i * 5;
+      c.rect(x, B - 30, 4, 18, [P.stone3, P.teal2, P.stone2, P.wood2, P.stone3][i]);
+      c.rect(x + 1, B - 12, 2, 2, P.wax2); // tag
+    }
+    c.outline(P.ink);
+    frames.push(c);
+  }
+  // 7: the foreman's desk with a ledger (two tiles: anchor and west)
+  {
+    const c = cell();
+    c.rect(9, B - 14, 30, 5, P.wood2);
+    c.rect(10, B - 9, 3, 9, P.wood1);
+    c.rect(35, B - 9, 3, 9, P.wood1);
+    c.rect(16, B - 17, 10, 3, P.wax2); // open ledger
+    c.vline(21, B - 17, 3, P.stone3);
+    c.rect(30, B - 20, 2, 6, P.wax1); // candle
+    c.set(30, B - 21, P.flame2);
+    c.outline(P.ink);
+    frames.push(c);
+  }
+  // 8: lift cage platform (flat, two tiles: anchor and east) with its chains
+  {
+    const c = cell();
+    c.rect(24, B - 6, 32, 6, P.wood2);
+    for (let x = 26; x < 56; x += 5) c.vline(x, B - 6, 6, P.wood1);
+    c.hline(24, B - 6, 32, P.steel1);
+    c.hline(24, B - 1, 32, P.steel1);
+    for (const x of [25, 54]) for (let y = 0; y < B - 6; y += 3) c.rect(x, y, 1, 2, P.steel1);
+    frames.push(c);
+  }
+  // 9: heap of chain (flat)
+  {
+    const c = cell();
+    for (let i = 0; i < 9; i++) c.ellipse(24 + (i % 3) * 5 + (i > 5 ? 3 : 0), B - 2 - Math.floor(i / 3) * 2, 2.5, 1.5, P.steel1);
+    frames.push(c);
+  }
+  // 10: tallow cart (two tiles: anchor and west)
+  {
+    const c = cell();
+    c.rect(10, B - 14, 28, 9, P.wood1);
+    c.hline(10, B - 14, 28, P.wood2);
+    c.disc(16, B - 4, 4, P.dark2);
+    c.disc(32, B - 4, 4, P.dark2);
+    c.rect(12, B - 19, 24, 5, P.wax1); // heaped tallow
+    c.ellipse(20, B - 19, 5, 2, P.wax2);
+    c.outline(P.ink);
+    frames.push(c);
+  }
+  // 11: carters' toll booth (tall)
+  {
+    const c = cell();
+    c.rect(22, B - 30, 20, 30, P.wood1);
+    c.rect(20, B - 34, 24, 5, P.dark2); // roof
+    c.rect(26, B - 24, 12, 8, P.ink); // window
+    c.rect(28, B - 21, 2, 2, P.flame2);
+    c.outline(P.ink);
+    frames.push(c);
+  }
+  const deco = new Img(W * frames.length, H);
+  frames.forEach((f, i) => deco.blit(f, i * W, 0));
+  sheet('decor_works', deco, { cell: [W, H], pivot: [32, B], layer: 'single' });
+
+  // ---- lever (16x24, pivot 8,23): frame 0 up (unpulled), 1 down
+  const lever = new Img(32, 24);
+  for (let f = 0; f < 2; f++) {
+    const c = new Img(16, 24);
+    c.rect(4, 17, 8, 6, P.stone2);
+    c.hline(4, 17, 8, P.stone3);
+    if (f === 0) line(c, 8, 18, 10, 6, P.steel1);
+    else line(c, 8, 18, 14, 14, P.steel1);
+    const [kx, ky] = f === 0 ? [10, 5] : [14, 13];
+    c.disc(kx, ky, 1.5, P.blood2);
+    c.outline(P.ink);
+    lever.blit(c, f * 16, 0);
+  }
+  sheet('lever', lever, { cell: [16, 24], pivot: [8, 23], layer: 'single' });
+
+  // ---- cracked wall (16x16, pivot 8,16): frame 0 cracks over the brick face, frame 1 rubble
+  const crack = new Img(32, 16);
+  line(crack, 8, 2, 6, 7, P.ink);
+  line(crack, 6, 7, 9, 11, P.ink);
+  line(crack, 9, 11, 7, 15, P.ink);
+  line(crack, 6, 7, 2, 9, P.ink);
+  line(crack, 9, 11, 13, 10, P.ink);
+  crack.set(10, 4, P.flame1); // a draught of warm air: something is behind it
+  for (const [x, y, r] of [[20, 13, 2.5], [25, 14, 2], [28, 12, 1.5], [23, 11, 1.5]]) crack.ellipse(x, y, r, r * 0.7, P.wood1);
+  sheet('prop_cracked_wall', crack, { cell: [16, 16], pivot: [8, 16], layer: 'single' });
+
+  // ---- enemies
+  const P7 = phased7();
+  const frames2 = <T,>(draw: (c: Img, d: Dir5, p: T) => void, poses: T[]) => poses.map(p => (c: Img, d: Dir5) => draw(c, d, p));
+  const walk4 = <T,>(draw: (c: Img, d: Dir5, p: T) => void, mk: (f: number) => T) => [0, 1, 2, 3].map(f => (c: Img, d: Dir5) => draw(c, d, mk(f)));
+  rosterSheet(
+    'renderer',
+    CELL,
+    PIVOT,
+    7,
+    [
+      { name: 'idle', frames: frames2(drawRenderer, [{}, { bob: 1 }]), timing: idleT, loop: true },
+      { name: 'walk', frames: walk4(drawRenderer, f => ({ step: f, bob: f % 2 ? -1 : 0 })), timing: walkT(9), loop: true },
+      {
+        name: 'throw',
+        frames: frames2(drawRenderer, [{ lean: -1, sway: -1 }, { lean: -2, sway: -2 }, { lean: -2, sway: -2, bob: 1 }, { lean: 3, sway: 2 }, { lean: 2, sway: 1 }, { lean: 1 }, {}]),
+        timing: P7,
+        loop: false,
+      },
+      {
+        name: 'swipe',
+        frames: frames2(drawRenderer, [{ sway: -1 }, { sway: -2, lean: -1 }, { sway: -2, lean: -1, bob: 1 }, { sway: 2, lean: 2 }, { sway: 2, lean: 1 }, { sway: 1 }, {}]),
+        timing: P7,
+        loop: false,
+      },
+      { name: 'stagger', frames: frames2(drawRenderer, [{ lean: -2, flinch: true }, { lean: -1, bob: 1, flinch: true }, { bob: 1 }]), timing: staggerT, loop: false },
+    ],
+    [0, 1, 2, 3, 4].map(f => (c: Img) => rendererDeath(c, f)),
+    RENDER_HAND,
+  );
+  for (const [name, size] of [['vat_crawler', 1], ['vat_spawn', 0.6]] as const) {
+    const draw = (c: Img, d: Dir5, p: BodyPose) => drawCrawler(c, d, { ...p, size });
+    rosterSheet(
+      name,
+      CELL,
+      PIVOT,
+      7,
+      [
+        { name: 'idle', frames: frames2(draw, [{}, { bob: 1 }]), timing: [{ ticks: 20 }, { ticks: 20 }], loop: true },
+        { name: 'walk', frames: walk4(draw, f => ({ bob: f % 2 ? 2 : 0, lean: f === 1 ? 1 : f === 3 ? -1 : 0 })), timing: walkT(8), loop: true },
+        {
+          name: 'engulf',
+          frames: frames2(draw, [{ bob: 2 }, { bob: 3 }, { bob: 4 }, { bob: -3, lean: 2 }, { bob: -2, lean: 2 }, { bob: 1 }, {}]),
+          timing: P7,
+          loop: false,
+        },
+        { name: 'stagger', frames: frames2(draw, [{ bob: 3, flinch: true }, { bob: 2, flinch: true }, { bob: 1 }]), timing: staggerT, loop: false },
+      ],
+      [0, 1, 2, 3, 4].map(f => (c: Img) => crawlerDeath(c, f, size)),
+      null,
+    );
+  }
+  rosterSheet(
+    'mother_tallow',
+    64,
+    [32, 58],
+    7,
+    [
+      { name: 'idle', frames: frames2(drawMother, [{}, { bob: 1 }]), timing: [{ ticks: 30 }, { ticks: 30 }], loop: true },
+      { name: 'walk', frames: walk4(drawMother, f => ({ bob: f % 2 ? 1 : 0, sway: f === 1 ? 1 : f === 3 ? -1 : 0 })), timing: walkT(14), loop: true },
+      {
+        name: 'sweep',
+        frames: frames2(drawMother, [{ sway: -2, lean: -1 }, { sway: -3, lean: -2 }, { sway: -3, lean: -2, bob: 1 }, { sway: 3, lean: 3 }, { sway: 3, lean: 2 }, { sway: 1, lean: 1 }, {}]),
+        timing: P7,
+        loop: false,
+      },
+      {
+        name: 'spit',
+        frames: frames2(drawMother, [{ hunch: -1 }, { hunch: -2, lean: -2 }, { hunch: -2, lean: -2, bob: -1 }, { hunch: 1, lean: 3 }, { lean: 2 }, { lean: 1 }, {}]),
+        timing: P7,
+        loop: false,
+      },
+      {
+        name: 'crush',
+        frames: frames2(drawMother, [{ bob: -2, hunch: -2 }, { bob: -3, hunch: -3 }, { bob: -3, hunch: -3, sway: 1 }, { bob: 3, hunch: 3, lean: 2 }, { bob: 4, hunch: 3, lean: 2 }, { bob: 2 }, {}]),
+        timing: P7,
+        loop: false,
+      },
+      {
+        // The entrance: she rises out of her vat's pool, the wicks on her shoulders catching one by one.
+        name: 'intro',
+        frames: frames2(drawMother, [{ rise: 26 }, { rise: 18 }, { rise: 10 }, { rise: 3 }, { rise: 0, sway: -1 }, { rise: 0, sway: 1 }]),
+        timing: [{ ticks: 20 }, { ticks: 20 }, { ticks: 20 }, { ticks: 15 }, { ticks: 15 }, { ticks: 30 }],
+        loop: false,
+      },
+      { name: 'stagger', frames: frames2(drawMother, [{ lean: -2, flinch: true }, { lean: -1, bob: 1, flinch: true }, { bob: 1 }]), timing: staggerT, loop: false },
+    ],
+    [0, 1, 2, 3, 4].map(f => (c: Img) => motherDeath(c, f)),
+    MOTHER_HAND,
+  );
+
+  // ---- weapons and projectiles
+  const hook = new Img(40, 9);
+  for (let x = 1; x < 30; x += 3) hook.rect(x, 4, 2, 1, P.steel1); // chain
+  hook.rect(30, 3, 3, 3, P.steel2);
+  line(hook, 33, 4, 37, 1, P.steel2);
+  line(hook, 37, 1, 38, 5, P.steel2);
+  line(hook, 38, 5, 35, 7, P.steel2);
+  hook.outline(P.ink);
+  sheet('renderer_hook', hook, { cell: [40, 9], pivot: [3, 4], layer: 'weapon', points: { tip: [37, 4] } });
+
+  const ladle = new Img(48, 16);
+  ladle.hline(1, 8, 34, P.wood1);
+  ladle.hline(1, 7, 34, P.wood2);
+  ladle.ellipse(40, 8, 7, 6, P.steel1);
+  ladle.ellipse(40, 7, 5, 3, P.wax1);
+  ladle.outline(P.ink);
+  sheet('mother_ladle', ladle, { cell: [48, 16], pivot: [8, 8], layer: 'weapon', points: { tip: [46, 8] } });
+
+  const glob = new Img(8, 8);
+  glob.disc(4, 4.5, 3, P.wax1);
+  glob.set(3, 3, P.wax2);
+  glob.set(5, 6, P.flame1);
+  glob.outline(P.ink);
+  sheet('wax_glob', glob, { cell: [8, 8], pivot: [4, 4], layer: 'fx' });
+}
+
 function genRoster() {
   const P7 = phased7();
   const walk4 = <T,>(draw: (c: Img, d: Dir5, p: T) => void, mk: (f: number) => T) => [0, 1, 2, 3].map(f => (c: Img, d: Dir5) => draw(c, d, mk(f)));
@@ -2649,5 +3148,6 @@ genHubDecor();
 genChest();
 genNpcs();
 genTollwarden();
+genWorks();
 genFont();
 console.log(`gen-art: wrote ${written} file(s), skipped ${skipped} existing${skipped && !FORCE ? ' (use --force to overwrite)' : ''}`);

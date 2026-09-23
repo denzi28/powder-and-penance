@@ -34,7 +34,7 @@ describe('area exits', () => {
     });
 
     it(`${area}: every exit is reachable from every spawn point`, () => {
-      const grid = levelGrid(rooms);
+      const grid = levelGrid(rooms, true); // cracked walls can be smashed
       const pf = new Pathfinder(() => grid);
       const spawns = rooms.flatMap(r => r.entities.filter(en => en.type === 'spawn').map(en => findSpawn([r], en.id!)!));
       for (const s of spawns)

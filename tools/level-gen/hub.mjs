@@ -74,7 +74,14 @@ R('hub_01_yard', [0, 10], 34, 24)
   .decor('lantern_post', 15, 13).decor('lantern_post', 20, 13).decor('signpost', 2, 10).decor('signpost', 26, 13)
   .decor('grass_tuft', 3, 5).decor('grass_tuft', 11, 20).decor('grass_tuft', 26, 18).decor('grass_tuft', 8, 2)
   .prop('crate', 24, 9).prop('crate', 20, 6).prop('pot', 23, 6).prop('pot', 12, 16).prop('crate', 27, 3)
-  .spawn('from_road', 17, 21).spawn('from_mire', 2, 12).spawn('from_works', 31, 11)
+  .spawn('from_road', 17, 21).spawn('from_mire', 2, 12).spawn('from_works', 31, 11).spawn('from_works_lift', 25, 15)
+  // the Works lift: its cage hangs here once it has been called up from the bottom of the shaft
+  .decor('lift_cage', 25, 17)
+  .add({
+    type: 'exit', id: 'hub_lift_down', at: [25, 17], size: [2, 1], to: { area: 'works', spawn: 'from_hub_lift' },
+    when: 'lever:works_lift',
+    closed: 'An empty lift shaft drops away into the dark. The cage is somewhere below; it must be called from the bottom.',
+  })
   .exit('hub_to_road', 17, 23, 2, 1, 'road', 'from_hub')
   .exit('hub_to_mire', 0, 11, 1, 2, 'mire', 'from_hub')
   .exit('hub_to_works', 33, 10, 1, 3, 'works', 'from_hub')

@@ -1,0 +1,11 @@
+{
+  "id": "works_lift_lever",
+  "skippable": true,
+  "steps": [
+    { "shake": 0.3 },
+    { "sfx": "door_open" },
+    { "wait": 30 },
+    { "say": "Far above, a counterweight drops. The lift cage rattles down the shaft and settles beside you." },
+    { "toast": ["SHORTCUT OPENED", "The lift now runs between the Works and Wick's Rest."] }
+  ]
+}

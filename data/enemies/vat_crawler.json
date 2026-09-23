@@ -1,0 +1,46 @@
+{
+  "id": "vat_crawler",
+  "name": "Vat Crawler",
+  "ai": "melee",
+  "sprite": "vat_crawler",
+  "hp": 60,
+  "poise": { "max": 30, "resetTicks": 90 },
+  "tallow": 40,
+  "speed": 26,
+  "strafeSpeed": 16,
+  "accelTicks": 10,
+  "turnDegPerTick": 5,
+  "collider": { "w": 14, "h": 6 },
+  "hurtbox": { "w": 18, "h": 12, "offsetY": -6 },
+  "bodyRadius": 8,
+  "knockbackResist": 0.5,
+  "leash": { "distance": 360, "healOnReturn": true },
+  "spacing": { "preferred": 24, "strafeTicks": [40, 80] },
+  "attackGapTicks": [30, 60],
+  "staggerTicks": 36,
+  "deathTicks": 40,
+  "corpseTicks": 120,
+  "blood": "wax1",
+  "splitInto": { "kind": "vat_spawn", "count": 2 },
+  "moves": [
+    {
+      "id": "engulf",
+      "range": [0, 44],
+      "weight": 1,
+      "cooldown": 70,
+      "strikes": [
+        {
+          "damage": 20, "poise": 24,
+          "windup": 30, "active": 6, "recovery": 34,
+          "trackDegPerTick": 3,
+          "telegraph": { "tick": 12, "kind": "normal" },
+          "lunge": { "distance": 26, "startTick": 28, "ticks": 6 },
+          "hitbox": { "shape": "circle", "radius": 16, "offset": 8 },
+          "originY": -4,
+          "sweep": { "fromDeg": 0, "toDeg": 0 },
+          "knockback": 90, "hitstop": 4, "shake": 0.15, "sfx": "hit", "anim": "engulf"
+        }
+      ]
+    }
+  ]
+}

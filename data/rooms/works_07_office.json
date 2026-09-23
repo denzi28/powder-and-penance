@@ -1,0 +1,71 @@
+{
+  "id": "works_07_office",
+  "area": "works",
+  "origin": [17, 41],
+  "legend": {
+    "#": "wall",
+    ".": "floor",
+    ",": "floor_grate",
+    "~": "floor_grease",
+    "_": "floor_plank",
+    " ": "void"
+  },
+  "tiles": [
+    "#####_########",
+    "#____________#",
+    "#____________#",
+    "#____________#",
+    "#____________#",
+    "#____________.",
+    "#____________#",
+    "#____________#",
+    "#____________#",
+    "#____________#",
+    "##############"
+  ],
+  "entities": [
+    {
+      "type": "shrine",
+      "id": "shrine_foreman",
+      "name": "Foreman's Wick",
+      "at": [7, 3]
+    },
+    {
+      "type": "door",
+      "id": "works_office_door",
+      "at": [13, 5],
+      "opensFrom": "W"
+    },
+    {
+      "type": "decor",
+      "kind": "desk",
+      "at": [4, 7]
+    },
+    {
+      "type": "decor",
+      "kind": "bookshelf",
+      "at": [12, 1]
+    },
+    {
+      "type": "decor",
+      "kind": "tallow_stack",
+      "at": [1, 9]
+    },
+    {
+      "type": "item",
+      "id": "works_ledger",
+      "item": "chandler_ledger",
+      "at": [2, 7]
+    },
+    {
+      "type": "prop",
+      "kind": "candles",
+      "at": [1, 1]
+    },
+    {
+      "type": "prop",
+      "kind": "candles",
+      "at": [10, 8]
+    }
+  ]
+}

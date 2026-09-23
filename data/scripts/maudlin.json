@@ -42,6 +42,17 @@
           ]
         },
         {
+          "text": "Show her the Chandler's Ledger.",
+          "when": ["key:chandler_ledger", "!maudlin_saw_ledger"],
+          "do": [
+            { "say": "She reads the first page. Then the second. Her hands stop shaking somewhere around the tenth." },
+            { "say": "Names and weights. He wrote down the weights.", "who": "maudlin" },
+            { "say": "I knew. Not this. But I knew enough, and I kept the shrine lit and I didn't ask, because the shrine was all these people had.", "who": "maudlin" },
+            { "say": "Keep it. Somebody has to carry it up to him, and it can't be me. Not yet.", "who": "maudlin" },
+            { "set": "maudlin_saw_ledger" }
+          ]
+        },
+        {
           "text": "What is behind the locked gate?",
           "when": "!key:toll_key",
           "do": [

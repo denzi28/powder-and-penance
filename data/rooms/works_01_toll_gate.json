@@ -1,0 +1,100 @@
+{
+  "id": "works_01_toll_gate",
+  "area": "works",
+  "origin": [0, 0],
+  "legend": {
+    "#": "wall",
+    ".": "floor",
+    ",": "floor_grate",
+    "~": "floor_grease",
+    "_": "floor_plank",
+    " ": "void"
+  },
+  "tiles": [
+    "######################",
+    "####..............####",
+    "####..............####",
+    "####.................#",
+    "#....................#",
+    "#....................#",
+    ",,,,,,,,,,,,,,,,,,,,,,",
+    ",,,,,,,,,,,,,,,,,,,,,,",
+    "#....................#",
+    "#....................#",
+    "####.................#",
+    "####.................#",
+    "####.................#",
+    "######################"
+  ],
+  "entities": [
+    {
+      "type": "spawn",
+      "id": "from_hub",
+      "at": [2, 6]
+    },
+    {
+      "type": "exit",
+      "id": "works_to_hub",
+      "at": [0, 6],
+      "size": [1, 2],
+      "to": {
+        "area": "hub",
+        "spawn": "from_works"
+      }
+    },
+    {
+      "type": "cutscene",
+      "id": "works_arrive",
+      "script": "works_arrive",
+      "at": [1, 5],
+      "size": [3, 4]
+    },
+    {
+      "type": "decor",
+      "kind": "toll_booth",
+      "at": [7, 4]
+    },
+    {
+      "type": "decor",
+      "kind": "tallow_cart",
+      "at": [12, 10]
+    },
+    {
+      "type": "decor",
+      "kind": "chain_heap",
+      "at": [15, 3]
+    },
+    {
+      "type": "decor",
+      "kind": "pipe",
+      "at": [19, 11]
+    },
+    {
+      "type": "enemy",
+      "kind": "wickling",
+      "at": [13, 5],
+      "facing": "W"
+    },
+    {
+      "type": "enemy",
+      "kind": "wickling",
+      "at": [16, 9],
+      "facing": "W"
+    },
+    {
+      "type": "prop",
+      "kind": "crate",
+      "at": [5, 11]
+    },
+    {
+      "type": "prop",
+      "kind": "crate",
+      "at": [6, 11]
+    },
+    {
+      "type": "prop",
+      "kind": "pot",
+      "at": [17, 4]
+    }
+  ]
+}

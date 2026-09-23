@@ -1,0 +1,11 @@
+{
+  "id": "cracked_wall",
+  "name": "Cracked Wall",
+  "sprite": "prop_cracked_wall",
+  "hp": 30,
+  "radius": 6,
+  "hurtbox": { "w": 16, "h": 16, "offsetY": -6 },
+  "debris": "wood1",
+  "sfx": "break_wood",
+  "secretWall": true
+}

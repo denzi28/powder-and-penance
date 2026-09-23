@@ -1,0 +1,44 @@
+{
+  "id": "vat_spawn",
+  "name": "Vat Spawn",
+  "ai": "melee",
+  "sprite": "vat_spawn",
+  "hp": 18,
+  "poise": { "max": 8, "resetTicks": 60 },
+  "tallow": 8,
+  "speed": 55,
+  "strafeSpeed": 35,
+  "accelTicks": 5,
+  "turnDegPerTick": 9,
+  "collider": { "w": 8, "h": 4 },
+  "hurtbox": { "w": 11, "h": 8, "offsetY": -4 },
+  "bodyRadius": 5,
+  "leash": { "distance": 360, "healOnReturn": true },
+  "spacing": { "preferred": 20, "strafeTicks": [20, 40] },
+  "attackGapTicks": [20, 40],
+  "staggerTicks": 24,
+  "deathTicks": 30,
+  "corpseTicks": 90,
+  "blood": "wax1",
+  "moves": [
+    {
+      "id": "nip",
+      "range": [0, 30],
+      "weight": 1,
+      "cooldown": 40,
+      "strikes": [
+        {
+          "damage": 8, "poise": 8,
+          "windup": 16, "active": 4, "recovery": 20,
+          "trackDegPerTick": 6,
+          "telegraph": { "tick": 6, "kind": "normal" },
+          "lunge": { "distance": 16, "startTick": 14, "ticks": 4 },
+          "hitbox": { "shape": "circle", "radius": 10, "offset": 6 },
+          "originY": -3,
+          "sweep": { "fromDeg": 0, "toDeg": 0 },
+          "knockback": 40, "hitstop": 2, "shake": 0.05, "sfx": "bite", "anim": "engulf"
+        }
+      ]
+    }
+  ]
+}

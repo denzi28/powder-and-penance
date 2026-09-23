@@ -1,0 +1,141 @@
+{
+  "id": "works_08_hall",
+  "area": "works",
+  "origin": [30, 41],
+  "legend": {
+    "#": "wall",
+    ".": "floor",
+    ",": "floor_grate",
+    "~": "floor_grease",
+    "_": "floor_plank",
+    " ": "void"
+  },
+  "tiles": [
+    "###..#####################",
+    "#........................#",
+    "#........................#",
+    "#........~~~~~~..........#",
+    "#........~~~~~~..........#",
+    ".........................#",
+    "#........................#",
+    "#........................#",
+    "#,,,,,,,,,,,,,,,,,,,,,,,,#",
+    "#,,,,,,,,,,,,,,,,,,,,,,,,.",
+    "#........................#",
+    "#........................#",
+    "#........................#",
+    "#..............~~~~~.....#",
+    "#..............~~~~~.....#",
+    "#........................#",
+    "#........................#",
+    "##########################"
+  ],
+  "entities": [
+    {
+      "type": "cutscene",
+      "id": "rendering_reveal",
+      "script": "rendering_reveal",
+      "at": [2, 1],
+      "size": [4, 3]
+    },
+    {
+      "type": "point",
+      "id": "vats",
+      "at": [13, 8]
+    },
+    {
+      "type": "decor",
+      "kind": "vat",
+      "at": [7, 5]
+    },
+    {
+      "type": "decor",
+      "kind": "vat",
+      "at": [13, 5]
+    },
+    {
+      "type": "decor",
+      "kind": "vat",
+      "at": [19, 5]
+    },
+    {
+      "type": "decor",
+      "kind": "vat",
+      "at": [7, 14]
+    },
+    {
+      "type": "decor",
+      "kind": "vat",
+      "at": [19, 14]
+    },
+    {
+      "type": "decor",
+      "kind": "robe_rack",
+      "at": [11, 12]
+    },
+    {
+      "type": "decor",
+      "kind": "robe_rack",
+      "at": [16, 12]
+    },
+    {
+      "type": "decor",
+      "kind": "furnace",
+      "at": [24, 3]
+    },
+    {
+      "type": "decor",
+      "kind": "tallow_stack",
+      "at": [1, 15]
+    },
+    {
+      "type": "decor",
+      "kind": "tallow_stack",
+      "at": [2, 15]
+    },
+    {
+      "type": "decor",
+      "kind": "hook_chain",
+      "at": [10, 10]
+    },
+    {
+      "type": "decor",
+      "kind": "hook_chain",
+      "at": [16, 10]
+    },
+    {
+      "type": "enemy",
+      "kind": "renderer",
+      "at": [17, 9],
+      "facing": "W"
+    },
+    {
+      "type": "enemy",
+      "kind": "vat_crawler",
+      "at": [9, 10],
+      "facing": "E"
+    },
+    {
+      "type": "enemy",
+      "kind": "vat_crawler",
+      "at": [22, 15],
+      "facing": "N"
+    },
+    {
+      "type": "enemy",
+      "kind": "powder_acolyte",
+      "at": [22, 2],
+      "facing": "S"
+    },
+    {
+      "type": "prop",
+      "kind": "crate",
+      "at": [24, 15]
+    },
+    {
+      "type": "prop",
+      "kind": "pot",
+      "at": [1, 1]
+    }
+  ]
+}

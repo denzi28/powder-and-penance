@@ -1,0 +1,17 @@
+{
+  "id": "mother_tallow_death",
+  "steps": [
+    { "camera": "enemy:mother_tallow", "ticks": 45 },
+    { "wait": 20 },
+    { "say": "The humming stops." },
+    { "say": "For a moment the face in the wax is only a woman's face: tired, and surprised to be resting." },
+    { "say": "She sinks back into the vat she tended for longer than anyone can remember, and the wax closes over her like water." },
+    { "wait": 40 },
+    { "say": "Her ladle is still in her hand. She never once put it down." },
+    { "wait": 30 },
+    { "say": "Where she went under, something floats up: hard, bright, stamped with the Abbey's candle." },
+    { "give": "seal_of_tallow" },
+    { "set": "mother_tallow_rests" },
+    { "camera": "player", "ticks": 45 }
+  ]
+}

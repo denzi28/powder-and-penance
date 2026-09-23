@@ -26,6 +26,19 @@
     "bedroll": { "sprite": "decor_hub", "frame": 9, "flat": true },
     "bookshelf": { "sprite": "decor_hub", "frame": 10, "blocks": [[-1, 0], [0, 0]], "tall": true },
     "ruin_wall": { "sprite": "decor_hub", "frame": 11, "blocks": [[-1, 0], [0, 0], [1, 0]], "tall": true },
-    "notice_board": { "sprite": "decor_hub", "frame": 12, "blocks": [[0, 0]] }
+    "notice_board": { "sprite": "decor_hub", "frame": 12, "blocks": [[0, 0]] },
+
+    "vat": { "sprite": "decor_works", "frame": 0, "blocks": [[-1, 0], [0, 0], [1, 0], [-1, -1], [0, -1], [1, -1]], "tall": true },
+    "hook_chain": { "sprite": "decor_works", "frame": 1 },
+    "cage": { "sprite": "decor_works", "frame": 2, "blocks": [[-1, 0], [0, 0]] },
+    "tallow_stack": { "sprite": "decor_works", "frame": 3, "blocks": [[0, 0]], "tall": true },
+    "furnace": { "sprite": "decor_works", "frame": 4, "blocks": [[-1, 0], [0, 0]], "tall": true },
+    "pipe": { "sprite": "decor_works", "frame": 5, "blocks": [[0, 0]], "tall": true },
+    "robe_rack": { "sprite": "decor_works", "frame": 6, "blocks": [[-1, 0], [0, 0]] },
+    "desk": { "sprite": "decor_works", "frame": 7, "blocks": [[-1, 0], [0, 0]] },
+    "lift_cage": { "sprite": "decor_works", "frame": 8, "flat": true },
+    "chain_heap": { "sprite": "decor_works", "frame": 9, "flat": true },
+    "tallow_cart": { "sprite": "decor_works", "frame": 10, "blocks": [[-1, 0], [0, 0]] },
+    "toll_booth": { "sprite": "decor_works", "frame": 11, "blocks": [[0, 0]], "tall": true }
   }
 }

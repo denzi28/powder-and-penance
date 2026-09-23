@@ -33,6 +33,8 @@ export interface HitSource {
   unblockable: boolean;
   unparryable: boolean;
   grab?: { holdTicks: number; damage: number; throwKnockback: number };
+  /** Knockback drags the target toward the attacker instead of away (hooks). */
+  pull?: boolean;
 }
 
 /** An actor's active guard (raised shield). */
@@ -78,6 +80,7 @@ export function sourceFromStrike(owner: Actor, s: StrikeDef, angle: number, dama
     unblockable: s.unblockable,
     unparryable: s.unparryable,
     grab: s.grab,
+    pull: s.pull,
   };
 }
 
@@ -192,6 +195,7 @@ export class CombatSystem {
     if (src.kind === 'projectile') return src.angle;
     const dx = target.x - src.owner.x;
     const dy = target.y - src.owner.y;
-    return dx === 0 && dy === 0 ? src.angle : Math.atan2(dy, dx);
+    const away = dx === 0 && dy === 0 ? src.angle : Math.atan2(dy, dx);
+    return src.pull ? away + Math.PI : away;
   }
 }

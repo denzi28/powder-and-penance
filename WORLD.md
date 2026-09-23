@@ -58,8 +58,9 @@ Target: **~2 h** first playthrough (2 h 15 min with the optional Powder Vault). 
 | Bosses: `ai: "boss"` + `boss` block (entrance, slams, line, last-words script), `arena` room entity (smoke seals), boss bar, stays dead (`boss:<kind>`), Tallow drops at the arena door | ✅ Tollwarden |
 | Minimap and large map (M) | ✅ |
 | Slow floors (wax pools) | mire_01 |
-| Secret breakable walls | works_03 |
-| Lift (a one-way shortcut that moves between areas) | works_04 |
+| Secret breakable walls (prop with `secretWall`) | works_03 ✅ |
+| Lift: an `exit` with a `when` condition, opened by a `lever` entity | works_04 ✅ |
+| Hooks that pull (`pull` on a strike), enemies that split on death (`splitInto`), quest items | works ✅ |
 
 ---
 
@@ -109,21 +110,23 @@ The 13 existing rooms stay. Changes:
 Where the dying pilgrims are "given to the flame": rendering vats, hooks, grease. The Act 1 twist is revealed here.
 
 **New enemies:**
-- **Renderer:** hook on a chain that pulls you in.
-- **Vat Crawler:** a wax blob that splits in two when hit hard.
+- **Renderer:** throws a hook on a chain from far off that drags you in close, then flays at close range.
+- **Vat Crawler:** a wax blob. When it dies it bursts into two fast little **Vat Spawn**.
+
+All 10 rooms are built ✅ (`tools/level-gen/works.mjs`).
 
 | # | Room | Contents |
 |---|---|---|
-| works_01 | Toll Gate | Entry from the hub (Toll Key). Wicklings in pilgrim robes. |
-| works_02 | Receiving Pens | Empty cages, name tags on hooks. Lore. |
-| works_03 | Tallow Stores | Crate maze, Acolytes on the catwalks. **A breakable wall leads to the Powder Vault.** |
-| works_04 | Lift Shaft | Lift back up to the hub. It only works once called from the bottom (shortcut). |
-| works_05 | Scalding Floor | Vats as cover, Vat Crawlers |
-| works_06 | Hook Gallery | Renderers' first appearance |
-| works_07 | Foreman's Office | **Foreman's Wick shrine**; the Chandler's ledger (quest item) |
-| works_08 | Rendering Hall | *Cutscene: the vats, and what goes into them.* Mixed fight. |
-| works_09 | Ember Flue | Chain bridge over the furnace, hounds |
-| works_10 | The Great Vat | **Boss: Mother Tallow.** Drops the **Seal of Tallow**. |
+| works_01 | **Toll Gate** ✅ | Entry from the hub through the Toll Gate. The carters' booth, a tallow cart, Wicklings in pilgrim robes. *Narration on arrival.* |
+| works_02 | **Receiving Pens** ✅ | Empty cages, robes with name tags. The first Renderer. Chest: Lump of Tallow. |
+| works_03 | **Tallow Stores** ✅ | A maze of tallow stacks, two Acolytes, a Vat Crawler. Chest: Phial Shard. **A cracked section of the north wall**: smash it and the way to the Powder Vault opens (the Vault itself isn't built yet). |
+| works_04 | **Lift Shaft** ✅ | **The lift up to Wick's Rest**: pull the lever to call the cage, and from then on it runs both ways (arriving at the hub yard's east side). |
+| works_05 | **Scalding Floor** ✅ | Four great vats as cover, spilled tallow, three Vat Crawlers. Chest: Powder Pouch. |
+| works_06 | **Hook Gallery** ✅ | Rows of hanging hooks, two Renderers and a Wickling |
+| works_07 | **Foreman's Office** ✅ | **Foreman's Wick shrine**, the desk, **the Chandler's Ledger** (chest; Maudlin reacts to it). A door into the Hall that only opens from the office side (shortcut back to the shrine). |
+| works_08 | **Rendering Hall** ✅ | *Cutscene: the reveal.* Five vats, the robe racks. Renderer, two Crawlers, an Acolyte. |
+| works_09 | **Ember Flue** ✅ | Iron walkways over the furnace pit; two Hounds and a Renderer. Chest: Bitter Salt. |
+| works_10 | **The Great Vat** ✅ | **Boss: Mother Tallow.** She rises from her vat, humming. Lobbed wax, ladle sweeps, an unblockable crush. When she falls she sinks back into her vat; you receive the **Seal of Tallow**. |
 
 ## The Waxmire (`mire`)
 The low ground where the Drip pools: a swamp of melted wax and drowned graves. **Wax pools slow you down.**

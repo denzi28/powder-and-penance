@@ -207,6 +207,28 @@
       "at": [31, 11]
     },
     {
+      "type": "spawn",
+      "id": "from_works_lift",
+      "at": [25, 15]
+    },
+    {
+      "type": "decor",
+      "kind": "lift_cage",
+      "at": [25, 17]
+    },
+    {
+      "type": "exit",
+      "id": "hub_lift_down",
+      "at": [25, 17],
+      "size": [2, 1],
+      "to": {
+        "area": "works",
+        "spawn": "from_hub_lift"
+      },
+      "when": "lever:works_lift",
+      "closed": "An empty lift shaft drops away into the dark. The cage is somewhere below; it must be called from the bottom."
+    },
+    {
       "type": "exit",
       "id": "hub_to_road",
       "at": [17, 23],

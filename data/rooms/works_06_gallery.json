@@ -1,0 +1,134 @@
+{
+  "id": "works_06_gallery",
+  "area": "works",
+  "origin": [17, 28],
+  "legend": {
+    "#": "wall",
+    ".": "floor",
+    ",": "floor_grate",
+    "~": "floor_grease",
+    "_": "floor_plank",
+    " ": "void"
+  },
+  "tiles": [
+    "######################",
+    "#....................#",
+    "#....................#",
+    "#....................#",
+    "#....................#",
+    "#....................#",
+    "#,,,,,,,,,,,,,,,,,,,,.",
+    "#,,,,,,,,,,,,,,,,,,,,.",
+    "#....................#",
+    "#....................#",
+    "#....................#",
+    "#....................#",
+    "#....................#",
+    "#####.##########..####"
+  ],
+  "entities": [
+    {
+      "type": "decor",
+      "kind": "hook_chain",
+      "at": [3, 3]
+    },
+    {
+      "type": "decor",
+      "kind": "hook_chain",
+      "at": [4, 10]
+    },
+    {
+      "type": "decor",
+      "kind": "hook_chain",
+      "at": [6, 3]
+    },
+    {
+      "type": "decor",
+      "kind": "hook_chain",
+      "at": [7, 10]
+    },
+    {
+      "type": "decor",
+      "kind": "hook_chain",
+      "at": [9, 3]
+    },
+    {
+      "type": "decor",
+      "kind": "hook_chain",
+      "at": [10, 10]
+    },
+    {
+      "type": "decor",
+      "kind": "hook_chain",
+      "at": [12, 3]
+    },
+    {
+      "type": "decor",
+      "kind": "hook_chain",
+      "at": [13, 10]
+    },
+    {
+      "type": "decor",
+      "kind": "hook_chain",
+      "at": [15, 3]
+    },
+    {
+      "type": "decor",
+      "kind": "hook_chain",
+      "at": [16, 10]
+    },
+    {
+      "type": "decor",
+      "kind": "hook_chain",
+      "at": [18, 3]
+    },
+    {
+      "type": "decor",
+      "kind": "hook_chain",
+      "at": [19, 10]
+    },
+    {
+      "type": "decor",
+      "kind": "robe_rack",
+      "at": [4, 11]
+    },
+    {
+      "type": "decor",
+      "kind": "robe_rack",
+      "at": [13, 1]
+    },
+    {
+      "type": "decor",
+      "kind": "chain_heap",
+      "at": [19, 11]
+    },
+    {
+      "type": "enemy",
+      "kind": "renderer",
+      "at": [7, 4],
+      "facing": "E"
+    },
+    {
+      "type": "enemy",
+      "kind": "renderer",
+      "at": [16, 9],
+      "facing": "W"
+    },
+    {
+      "type": "enemy",
+      "kind": "wickling",
+      "at": [11, 6],
+      "facing": "E"
+    },
+    {
+      "type": "prop",
+      "kind": "crate",
+      "at": [1, 1]
+    },
+    {
+      "type": "prop",
+      "kind": "crate",
+      "at": [20, 11]
+    }
+  ]
+}

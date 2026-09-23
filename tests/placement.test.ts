@@ -17,6 +17,7 @@ describe('entity placement', () => {
       for (const r of rooms)
         for (const en of r.entities) {
           if (SKIP.has(en.type)) continue;
+          if (en.type === 'prop' && DATA.props[String(en.kind)]?.secretWall) continue; // cracked walls live in walls
           const tx = r.origin[0] + en.at[0];
           const ty = r.origin[1] + en.at[1];
           if (grid.isSolid(tx, ty)) bad.push(`${r.id}: ${en.type} ${String(en.kind ?? en.id ?? '')} at [${en.at}]`);

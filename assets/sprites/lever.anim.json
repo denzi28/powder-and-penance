@@ -1,0 +1,12 @@
+{
+  "image": "lever.png",
+  "cell": [
+    16,
+    24
+  ],
+  "pivot": [
+    8,
+    23
+  ],
+  "layer": "single"
+}

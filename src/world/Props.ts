@@ -71,16 +71,21 @@ export class Props {
 
   constructor(private lib: SpriteLib) {}
 
-  build(ctx: WorldCtx, rooms: RoomData[]) {
+  /** @param brokenWall secret walls already broken ("wall:<uid>" flags) stay open and aren't rebuilt */
+  build(ctx: WorldCtx, rooms: RoomData[], brokenWall: (uid: string) => boolean = () => false) {
     this.clear();
     for (const r of rooms)
       r.entities.forEach((en, i) => {
         if (en.type !== 'prop') return;
+        const uid = `${r.id}#${i}`;
+        if (DATA.props[String(en.kind)].secretWall && brokenWall(uid)) return;
         const x = (r.origin[0] + en.at[0]) * TILE + TILE / 2;
         const y = (r.origin[1] + en.at[1]) * TILE + TILE - 3;
-        const p = new Prop(ctx, String(en.kind), `${r.id}#${i}`, x, y);
+        const p = new Prop(ctx, String(en.kind), uid, x, y);
         this.list.push(p);
-        this.sprites.set(p, this.lib.sprite(p.def.sprite).setPosition(x, y).setDepth(DEPTH.actor(y)));
+        // A secret wall's cracks are drawn over the wall face, in front of the tile.
+        const depth = p.def.secretWall ? DEPTH.actor(y + 4) : DEPTH.actor(y);
+        this.sprites.set(p, this.lib.sprite(p.def.sprite).setPosition(x, y + (p.def.secretWall ? 3 : 0)).setDepth(depth));
       });
   }
 
@@ -94,9 +99,9 @@ export class Props {
     for (const [p, s] of this.sprites) {
       // Frame 0 = intact, frame 1 = rubble (stays until the props respawn).
       s.setFrame(p.dead ? 1 : 0)
-        .setPosition(Math.round(lerp(p.prevX, p.x, alpha) + p.flinchX), Math.round(p.y + p.flinchY))
+        .setPosition(Math.round(lerp(p.prevX, p.x, alpha) + p.flinchX), Math.round(p.y + p.flinchY + (p.def.secretWall ? 3 : 0)))
         .setScale(p.squash.sx, p.squash.sy)
-        .setDepth(p.dead ? DEPTH.shadow + 1 : DEPTH.actor(p.y));
+        .setDepth(p.dead ? DEPTH.shadow + 1 : DEPTH.actor(p.y + (p.def.secretWall ? 4 : 0)));
       tint(s, p.flash > 0);
     }
   }

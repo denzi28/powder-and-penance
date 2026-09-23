@@ -1,0 +1,267 @@
+{
+  "id": "works_03_stores",
+  "area": "works",
+  "origin": [21, 13],
+  "legend": {
+    "#": "wall",
+    ".": "floor",
+    ",": "floor_grate",
+    "~": "floor_grease",
+    "_": "floor_plank",
+    " ": "void"
+  },
+  "tiles": [
+    "########..##############",
+    "#.......,,.............#",
+    "#.......,,.............#",
+    "#......................#",
+    "#......................#",
+    "#......................#",
+    "#......................#",
+    "#...................,,,.",
+    "#...................,,,.",
+    "#......................#",
+    "#......................#",
+    "#......................#",
+    "#......................#",
+    "#......................#",
+    "#......................#",
+    "########################"
+  ],
+  "entities": [
+    {
+      "type": "decor",
+      "kind": "tallow_stack",
+      "at": [3, 4]
+    },
+    {
+      "type": "decor",
+      "kind": "tallow_stack",
+      "at": [4, 4]
+    },
+    {
+      "type": "decor",
+      "kind": "tallow_stack",
+      "at": [5, 4]
+    },
+    {
+      "type": "decor",
+      "kind": "tallow_stack",
+      "at": [6, 4]
+    },
+    {
+      "type": "decor",
+      "kind": "tallow_stack",
+      "at": [7, 4]
+    },
+    {
+      "type": "decor",
+      "kind": "tallow_stack",
+      "at": [11, 4]
+    },
+    {
+      "type": "decor",
+      "kind": "tallow_stack",
+      "at": [12, 4]
+    },
+    {
+      "type": "decor",
+      "kind": "tallow_stack",
+      "at": [13, 4]
+    },
+    {
+      "type": "decor",
+      "kind": "tallow_stack",
+      "at": [14, 4]
+    },
+    {
+      "type": "decor",
+      "kind": "tallow_stack",
+      "at": [15, 4]
+    },
+    {
+      "type": "decor",
+      "kind": "tallow_stack",
+      "at": [19, 4]
+    },
+    {
+      "type": "decor",
+      "kind": "tallow_stack",
+      "at": [20, 4]
+    },
+    {
+      "type": "decor",
+      "kind": "tallow_stack",
+      "at": [21, 4]
+    },
+    {
+      "type": "decor",
+      "kind": "tallow_stack",
+      "at": [5, 9]
+    },
+    {
+      "type": "decor",
+      "kind": "tallow_stack",
+      "at": [6, 9]
+    },
+    {
+      "type": "decor",
+      "kind": "tallow_stack",
+      "at": [7, 9]
+    },
+    {
+      "type": "decor",
+      "kind": "tallow_stack",
+      "at": [8, 9]
+    },
+    {
+      "type": "decor",
+      "kind": "tallow_stack",
+      "at": [9, 9]
+    },
+    {
+      "type": "decor",
+      "kind": "tallow_stack",
+      "at": [13, 9]
+    },
+    {
+      "type": "decor",
+      "kind": "tallow_stack",
+      "at": [14, 9]
+    },
+    {
+      "type": "decor",
+      "kind": "tallow_stack",
+      "at": [15, 9]
+    },
+    {
+      "type": "decor",
+      "kind": "tallow_stack",
+      "at": [16, 9]
+    },
+    {
+      "type": "decor",
+      "kind": "tallow_stack",
+      "at": [17, 9]
+    },
+    {
+      "type": "decor",
+      "kind": "tallow_stack",
+      "at": [18, 9]
+    },
+    {
+      "type": "decor",
+      "kind": "tallow_stack",
+      "at": [2, 12]
+    },
+    {
+      "type": "decor",
+      "kind": "tallow_stack",
+      "at": [3, 12]
+    },
+    {
+      "type": "decor",
+      "kind": "tallow_stack",
+      "at": [4, 12]
+    },
+    {
+      "type": "decor",
+      "kind": "tallow_stack",
+      "at": [9, 12]
+    },
+    {
+      "type": "decor",
+      "kind": "tallow_stack",
+      "at": [10, 12]
+    },
+    {
+      "type": "decor",
+      "kind": "tallow_stack",
+      "at": [11, 12]
+    },
+    {
+      "type": "decor",
+      "kind": "tallow_stack",
+      "at": [12, 12]
+    },
+    {
+      "type": "decor",
+      "kind": "tallow_stack",
+      "at": [17, 12]
+    },
+    {
+      "type": "decor",
+      "kind": "tallow_stack",
+      "at": [18, 12]
+    },
+    {
+      "type": "decor",
+      "kind": "tallow_stack",
+      "at": [19, 12]
+    },
+    {
+      "type": "decor",
+      "kind": "tallow_stack",
+      "at": [20, 12]
+    },
+    {
+      "type": "prop",
+      "kind": "cracked_wall",
+      "at": [21, 0]
+    },
+    {
+      "type": "exit",
+      "id": "works_to_vault",
+      "at": [21, 0],
+      "size": [1, 1],
+      "to": {
+        "area": "vault",
+        "spawn": "from_works"
+      }
+    },
+    {
+      "type": "enemy",
+      "kind": "powder_acolyte",
+      "at": [12, 2],
+      "facing": "S"
+    },
+    {
+      "type": "enemy",
+      "kind": "powder_acolyte",
+      "at": [20, 11],
+      "facing": "W"
+    },
+    {
+      "type": "enemy",
+      "kind": "vat_crawler",
+      "at": [10, 7],
+      "facing": "E"
+    },
+    {
+      "type": "item",
+      "id": "works_shard",
+      "item": "phial_shard",
+      "at": [2, 13]
+    },
+    {
+      "type": "prop",
+      "kind": "crate",
+      "at": [16, 2]
+    },
+    {
+      "type": "prop",
+      "kind": "crate",
+      "at": [17, 2]
+    },
+    {
+      "type": "prop",
+      "kind": "crate",
+      "at": [22, 13]
+    },
+    {
+      "type": "prop",
+      "kind": "pot",
+      "at": [1, 7]
+    }
+  ]
+}

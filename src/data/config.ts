@@ -71,6 +71,7 @@ function loadAll(src: Record<string, unknown>) {
       if ((e.ai === 'boss') !== !!e.boss) errors.push(`data/enemies/${e.id}.json: ai "boss" and a "boss" block go together`);
       if (e.boss?.deathScript && !data.scripts[e.boss.deathScript])
         errors.push(`data/enemies/${e.id}.json: unknown deathScript "${e.boss.deathScript}"`);
+      if (e.splitInto && !data.enemies[e.splitInto.kind]) errors.push(`data/enemies/${e.id}.json: splitInto unknown kind "${e.splitInto.kind}"`);
     }
     for (const r of Object.values(data.rooms))
       for (const en of r.entities)
@@ -157,6 +158,8 @@ function checkStory(data: {
         if (en.talk !== undefined && !data.scripts[String(en.talk)])
           errors.push(`data/rooms/${r.id}.json: npc "${en.id}" talks with unknown script "${String(en.talk)}"`);
       }
+      if (en.type === 'lever' && en.script !== undefined && !data.scripts[String(en.script)])
+        errors.push(`data/rooms/${r.id}.json: lever "${en.id}" runs unknown script "${String(en.script)}"`);
       if (en.type === 'cutscene' && !data.scripts[String(en.script)])
         errors.push(`data/rooms/${r.id}.json: cutscene "${en.id}" has unknown script "${String(en.script)}"`);
       if (en.type === 'point' && en.id) points.add(en.id);

@@ -1,0 +1,18 @@
+{
+  "image": "renderer_hook.png",
+  "cell": [
+    40,
+    9
+  ],
+  "pivot": [
+    3,
+    4
+  ],
+  "layer": "weapon",
+  "points": {
+    "tip": [
+      37,
+      4
+    ]
+  }
+}

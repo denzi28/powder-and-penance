@@ -1,0 +1,8 @@
+{
+  "id": "works_arrive",
+  "skippable": true,
+  "steps": [
+    { "say": "The carters' road ends at a gate of black iron. Past it, chimneys, and a smell like a kitchen that never stops cooking." },
+    { "say": "Every cart that came down this road was counted. None were counted going back." }
+  ]
+}

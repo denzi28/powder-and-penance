@@ -1,0 +1,99 @@
+{
+  "id": "works_02_pens",
+  "area": "works",
+  "origin": [21, 0],
+  "legend": {
+    "#": "wall",
+    ".": "floor",
+    ",": "floor_grate",
+    "~": "floor_grease",
+    "_": "floor_plank",
+    " ": "void"
+  },
+  "tiles": [
+    "####################",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    "#..................#",
+    ".,,,,,,,,,,........#",
+    ".,,,,,,,,,,........#",
+    "#.......,,.........#",
+    "#.......,,.........#",
+    "#.......,,.........#",
+    "#.......,,.........#",
+    "#.......,,.........#",
+    "########..##########"
+  ],
+  "entities": [
+    {
+      "type": "decor",
+      "kind": "cage",
+      "at": [4, 3]
+    },
+    {
+      "type": "decor",
+      "kind": "cage",
+      "at": [8, 3]
+    },
+    {
+      "type": "decor",
+      "kind": "cage",
+      "at": [12, 3]
+    },
+    {
+      "type": "decor",
+      "kind": "cage",
+      "at": [16, 3]
+    },
+    {
+      "type": "decor",
+      "kind": "robe_rack",
+      "at": [5, 11]
+    },
+    {
+      "type": "decor",
+      "kind": "robe_rack",
+      "at": [16, 11]
+    },
+    {
+      "type": "decor",
+      "kind": "hook_chain",
+      "at": [11, 6]
+    },
+    {
+      "type": "decor",
+      "kind": "hook_chain",
+      "at": [15, 8]
+    },
+    {
+      "type": "enemy",
+      "kind": "renderer",
+      "at": [13, 8],
+      "facing": "W"
+    },
+    {
+      "type": "enemy",
+      "kind": "wickling",
+      "at": [5, 8],
+      "facing": "E"
+    },
+    {
+      "type": "item",
+      "id": "works_tallow",
+      "item": "tallow_lump",
+      "at": [18, 6]
+    },
+    {
+      "type": "prop",
+      "kind": "pot",
+      "at": [18, 9]
+    },
+    {
+      "type": "prop",
+      "kind": "crate",
+      "at": [1, 11]
+    }
+  ]
+}
