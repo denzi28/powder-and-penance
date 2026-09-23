@@ -114,13 +114,23 @@ const PIVOT: [number, number] = [16, 28];
 /** Weapon hand position in cell pixels, per authored direction. */
 const HAND: Record<Dir5, [number, number]> = { S: [20, 17], SE: [20, 16], E: [18, 16], NE: [19, 15], N: [19, 15] };
 
-function drawTorso(c: Img, dir: Dir5, breath: number) {
+type TorsoPose = 'idle' | 'windup' | 'active' | 'flinch';
+
+function drawTorso(c: Img, dir: Dir5, breath: number, pose: TorsoPose = 'idle') {
+  if (pose === 'windup') breath = 1;
+  if (pose === 'active' || pose === 'flinch') breath = -1;
   // Cloak
   c.rect(12, 13, 8, 1, P.teal2);
   c.rect(11, 14, 10, 8, P.teal2);
   c.vline(11, 14, 7, P.teal3);
   c.vline(20, 14, 8, P.teal1);
   c.hline(11, 21, 10, P.teal1);
+  if (pose === 'windup') {
+    // cloak gathers: widen at the shoulders
+    c.vline(10, 15, 4, P.teal2);
+    c.vline(21, 15, 4, P.teal1);
+  }
+  if (pose === 'active') c.hline(10, 22, 12, P.teal1); // hem flares out with the swing
   c.hline(11, 18, 10, P.dark2); // belt
   if (dir === 'S') {
     c.set(15, 18, P.flame1);
@@ -148,20 +158,21 @@ function drawTorso(c: Img, dir: Dir5, breath: number) {
   c.rect(tipX, hy - 1, 2, 1, P.teal1);
 
   // Face opening with glowing eyes (the character's readable "front")
+  const eye = pose === 'flinch' ? P.ember : P.flame2;
   switch (dir) {
     case 'S':
       c.rect(13, hy + 3, 6, 3, P.ink);
-      c.set(14, hy + 4, P.flame2);
-      c.set(17, hy + 4, P.flame2);
+      c.set(14, hy + 4, eye);
+      c.set(17, hy + 4, eye);
       break;
     case 'SE':
       c.rect(14, hy + 3, 5, 3, P.ink);
-      c.set(15, hy + 4, P.flame2);
-      c.set(18, hy + 4, P.flame2);
+      c.set(15, hy + 4, eye);
+      c.set(18, hy + 4, eye);
       break;
     case 'E':
       c.rect(16, hy + 3, 4, 3, P.ink);
-      c.set(18, hy + 4, P.flame2);
+      c.set(18, hy + 4, eye);
       break;
     case 'NE':
       c.rect(18, hy + 3, 2, 2, P.dark1);
@@ -245,22 +256,49 @@ function drawRoll(c: Img, dir: Dir5, f: number) {
   }
 }
 
+/** Full-body collapse (legs layer hidden). Authored facing S only. */
+function drawPlayerDeath(c: Img, f: number) {
+  switch (f) {
+    case 0:
+      c.rect(12, 26, 3, 2, P.wood1);
+      c.rect(17, 26, 3, 2, P.wood1);
+      c.ellipse(16, 22.5, 6, 5, P.teal2);
+      c.disc(16, 18, 3.5, P.teal1);
+      c.set(15, 18, P.flame1);
+      c.set(17, 18, P.flame1);
+      break;
+    case 1:
+      c.ellipse(16, 24, 7, 4, P.teal2);
+      c.disc(12, 21, 3, P.teal1);
+      break;
+    case 2:
+      c.ellipse(16, 25, 8, 3, P.teal2);
+      c.disc(10, 24, 3, P.teal1);
+      c.set(21, 25, P.flame2);
+      break;
+    default:
+      c.ellipse(16, 26, 9, 2.5, P.teal1);
+      c.ellipse(15, 25.5, 6, 1.5, P.teal2);
+      c.set(22, 26, f === 3 ? P.flame2 : P.flame1);
+      if (f === 4) c.set(22, 24, P.dark2);
+  }
+}
+
 function genPlayer() {
-  const body = new Img(CELL * 8, CELL * 10);
+  const body = new Img(CELL * 8, CELL * 21);
+  const cell = (draw: (c: Img) => void, col: number, row: number) => {
+    const c = new Img(CELL, CELL);
+    draw(c);
+    c.outline(P.ink);
+    body.blit(c, col * CELL, row * CELL);
+  };
   DIR5.forEach((d, row) => {
-    for (let f = 0; f < 2; f++) {
-      const c = new Img(CELL, CELL);
-      drawTorso(c, d, f);
-      c.outline(P.ink);
-      body.blit(c, f * CELL, row * CELL);
-    }
-    for (let f = 0; f < 7; f++) {
-      const c = new Img(CELL, CELL);
-      drawRoll(c, d, f);
-      c.outline(P.ink);
-      body.blit(c, f * CELL, (5 + row) * CELL);
-    }
+    for (let f = 0; f < 2; f++) cell(c => drawTorso(c, d, f), f, row);
+    for (let f = 0; f < 7; f++) cell(c => drawRoll(c, d, f), f, 5 + row);
+    (['windup', 'active', 'idle'] as const).forEach((pose, f) => cell(c => drawTorso(c, d, 0, pose), f, 10 + row));
+    (['flinch', 'idle'] as const).forEach((pose, f) => cell(c => drawTorso(c, d, 0, pose), f, 15 + row));
   });
+  for (let f = 0; f < 5; f++) cell(c => drawPlayerDeath(c, f), f, 20);
   const toPivot = ([x, y]: [number, number]) => [x - PIVOT[0], y - PIVOT[1]];
   sheet('player_body', body, {
     cell: [CELL, CELL],
@@ -282,6 +320,23 @@ function genPlayer() {
           { ticks: 5, phase: 'recover' },
           { ticks: 5, phase: 'recover' },
         ],
+      },
+      attack: {
+        row: 10,
+        dirs: DIR5,
+        loop: false,
+        frames: [
+          { ticks: 1, phase: 'windup' },
+          { ticks: 1, phase: 'active' },
+          { ticks: 1, phase: 'recovery' },
+        ],
+      },
+      stagger: { row: 15, dirs: DIR5, loop: false, frames: [{ ticks: 10 }, { ticks: 16 }] },
+      death: {
+        row: 20,
+        dirs: ['S'],
+        loop: false,
+        frames: [{ ticks: 8 }, { ticks: 8 }, { ticks: 10 }, { ticks: 30 }, { ticks: 60 }],
       },
     },
   });
@@ -377,6 +432,231 @@ function genMisc() {
   cross.set(6, 6, P.flame2);
   cross.outline(P.ink);
   sheet('crosshair', cross, { cell: [13, 13], pivot: [6, 6], layer: 'ui' });
+}
+
+// ---------------------------------------------------------------- enemies
+/** Wickling: a hunched, wax-headed acolyte with a candle stub burning on its crown. */
+const WICK_HAND: Record<Dir5, [number, number]> = { S: [21, 20], SE: [21, 19], E: [19, 19], NE: [20, 18], N: [20, 18] };
+type WickPose = { bob: number; hunch: number; flame: number; sway: number; flinch?: boolean };
+
+function drawWickling(c: Img, dir: Dir5, o: WickPose) {
+  const b = o.bob;
+  // Robe: a ragged bell shape
+  const rows: [number, number, number][] = [
+    [17, 13, 6],
+    [18, 12, 8],
+    [19, 12, 8],
+    [20, 12, 8],
+    [21, 11, 10],
+    [22, 11, 10],
+    [23, 11, 10],
+    [24, 11, 10],
+    [25, 10, 12],
+    [26, 10, 12],
+  ];
+  for (const [y, x, w] of rows) {
+    const sway = y >= 24 ? o.sway : 0;
+    c.hline(x + sway, y + b, w, P.wood1);
+    c.set(x + sway, y + b, P.wood2);
+  }
+  for (let x = 10; x < 22; x += 2) c.set(x + o.sway, 27 + b, P.dark2); // ragged hem
+  c.vline(16, 19 + b, 6, P.dark2); // robe seam
+  // Wax head, drooping
+  const hx = 16 + (o.flinch ? -1 : 0);
+  const hy = 13 + b + o.hunch;
+  c.disc(hx, hy, 3.6, P.wax1);
+  c.set(hx - 2, hy - 2, P.wax2);
+  c.set(hx - 1, hy - 3, P.wax2);
+  c.set(hx - 3, hy + 3, P.wax1);
+  c.set(hx + 3, hy + 2, P.wax1);
+  const eye = o.flinch ? P.ember : P.blood2;
+  if (dir === 'S') {
+    c.set(hx - 2, hy, eye);
+    c.set(hx + 1, hy, eye);
+  } else if (dir === 'SE') {
+    c.set(hx - 1, hy, eye);
+    c.set(hx + 2, hy, eye);
+  } else if (dir === 'E') c.set(hx + 2, hy, eye);
+  // Candle stub + flame
+  c.rect(hx - 1, hy - 6, 2, 3, P.wax2);
+  c.set(hx, hy - 7, P.ink);
+  c.set(hx + (o.flame ? -1 : 0), hy - 8, P.flame2);
+  c.set(hx, hy - 9, o.flame ? P.flame2 : P.flame1);
+  // Pale hand (weapon grip) — must match WICK_HAND
+  const [ax, ay] = WICK_HAND[dir];
+  c.rect(ax - 1, ay - 1 + b, 2, 2, P.wax1);
+}
+
+function drawWicklingDeath(c: Img, f: number) {
+  if (f < 2) {
+    drawWickling(c, 'S', { bob: f + 1, hunch: f + 2, flame: f, sway: 0, flinch: true });
+    return;
+  }
+  c.ellipse(16, 26, 7 + f, 2.5, P.wood1);
+  c.ellipse(16, 25, 3 + f * 0.5, 1.5, P.wax1);
+  c.set(15, 24, P.wax2);
+  if (f < 4) c.set(17, 23, f === 2 ? P.flame2 : P.flame1);
+  else c.set(17, 22, P.dark2);
+}
+
+function drawDummy(c: Img, lean: number) {
+  c.rect(12, 26, 8, 2, P.dark1); // base
+  c.rect(15, 18, 2, 9, P.wood1); // post
+  c.rect(10 + lean, 14, 12, 2, P.wood2); // crossbar arms
+  c.ellipse(16 + lean, 15, 5, 6, P.wood2); // straw sack
+  c.hline(12 + lean, 12, 8, P.dark2);
+  c.hline(12 + lean, 18, 8, P.dark2);
+  c.set(14 + lean, 15, P.wood1);
+  c.set(18 + lean, 16, P.wood1);
+  c.disc(16 + lean, 7, 3, P.wood2); // head
+  c.set(15 + lean, 7, P.ink);
+  c.set(17 + lean, 7, P.ink);
+}
+
+function genEnemies() {
+  const COLS = 5;
+  const wick = new Img(CELL * COLS, CELL * 21);
+  const cell = (draw: (c: Img) => void, col: number, row: number) => {
+    const c = new Img(CELL, CELL);
+    draw(c);
+    c.outline(P.ink);
+    wick.blit(c, col * CELL, row * CELL);
+  };
+  DIR5.forEach((d, r) => {
+    for (let f = 0; f < 2; f++) cell(c => drawWickling(c, d, { bob: 0, hunch: 0, flame: f, sway: 0 }), f, r);
+    for (let f = 0; f < 4; f++)
+      cell(c => drawWickling(c, d, { bob: f % 2 ? -1 : 0, hunch: 0, flame: f % 2, sway: f === 1 ? 1 : f === 3 ? -1 : 0 }), f, 5 + r);
+    cell(c => drawWickling(c, d, { bob: 1, hunch: 1, flame: 1, sway: 0 }), 0, 10 + r); // windup: coil
+    cell(c => drawWickling(c, d, { bob: 0, hunch: -1, flame: 0, sway: 1 }), 1, 10 + r); // active: lunge
+    cell(c => drawWickling(c, d, { bob: 0, hunch: 0, flame: 1, sway: 0 }), 2, 10 + r); // recovery
+    cell(c => drawWickling(c, d, { bob: 0, hunch: -1, flame: 0, sway: -1, flinch: true }), 0, 15 + r);
+    cell(c => drawWickling(c, d, { bob: 1, hunch: 1, flame: 1, sway: 0, flinch: true }), 1, 15 + r);
+  });
+  for (let f = 0; f < 5; f++) cell(c => drawWicklingDeath(c, f), f, 20);
+  const toPivot = ([x, y]: [number, number]) => [x - PIVOT[0], y - PIVOT[1]];
+  sheet('wickling', wick, {
+    cell: [CELL, CELL],
+    pivot: PIVOT,
+    layer: 'single',
+    handAnchors: Object.fromEntries(DIR5.map(d => [d, toPivot(WICK_HAND[d])])),
+    animations: {
+      idle: { row: 0, dirs: DIR5, loop: true, frames: [{ ticks: 14 }, { ticks: 14 }] },
+      walk: {
+        row: 5,
+        dirs: DIR5,
+        loop: true,
+        frames: [{ ticks: 8 }, { ticks: 8, events: ['footstep'] }, { ticks: 8 }, { ticks: 8, events: ['footstep'] }],
+      },
+      attack: {
+        row: 10,
+        dirs: DIR5,
+        loop: false,
+        frames: [
+          { ticks: 1, phase: 'windup' },
+          { ticks: 1, phase: 'active' },
+          { ticks: 1, phase: 'recovery' },
+        ],
+      },
+      stagger: { row: 15, dirs: DIR5, loop: false, frames: [{ ticks: 8 }, { ticks: 30 }] },
+      death: { row: 20, dirs: ['S'], loop: false, frames: [{ ticks: 8 }, { ticks: 10 }, { ticks: 12 }, { ticks: 30 }, { ticks: 60 }] },
+    },
+  });
+
+  const cleaver = new Img(17, 10);
+  cleaver.hline(1, 6, 4, P.wood1); // handle
+  cleaver.set(1, 6, P.wood2);
+  cleaver.rect(5, 2, 9, 5, P.steel1); // blade
+  cleaver.hline(5, 6, 9, P.steel2); // edge
+  cleaver.set(12, 3, P.dark2); // hanging hole
+  cleaver.outline(P.ink);
+  sheet('cleaver', cleaver, { cell: [17, 10], pivot: [3, 6], layer: 'weapon', points: { tip: [15, 4] } });
+
+  const dummy = new Img(CELL * 3, CELL);
+  [0, -1, 1].forEach((lean, f) => {
+    const c = new Img(CELL, CELL);
+    drawDummy(c, lean);
+    c.outline(P.ink);
+    dummy.blit(c, f * CELL, 0);
+  });
+  sheet('dummy', dummy, {
+    cell: [CELL, CELL],
+    pivot: PIVOT,
+    layer: 'single',
+    animations: {
+      idle: { row: 0, dirs: ['S'], loop: true, frames: [{ ticks: 60, col: 0 }] },
+      hit: { row: 0, dirs: ['S'], loop: false, frames: [{ ticks: 4, col: 1 }, { ticks: 4, col: 2 }, { ticks: 4, col: 1 }, { ticks: 4, col: 0 }] },
+    },
+  });
+}
+
+// ---------------------------------------------------------------- combat fx
+function genCombatFx() {
+  // Glint: telegraph / full-charge star. Row 0 = normal (warm white), row 1 = danger (red).
+  const glint = new Img(11 * 4, 11 * 2);
+  [
+    [P.wax2, P.flame2],
+    [P.wax2, P.blood2],
+  ].forEach(([core, arm], row) => {
+    [1, 3, 5, 2].forEach((r, f) => {
+      const c = new Img(11, 11);
+      for (let i = 1; i <= r; i++) for (const [dx, dy] of [[i, 0], [-i, 0], [0, i], [0, -i]]) c.set(5 + dx, 5 + dy, arm);
+      if (f === 2) for (const [dx, dy] of [[1, 1], [-1, 1], [1, -1], [-1, -1]]) c.set(5 + dx, 5 + dy, arm);
+      c.set(5, 5, core);
+      glint.blit(c, f * 11, row * 11);
+    });
+  });
+  const glintFrames = [{ ticks: 2 }, { ticks: 3 }, { ticks: 5 }, { ticks: 5 }];
+  sheet('glint', glint, {
+    cell: [11, 11],
+    pivot: [5, 5],
+    layer: 'fx',
+    animations: {
+      normal: { row: 0, dirs: ['S'], loop: false, frames: glintFrames },
+      danger: { row: 1, dirs: ['S'], loop: false, frames: glintFrames },
+    },
+  });
+
+  // Slash: a crescent pointing right (east), drawn around the attacker; rotated/scaled at runtime.
+  const S = 48;
+  const slash = new Img(S * 3, S * 2);
+  for (let f = 0; f < 3; f++) {
+    const c = new Img(S, S);
+    for (let y = 0; y < S; y++)
+      for (let x = 0; x < S; x++) {
+        const dx = x + 0.5 - 24;
+        const dy = y + 0.5 - 24;
+        const r = Math.hypot(dx, dy);
+        const a = Math.atan2(dy, dx);
+        if (Math.abs(a) > 1.35) continue;
+        const thick = (f === 0 ? 7 : f === 1 ? 4 : 2) * Math.cos(a * 1.1);
+        if (r > 22 || r < 22 - thick) continue;
+        if (f === 2 && (x + y) % 2) continue;
+        c.set(x, y, r > 20.5 ? P.wax2 : P.steel2);
+      }
+    slash.blit(c, f * S, 0);
+    // Thrust streak (row 1)
+    const t = new Img(S, S);
+    const th = f === 0 ? 1 : 0;
+    for (let x = 32; x <= 46 - f * 2; x++)
+      for (let dy = -th; dy <= th; dy++) if (f < 2 || x % 2) t.set(x, 24 + dy, dy === 0 ? P.wax2 : P.steel2);
+    slash.blit(t, f * S, S);
+  }
+  const slashFrames = [{ ticks: 2 }, { ticks: 3 }, { ticks: 3 }];
+  sheet('slash', slash, {
+    cell: [S, S],
+    pivot: [24, 24],
+    layer: 'fx',
+    animations: {
+      swing: { row: 0, dirs: ['S'], loop: false, frames: slashFrames },
+      thrust: { row: 1, dirs: ['S'], loop: false, frames: slashFrames },
+    },
+  });
+
+  const ex = new Img(7, 11);
+  ex.rect(3, 1, 1, 6, P.flame2);
+  ex.set(3, 8, P.flame2);
+  ex.outline(P.ink);
+  sheet('exclaim', ex, { cell: [7, 11], pivot: [3, 10], layer: 'fx' });
 }
 
 // ---------------------------------------------------------------- tiles
@@ -540,6 +820,8 @@ function genFont() {
 genPlayer();
 genWeapons();
 genMisc();
+genEnemies();
+genCombatFx();
 genTiles();
 genFont();
 console.log(`gen-art: wrote ${written} file(s), skipped ${skipped} existing${skipped && !FORCE ? ' (use --force to overwrite)' : ''}`);

@@ -2,59 +2,49 @@
 import { DATA } from '../data/config';
 import { AnimPlayer } from '../anim/AnimPlayer';
 import { SPRITES } from '../data/assets';
+import { Actor } from '../actors/Actor';
 import { Stamina } from '../actors/Stamina';
 import { StateMachine } from '../actors/StateMachine';
-import { Squash } from '../actors/Squash';
+import { Poise } from '../actors/Poise';
 import { dir4FromAngle, dir8FromAngle, type Dir8 } from '../core/math';
-import type { EventBus, GameEvents } from '../core/EventBus';
-import type { Input } from '../input/Input';
-import type { TileGrid } from '../world/TileGrid';
-import { moveBox } from '../world/collision';
+import type { WorldCtx } from '../core/World';
+import type { HitInfo } from '../combat/CombatSystem';
 import { PLAYER_STATES } from './PlayerStates';
 
-export interface PlayerCtx {
-  input: Input;
-  bus: EventBus<GameEvents>;
-  grid: () => TileGrid;
-}
+export class Player extends Actor {
+  readonly team = 'player' as const;
+  readonly poise = new Poise(() => DATA.player.poise);
+  readonly stamina = new Stamina(() => DATA.stamina, () => DATA.game.tickRate);
+  readonly body = new AnimPlayer(SPRITES.player_body.animations);
+  readonly legs = new AnimPlayer(SPRITES.player_legs.animations);
+  readonly sm: StateMachine<Player>;
 
-export class Player {
-  x: number;
-  y: number;
-  prevX: number;
-  prevY: number;
-  vx = 0;
-  vy = 0;
-  aimX = 0;
-  aimY = 0;
+  aimX: number;
+  aimY: number;
   aimAngle = Math.PI / 2;
   moveX = 0;
   moveY = 0;
   moveMag = 0;
-  hp: number;
 
   bodyDir: Dir8 = 'S';
   legsDir: Dir8 = 'S';
   legsVisible = true;
   weaponVisible = true;
-  invulnerable = false;
   rollDirX = 0;
   rollDirY = 1;
   sprintNeedsRepress = false;
   slot = 0;
+  comboIndex = 0;
+  /** Heavy attack charge ticks accumulated. */
+  charge = 0;
+  /** Freeze the body animation (heavy charge hold). */
+  animHold = false;
 
-  readonly stamina = new Stamina(() => DATA.stamina, () => DATA.game.tickRate);
-  readonly body = new AnimPlayer(SPRITES.player_body.animations);
-  readonly legs = new AnimPlayer(SPRITES.player_legs.animations);
-  readonly squash = new Squash();
-  readonly sm: StateMachine<Player>;
-
-  constructor(readonly ctx: PlayerCtx, x: number, y: number) {
-    this.x = this.prevX = x;
-    this.y = this.prevY = y;
+  constructor(ctx: WorldCtx, x: number, y: number) {
+    super(ctx, x, y);
+    this.hp = this.maxHp;
     this.aimX = x;
     this.aimY = y + 32;
-    this.hp = DATA.player.maxHp;
     this.body.play('idle');
     this.legs.play('idle');
     this.sm = new StateMachine<Player>(this, PLAYER_STATES, 'idle');
@@ -64,9 +54,33 @@ export class Player {
   get input() {
     return this.ctx.input;
   }
+  get maxHp() {
+    return DATA.player.maxHp;
+  }
+  get collider() {
+    return DATA.player.collider;
+  }
+  get hurtbox() {
+    return DATA.player.hurtbox;
+  }
+  get bodyRadius() {
+    return DATA.player.bodyRadius;
+  }
+  get bloodColor() {
+    return 'blood2';
+  }
+  get stateName() {
+    return this.sm.name;
+  }
+  get stateTick() {
+    return this.sm.t;
+  }
   get weaponId() {
     const list = DATA.player.startWeapons;
     return list[this.slot % list.length];
+  }
+  get weapon() {
+    return DATA.weapons[this.weaponId];
   }
 
   setAim(ax: number, ay: number) {
@@ -76,48 +90,32 @@ export class Player {
   }
 
   tick() {
-    this.prevX = this.x;
-    this.prevY = this.y;
+    this.beginTick();
     this.moveX = this.input.moveX;
     this.moveY = this.input.moveY;
     this.moveMag = Math.min(1, Math.hypot(this.moveX, this.moveY));
 
     this.stamina.tick();
     this.sm.tick();
+    this.applyKnockback();
+    this.hyperArmor = this.runner?.hyperArmor ?? 0;
+    if (this.runner) {
+      const pose = this.runner.pose();
+      this.weaponAngle = pose.angle;
+      this.weaponReach = pose.reach;
+    } else {
+      this.weaponAngle = null;
+      this.weaponReach = 0;
+    }
     this.updateAnims();
     this.squash.tick();
   }
 
-  /** Approach a target velocity: fast acceleration, faster braking/reversal (no ice-skating). */
-  accelerate(tx: number, ty: number) {
-    const cfg = DATA.player;
-    const braking = (tx === 0 && ty === 0) || tx * this.vx + ty * this.vy < 0;
-    const rate = cfg.walkSpeed / (braking ? cfg.decelTicks : cfg.accelTicks);
-    const dx = tx - this.vx;
-    const dy = ty - this.vy;
-    const len = Math.hypot(dx, dy);
-    if (len <= rate) {
-      this.vx = tx;
-      this.vy = ty;
-    } else {
-      this.vx += (dx / len) * rate;
-      this.vy += (dy / len) * rate;
-    }
-  }
-
-  /** Move by the current velocity for one tick. */
-  integrate() {
-    const r = this.moveBy(this.vx / DATA.game.tickRate, this.vy / DATA.game.tickRate);
-    if (r.hitX) this.vx = 0;
-    if (r.hitY) this.vy = 0;
-  }
-
-  moveBy(dx: number, dy: number) {
-    const c = DATA.player.collider;
-    const r = moveBox(this.ctx.grid(), this.x, this.y, c.w / 2, c.h, dx, dy);
-    this.x = r.x;
-    this.y = r.y;
-    return r;
+  onHit(h: HitInfo) {
+    this.ctx.bus.emit('sfx', { id: 'player_hurt' });
+    if (h.killed) this.sm.change('dead');
+    else if (h.staggered) this.sm.change('stagger', true);
+    else this.squash.set(DATA.juice.squash.hit);
   }
 
   swapWeapon() {
@@ -125,19 +123,32 @@ export class Player {
   }
 
   refill() {
-    this.hp = DATA.player.maxHp;
+    this.hp = this.maxHp;
     this.stamina.refill();
   }
 
-  private updateAnims() {
-    const rolling = this.sm.name === 'roll';
-    if (!rolling) this.bodyDir = dir8FromAngle(this.aimAngle);
-    this.body.tick();
+  respawn(x: number, y: number) {
+    this.x = this.prevX = x;
+    this.y = this.prevY = y;
+    this.vx = this.vy = this.kbx = this.kby = 0;
+    this.dead = false;
+    this.flash = 0;
+    this.refill();
+    this.poise.reset();
+    this.sm.change('idle', true);
+  }
 
+  private updateAnims() {
+    const st = this.sm.name;
+    if (this.runner) this.bodyDir = dir8FromAngle(this.runner.angle);
+    else if (st !== 'roll' && st !== 'dead' && st !== 'stagger') this.bodyDir = dir8FromAngle(this.aimAngle);
+    this.body.tick(this.animHold ? 0 : 1);
+
+    if (!this.legsVisible) return;
     const speed = Math.hypot(this.vx, this.vy);
     const cfg = DATA.player.legs;
     let events: string[];
-    if (!rolling && speed > 4) {
+    if (speed > 4 && !this.runner) {
       const moveAngle = Math.atan2(this.vy, this.vx);
       let legsAngle = moveAngle;
       let animSpeed = speed / cfg.walkAnimSpeedAt;
@@ -149,13 +160,16 @@ export class Player {
       this.legs.play('walk');
       events = this.legs.tick(animSpeed);
     } else {
-      if (!rolling) this.legsDir = dir4FromAngle(this.aimAngle);
+      this.legsDir = dir4FromAngle(this.runner ? this.runner.angle : this.aimAngle);
       this.legs.play('idle');
       events = this.legs.tick();
     }
 
-    const dustMode = DATA.juice.dust.footstep;
-    if (events.includes('footstep') && (dustMode === 'always' || (dustMode === 'sprint' && this.sm.name === 'sprint')))
-      this.ctx.bus.emit('dust', { x: this.x, y: this.y, kind: 'step' });
+    if (events.includes('footstep')) {
+      this.ctx.bus.emit('sfx', { id: 'footstep', volume: st === 'sprint' ? 1.3 : 1 });
+      const dustMode = DATA.juice.dust.footstep;
+      if (dustMode === 'always' || (dustMode === 'sprint' && st === 'sprint'))
+        this.ctx.bus.emit('dust', { x: this.x, y: this.y, kind: 'step' });
+    }
   }
 }

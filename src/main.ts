@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
 import { DATA, DATA_ERROR } from './data/config';
-import { ASSET_ERRORS } from './data/assets';
+import { ASSET_ERRORS, SPRITES } from './data/assets';
 import { showFatal } from './core/fatal';
 import { installPixelScaler } from './render/PixelScaler';
 import { BootScene } from './scenes/BootScene';
@@ -8,6 +8,16 @@ import { GameScene } from './scenes/GameScene';
 import { UIScene } from './scenes/UIScene';
 
 const errors = [DATA_ERROR, ...ASSET_ERRORS].filter(Boolean);
+if (!DATA_ERROR) {
+  const need = (sprite: string, where: string) => {
+    if (!SPRITES[sprite]) errors.push(`${where}: sprite "${sprite}" has no assets/sprites/${sprite}.anim.json`);
+  };
+  for (const w of Object.values(DATA.weapons)) need(w.view.sprite, `data/weapons/${w.id}.json`);
+  for (const e of Object.values(DATA.enemies)) {
+    need(e.sprite, `data/enemies/${e.id}.json`);
+    if (e.weaponSprite) need(e.weaponSprite, `data/enemies/${e.id}.json`);
+  }
+}
 if (errors.length) {
   showFatal(errors.join('\n\n'));
 } else {

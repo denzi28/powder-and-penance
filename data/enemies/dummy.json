@@ -1,0 +1,14 @@
+{
+  "id": "dummy",
+  "name": "Training Dummy",
+  "ai": "dummy",
+  "sprite": "dummy",
+  "hp": 9999,
+  "poise": { "max": 40, "resetTicks": 90 },
+  "collider": { "w": 10, "h": 5 },
+  "hurtbox": { "w": 12, "h": 20, "offsetY": -11 },
+  "bodyRadius": 7,
+  "knockbackResist": 1,
+  "staggerTicks": 30,
+  "blood": "wood2"
+}

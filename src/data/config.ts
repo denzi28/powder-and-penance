@@ -44,12 +44,24 @@ function loadAll(src: Record<string, unknown>) {
     input: one(S.InputCfg, 'config/input'),
     debug: one(S.DebugCfg, 'config/debug'),
     hud: one(S.HudCfg, 'config/hud'),
+    combat: one(S.CombatCfg, 'config/combat'),
+    ai: one(S.AiCfg, 'config/ai'),
+    audio: one(S.AudioCfg, 'config/audio'),
+    death: one(S.DeathCfg, 'config/death'),
+    sfx: one(S.SfxBank, 'audio/sfx'),
     palette: one(S.Palette, 'palette'),
     weapons: dir(S.WeaponDef, 'weapons'),
+    enemies: dir(S.EnemyDef, 'enemies'),
     rooms: dir(S.RoomData, 'rooms'),
   };
 
   if (!errors.length) {
+    for (const e of Object.values(data.enemies))
+      if (!data.palette[e.blood]) errors.push(`data/enemies/${e.id}.json: blood "${e.blood}" is not a palette colour`);
+    for (const r of Object.values(data.rooms))
+      for (const en of r.entities)
+        if (en.type === 'enemy' && !data.enemies[String(en.kind)])
+          errors.push(`data/rooms/${r.id}.json: unknown enemy kind "${String(en.kind)}"`);
     for (const w of data.player.startWeapons)
       if (!data.weapons[w]) errors.push(`data/config/player.json: startWeapons references unknown weapon "${w}"`);
     if (!data.rooms[data.game.startRoom])

@@ -1,0 +1,56 @@
+{
+  "image": "glint.png",
+  "cell": [
+    11,
+    11
+  ],
+  "pivot": [
+    5,
+    5
+  ],
+  "layer": "fx",
+  "animations": {
+    "normal": {
+      "row": 0,
+      "dirs": [
+        "S"
+      ],
+      "loop": false,
+      "frames": [
+        {
+          "ticks": 2
+        },
+        {
+          "ticks": 3
+        },
+        {
+          "ticks": 5
+        },
+        {
+          "ticks": 5
+        }
+      ]
+    },
+    "danger": {
+      "row": 1,
+      "dirs": [
+        "S"
+      ],
+      "loop": false,
+      "frames": [
+        {
+          "ticks": 2
+        },
+        {
+          "ticks": 3
+        },
+        {
+          "ticks": 5
+        },
+        {
+          "ticks": 5
+        }
+      ]
+    }
+  }
+}

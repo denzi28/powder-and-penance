@@ -1,0 +1,52 @@
+{
+  "image": "dummy.png",
+  "cell": [
+    32,
+    32
+  ],
+  "pivot": [
+    16,
+    28
+  ],
+  "layer": "single",
+  "animations": {
+    "idle": {
+      "row": 0,
+      "dirs": [
+        "S"
+      ],
+      "loop": true,
+      "frames": [
+        {
+          "ticks": 60,
+          "col": 0
+        }
+      ]
+    },
+    "hit": {
+      "row": 0,
+      "dirs": [
+        "S"
+      ],
+      "loop": false,
+      "frames": [
+        {
+          "ticks": 4,
+          "col": 1
+        },
+        {
+          "ticks": 4,
+          "col": 2
+        },
+        {
+          "ticks": 4,
+          "col": 1
+        },
+        {
+          "ticks": 4,
+          "col": 0
+        }
+      ]
+    }
+  }
+}

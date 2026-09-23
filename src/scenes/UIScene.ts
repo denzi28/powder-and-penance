@@ -1,4 +1,4 @@
-// Screen-space layer: temporary HUD bars (M1), crosshair, debug readouts and data-reload errors.
+// Screen-space layer: temporary HUD bars, crosshair, death screen, debug readouts and data-reload errors.
 import Phaser from 'phaser';
 import { DATA, onDataError, onDataReload } from '../data/config';
 import { hexToInt } from '../ui/colors';
@@ -11,6 +11,8 @@ export class UIScene extends Phaser.Scene {
   private info!: Phaser.GameObjects.BitmapText;
   private status!: Phaser.GameObjects.BitmapText;
   private err!: Phaser.GameObjects.BitmapText;
+  private veil!: Phaser.GameObjects.Rectangle;
+  private deathText!: Phaser.GameObjects.BitmapText;
 
   constructor() {
     super('ui');
@@ -18,12 +20,21 @@ export class UIScene extends Phaser.Scene {
 
   create() {
     this.gs = this.scene.get('game') as GameScene;
+    const W = DATA.game.width;
+    const H = DATA.game.height;
     this.g = this.add.graphics();
     this.cross = this.add.sprite(0, 0, 'crosshair', 0);
     this.gs.lib.applyOrigin(this.cross, 'crosshair');
     this.info = this.add.bitmapText(DATA.hud.x, 30, 'pixel', '');
     this.status = this.add.bitmapText(0, 4, 'pixel', '').setTint(hexToInt(DATA.palette.flame2));
-    this.err = this.add.bitmapText(4, 4, 'pixel', '').setTint(hexToInt(DATA.palette.blood2)).setDepth(10);
+    this.veil = this.add.rectangle(0, 0, W, H, 0x000000, 1).setOrigin(0, 0).setAlpha(0).setDepth(20);
+    this.deathText = this.add
+      .bitmapText(0, 0, 'pixel', '')
+      .setScale(DATA.death.textScale)
+      .setTint(hexToInt(DATA.palette.ember))
+      .setDepth(21)
+      .setAlpha(0);
+    this.err = this.add.bitmapText(4, 4, 'pixel', '').setTint(hexToInt(DATA.palette.blood2)).setDepth(30);
     const offErr = onDataError(msg => this.err.setText(`DATA ERROR (see console)\n${msg.split('\n').slice(0, 6).join('\n')}`));
     const offOk = onDataReload(() => this.err.setText(''));
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
@@ -56,24 +67,60 @@ export class UIScene extends Phaser.Scene {
     const onPad = this.gs.controls.device === 'pad';
     const cx = onPad ? p.aimX - cam.scrollX : ptr.x;
     const cy = onPad ? p.aimY - cam.scrollY : ptr.y;
-    this.cross.setPosition(Math.round(cx), Math.round(cy));
+    this.cross.setPosition(Math.round(cx), Math.round(cy)).setVisible(!p.dead);
 
     const loop = this.gs.loop;
-    const st = loop.frozen ? 'FROZEN (F6 STEP, F5 RESUME)' : loop.timeScale !== 1 ? `SLOW X${loop.timeScale}` : '';
+    const st = [
+      p.god ? 'GOD' : '',
+      loop.frozen ? 'FROZEN (F6 STEP, F5 RESUME)' : loop.timeScale !== 1 ? `SLOW X${loop.timeScale}` : '',
+    ]
+      .filter(Boolean)
+      .join('  ');
     this.status.setText(st).setX(DATA.game.width - this.status.width - 4);
 
     this.info.setVisible(this.gs.debug.enabled);
     if (this.gs.debug.enabled) {
       this.info.setText(
         [
-          `FPS ${Math.round(this.game.loop.actualFps)}  TICK ${this.gs.tickCount}`,
+          `FPS ${Math.round(this.game.loop.actualFps)}  TICK ${this.gs.simTick}  HITSTOP ${this.gs.hitstop}`,
           `STAMINA ${p.stamina.value.toFixed(1)}/${p.stamina.max}${p.stamina.regenDelay ? ` DELAY ${p.stamina.regenDelay}` : ''}`,
-          `STATE ${p.sm.name.toUpperCase()} T${p.sm.t}`,
-          `SPEED ${Math.hypot(p.vx, p.vy).toFixed(1)}`,
+          `POISE ${Math.round(p.poise.damage)}/${p.poise.max}  HP ${p.hp}/${p.maxHp}`,
+          `STATE ${p.sm.name.toUpperCase()} T${p.sm.t}${p.runner ? ` ${p.runner.phase.toUpperCase()} ${p.runner.t}` : ''}${p.charge ? ` CHARGE ${p.charge}` : ''}`,
           `DEVICE ${this.gs.controls.device.toUpperCase()}  WEAPON ${p.weaponId.toUpperCase()}`,
-          `POS ${p.x.toFixed(1)},${p.y.toFixed(1)}`,
+          `ENEMIES ${this.gs.enemies.length}  TOKENS ${this.gs.tokens.count}/${DATA.ai.maxAttackers}`,
         ].join('\n'),
       );
     }
+
+    this.drawDeath();
+  }
+
+  private drawDeath() {
+    const d = DATA.death;
+    const gs = this.gs;
+    let veil = 0;
+    let text = 0;
+    if (gs.deathT >= 0) {
+      const t = gs.deathT - d.overlayDelayTicks;
+      if (t >= 0) {
+        if (t < d.fadeInTicks) {
+          veil = 0.6 * (t / d.fadeInTicks);
+          text = t / d.fadeInTicks;
+        } else if (t < d.fadeInTicks + d.holdTicks) {
+          veil = 0.6;
+          text = 1;
+        } else {
+          const k = Math.min(1, (t - d.fadeInTicks - d.holdTicks) / d.fadeOutTicks);
+          veil = 0.6 + 0.4 * k;
+          text = 1 - k;
+        }
+      }
+    } else if (gs.respawnT >= 0) {
+      veil = 1 - gs.respawnT / d.fadeBackTicks;
+    }
+    this.veil.setAlpha(veil);
+    this.deathText.setText(d.text).setAlpha(text);
+    const w = this.deathText.width;
+    this.deathText.setPosition(Math.round((DATA.game.width - w) / 2), Math.round(DATA.game.height / 2 - 12));
   }
 }

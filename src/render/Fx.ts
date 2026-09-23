@@ -1,4 +1,4 @@
-// Pooled one-shot cosmetic sprites (dust puffs now; sparks, casings, blood later). Runs on real time.
+// Pooled one-shot cosmetic sprites (dust, slashes, glints). Runs on real time, so it keeps moving during hit-stop.
 import Phaser from 'phaser';
 import { DATA } from '../data/config';
 import { AnimPlayer } from '../anim/AnimPlayer';
@@ -12,14 +12,22 @@ interface Inst {
   alive: boolean;
 }
 
-const MAX = 96;
+export interface FxOpts {
+  rotation?: number;
+  scaleX?: number;
+  scaleY?: number;
+  /** Depth sort position (defaults to y). Use DEPTH.overlay-ish values to draw above everything. */
+  depth?: number;
+}
+
+const MAX = 128;
 
 export class Fx {
   private pool: Inst[] = [];
 
   constructor(private scene: Phaser.Scene, private lib: SpriteLib) {}
 
-  spawn(sheet: string, anim: string, x: number, y: number) {
+  spawn(sheet: string, anim: string, x: number, y: number, o: FxOpts = {}) {
     let inst = this.pool.find(i => !i.alive);
     if (!inst) {
       if (this.pool.length >= MAX) return;
@@ -34,7 +42,12 @@ export class Fx {
     }
     inst.anim.play(anim, { restart: true });
     inst.alive = true;
-    inst.spr.setVisible(true).setPosition(Math.round(x), Math.round(y)).setDepth(DEPTH.actor(y) - 0.5);
+    inst.spr
+      .setVisible(true)
+      .setPosition(Math.round(x), Math.round(y))
+      .setRotation(o.rotation ?? 0)
+      .setScale(o.scaleX ?? 1, o.scaleY ?? 1)
+      .setDepth(o.depth ?? DEPTH.actor(y) - 0.5);
     this.show(inst);
   }
 

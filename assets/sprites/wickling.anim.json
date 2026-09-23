@@ -1,5 +1,5 @@
 {
-  "image": "player_body.png",
+  "image": "wickling.png",
   "cell": [
     32,
     32
@@ -8,27 +8,27 @@
     16,
     28
   ],
-  "layer": "torso",
+  "layer": "single",
   "handAnchors": {
     "S": [
-      4,
-      -11
+      5,
+      -8
     ],
     "SE": [
-      4,
-      -12
+      5,
+      -9
     ],
     "E": [
-      2,
-      -12
+      3,
+      -9
     ],
     "NE": [
-      3,
-      -13
+      4,
+      -10
     ],
     "N": [
-      3,
-      -13
+      4,
+      -10
     ]
   },
   "animations": {
@@ -44,14 +44,14 @@
       "loop": true,
       "frames": [
         {
-          "ticks": 36
+          "ticks": 14
         },
         {
-          "ticks": 36
+          "ticks": 14
         }
       ]
     },
-    "roll": {
+    "walk": {
       "row": 5,
       "dirs": [
         "S",
@@ -60,35 +60,25 @@
         "NE",
         "N"
       ],
-      "loop": false,
+      "loop": true,
       "frames": [
         {
-          "ticks": 3,
-          "phase": "roll"
+          "ticks": 8
         },
         {
-          "ticks": 4,
-          "phase": "roll"
+          "ticks": 8,
+          "events": [
+            "footstep"
+          ]
         },
         {
-          "ticks": 4,
-          "phase": "roll"
+          "ticks": 8
         },
         {
-          "ticks": 4,
-          "phase": "roll"
-        },
-        {
-          "ticks": 5,
-          "phase": "roll"
-        },
-        {
-          "ticks": 5,
-          "phase": "recover"
-        },
-        {
-          "ticks": 5,
-          "phase": "recover"
+          "ticks": 8,
+          "events": [
+            "footstep"
+          ]
         }
       ]
     },
@@ -129,10 +119,10 @@
       "loop": false,
       "frames": [
         {
-          "ticks": 10
+          "ticks": 8
         },
         {
-          "ticks": 16
+          "ticks": 30
         }
       ]
     },
@@ -147,10 +137,10 @@
           "ticks": 8
         },
         {
-          "ticks": 8
+          "ticks": 10
         },
         {
-          "ticks": 10
+          "ticks": 12
         },
         {
           "ticks": 30

@@ -1,0 +1,9 @@
+{
+  "text": "EXTINGUISHED",
+  "overlayDelayTicks": 40,
+  "fadeInTicks": 50,
+  "holdTicks": 120,
+  "fadeOutTicks": 40,
+  "fadeBackTicks": 40,
+  "textScale": 3
+}

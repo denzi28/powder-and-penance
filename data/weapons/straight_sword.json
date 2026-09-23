@@ -3,5 +3,52 @@
   "name": "Straight Sword",
   "kind": "melee",
   "twoHanded": false,
-  "view": { "sprite": "sword", "restAngleOffsetDeg": 0 }
+  "view": { "sprite": "sword", "restAngleOffsetDeg": 35 },
+  "light": [
+    {
+      "damage": 22, "poise": 11, "stamina": 14,
+      "windup": 9, "active": 4, "recovery": 18,
+      "comboFrom": 14, "rollCancelFrom": 17,
+      "trackDegPerTick": 8,
+      "lunge": { "distance": 8, "startTick": 6, "ticks": 5 },
+      "hitbox": { "shape": "arc", "radius": 26, "halfAngle": 70 },
+      "sweep": { "fromDeg": -110, "toDeg": 80 },
+      "knockback": 70, "hitstop": 3, "shake": 0.12, "sfx": "swing"
+    },
+    {
+      "damage": 22, "poise": 11, "stamina": 14,
+      "windup": 8, "active": 4, "recovery": 20,
+      "comboFrom": 13, "rollCancelFrom": 18,
+      "trackDegPerTick": 8,
+      "lunge": { "distance": 8, "startTick": 5, "ticks": 5 },
+      "hitbox": { "shape": "arc", "radius": 26, "halfAngle": 70 },
+      "sweep": { "fromDeg": 90, "toDeg": -100 },
+      "knockback": 70, "hitstop": 3, "shake": 0.12, "sfx": "swing"
+    },
+    {
+      "damage": 28, "poise": 16, "stamina": 16,
+      "windup": 12, "active": 5, "recovery": 26,
+      "comboFrom": 20, "rollCancelFrom": 24,
+      "trackDegPerTick": 6,
+      "lunge": { "distance": 14, "startTick": 9, "ticks": 6 },
+      "hitbox": { "shape": "arc", "radius": 31, "halfAngle": 28 },
+      "sweep": { "fromDeg": 0, "toDeg": 0, "reach": 8 },
+      "knockback": 100, "hitstop": 4, "shake": 0.18, "sfx": "swing"
+    }
+  ],
+  "heavy": {
+    "chargeTicks": 36,
+    "chargeDamageMult": 1.6,
+    "chargePoiseMult": 1.8,
+    "strike": {
+      "damage": 38, "poise": 26, "stamina": 26,
+      "windup": 16, "active": 5, "recovery": 30,
+      "rollCancelFrom": 28,
+      "trackDegPerTick": 4,
+      "lunge": { "distance": 18, "startTick": 14, "ticks": 6 },
+      "hitbox": { "shape": "arc", "radius": 34, "halfAngle": 26 },
+      "sweep": { "fromDeg": 0, "toDeg": 0, "reach": 10 },
+      "knockback": 150, "hitstop": 6, "shake": 0.3, "sfx": "swing_heavy"
+    }
+  }
 }

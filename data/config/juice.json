@@ -2,7 +2,13 @@
   "shake": { "maxOffset": 5, "decayPerTick": 0.035, "debugTrauma": 0.6 },
   "squash": {
     "rollStart": [1.25, 0.75, 5],
-    "rollLand": [0.85, 1.15, 5]
+    "rollLand": [0.85, 1.15, 5],
+    "hit": [1.2, 0.8, 6],
+    "attack": [0.9, 1.1, 4]
   },
-  "dust": { "footstep": "sprint" }
+  "dust": { "footstep": "sprint" },
+  "flashTicks": 4,
+  "particles": { "sparks": 6, "blood": 8, "bloodOnKill": 18, "maxStains": 600 },
+  "damageNumbers": "dummy",
+  "enemyBarTicks": 240
 }

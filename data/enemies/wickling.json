@@ -1,0 +1,89 @@
+{
+  "id": "wickling",
+  "name": "Wickling",
+  "ai": "melee",
+  "sprite": "wickling",
+  "weaponSprite": "cleaver",
+  "weaponRestDeg": 55,
+  "hp": 60,
+  "poise": { "max": 25, "resetTicks": 90 },
+  "tallow": 20,
+  "speed": 50,
+  "strafeSpeed": 30,
+  "accelTicks": 6,
+  "turnDegPerTick": 7,
+  "collider": { "w": 8, "h": 5 },
+  "hurtbox": { "w": 10, "h": 16, "offsetY": -9 },
+  "bodyRadius": 5,
+  "knockbackResist": 0,
+  "perception": { "range": 110, "halfAngleDeg": 65, "reactionTicks": [14, 24], "loseTicks": 240, "alertShareRadius": 90 },
+  "leash": { "distance": 220, "healOnReturn": true },
+  "spacing": { "preferred": 30, "strafeTicks": [40, 90] },
+  "staggerTicks": 40,
+  "deathTicks": 50,
+  "corpseTicks": 150,
+  "blood": "wax1",
+  "moves": [
+    {
+      "id": "chop",
+      "range": [0, 28],
+      "weight": 3,
+      "cooldown": 70,
+      "strikes": [
+        {
+          "damage": 20, "poise": 26,
+          "windup": 30, "active": 5, "recovery": 32,
+          "trackDegPerTick": 5,
+          "telegraph": { "tick": 12, "kind": "normal" },
+          "lunge": { "distance": 12, "startTick": 27, "ticks": 5 },
+          "hitbox": { "shape": "arc", "radius": 24, "halfAngle": 38 },
+          "sweep": { "fromDeg": -150, "toDeg": 30 },
+          "knockback": 110, "hitstop": 5, "shake": 0.3, "sfx": "swing_heavy"
+        }
+      ]
+    },
+    {
+      "id": "swipe_combo",
+      "range": [0, 24],
+      "weight": 2,
+      "cooldown": 100,
+      "strikes": [
+        {
+          "damage": 12, "poise": 11,
+          "windup": 20, "active": 4, "recovery": 8,
+          "trackDegPerTick": 6,
+          "telegraph": { "tick": 8, "kind": "normal" },
+          "lunge": { "distance": 6, "startTick": 17, "ticks": 4 },
+          "hitbox": { "shape": "arc", "radius": 22, "halfAngle": 75 },
+          "sweep": { "fromDeg": -100, "toDeg": 80 },
+          "knockback": 60, "hitstop": 2, "shake": 0.1
+        },
+        {
+          "damage": 12, "poise": 11,
+          "windup": 12, "active": 4, "recovery": 34,
+          "trackDegPerTick": 4,
+          "lunge": { "distance": 6, "startTick": 9, "ticks": 4 },
+          "hitbox": { "shape": "arc", "radius": 22, "halfAngle": 75 },
+          "sweep": { "fromDeg": 80, "toDeg": -100 },
+          "knockback": 70, "hitstop": 3, "shake": 0.12
+        }
+      ]
+    },
+    {
+      "id": "shove",
+      "range": [0, 15],
+      "weight": 2,
+      "cooldown": 150,
+      "strikes": [
+        {
+          "damage": 5, "poise": 40,
+          "windup": 16, "active": 3, "recovery": 24,
+          "telegraph": { "tick": 4, "kind": "normal" },
+          "hitbox": { "shape": "circle", "radius": 12, "offset": 8 },
+          "sweep": { "fromDeg": 20, "toDeg": 0, "reach": 6 },
+          "knockback": 200, "hitstop": 3, "shake": 0.15, "sfx": "swing"
+        }
+      ]
+    }
+  ]
+}

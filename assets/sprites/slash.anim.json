@@ -1,0 +1,50 @@
+{
+  "image": "slash.png",
+  "cell": [
+    48,
+    48
+  ],
+  "pivot": [
+    24,
+    24
+  ],
+  "layer": "fx",
+  "animations": {
+    "swing": {
+      "row": 0,
+      "dirs": [
+        "S"
+      ],
+      "loop": false,
+      "frames": [
+        {
+          "ticks": 2
+        },
+        {
+          "ticks": 3
+        },
+        {
+          "ticks": 3
+        }
+      ]
+    },
+    "thrust": {
+      "row": 1,
+      "dirs": [
+        "S"
+      ],
+      "loop": false,
+      "frames": [
+        {
+          "ticks": 2
+        },
+        {
+          "ticks": 3
+        },
+        {
+          "ticks": 3
+        }
+      ]
+    }
+  }
+}

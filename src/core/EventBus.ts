@@ -1,3 +1,7 @@
+import type { HitInfo } from '../combat/CombatSystem';
+import type { Actor } from '../actors/Actor';
+import type { StrikeDef } from '../data/schemas';
+
 type Handler<T> = (payload: T) => void;
 
 export class EventBus<E extends object> {
@@ -19,4 +23,14 @@ export class EventBus<E extends object> {
 export interface GameEvents {
   dust: { x: number; y: number; kind: 'roll' | 'step' };
   shake: { trauma: number };
+  sfx: { id: string; x?: number; y?: number; volume?: number; pitch?: number };
+  hit: HitInfo;
+  /** Active frames of a strike begin (slash FX + swing sound). */
+  swing: { actor: Actor; strike: StrikeDef; angle: number; mirror: number };
+  /** Enemy windup cue: glint on the weapon + sound. */
+  telegraph: { actor: Actor; kind: 'normal' | 'danger' };
+  /** Player heavy reached full charge. */
+  chargeFull: { actor: Actor };
+  notice: { actor: Actor };
+  died: { actor: Actor };
 }

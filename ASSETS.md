@@ -85,7 +85,7 @@ The placeholders come from `npm run gen:art`. That script **never overwrites exi
 | Animation | Phases | Driven by |
 |---|---|---|
 | `roll` | `roll`, `recover` | `data/config/roll.json` |
-| attacks (M2+) | `windup`, `active`, `recovery` | `data/weapons/*.json`, `data/enemies/*.json` |
+| `attack` | `windup`, `active`, `recovery` | each strike in `data/weapons/*.json` / `data/enemies/*.json` |
 | heal (M4) | `drink`, `recover` | `data/config/phial.json` |
 
 ### Cosmetic events
@@ -116,8 +116,37 @@ Draw the legs and boots in roughly rows 21–27 of the cell. The torso layer cov
 |---|---|---|---|---|
 | `idle` | 0 | S SE E NE N | 2 × 36t | Breathing. Also used while walking; the legs supply the bob. |
 | `roll` | 5 | S SE E NE N | 7 frames: 5 `roll` + 2 `recover` | **Full body.** The legs layer and weapon are hidden during the roll. The direction is the roll direction, not the aim. |
+| `attack` | 10 | S SE E NE N | 3 frames: `windup`, `active`, `recovery` | Shared by every melee strike. The weapon sprite does the swinging (see *Weapon motion*). Faces the attack direction. The windup frame is held while a heavy is charging. |
+| `stagger` | 15 | S SE E NE N | 2 (10t, 16t) | Flinch. Legs stay visible. |
+| `death` | 20 | S | 5 | **Full body** collapse. Legs and weapon are hidden. |
 
 `handAnchors` must match where the weapon hand is drawn in each direction.
+
+### `wickling` (enemy, single layer, 32×32, pivot 16,28, 5 columns)
+| Animation | Row | Dirs | Frames |
+|---|---|---|---|
+| `idle` | 0 | S SE E NE N | 2 (candle flicker) |
+| `walk` | 5 | S SE E NE N | 4, `footstep` on 1 and 3. Playback speed scales with move speed. |
+| `attack` | 10 | S SE E NE N | 3 phased: `windup` / `active` / `recovery` (shared by all its moves) |
+| `stagger` | 15 | S SE E NE N | 2 |
+| `death` | 20 | S | 5 (melts into a puddle) |
+
+Enemies hold their weapon like the player does: `handAnchors` in the body manifest, plus a separate weapon sheet (`cleaver`, pivot = grip, drawn pointing right, `points.tip` for the telegraph glint).
+
+### `dummy` (single layer, 32×32, S only)
+`idle` (1 frame) and `hit` (4 frames of wobble, using `col` to reuse 3 drawings).
+
+### Combat FX
+| Sheet | Cell | Pivot | Animations | Notes |
+|---|---|---|---|---|
+| `slash` | 48×48 | 24,24 (the attacker) | `swing`, `thrust` | Drawn pointing right with a 22 px radius. It is rotated to the attack direction, scaled to the strike's hitbox radius, and mirrored for reverse swings. |
+| `glint` | 11×11 | 5,5 | `normal` (row 0), `danger` (row 1) | Telegraph star at the weapon tip. Also flashes when a heavy reaches full charge. |
+| `exclaim` | 7×11 | 3,10 | none (static) | "Noticed you" pip above an enemy's head |
+
+### Weapon motion during attacks
+- The weapon sprite's swing comes from **gameplay data**, not art: each strike's `sweep` (`fromDeg` → `toDeg`, plus `reach` for thrusts) in `data/weapons/*.json` and `data/enemies/*.json`.
+- The windup eases from the rest angle to `fromDeg`, the active frames sweep to `toDeg`, and recovery returns to rest.
+- Swings aimed into the left half are mirrored automatically.
 
 ### Weapons (`sword`, `revolver`; weapon layer, single frame)
 - The pivot is the **grip**: the weapon rotates around it and sits on the torso's hand anchor.

@@ -1,0 +1,18 @@
+{
+  "image": "cleaver.png",
+  "cell": [
+    17,
+    10
+  ],
+  "pivot": [
+    3,
+    6
+  ],
+  "layer": "weapon",
+  "points": {
+    "tip": [
+      15,
+      4
+    ]
+  }
+}

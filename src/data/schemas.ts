@@ -17,15 +17,22 @@ export const GameCfg = z.object({
   startRoom: z.string(),
 });
 
+const PoiseCfg = z.object({ max: pos, resetTicks: int.nonnegative() });
+const HurtBox = z.object({ w: pos, h: pos, offsetY: num });
+
 export const PlayerCfg = z.object({
   maxHp: pos,
+  poise: PoiseCfg,
+  staggerTicks: int.positive(),
+  deathTicks: int.positive(),
+  bodyRadius: pos,
   walkSpeed: pos,
   accelTicks: pos,
   decelTicks: pos,
   sprintMult: pos,
   aimOriginY: num,
   collider: z.object({ w: pos, h: pos }),
-  hurtbox: z.object({ w: pos, h: pos, offsetY: num }),
+  hurtbox: HurtBox,
   legs: z.object({
     backpedal: z.enum(['turn', 'reverse']),
     backpedalDot: num.min(-1).max(1),
@@ -68,8 +75,116 @@ export const CameraCfg = z.object({
 
 export const JuiceCfg = z.object({
   shake: z.object({ maxOffset: num.min(0), decayPerTick: num.min(0), debugTrauma: num.min(0).max(1) }),
-  squash: z.object({ rollStart: SquashKey, rollLand: SquashKey }),
+  squash: z.object({ rollStart: SquashKey, rollLand: SquashKey, hit: SquashKey, attack: SquashKey }),
   dust: z.object({ footstep: z.enum(['always', 'sprint', 'never']) }),
+  flashTicks: int.nonnegative(),
+  particles: z.object({ sparks: int.nonnegative(), blood: int.nonnegative(), bloodOnKill: int.nonnegative(), maxStains: int.nonnegative() }),
+  damageNumbers: z.enum(['all', 'dummy', 'none']),
+  enemyBarTicks: int.nonnegative(),
+});
+
+export const CombatCfg = z.object({
+  knockbackDecay: num.min(0).max(0.99),
+  bodyPush: num.min(0).max(1),
+  heavyHitstop: int.nonnegative(),
+});
+
+export const AiCfg = z.object({ maxAttackers: int.positive() });
+
+export const AudioCfg = z.object({ master: num.min(0).max(1), sfx: num.min(0).max(1), hearingDistance: pos });
+export const SfxPreset = z.object({
+  wave: z.enum(['sine', 'square', 'sawtooth', 'triangle', 'noise']),
+  freq: pos,
+  freqEnd: pos.optional(),
+  duration: pos,
+  attack: num.min(0).default(0.005),
+  volume: num.min(0).max(1),
+  filter: pos.optional(),
+  filterEnd: pos.optional(),
+});
+export const SfxBank = z.object({ presets: z.record(z.string(), SfxPreset) });
+
+export const DeathCfg = z.object({
+  text: z.string(),
+  overlayDelayTicks: int.nonnegative(),
+  fadeInTicks: int.positive(),
+  holdTicks: int.nonnegative(),
+  fadeOutTicks: int.positive(),
+  fadeBackTicks: int.positive(),
+  textScale: int.positive(),
+});
+
+// ---- Strikes: one swing/stab/shove. Shared by player weapons and enemy moves. ----
+const HitShape = z.discriminatedUnion('shape', [
+  z.object({ shape: z.literal('arc'), radius: pos, halfAngle: num.min(0).max(180), offset: num.default(0), inner: num.min(0).default(0) }),
+  z.object({ shape: z.literal('circle'), radius: pos, offset: num.default(0) }),
+]);
+export const StrikeDef = z.object({
+  damage: num.min(0),
+  poise: num.min(0),
+  stamina: num.min(0).default(0),
+  windup: int.nonnegative(),
+  active: int.positive(),
+  recovery: int.nonnegative(),
+  hitbox: HitShape,
+  /** Hitbox centre height relative to the feet (negative = up). */
+  originY: num.default(-8),
+  /** Weapon sprite motion relative to the attack direction; reach = forward thrust in px. */
+  sweep: z.object({ fromDeg: num, toDeg: num, reach: num.default(0) }).default({ fromDeg: -90, toDeg: 90, reach: 0 }),
+  /** Max turn toward the target during windup; direction locks when active frames start. */
+  trackDegPerTick: num.min(0).default(0),
+  lunge: z.object({ distance: num, startTick: int.nonnegative(), ticks: int.positive() }).optional(),
+  knockback: num.min(0).default(0),
+  hitstop: int.nonnegative().default(0),
+  shake: num.min(0).max(1).default(0),
+  telegraph: z.object({ tick: int.nonnegative(), kind: z.enum(['normal', 'danger']) }).optional(),
+  /** Extra poise buffer while winding up / active (resists stagger). */
+  hyperArmor: num.min(0).default(0),
+  /** Player only: tick (from strike start) from which the next light attack may chain. */
+  comboFrom: int.nonnegative().optional(),
+  /** Player only: tick from which a roll may cancel the recovery. */
+  rollCancelFrom: int.nonnegative().optional(),
+  sfx: z.string().default('swing'),
+});
+
+export const MoveDef = z.object({
+  id: z.string(),
+  range: Vec2,
+  weight: pos,
+  cooldown: int.nonnegative(),
+  strikes: z.array(StrikeDef).min(1),
+});
+
+export const EnemyDef = z.object({
+  id: z.string(),
+  name: z.string(),
+  ai: z.enum(['melee', 'dummy']),
+  sprite: z.string(),
+  weaponSprite: z.string().optional(),
+  weaponRestDeg: num.default(50),
+  hp: pos,
+  poise: PoiseCfg,
+  tallow: int.nonnegative().default(0),
+  speed: num.min(0).default(0),
+  strafeSpeed: num.min(0).default(0),
+  accelTicks: pos.default(6),
+  turnDegPerTick: pos.default(6),
+  collider: z.object({ w: pos, h: pos }),
+  hurtbox: HurtBox,
+  bodyRadius: pos,
+  knockbackResist: num.min(0).max(1).default(0),
+  perception: z
+    .object({ range: pos, halfAngleDeg: num.min(0).max(180), reactionTicks: Vec2, loseTicks: int.nonnegative(), alertShareRadius: num.min(0) })
+    .default({ range: 100, halfAngleDeg: 60, reactionTicks: [15, 25], loseTicks: 240, alertShareRadius: 80 }),
+  leash: z.object({ distance: pos, healOnReturn: z.boolean() }).default({ distance: 200, healOnReturn: true }),
+  spacing: z.object({ preferred: pos, strafeTicks: Vec2 }).default({ preferred: 30, strafeTicks: [40, 90] }),
+  /** Random pause [min, max] ticks after finishing an attack before trying another. */
+  attackGapTicks: Vec2.default([20, 50]),
+  staggerTicks: int.positive().default(30),
+  deathTicks: int.positive().default(40),
+  corpseTicks: int.nonnegative().default(120),
+  blood: z.string().default('blood2'),
+  moves: z.array(MoveDef).default([]),
 });
 
 export const InputCfg = z.object({
@@ -99,6 +214,10 @@ export const WeaponDef = z
     kind: z.enum(['melee', 'ranged']),
     twoHanded: z.boolean(),
     view: z.object({ sprite: z.string(), restAngleOffsetDeg: num }),
+    light: z.array(StrikeDef).default([]),
+    heavy: z
+      .object({ chargeTicks: int.nonnegative(), chargeDamageMult: pos, chargePoiseMult: pos, strike: StrikeDef })
+      .optional(),
   })
   .passthrough();
 
@@ -155,6 +274,10 @@ export type RollCfg = z.infer<typeof RollCfg>;
 export type StaminaCfg = z.infer<typeof StaminaCfg>;
 export type InputCfg = z.infer<typeof InputCfg>;
 export type WeaponDef = z.infer<typeof WeaponDef>;
+export type StrikeDef = z.infer<typeof StrikeDef>;
+export type MoveDef = z.infer<typeof MoveDef>;
+export type EnemyDef = z.infer<typeof EnemyDef>;
+export type SfxPreset = z.infer<typeof SfxPreset>;
 export type RoomData = z.infer<typeof RoomData>;
 export type TileKind = z.infer<typeof TileKind>;
 export type FrameDef = z.infer<typeof FrameDef>;
