@@ -127,10 +127,16 @@
       "type": "exit",
       "id": "road_to_hub",
       "at": [10, 0],
+      "size": [2, 1],
       "to": {
         "area": "hub",
         "spawn": "from_road"
       }
+    },
+    {
+      "type": "spawn",
+      "id": "from_hub",
+      "at": [10, 1]
     }
   ]
 }

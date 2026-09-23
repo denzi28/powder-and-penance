@@ -97,6 +97,20 @@ function loadAll(src: Record<string, unknown>) {
         }
         if (en.type === 'item' && !data.items[String(en.item)])
           errors.push(`data/rooms/${r.id}.json: item "${en.id}" has unknown item "${String(en.item)}"`);
+        if (en.type === 'door' && en.requires !== undefined && data.items[String(en.requires)]?.effect.type !== 'key')
+          errors.push(`data/rooms/${r.id}.json: door "${en.id}" requires "${String(en.requires)}", which is not a key item`);
+        if (en.type === 'exit') {
+          const to = en.to as { area?: string; spawn?: string } | undefined;
+          if (!en.id || !to?.area || !to.spawn) errors.push(`data/rooms/${r.id}.json: exit needs "id" and "to": { "area", "spawn" }`);
+          else if (!data.areas.areas[to.area]) errors.push(`data/rooms/${r.id}.json: exit "${en.id}" leads to unknown area "${to.area}"`);
+          else {
+            // Exits into areas that have rooms must land on a spawn point there. (An area with no rooms yet is
+            // allowed: the exit just says the way isn't open.)
+            const target = Object.values(data.rooms).filter(t => t.area === to.area);
+            if (target.length && !target.some(t => t.entities.some(e => e.type === 'spawn' && e.id === to.spawn)))
+              errors.push(`data/rooms/${r.id}.json: exit "${en.id}": no spawn "${to.spawn}" in area "${to.area}"`);
+          }
+        }
         if (en.type === 'weapon_rack' && !data.weapons[String(en.weapon)])
           errors.push(`data/rooms/${r.id}.json: weapon_rack has unknown weapon "${String(en.weapon)}"`);
         if (en.type === 'shield_rack' && en.shield !== null && !data.shields[String(en.shield)])

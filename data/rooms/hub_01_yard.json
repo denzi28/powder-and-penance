@@ -1,0 +1,260 @@
+{
+  "id": "hub_01_yard",
+  "area": "hub",
+  "origin": [0, 10],
+  "legend": {
+    "#": "wall",
+    ".": "floor",
+    ",": "floor_grass",
+    "=": "floor_road",
+    "_": "floor_plank",
+    ":": "floor_stone",
+    " ": "void"
+  },
+  "tiles": [
+    "#####,###########==###############",
+    "####,.,,,,,,,,,,,==,,,,,##########",
+    "####,............==.....,,,,######",
+    "#,,,.............==........,######",
+    "#,...............==........,######",
+    "#,...............==........,######",
+    "#,...............==........,######",
+    "#,...............==........,######",
+    "#,...............==........,######",
+    "#,...............==........,######",
+    "#,...............==........,#,,,,,",
+    "==================================",
+    "============================#=====",
+    "#,...............==........,######",
+    "#,...............==........,######",
+    "#,...............==........,######",
+    "#,...............==........,######",
+    "#,...............==........,######",
+    "#,,,.............==........,######",
+    "####,............==.....,,,,######",
+    "####,............==....,##########",
+    "####,............==....,##########",
+    "####,,,,,,,,,,,,,==,,,,,##########",
+    "#################==###############"
+  ],
+  "entities": [
+    {
+      "type": "door",
+      "id": "hub_toll_gate",
+      "at": [28, 11],
+      "requires": "toll_key"
+    },
+    {
+      "type": "shrine",
+      "id": "shrine_rest",
+      "name": "Wick's Rest",
+      "at": [14, 9]
+    },
+    {
+      "type": "decor",
+      "kind": "campfire",
+      "at": [21, 15]
+    },
+    {
+      "type": "decor",
+      "kind": "bedroll",
+      "at": [19, 17]
+    },
+    {
+      "type": "decor",
+      "kind": "bedroll",
+      "at": [23, 17],
+      "flip": true
+    },
+    {
+      "type": "decor",
+      "kind": "stall",
+      "at": [22, 7]
+    },
+    {
+      "type": "decor",
+      "kind": "lantern_post",
+      "at": [25, 8]
+    },
+    {
+      "type": "decor",
+      "kind": "notice_board",
+      "at": [20, 8]
+    },
+    {
+      "type": "decor",
+      "kind": "well",
+      "at": [9, 16]
+    },
+    {
+      "type": "decor",
+      "kind": "tent",
+      "at": [5, 17]
+    },
+    {
+      "type": "decor",
+      "kind": "tent",
+      "at": [13, 19]
+    },
+    {
+      "type": "decor",
+      "kind": "hand_cart",
+      "at": [26, 5]
+    },
+    {
+      "type": "decor",
+      "kind": "ruin_wall",
+      "at": [10, 5]
+    },
+    {
+      "type": "decor",
+      "kind": "ruin_wall",
+      "at": [6, 7]
+    },
+    {
+      "type": "decor",
+      "kind": "fence",
+      "at": [4, 14]
+    },
+    {
+      "type": "decor",
+      "kind": "fence",
+      "at": [5, 14]
+    },
+    {
+      "type": "decor",
+      "kind": "fence",
+      "at": [6, 14]
+    },
+    {
+      "type": "decor",
+      "kind": "lantern_post",
+      "at": [15, 13]
+    },
+    {
+      "type": "decor",
+      "kind": "lantern_post",
+      "at": [20, 13]
+    },
+    {
+      "type": "decor",
+      "kind": "signpost",
+      "at": [2, 10]
+    },
+    {
+      "type": "decor",
+      "kind": "signpost",
+      "at": [26, 13]
+    },
+    {
+      "type": "decor",
+      "kind": "grass_tuft",
+      "at": [3, 5]
+    },
+    {
+      "type": "decor",
+      "kind": "grass_tuft",
+      "at": [11, 20]
+    },
+    {
+      "type": "decor",
+      "kind": "grass_tuft",
+      "at": [26, 18]
+    },
+    {
+      "type": "decor",
+      "kind": "grass_tuft",
+      "at": [8, 2]
+    },
+    {
+      "type": "prop",
+      "kind": "crate",
+      "at": [24, 9]
+    },
+    {
+      "type": "prop",
+      "kind": "crate",
+      "at": [20, 6]
+    },
+    {
+      "type": "prop",
+      "kind": "pot",
+      "at": [23, 6]
+    },
+    {
+      "type": "prop",
+      "kind": "pot",
+      "at": [12, 16]
+    },
+    {
+      "type": "prop",
+      "kind": "crate",
+      "at": [27, 3]
+    },
+    {
+      "type": "spawn",
+      "id": "from_road",
+      "at": [17, 21]
+    },
+    {
+      "type": "spawn",
+      "id": "from_mire",
+      "at": [2, 12]
+    },
+    {
+      "type": "spawn",
+      "id": "from_works",
+      "at": [31, 11]
+    },
+    {
+      "type": "exit",
+      "id": "hub_to_road",
+      "at": [17, 23],
+      "size": [2, 1],
+      "to": {
+        "area": "road",
+        "spawn": "from_hub"
+      }
+    },
+    {
+      "type": "exit",
+      "id": "hub_to_mire",
+      "at": [0, 11],
+      "size": [1, 2],
+      "to": {
+        "area": "mire",
+        "spawn": "from_hub"
+      }
+    },
+    {
+      "type": "exit",
+      "id": "hub_to_works",
+      "at": [33, 10],
+      "size": [1, 3],
+      "to": {
+        "area": "works",
+        "spawn": "from_hub"
+      }
+    },
+    {
+      "type": "npc",
+      "id": "maudlin",
+      "at": [12, 11]
+    },
+    {
+      "type": "npc",
+      "id": "oskar_stall",
+      "at": [22, 6]
+    },
+    {
+      "type": "npc",
+      "id": "pip",
+      "at": [22, 16]
+    },
+    {
+      "type": "cutscene",
+      "id": "arrive_wicks_rest",
+      "at": [17, 20]
+    }
+  ]
+}

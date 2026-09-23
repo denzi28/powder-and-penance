@@ -50,9 +50,9 @@ Target: **~2 h** first playthrough (2 h 15 min with the optional Powder Vault). 
 | Named floor variants (`floor_dirt`, `floor_grass`...) | road_01 ✅ |
 | `decor` entities: static scenery sprites, optionally solid: low (blocks movement and bullets) or tall (also blocks sight) | road_01 ✅, tall in road_03 ✅ |
 | `weapon` entity: a weapon lying on the floor | road_01 ✅ |
-| `exit` entity: walk into it to change area | road_05 |
-| Area name banner on entering an area | road_05 |
-| Keyed doors (Toll Key, two Seals) | hub_01 |
+| `exit` entity: walk into it to change area (fade out, arrive at a named `spawn`, fade in) | road_05 ✅ |
+| Area name banner on entering an area | road_05 ✅ |
+| Keyed doors (`requires`: a key item): Toll Key ✅, the two Seals later | hub_01 ✅ |
 | Dialogue, NPCs, cutscenes | Story systems milestone (after the road and hub are built) |
 | Slow floors (wax pools) | mire_01 |
 | Secret breakable walls | works_03 |
@@ -84,13 +84,15 @@ A half-ruined pilgrims' waystation in a hollow below the Abbey. Every Act 1 area
 
 | # | Room | Contents |
 |---|---|---|
-| hub_01 | Waystation Yard | **Wick's Rest shrine**. Sister Maudlin (levelling). Oskar's stall appears here once he's freed. Pip sits by the fire once rescued. Exits: south to the road, west to the Waxmire, east through the **Toll Gate** (Toll Key) to the Tallow Works, north to the Hill Stair. |
-| hub_02 | Maudlin's Chapel | Side room: Maudlin's quarters, lore notes, the Chandler's ledger turn-in later |
-| hub_03 | Hill Stair | Switchback path up to the Abbey Porch (area exit) |
+| hub_01 | **Waystation Yard** ✅ | **Wick's Rest shrine** at the crossroads. Merchant stall (Oskar's, once he's freed), campfire with bedrolls (Pip sits here once rescued), tents, a well, ruined timber walls, lanterns, a notice board. Exits: south to the road, west to the Waxmire, east through the **Toll Gate** (locked: Toll Key) to the carters' road and the Tallow Works, north to the Hill Stair, north-west to the chapel. No enemies. |
+| hub_02 | **Maudlin's Chapel** ✅ | A grotto chapel in the hollow's side: flagstones, an altar with candles, prayer benches, a bookshelf, her bedroll. Later: lore notes and the Chandler's ledger turn-in. |
+| hub_03 | **Hill Stair** ✅ | Switchback path up to the Abbey. It arrives through a new **north doorway in the Porch**, since the Porch's west wall is shared with the Nave. |
+
+Exits into areas that aren't built yet (the Waxmire, the Tallow Works) show "The way is not open yet".
 
 ## The Guttering Abbey (`abbey`): built in M5, revised for Act 1
 The 13 existing rooms stay. Changes:
-- **Porch:** a new west entrance from the Hill Stair. New games no longer start here.
+- **Porch:** a new north doorway from the Hill Stair ✅. New games no longer start here.
 - **Scriptorium:** Brother Aldous hides here (NPC).
 - **Gatehouse:** becomes the **Tollwarden** arena; drops the **Toll Key**.
 - **Undercroft:** gets a sluice gate on its west side, the one-way shortcut up from the Waxmire.

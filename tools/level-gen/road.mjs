@@ -134,8 +134,9 @@ R('road_05_hill_of_candles', [120, 16], 22, 20)
   .decor('grass_tuft', 3, 7).decor('grass_tuft', 20, 11).decor('grass_tuft', 14, 13).decor('grass_tuft', 10, 3)
   .add({ type: 'shrine', id: 'shrine_hill', name: 'Hill Wick', at: [13, 12] })
   .add({ type: 'cutscene', id: 'abbey_view', at: [19, 6] })
-  // leads to the hub (area exits arrive with the hub)
-  .add({ type: 'exit', id: 'road_to_hub', at: [10, 0], to: { area: 'hub', spawn: 'from_road' } });
+  // up to Wick's Rest
+  .add({ type: 'exit', id: 'road_to_hub', at: [10, 0], size: [2, 1], to: { area: 'hub', spawn: 'from_road' } })
+  .add({ type: 'spawn', id: 'from_hub', at: [10, 1] });
 
 // ---- write
 fs.mkdirSync('data/rooms', { recursive: true });

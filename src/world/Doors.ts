@@ -1,7 +1,8 @@
 // Doors in wall gaps. A closed door turns its grid cell into a wall (blocks movement, sight, projectiles,
 // paths); opening it restores the floor for good (world flag "door:<id>").
 // A shortcut door (entity field `opensFrom`: N/S/E/W) only opens from that side; from the other side it is
-// "barred from beyond" until opened.
+// "barred from beyond" until opened. A locked door (entity field `requires`: a key item id) opens only once
+// you hold that key.
 import Phaser from 'phaser';
 import { DEPTH } from '../render/depth';
 import { Cell, TILE, type TileGrid } from './TileGrid';
@@ -18,6 +19,8 @@ export interface Door {
   orient: 'h' | 'v';
   open: boolean;
   opensFrom: Side | null;
+  /** Key item id needed to open it (entity field `requires`), or null. */
+  requires: string | null;
   sprite: Phaser.GameObjects.Sprite;
 }
 
@@ -44,7 +47,16 @@ export class Doors {
           .setFrame(orient === 'h' ? 0 : 1)
           .setPosition(tx * TILE + TILE / 2, ty * TILE + TILE)
           .setDepth(orient === 'h' ? DEPTH.actor(ty * TILE + TILE) : DEPTH.floor + 2);
-        const door: Door = { id: en.id, tx, ty, orient, open: false, opensFrom: (en.opensFrom as Side) ?? null, sprite };
+        const door: Door = {
+          id: en.id,
+          tx,
+          ty,
+          orient,
+          open: false,
+          opensFrom: (en.opensFrom as Side) ?? null,
+          requires: en.requires === undefined ? null : String(en.requires),
+          sprite,
+        };
         this.list.push(door);
         this.setOpen(door, grid, isOpen(en.id));
       }

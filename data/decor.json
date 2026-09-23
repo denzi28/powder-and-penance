@@ -12,6 +12,20 @@
     "rock_large": { "sprite": "decor_road", "frame": 9, "blocks": [[-1, 0], [0, 0]], "tall": true },
     "pillar_ruin": { "sprite": "decor_road", "frame": 10, "blocks": [[0, 0]], "tall": true },
     "lintel": { "sprite": "decor_road", "frame": 11, "blocks": [[-1, 0], [0, 0], [1, 0]] },
-    "grass_tuft": { "sprite": "decor_road", "frame": 12 }
+    "grass_tuft": { "sprite": "decor_road", "frame": 12 },
+
+    "stall": { "sprite": "decor_hub", "frame": 0, "blocks": [[-1, 0], [0, 0], [1, 0]] },
+    "campfire": { "sprite": "decor_hub", "frame": 1, "blocks": [[0, 0]] },
+    "well": { "sprite": "decor_hub", "frame": 2, "blocks": [[0, 0]], "tall": true },
+    "tent": { "sprite": "decor_hub", "frame": 3, "blocks": [[-1, 0], [0, 0]], "tall": true },
+    "fence": { "sprite": "decor_hub", "frame": 4, "blocks": [[0, 0]] },
+    "lantern_post": { "sprite": "decor_hub", "frame": 5, "blocks": [[0, 0]] },
+    "hand_cart": { "sprite": "decor_hub", "frame": 6, "blocks": [[-1, 0], [0, 0]] },
+    "altar": { "sprite": "decor_hub", "frame": 7, "blocks": [[-1, 0], [0, 0]] },
+    "prayer_bench": { "sprite": "decor_hub", "frame": 8, "blocks": [[-1, 0], [0, 0]] },
+    "bedroll": { "sprite": "decor_hub", "frame": 9, "flat": true },
+    "bookshelf": { "sprite": "decor_hub", "frame": 10, "blocks": [[-1, 0], [0, 0]], "tall": true },
+    "ruin_wall": { "sprite": "decor_hub", "frame": 11, "blocks": [[-1, 0], [0, 0], [1, 0]], "tall": true },
+    "notice_board": { "sprite": "decor_hub", "frame": 12, "blocks": [[0, 0]] }
   }
 }

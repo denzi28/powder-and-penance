@@ -1,0 +1,72 @@
+{
+  "id": "hub_02_chapel",
+  "area": "hub",
+  "origin": [0, 2],
+  "legend": {
+    "#": "wall",
+    ".": "floor",
+    ",": "floor_grass",
+    "=": "floor_road",
+    "_": "floor_plank",
+    ":": "floor_stone",
+    " ": "void"
+  },
+  "tiles": [
+    "###########",
+    "#:::::::::#",
+    "#:::::::::#",
+    "#:::::::::#",
+    "#:::::::::#",
+    "#:::::::::#",
+    "#:::::::::#",
+    "#:::::::::#",
+    "#####:#####"
+  ],
+  "entities": [
+    {
+      "type": "decor",
+      "kind": "altar",
+      "at": [6, 1]
+    },
+    {
+      "type": "decor",
+      "kind": "bookshelf",
+      "at": [9, 1]
+    },
+    {
+      "type": "decor",
+      "kind": "prayer_bench",
+      "at": [4, 4]
+    },
+    {
+      "type": "decor",
+      "kind": "prayer_bench",
+      "at": [8, 4]
+    },
+    {
+      "type": "decor",
+      "kind": "bedroll",
+      "at": [2, 6]
+    },
+    {
+      "type": "prop",
+      "kind": "candles",
+      "at": [1, 1]
+    },
+    {
+      "type": "prop",
+      "kind": "candles",
+      "at": [3, 1]
+    },
+    {
+      "type": "prop",
+      "kind": "pot",
+      "at": [9, 6]
+    },
+    {
+      "type": "npc",
+      "id": "maudlin_chapel",
+      "at": [5, 3]
+    }
+  ]
+}

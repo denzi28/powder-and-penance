@@ -53,6 +53,10 @@ export function grantItem(gs: GameScene, id: string, itemId: string, x: number, 
       p.tallow += e.amount;
       what = `+${e.amount} Tallow (you carry ${p.tallow}). Tallow is money. You drop all you carry when you die; reach the spot again to take it back.`;
       break;
+    case 'key':
+      gs.flags.add(`key:${item.id}`);
+      what = `A key. It opens ${e.opens}. Keys are kept for good, even if you die.`;
+      break;
   }
   gs.showToast(item.name.toUpperCase(), what, item.description);
   gs.particles.burst(x, y, 10, -Math.PI / 2, 1.6, 12, 60, 'flame2', false); // sparks from the open chest

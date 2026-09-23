@@ -6,5 +6,6 @@
   "staminaPxPerPoint": 0.9,
   "staminaHeight": 3,
   "gap": 3,
-  "toast": { "y": 14, "cols": 60, "titleScale": 1 }
+  "toast": { "y": 14, "cols": 60, "titleScale": 1 },
+  "areaBanner": { "y": 72, "scale": 1, "ticks": 180 }
 }

@@ -191,7 +191,20 @@ Each area picks its tileset in `data/areas.json`. Every tileset uses the same in
 | Sheet | Area | Floor variants |
 |---|---|---|
 | `tiles` | abbey, test | `floor` (stone), `floor_moss` |
-| `tiles_road` | road | `floor` (dirt), `floor_grass`, `floor_road` (cart ruts; indices 10–11). Walls are earth cliffs; caps are dark brush; rock is forest. |
+| `tiles_road` | road, hub | `floor` (dirt), `floor_grass`, `floor_road` (cart ruts; 10–11), `floor_plank` (12–13), `floor_stone` (flagstones; 14–15). Walls are earth cliffs; caps are dark brush; rock is forest. |
+
+### Decor (`decor_hub`: 64×64 cells, pivot 32,62)
+Two-tile pieces cover the anchor tile and the one west of it; three-tile pieces cover one tile each side.
+
+| Frame | Decor | Frame | Decor |
+|---|---|---|---|
+| 0 | `stall` (3 tiles) | 7 | `altar` (2) |
+| 1 | `campfire` | 8 | `prayer_bench` (2) |
+| 2 | `well` (tall) | 9 | `bedroll` (flat) |
+| 3 | `tent` (2, tall) | 10 | `bookshelf` (2, tall) |
+| 4 | `fence` | 11 | `ruin_wall` (3, tall) |
+| 5 | `lantern_post` | 12 | `notice_board` |
+| 6 | `hand_cart` (2) | | |
 
 ### Decor (`decor_road`: 64×48 cells, pivot 32,46 = ground centre)
 Static scenery, referenced by `data/decor.json`, which picks a sheet and frame and lists which tiles each decor makes solid.

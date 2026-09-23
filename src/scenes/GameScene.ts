@@ -19,6 +19,7 @@ import { DeathMarker } from '../world/DeathMarker';
 import { Doors } from '../world/Doors';
 import { Props } from '../world/Props';
 import { Decor } from '../world/Decor';
+import { Exits, findSpawn, type Exit } from '../world/Exits';
 import { LootDrops, rollLoot, type LootDrop } from '../world/LootDrops';
 import { Pathfinder } from '../world/Pathfinder';
 import { Player } from '../player/Player';
@@ -82,6 +83,7 @@ export class GameScene extends Phaser.Scene {
   doors!: Doors;
   props!: Props;
   decor!: Decor;
+  exits = new Exits();
   loot!: LootDrops;
   marker!: DeathMarker;
   /** Current area (rooms with this `area` are built into one world). */
@@ -113,6 +115,10 @@ export class GameScene extends Phaser.Scene {
   /** Ticks since the player died (-1 = alive) and since respawn (-1 = not fading back). */
   deathT = -1;
   respawnT = -1;
+  /** Walking through an area exit: fading out (t counts up to `fade`), then the new area fades in. */
+  travel: { exit: Exit; t: number; fade: number } | null = null;
+  /** Area name shown on arrival (t in ticks). */
+  areaBanner: { name: string; t: number } | null = null;
 
   private ctxObj!: WorldCtx;
   private rooms: RoomData[] = [];
@@ -199,6 +205,7 @@ export class GameScene extends Phaser.Scene {
 
     this.loop = new FixedLoop(() => DATA.game.tickRate, () => DATA.game.maxStepsPerFrame, () => this.tick());
     this.respawnT = 0; // fade in
+    this.showAreaBanner();
 
     const unlock = () => this.sfx.unlock();
     const saveOnExit = () => this.save();
@@ -231,6 +238,7 @@ export class GameScene extends Phaser.Scene {
     }
     this.cam.tickShake();
     if (this.toast && ++this.toast.t > this.toast.life) this.toast = null;
+    if (this.areaBanner && ++this.areaBanner.t > DATA.hud.areaBanner.ticks) this.areaBanner = null;
     if (this.hitstop > 0) {
       this.hitstop--;
       return;
@@ -248,6 +256,7 @@ export class GameScene extends Phaser.Scene {
     tickShrineSeq(this);
     for (const c of this.pickups.tick()) grantItem(this, c.id, c.item, c.x, c.y);
     this.tryRecoverMarker();
+    this.tickTravel();
     if (!this.player.dead) for (const d of this.loot.tick(this.player.x, this.player.y)) this.collectLoot(d);
 
     for (const e of this.enemies.filter(en => en.remove)) this.removeEnemy(e);
@@ -337,6 +346,53 @@ export class GameScene extends Phaser.Scene {
   save() {
     this.saves.write(snapshot(this));
     this.dirty = false;
+  }
+
+  // ------------------------------------------------------------------ area exits
+  /**
+   * Walking into an exit fades to black (the player keeps control, no freeze), swaps the area, puts the
+   * player on the target spawn, then fades back in with the area's name.
+   */
+  private tickTravel() {
+    const p = this.player;
+    if (this.travel) {
+      if (p.dead) {
+        this.travel = null;
+        return;
+      }
+      if (++this.travel.t >= this.travel.fade) this.arrive(this.travel.exit);
+      return;
+    }
+    if (p.dead || this.shrineSeq) return;
+    const exit = this.exits.check(p.x, p.y);
+    if (!exit) return;
+    if (!Object.values(DATA.rooms).some(r => r.area === exit.to.area)) {
+      // The target area isn't built yet: say so, and don't trigger again until the player steps off.
+      this.exits.disarm();
+      this.showToast('THE WAY IS NOT OPEN YET', `${DATA.areas.areas[exit.to.area].name} is still being built.`);
+      return;
+    }
+    this.travel = { exit, t: 0, fade: 16 };
+  }
+
+  private arrive(exit: Exit) {
+    this.travel = null;
+    if (exit.to.area !== this.area) this.loadArea(exit.to.area);
+    const s = findSpawn(this.rooms, exit.to.spawn);
+    if (s) {
+      const p = this.player;
+      p.x = p.prevX = s.x;
+      p.y = p.prevY = s.y;
+      p.vx = p.vy = 0;
+    }
+    this.exits.disarm();
+    this.cam.snap();
+    this.respawnT = 0; // fade back in
+    this.dirty = true;
+  }
+
+  private showAreaBanner() {
+    this.areaBanner = { name: DATA.areas.areas[this.area].name, t: 0 };
   }
 
   // ------------------------------------------------------------------ rest, death, respawn
@@ -503,6 +559,7 @@ export class GameScene extends Phaser.Scene {
     this.ground.setArea(area);
     this.marker.setArea(area);
     this.cam.snap();
+    this.showAreaBanner();
   }
 
   /** Debug: jump to any room (in any area). */
@@ -588,6 +645,7 @@ export class GameScene extends Phaser.Scene {
     this.pickups.build(this.rooms, this.grid, id => this.flags.has(`item:${id}`));
     this.doors.build(this.rooms, this.grid, id => this.flags.has(`door:${id}`));
     this.props.build(this.ctxObj, this.rooms);
+    this.exits.build(this.rooms);
     this.placeWeapons();
   }
 

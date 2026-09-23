@@ -41,6 +41,16 @@ export function nearestInteractable(gs: GameScene): Interactable | null {
     };
 
   const door = gs.doors.nearest(p.x, p.y);
+  if (door && door.requires && !gs.flags.has(`key:${door.requires}`)) {
+    const key = DATA.items[door.requires]?.name ?? door.requires;
+    return {
+      label: 'LOCKED',
+      use: () => {
+        gs.showToast('LOCKED', `It needs the ${key}.`);
+        gs.bus.emit('sfx', { id: 'locked' });
+      },
+    };
+  }
   if (door) {
     if (!gs.doors.canOpenFrom(door, p.x, p.y))
       return {
@@ -51,12 +61,13 @@ export function nearestInteractable(gs: GameScene): Interactable | null {
         },
       };
     return {
-      label: door.opensFrom ? 'LIFT THE BAR' : 'OPEN DOOR',
+      label: door.requires ? `UNLOCK (${DATA.items[door.requires]?.name ?? door.requires})` : door.opensFrom ? 'LIFT THE BAR' : 'OPEN DOOR',
       use: () => {
         gs.doors.setOpen(door, gs.grid, true);
         gs.flags.add(`door:${door.id}`);
         gs.bus.emit('sfx', { id: 'door_open', x: door.tx * 16 + 8, y: door.ty * 16 + 8 });
         if (door.opensFrom) gs.showToast('SHORTCUT OPENED', 'The way back is clear.');
+        if (door.requires) gs.showToast('UNLOCKED', `The ${DATA.items[door.requires]?.name ?? 'key'} turns. The gate stays open for good.`);
         gs.save();
       },
     };

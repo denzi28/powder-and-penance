@@ -27,6 +27,7 @@ export class UIScene extends Phaser.Scene {
   private toastBody!: Phaser.GameObjects.BitmapText;
   private toastNote!: Phaser.GameObjects.BitmapText;
   private toastPanel!: Phaser.GameObjects.Rectangle;
+  private areaText!: Phaser.GameObjects.BitmapText;
   private menuUi!: MenuRenderer;
   private hpTrail!: TrailBar;
   private vignette!: Phaser.GameObjects.Graphics;
@@ -63,6 +64,7 @@ export class UIScene extends Phaser.Scene {
     this.toastBody = this.add.bitmapText(0, 0, 'pixel', '').setTint(hexToInt(DATA.palette.wax2)).setDepth(15);
     this.toastNote = this.add.bitmapText(0, 0, 'pixel', '').setTint(hexToInt(DATA.palette.stone4)).setDepth(15);
     this.toastPanel = this.add.rectangle(0, 0, 10, 10, hexToInt(DATA.palette.ink), 0.7).setOrigin(0, 0).setDepth(14);
+    this.areaText = this.add.bitmapText(0, 0, 'pixel', '').setTint(hexToInt(DATA.palette.wax2)).setDepth(16);
     this.menuUi = new MenuRenderer(this, 16);
     this.hpTrail = new TrailBar(this.gs.player.hp);
     this.vignette = this.add.graphics().setDepth(12);
@@ -134,6 +136,7 @@ export class UIScene extends Phaser.Scene {
     this.drawLoadout();
     this.drawPrompt();
     this.drawToast();
+    this.drawAreaBanner();
     this.menuUi.draw(this.gs.menu);
     this.drawDeath();
   }
@@ -201,6 +204,26 @@ export class UIScene extends Phaser.Scene {
     this.tallowText.setText(String(Math.round(this.tallowShown)));
     this.tallowText.setPosition(W - 8 - this.tallowText.width, 14);
     this.tallowIcon.setPosition(W - 8 - this.tallowText.width - 10, 13);
+  }
+
+  /** The area's name on arrival, between two thin rules, fading in and out. */
+  private drawAreaBanner() {
+    const b = this.gs.menu ? null : this.gs.areaBanner;
+    this.areaText.setVisible(!!b);
+    if (!b) return;
+    const cfg = DATA.hud.areaBanner;
+    const inT = 25;
+    const outT = 50;
+    const a = b.t < inT ? b.t / inT : b.t > cfg.ticks - outT ? Math.max(0, (cfg.ticks - b.t) / outT) : 1;
+    const W = DATA.game.width;
+    this.areaText.setScale(cfg.scale).setText(b.name.toUpperCase()).setAlpha(a);
+    const x = Math.round((W - this.areaText.width) / 2);
+    this.areaText.setPosition(x, cfg.y);
+    const ruleY = cfg.y + Math.round(this.areaText.height / 2);
+    const len = 40;
+    this.g.fillStyle(hexToInt(DATA.palette.flame1), a);
+    this.g.fillRect(x - 8 - len, ruleY, len, 1);
+    this.g.fillRect(x + this.areaText.width + 8, ruleY, len, 1);
   }
 
   private drawToast() {
@@ -307,6 +330,8 @@ export class UIScene extends Phaser.Scene {
           text = 1 - k;
         }
       }
+    } else if (gs.travel) {
+      veil = gs.travel.t / gs.travel.fade;
     } else if (gs.respawnT >= 0) {
       veil = 1 - gs.respawnT / d.fadeBackTicks;
     }

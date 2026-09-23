@@ -203,6 +203,8 @@ export const ItemDef = z.object({
     /** Restores this fraction of every carried ranged weapon's reserve. */
     z.object({ type: z.literal('ammo'), amount: num.positive().max(1) }),
     z.object({ type: z.literal('tallow'), amount: int.positive() }),
+    /** A key: kept for good (world flag "key:<item id>"). Doors with `requires: <item id>` open with it. */
+    z.object({ type: z.literal('key'), opens: z.string() }),
   ]),
 });
 
@@ -399,6 +401,8 @@ export const HudCfg = z.object({
   staminaPxPerPoint: pos, staminaHeight: int.positive(), gap: int.nonnegative(),
   /** Item/event banner: top edge (px), wrap width (characters), title scale (1 = same size as the body). */
   toast: z.object({ y: int.nonnegative(), cols: int.positive(), titleScale: int.positive() }).default({ y: 14, cols: 60, titleScale: 1 }),
+  /** Area name shown on arrival: vertical position (px), text scale, how long it stays (ticks, fades included). */
+  areaBanner: z.object({ y: int.nonnegative(), scale: int.positive(), ticks: int.positive() }).default({ y: 72, scale: 1, ticks: 180 }),
 });
 
 export const Palette = z.record(z.string(), z.string().regex(/^#[0-9a-fA-F]{6}$/));

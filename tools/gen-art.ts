@@ -1732,6 +1732,175 @@ function line(img: Img, x0: number, y0: number, x1: number, y1: number, c: RGBA)
   }
 }
 
+// ---------------------------------------------------------------- Wick's Rest decor (64x64 cells, pivot 32,62)
+// Multi-tile pieces are drawn so they cover exactly their blocking tiles (see data/decor.json).
+function genHubDecor() {
+  const W = 64;
+  const H = 64;
+  const B = 62;
+  const frames: Img[] = [];
+  const cell = () => new Img(W, H);
+
+  // 0: merchant stall: counter three tiles wide under a striped awning
+  {
+    const c = cell();
+    c.rect(10, B - 30, 2, 30, P.wood1);
+    c.rect(52, B - 30, 2, 30, P.wood1);
+    c.rect(9, B - 12, 46, 12, P.wood2); // counter
+    c.hline(9, B - 12, 46, P.wax1);
+    for (let x = 12; x < 54; x += 8) c.vline(x, B - 11, 11, P.wood1);
+    for (let i = 0; i < 6; i++) c.rect(7 + i * 8, B - 38, 8, 7, i % 2 ? P.wax1 : P.ember); // awning
+    for (let i = 0; i < 6; i++) c.set(10 + i * 8, B - 31, i % 2 ? P.wax1 : P.ember);
+    c.rect(16, B - 16, 5, 4, P.stone3); // wares: a jar, a pouch, powder horn
+    c.disc(30, B - 14, 2.5, P.wood1);
+    c.rect(40, B - 15, 7, 3, P.wax2);
+    c.outline(P.ink);
+    frames.push(c);
+  }
+  // 1: campfire: stone ring, logs, flame
+  {
+    const c = cell();
+    c.ellipse(32, B - 3, 9, 4, P.stone2);
+    c.ellipse(32, B - 3, 6, 2.5, P.dark1);
+    line(c, 26, B - 2, 38, B - 6, P.wood1);
+    line(c, 26, B - 6, 38, B - 2, P.wood1);
+    c.ellipse(32, B - 8, 4, 6, P.flame1);
+    c.ellipse(32, B - 7, 2.5, 4, P.flame2);
+    c.set(32, B - 15, P.flame1);
+    c.outline(P.ink);
+    frames.push(c);
+  }
+  // 2: well with a little roof
+  {
+    const c = cell();
+    c.ellipse(32, B - 6, 10, 6, P.stone2);
+    c.ellipse(32, B - 8, 7, 3.5, P.dark1);
+    c.rect(22, B - 28, 2, 20, P.wood1);
+    c.rect(40, B - 28, 2, 20, P.wood1);
+    c.rect(18, B - 34, 28, 6, P.wood2); // roof
+    c.hline(18, B - 34, 28, P.wax1);
+    c.hline(24, B - 22, 16, P.wood1); // winch
+    c.vline(32, B - 21, 8, P.stone3); // rope
+    c.rect(30, B - 14, 4, 4, P.wood1); // bucket
+    c.outline(P.ink);
+    frames.push(c);
+  }
+  // 3: pilgrim tent (two tiles: the anchor and the one west)
+  {
+    const c = cell();
+    for (let y = 0; y < 22; y++) c.hline(24 - Math.round(y * 0.7) - 8, B - 22 + y, Math.round(y * 1.4) + 2 + 14, y % 5 === 0 ? P.wax2 : P.wax1);
+    c.rect(20, B - 12, 8, 12, P.dark1); // opening
+    c.vline(24, B - 26, 5, P.wood1);
+    c.outline(P.ink);
+    frames.push(c);
+  }
+  // 4: fence segment
+  {
+    const c = cell();
+    c.rect(24, B - 12, 2, 12, P.wood1);
+    c.rect(38, B - 12, 2, 12, P.wood1);
+    c.rect(24, B - 10, 16, 2, P.wood2);
+    c.rect(24, B - 5, 16, 2, P.wood2);
+    c.outline(P.ink);
+    frames.push(c);
+  }
+  // 5: lantern post
+  {
+    const c = cell();
+    c.rect(31, B - 30, 2, 30, P.wood1);
+    c.rect(31, B - 30, 8, 2, P.wood1);
+    c.rect(35, B - 27, 5, 6, P.dark1);
+    c.rect(36, B - 26, 3, 4, P.flame2);
+    c.ellipse(32, B - 1, 3, 1, P.dark2);
+    c.outline(P.ink);
+    frames.push(c);
+  }
+  // 6: hand cart (two tiles: anchor and west)
+  {
+    const c = cell();
+    c.rect(10, B - 14, 28, 9, P.wood2);
+    c.hline(10, B - 14, 28, P.wax1);
+    for (const x of [16, 24, 32]) c.vline(x, B - 13, 8, P.wood1);
+    c.disc(16, B - 4, 4, P.wood1);
+    c.disc(16, B - 4, 1.5, P.steel1);
+    line(c, 38, B - 10, 44, B - 4, P.wood1); // handle
+    c.rect(14, B - 18, 8, 4, P.wax1); // sacks
+    c.rect(24, B - 17, 6, 3, P.wood1);
+    c.outline(P.ink);
+    frames.push(c);
+  }
+  // 7: chapel altar with candles (two tiles: anchor and west)
+  {
+    const c = cell();
+    c.rect(10, B - 14, 28, 14, P.stone2);
+    c.rect(10, B - 14, 28, 3, P.stone3);
+    c.rect(18, B - 10, 12, 6, P.blood1); // altar cloth
+    for (const [x, h] of [[13, 6], [17, 9], [30, 7], [34, 5]]) {
+      c.rect(x, B - 14 - h, 2, h, P.wax2);
+      c.set(x, B - 15 - h, P.flame2);
+    }
+    c.outline(P.ink);
+    frames.push(c);
+  }
+  // 8: prayer bench (two tiles: anchor and west)
+  {
+    const c = cell();
+    c.rect(11, B - 9, 26, 3, P.wood2);
+    c.rect(11, B - 16, 26, 3, P.wood1); // backrest
+    for (const x of [12, 34]) c.rect(x, B - 16, 2, 16, P.wood1);
+    c.outline(P.ink);
+    frames.push(c);
+  }
+  // 9: bedroll (flat)
+  {
+    const c = cell();
+    c.rect(22, B - 8, 20, 7, P.teal2);
+    c.rect(22, B - 8, 6, 7, P.wax1); // pillow end
+    c.hline(28, B - 5, 14, P.teal1);
+    c.outline(P.ink);
+    frames.push(c);
+  }
+  // 10: bookshelf against a wall (two tiles: anchor and west)
+  {
+    const c = cell();
+    c.rect(10, B - 34, 28, 34, P.wood1);
+    for (const y of [B - 26, B - 17, B - 8]) c.hline(11, y, 26, P.dark1);
+    const r = rng(9090);
+    for (const y0 of [B - 33, B - 25, B - 16]) for (let x = 12; x < 36; x += 3) c.rect(x, y0 + Math.floor(r() * 2), 2, 7, [P.blood1, P.teal2, P.wax1, P.wood2][Math.floor(r() * 4)]);
+    c.outline(P.ink);
+    frames.push(c);
+  }
+  // 11: ruined timber wall (three tiles)
+  {
+    const c = cell();
+    c.rect(8, B - 8, 48, 8, P.stone2); // stone footing
+    c.hline(8, B - 8, 48, P.stone3);
+    for (const x of [9, 30, 51]) c.rect(x, B - 44 + (x === 51 ? 16 : 0), 4, 36 - (x === 51 ? 16 : 0), P.wood1); // posts, one broken
+    c.rect(13, B - 38, 17, 30, P.wax1); // plaster panel
+    line(c, 13, B - 38, 29, B - 9, P.wood1); // brace
+    c.rect(34, B - 26, 17, 18, P.wax1); // lower panel, the top gone
+    c.rect(38, B - 22, 6, 6, P.dark1); // hole
+    c.rect(9, B - 44, 24, 3, P.wood2); // top beam, snapped
+    c.outline(P.ink);
+    frames.push(c);
+  }
+  // 12: notice board
+  {
+    const c = cell();
+    c.rect(25, B - 24, 2, 24, P.wood1);
+    c.rect(37, B - 24, 2, 24, P.wood1);
+    c.rect(23, B - 26, 18, 12, P.wood2);
+    c.rect(26, B - 24, 5, 6, P.wax2);
+    c.rect(33, B - 23, 5, 7, P.wax1);
+    c.outline(P.ink);
+    frames.push(c);
+  }
+
+  const img = new Img(W * frames.length, H);
+  frames.forEach((f, i) => img.blit(f, i * W, 0));
+  sheet('decor_hub', img, { cell: [W, H], pivot: [32, B], layer: 'single' });
+}
+
 // ---------------------------------------------------------------- chest (20x18 cells, pivot = ground centre)
 // Frames: 0 closed, 1-3 opening (lid rising, light spilling out), 4 open and empty.
 function genChest() {
@@ -1846,6 +2015,26 @@ function genRoadTiles() {
     img.hline(ox, oy + 11, T, P.wood1);
     if (v === 11) img.set(ox + 7, oy + 8, P.stone3);
   }
+  // 12-13 wooden planks (inside buildings)
+  for (const v of [12, 13]) {
+    const [ox, oy] = at(v);
+    const r = rng(2600 + v);
+    img.rect(ox, oy, T, T, P.wood2);
+    for (const y of [0, 4, 8, 12]) img.hline(ox, oy + y, T, P.wood1);
+    for (const [x, y] of [[5, 1], [12, 5], [3, 9], [9, 13]]) img.vline(ox + x + (v === 13 ? 2 : 0), oy + y, 3, P.wood1);
+    speck(ox, oy, r, 4, P.dark2);
+  }
+  // 14-15 flagstones (chapel floor)
+  for (const v of [14, 15]) {
+    const [ox, oy] = at(v);
+    const r = rng(2700 + v);
+    img.rect(ox, oy, T, T, P.stone2);
+    img.hline(ox, oy + 7, T, P.stone1);
+    img.hline(ox, oy + 15, T, P.stone1);
+    img.vline(ox + (v === 14 ? 6 : 10), oy, 7, P.stone1);
+    img.vline(ox + (v === 14 ? 11 : 3), oy + 8, 7, P.stone1);
+    speck(ox, oy, r, 6, P.stone3);
+  }
   // 16-31 cliff tops: dark brush and treetops (clearly not walkable), rim = grass edge on open sides
   for (let mask = 0; mask < 16; mask++) {
     const [ox, oy] = at(16 + mask);
@@ -1875,6 +2064,8 @@ function genRoadTiles() {
       floor: [0, 0, 0, 0, 1, 1, 2, 3],
       floor_grass: [4, 4, 5],
       floor_road: [10, 10, 10, 11],
+      floor_plank: [12, 12, 13],
+      floor_stone: [14, 15],
       wall_front: [8, 8, 9],
       wall_cap: Array.from({ length: 16 }, (_, i) => 16 + i),
       rock: [6, 6, 7],
@@ -2157,6 +2348,7 @@ genWorldBits();
 genTiles();
 genRoadTiles();
 genRoadDecor();
+genHubDecor();
 genChest();
 genFont();
 console.log(`gen-art: wrote ${written} file(s), skipped ${skipped} existing${skipped && !FORCE ? ' (use --force to overwrite)' : ''}`);

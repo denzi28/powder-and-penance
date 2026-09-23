@@ -1,0 +1,83 @@
+{
+  "id": "hub_03_hill_stair",
+  "area": "hub",
+  "origin": [12, -4],
+  "legend": {
+    "#": "wall",
+    ".": "floor",
+    ",": "floor_grass",
+    "=": "floor_road",
+    "_": "floor_plank",
+    ":": "floor_stone",
+    " ": "void"
+  },
+  "tiles": [
+    "#####==#####",
+    "#,,,,======#",
+    "#,,,,,,.===#",
+    "#######,===#",
+    "#=========,#",
+    "#=========,#",
+    "#===,,,,,,,#",
+    "#===########",
+    "#==========#",
+    "#==========#",
+    "#,,,,,,,===#",
+    "########===#",
+    "#,,,,=====,#",
+    "#,,,,=====,#",
+    "#####==#####"
+  ],
+  "entities": [
+    {
+      "type": "decor",
+      "kind": "lantern_post",
+      "at": [10, 12]
+    },
+    {
+      "type": "decor",
+      "kind": "lantern_post",
+      "at": [1, 9]
+    },
+    {
+      "type": "decor",
+      "kind": "lantern_post",
+      "at": [10, 5]
+    },
+    {
+      "type": "decor",
+      "kind": "signpost",
+      "at": [4, 1]
+    },
+    {
+      "type": "decor",
+      "kind": "grass_tuft",
+      "at": [2, 12]
+    },
+    {
+      "type": "decor",
+      "kind": "grass_tuft",
+      "at": [6, 9]
+    },
+    {
+      "type": "decor",
+      "kind": "grass_tuft",
+      "at": [5, 5]
+    },
+    {
+      "type": "spawn",
+      "id": "from_abbey",
+      "at": [6, 1]
+    },
+    {
+      "type": "exit",
+      "id": "hub_to_abbey",
+      "at": [5, 0],
+      "size": [2, 1],
+      "to": {
+        "area": "abbey",
+        "spawn": "from_hub"
+      }
+    }
+  ]
+}

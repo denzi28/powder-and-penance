@@ -1,0 +1,6 @@
+{
+  "id": "toll_key",
+  "name": "Toll Key",
+  "description": "Heavy iron, worn smooth by the Tollwarden's thumb. The carts to the Works went through this gate.",
+  "effect": { "type": "key", "opens": "the Toll Gate at Wick's Rest (the road to the Tallow Works)" }
+}
