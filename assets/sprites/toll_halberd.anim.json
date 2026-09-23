@@ -1,0 +1,18 @@
+{
+  "image": "toll_halberd.png",
+  "cell": [
+    46,
+    13
+  ],
+  "pivot": [
+    9,
+    6
+  ],
+  "layer": "weapon",
+  "points": {
+    "tip": [
+      44,
+      6
+    ]
+  }
+}

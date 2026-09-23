@@ -30,6 +30,18 @@
           ]
         },
         {
+          "text": "The Tollwarden is dead.",
+          "when": ["tollwarden_last_words", "!maudlin_heard_anselm"],
+          "do": [
+            { "say": "Dead? ...", "who": "maudlin" },
+            { "say": "You tell her his last words: that Anselm kept the count." },
+            { "say": "Anselm. I haven't heard that name said aloud in twenty years.", "who": "maudlin" },
+            { "say": "He wasn't cruel, you know. He was the only one up there who looked at their faces. Somebody had to.", "who": "maudlin" },
+            { "say": "Go on, then. You have his key. Go and see what he counted.", "who": "maudlin" },
+            { "set": "maudlin_heard_anselm" }
+          ]
+        },
+        {
           "text": "What is behind the locked gate?",
           "when": "!key:toll_key",
           "do": [

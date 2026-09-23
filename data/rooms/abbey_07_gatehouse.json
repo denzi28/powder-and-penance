@@ -29,15 +29,16 @@
   "entities": [
     {
       "type": "enemy",
-      "kind": "bulwark_warden",
-      "at": [14, 6],
+      "kind": "tollwarden",
+      "at": [15, 8],
       "facing": "E"
     },
     {
-      "type": "enemy",
-      "kind": "bulwark_warden",
-      "at": [14, 10],
-      "facing": "E"
+      "type": "arena",
+      "id": "gatehouse",
+      "boss": "tollwarden",
+      "seals": [[24, 6], [24, 7], [24, 8], [0, 9]],
+      "at": [0, 0]
     },
     {
       "type": "item",

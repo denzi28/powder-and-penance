@@ -46,7 +46,8 @@ export function nearestInteractable(gs: GameScene): Interactable | null {
       },
     };
 
-  const door = gs.doors.nearest(p.x, p.y);
+  const near = gs.doors.nearest(p.x, p.y);
+  const door = near && !gs.arena.sealed(near.tx, near.ty) ? near : null; // a smoke-sealed doorway can't be opened
   if (door && door.requires && !gs.flags.has(`key:${door.requires}`)) {
     const key = DATA.items[door.requires]?.name ?? door.requires;
     return {

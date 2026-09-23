@@ -66,8 +66,16 @@ function loadAll(src: Record<string, unknown>) {
   };
 
   if (!errors.length) {
-    for (const e of Object.values(data.enemies))
+    for (const e of Object.values(data.enemies)) {
       if (!data.palette[e.blood]) errors.push(`data/enemies/${e.id}.json: blood "${e.blood}" is not a palette colour`);
+      if ((e.ai === 'boss') !== !!e.boss) errors.push(`data/enemies/${e.id}.json: ai "boss" and a "boss" block go together`);
+      if (e.boss?.deathScript && !data.scripts[e.boss.deathScript])
+        errors.push(`data/enemies/${e.id}.json: unknown deathScript "${e.boss.deathScript}"`);
+    }
+    for (const r of Object.values(data.rooms))
+      for (const en of r.entities)
+        if (en.type === 'arena' && !data.enemies[String(en.boss)]?.boss)
+          errors.push(`data/rooms/${r.id}.json: arena "${en.id}" names "${String(en.boss)}", which is not a boss`);
     for (const r of Object.values(data.rooms))
       for (const en of r.entities)
         if (en.type === 'enemy' && !data.enemies[String(en.kind)])
@@ -134,6 +142,7 @@ function checkStory(data: {
   npcs: { npcs: Record<string, S.NpcDef> };
   scripts: Record<string, S.ScriptDef>;
   items: Record<string, unknown>;
+  enemies: Record<string, unknown>;
   sfx: { presets: Record<string, unknown> };
 }): string[] {
   const errors: string[] = [];
@@ -161,6 +170,7 @@ function checkStory(data: {
         const [kind, id] = s.camera.split(/:(.*)/);
         if (kind === 'npc' && !npcPlacements.has(id)) errors.push(`${file}: camera target "${s.camera}": no npc placement "${id}"`);
         if (kind === 'point' && !points.has(id)) errors.push(`${file}: camera target "${s.camera}": no point "${id}"`);
+        if (kind === 'enemy' && !data.enemies[id]) errors.push(`${file}: camera target "${s.camera}": no enemy kind "${id}"`);
       }
       if ('menu' in s) for (const o of s.menu) walk(file, o.do ?? []);
       if ('if' in s) walk(file, [...s.then, ...(s.else ?? [])]);

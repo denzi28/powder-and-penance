@@ -215,8 +215,10 @@ export const ItemDef = z.object({
  */
 export const Cond = z.union([z.string(), z.array(z.string())]);
 export type Cond = z.infer<typeof Cond>;
-/** A camera or position target: "player", "npc:<placement id>" or "point:<point id>". */
-const Target = z.string().regex(/^(player|npc:.+|point:.+)$/, 'expected "player", "npc:<id>" or "point:<id>"');
+/** A camera target: "player", "npc:<placement id>", "point:<point id>" or "enemy:<enemy kind>" (e.g. a boss). */
+const Target = z
+  .string()
+  .regex(/^(player|npc:.+|point:.+|enemy:.+)$/, 'expected "player", "npc:<id>", "point:<id>" or "enemy:<kind>"');
 
 export type Step =
   | { say: string; who?: string }
@@ -354,7 +356,26 @@ export const EnemyDef = z.object({
    * melee = full AI; ranged = full AI that keeps its distance (spacing.retreatBelow) and needs line of sight
    * to throw; dummy = never acts or dies; rhythm = stands still and repeats its first move every interval.
    */
-  ai: z.enum(['melee', 'ranged', 'dummy', 'rhythm']),
+  ai: z.enum(['melee', 'ranged', 'dummy', 'rhythm', 'boss']),
+  /**
+   * Boss (ai "boss"): waits dormant until the player enters its arena (room entity "arena"), then performs
+   * its entrance (the player keeps control): `introAnim` for `introTicks`, with `slams` (ticks) that shake
+   * the screen, and `introLine` shown as a banner. Its name and health bar sit at the bottom of the screen.
+   * Once dead it stays dead (world flag "boss:<id>"); after `deathTicks` its `deathScript` plays.
+   */
+  boss: z
+    .object({
+      title: z.string(),
+      introAnim: z.string().default('intro'),
+      introTicks: int.positive(),
+      slams: z.array(int.nonnegative()).default([]),
+      slamShake: num.min(0).max(1).default(0.4),
+      slamSfx: z.string().default('bell_slam'),
+      introLine: z.string().optional(),
+      roarSfx: z.string().optional(),
+      deathScript: z.string().optional(),
+    })
+    .optional(),
   /**
    * Shield guard (frontal arc) that blocks hits and projectiles while not attacking or staggered. Blocked hits
    * drain `max` guard points (damage x (1 - stability) x blockStaminaMult); at zero the guard breaks and the

@@ -5,7 +5,7 @@ import { DATA } from '../src/data/config';
 import { buildGrid, TILE } from '../src/world/TileGrid';
 
 /** Entities that sit in wall gaps or are markers, not things standing on the floor. */
-const SKIP = new Set(['door', 'exit', 'cutscene', 'npc', 'weapon_rack', 'shield_rack']);
+const SKIP = new Set(['door', 'exit', 'cutscene', 'npc', 'weapon_rack', 'shield_rack', 'arena']);
 
 describe('entity placement', () => {
   const areas = [...new Set(Object.values(DATA.rooms).map(r => r.area))];

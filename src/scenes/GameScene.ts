@@ -22,6 +22,7 @@ import { Decor } from '../world/Decor';
 import { markObstacles } from '../world/Obstacles';
 import { Npcs } from '../story/Npcs';
 import { Story } from '../story/Story';
+import { BossArena } from '../game/BossArena';
 import { Exits, findSpawn, type Exit } from '../world/Exits';
 import { LootDrops, rollLoot, type LootDrop } from '../world/LootDrops';
 import { Pathfinder } from '../world/Pathfinder';
@@ -89,6 +90,8 @@ export class GameScene extends Phaser.Scene {
   npcs!: Npcs;
   /** Dialogue and cutscenes (data/scripts): pauses the world while a script runs. */
   story = new Story(this);
+  /** Boss arenas of the current area; `arena.active` drives the boss bar. */
+  arena = new BossArena(this);
   exits = new Exits();
   loot!: LootDrops;
   marker!: DeathMarker;
@@ -190,6 +193,7 @@ export class GameScene extends Phaser.Scene {
     this.decor = new Decor(this.lib);
     this.npcs = new Npcs(this.lib);
     this.story = new Story(this);
+    this.arena = new BossArena(this);
     this.loot = new LootDrops(this.lib);
     this.marker = new DeathMarker(this.lib);
     const spawn = this.respawnPoint();
@@ -286,6 +290,7 @@ export class GameScene extends Phaser.Scene {
     for (const c of this.pickups.tick()) grantItem(this, c.id, c.item, c.x, c.y);
     this.tryRecoverMarker();
     this.markSeen();
+    this.arena.tick();
     this.tickTravel();
     if (!this.travel && !this.player.dead && !this.shrineSeq) this.story.checkTriggers();
     if (!this.player.dead) for (const d of this.loot.tick(this.player.x, this.player.y)) this.collectLoot(d);
@@ -448,6 +453,7 @@ export class GameScene extends Phaser.Scene {
     this.player.refill();
     this.player.poise.reset();
     for (const f of [...this.flags]) if (f.startsWith('slain:')) this.flags.delete(f); // every enemy returns
+    this.arena.reset();
     this.resetEnemies();
     this.props.build(this.ctxObj, this.rooms); // props respawn; their loot flags don't
     this.loot.clear();
@@ -520,7 +526,9 @@ export class GameScene extends Phaser.Scene {
       this.cam.addTrauma(0.4);
       // All carried Tallow stays behind as a Guttered Candle; any older candle is lost for good.
       const p = this.player;
-      this.marker.set(p.tallow > 0 ? { x: p.x, y: p.y, tallow: p.tallow, area: this.area } : null);
+      // In a boss arena the candle falls just outside the doorway you came through, not in the fight.
+      const at = this.arena.markerPoint ?? { x: p.x, y: p.y };
+      this.marker.set(p.tallow > 0 ? { x: at.x, y: at.y, tallow: p.tallow, area: this.area } : null);
       p.tallow = 0;
       this.save();
     });
@@ -564,6 +572,7 @@ export class GameScene extends Phaser.Scene {
         if (en.type !== 'enemy') return;
         const spawnId = `${r.id}#${i}`;
         if (this.flags.has(`slain:${spawnId}`)) return;
+        if (DATA.enemies[String(en.kind)]?.boss && this.flags.has(`boss:${String(en.kind)}`)) return; // bosses stay dead
         const facing = (DIR_ANGLE[(en.facing as Dir8) ?? 'S'] ?? 90) * (Math.PI / 180);
         const e = this.spawnEnemy(String(en.kind), (r.origin[0] + en.at[0]) * TILE + TILE / 2, (r.origin[1] + en.at[1]) * TILE + TILE - 2, facing);
         if (e) e.spawnId = spawnId;
@@ -594,6 +603,7 @@ export class GameScene extends Phaser.Scene {
     this.loot.render();
     this.projectileView.render(this.projectiles.list, alpha);
     this.npcs.update(delta, this.player.x);
+    this.arena.update(delta);
     // A script can point the camera elsewhere (cutscenes); otherwise it follows the player.
     const focus = this.story.cameraPoint;
     const camX = focus ? Math.round(focus.x) : feet.x;
@@ -707,6 +717,7 @@ export class GameScene extends Phaser.Scene {
     this.props.build(this.ctxObj, this.rooms);
     this.exits.build(this.rooms);
     this.npcs.build(this.rooms, this.flags);
+    this.arena.build(this.rooms);
     this.placeWeapons();
   }
 

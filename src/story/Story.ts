@@ -272,6 +272,10 @@ export class Story {
       const n = this.gs.npcs.get(id);
       if (n) return { x: n.x, y: n.y };
     }
+    if (kind === 'enemy') {
+      const e = this.gs.enemies.find(x => x.kind === id);
+      if (e) return { x: e.x, y: e.y - 12 };
+    }
     if (kind === 'point')
       for (const r of this.gs.areaRoomList)
         for (const en of r.entities)

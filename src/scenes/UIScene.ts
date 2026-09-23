@@ -6,6 +6,7 @@ import { MenuRenderer, wrap } from '../ui/MenuRenderer';
 import { TrailBar } from '../ui/TrailBar';
 import { MapView } from '../ui/MapView';
 import { DialogueBox } from '../ui/DialogueBox';
+import { BossBar } from '../ui/BossBar';
 import type { GameScene } from './GameScene';
 
 export class UIScene extends Phaser.Scene {
@@ -32,6 +33,7 @@ export class UIScene extends Phaser.Scene {
   private areaText!: Phaser.GameObjects.BitmapText;
   private mapView!: MapView;
   private dialogueBox!: DialogueBox;
+  private bossBar!: BossBar;
   private menuUi!: MenuRenderer;
   private hpTrail!: TrailBar;
   private vignette!: Phaser.GameObjects.Graphics;
@@ -71,6 +73,7 @@ export class UIScene extends Phaser.Scene {
     this.areaText = this.add.bitmapText(0, 0, 'pixel', '').setTint(hexToInt(DATA.palette.wax2)).setDepth(16);
     this.mapView = new MapView(this);
     this.dialogueBox = new DialogueBox(this);
+    this.bossBar = new BossBar(this);
     this.menuUi = new MenuRenderer(this, 16);
     this.hpTrail = new TrailBar(this.gs.player.hp);
     this.vignette = this.add.graphics().setDepth(12);
@@ -145,6 +148,7 @@ export class UIScene extends Phaser.Scene {
     this.drawAreaBanner();
     this.mapView.update(this.gs, dt);
     this.dialogueBox.update(this.gs, dt);
+    this.bossBar.update(this.gs, dt);
     this.menuUi.draw(this.gs.menu);
     this.drawDeath();
   }

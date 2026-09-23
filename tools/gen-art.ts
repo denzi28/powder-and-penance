@@ -1342,6 +1342,151 @@ function bruteDeath(c: Img, f: number) {
   c.set(40, 37, P.ember);
 }
 
+// --- The Tollwarden (48x48): the Abbey's gatekeeper. Tall iron barbute with a coin-slot visor and pale
+// candle eyes, a long toll-collector's coat in old red, gilt buttons, a ring of keys at the hip, a halberd.
+const TOLL_HAND: Record<Dir5, [number, number]> = { S: [34, 27], SE: [33, 26], E: [30, 26], NE: [32, 24], N: [32, 24] };
+
+function drawTollwarden(c: Img, dir: Dir5, pose: BodyPose & { kneel?: boolean }) {
+  const o = { bob: 0, lean: 0, hunch: 0, step: -1, flinch: false, sway: 0, kneel: false, ...pose };
+  const b = o.bob;
+  const { lx, ly, sh } = leanOffsets(dir, o.lean);
+  const back = dir === 'N' || dir === 'NE';
+  // Legs: armoured greaves under the coat (or folded, kneeling)
+  if (o.kneel) {
+    c.rect(15, 40, 9, 3, P.steel1);
+    c.rect(26, 38, 3, 5, P.steel1);
+    c.rect(24, 42, 8, 2, P.dark1);
+  } else {
+    const liftL = o.step === 1 ? 2 : 0;
+    const liftR = o.step === 3 ? 2 : 0;
+    c.rect(18, 34 + b, 4, 8 - liftL, P.steel1);
+    c.rect(17, 42 - liftL, 6, 2, P.dark1);
+    c.rect(27, 34 + b, 4, 8 - liftR, P.steel1);
+    c.rect(26, 42 - liftR, 6, 2, P.dark1);
+  }
+  // The long coat: widening from the shoulders to the knees
+  for (let y = 17; y <= 38; y++) {
+    const half = Math.round(7 + (y - 17) * 0.28);
+    c.hline(24 + sh - half, y + b, half * 2, P.blood1);
+  }
+  c.vline(24 + sh - 7, 17 + b, 20, P.blood2);
+  // Breastplate, gilt buttons, belt with the ring of keys
+  if (!back) {
+    c.rect(19 + sh, 18 + b, 10, 10, P.steel1);
+    c.vline(19 + sh, 18 + b, 10, P.steel2);
+    for (const y of [20, 23, 26]) c.set(24 + sh + (dir === 'E' ? 2 : 0), y + b, P.flame2);
+  }
+  c.hline(16 + sh, 28 + b, 16, P.dark2);
+  c.disc(17 + sh, 31 + b, 2, P.flame1); // keys
+  c.set(16 + sh, 33 + b, P.flame1);
+  c.set(18 + sh, 33 + b, P.flame1);
+  // Pauldrons
+  c.ellipse(15 + sh, 19 + b, 4, 3, P.steel1);
+  c.ellipse(33 + sh, 19 + b, 4, 3, P.steel1);
+  c.hline(12 + sh, 18 + b, 6, P.steel2);
+  // Tall barbute with a coin-slot visor
+  const hx = 24 + lx + (o.flinch ? -2 : 0);
+  const hy = 4 + b + o.hunch + ly;
+  c.rect(hx - 5, hy, 10, 13, P.steel1);
+  c.rect(hx - 4, hy - 1, 8, 1, P.steel1);
+  c.vline(hx - 5, hy, 13, P.steel2);
+  c.hline(hx - 5, hy + 12, 10, P.stone1);
+  c.rect(hx - 1, hy - 3, 2, 2, P.flame1); // crest knob
+  if (!back) {
+    const eye = o.flinch ? P.ember : P.wax2;
+    const vx = dir === 'S' ? hx - 4 : dir === 'SE' ? hx - 2 : hx;
+    c.hline(vx, hy + 5, dir === 'E' ? 5 : 8, P.ink);
+    c.set(vx + 2, hy + 5, eye);
+    if (dir !== 'E') c.set(vx + 5, hy + 5, eye);
+    c.vline(hx, hy + 7, 4, P.ink); // the coin slot
+  }
+  // Gauntlet at the weapon hand
+  const [ax, ay] = TOLL_HAND[dir];
+  c.rect(ax - 2, ay - 2 + b, 4, 4, P.steel2);
+}
+
+function tollwardenDeath(c: Img, f: number) {
+  // He doesn't fall: he sinks to his knees and stays there, head bowed, for his last words.
+  if (f < 2) drawTollwarden(c, 'S', { bob: 1 + f, hunch: 1 + f, lean: -1, flinch: true });
+  else drawTollwarden(c, 'S', { bob: 5, hunch: 2 + Math.min(f - 2, 2), kneel: true });
+}
+
+function genTollwarden() {
+  const P7 = phased7();
+  const frames = <T,>(draw: (c: Img, d: Dir5, p: T) => void, poses: T[]) => poses.map(p => (c: Img, d: Dir5) => draw(c, d, p));
+  const walk4 = <T,>(draw: (c: Img, d: Dir5, p: T) => void, mk: (f: number) => T) => [0, 1, 2, 3].map(f => (c: Img, d: Dir5) => draw(c, d, mk(f)));
+  rosterSheet(
+    'tollwarden',
+    48,
+    [24, 44],
+    7,
+    [
+      { name: 'idle', frames: frames(drawTollwarden, [{}, { bob: 1 }]), timing: [{ ticks: 26 }, { ticks: 26 }], loop: true },
+      { name: 'walk', frames: walk4(drawTollwarden, f => ({ step: f, bob: f % 2 ? -1 : 0 })), timing: walkT(11), loop: true },
+      {
+        name: 'sweep',
+        frames: frames(drawTollwarden, [{ sway: -2, lean: -1 }, { sway: -2, lean: -2 }, { sway: -2, lean: -2, bob: 1 }, { lean: 3 }, { lean: 3 }, { lean: 1 }, {}]),
+        timing: P7,
+        loop: false,
+      },
+      {
+        name: 'thrust',
+        frames: frames(drawTollwarden, [{ lean: -1 }, { lean: -3, hunch: 1 }, { lean: -3, hunch: 1, bob: 1 }, { lean: 4 }, { lean: 4, bob: 1 }, { lean: 2 }, {}]),
+        timing: P7,
+        loop: false,
+      },
+      {
+        name: 'slam',
+        frames: frames(drawTollwarden, [
+          { lean: -2, bob: -2, hunch: -2 }, { lean: -3, bob: -2, hunch: -2 }, { lean: -3, bob: -2, hunch: -2 },
+          { lean: 3, bob: 2, hunch: 2 }, { lean: 3, bob: 3, hunch: 2 }, { lean: 2, bob: 2 }, {},
+        ]),
+        timing: P7,
+        loop: false,
+      },
+      {
+        // The entrance: rears back with the halberd raised, drives it into the stones (the slam lands on the
+        // third frame, 20 ticks into each 40-tick cycle), straightens.
+        name: 'intro',
+        frames: frames(drawTollwarden, [{ lean: -2, bob: -1, hunch: -1 }, { lean: -3, bob: -2, hunch: -2 }, { lean: 3, bob: 2, hunch: 2 }, { lean: 1 }]),
+        timing: [{ ticks: 12 }, { ticks: 8 }, { ticks: 4 }, { ticks: 16 }],
+        loop: true,
+      },
+      { name: 'stagger', frames: frames(drawTollwarden, [{ lean: -2, flinch: true }, { lean: -1, bob: 1, flinch: true }, { bob: 1 }]), timing: staggerT, loop: false },
+    ],
+    [0, 1, 2, 3, 4].map(f => (c: Img) => tollwardenDeath(c, f)),
+    TOLL_HAND,
+  );
+
+  // The halberd: long haft, crescent axe, a spike at the tip, a hook behind
+  const hal = new Img(46, 13);
+  hal.hline(1, 6, 36, P.wood1);
+  hal.hline(1, 7, 36, P.wood2);
+  for (let y = 1; y <= 11; y++) {
+    const w = Math.round(4 - Math.abs(y - 6) * 0.5);
+    hal.hline(33, y, w, P.steel2);
+  }
+  hal.vline(33, 1, 11, P.steel1);
+  hal.hline(37, 6, 8, P.steel2);
+  hal.set(44, 6, P.steel2);
+  hal.rect(29, 4, 2, 2, P.steel1); // back hook
+  hal.outline(P.ink);
+  sheet('toll_halberd', hal, { cell: [46, 13], pivot: [9, 6], layer: 'weapon', points: { tip: [44, 6] } });
+
+  // Smoke veil (16x32, pivot 8,32): pale smoke rolling up through a sealed doorway, 4 looping frames
+  const veil = new Img(16 * 4, 32);
+  for (let f = 0; f < 4; f++) {
+    const r = rng(7000);
+    for (let i = 0; i < 14; i++) {
+      const x = f * 16 + 2 + r() * 12;
+      const y = (r() * 32 - f * 5 + 64) % 30;
+      veil.ellipse(x, y + 1, 2 + r() * 2.5, 2 + r() * 2, withAlpha(i % 3 ? P.stone3 : P.stone4, 150));
+    }
+    for (let i = 0; i < 5; i++) veil.set(f * 16 + 2 + Math.floor(r() * 12), Math.floor((r() * 30 - f * 7 + 60) % 30), withAlpha(P.wax2, 200));
+  }
+  sheet('smoke_veil', veil, { cell: [16, 32], pivot: [8, 32], layer: 'fx' });
+}
+
 function genRoster() {
   const P7 = phased7();
   const walk4 = <T,>(draw: (c: Img, d: Dir5, p: T) => void, mk: (f: number) => T) => [0, 1, 2, 3].map(f => (c: Img, d: Dir5) => draw(c, d, mk(f)));
@@ -1965,9 +2110,24 @@ function drawPip(c: Img, { breath, mouth }: NpcPose) {
 }
 
 /** Head-and-shoulders portraits for the dialogue box, drawn at double detail. */
-function drawPortrait(c: Img, who: 'oskar' | 'maudlin' | 'pip') {
+function drawPortrait(c: Img, who: 'oskar' | 'maudlin' | 'pip' | 'tollwarden') {
   c.rect(0, 0, 32, 32, P.dark1);
-  if (who === 'oskar') {
+  if (who === 'tollwarden') {
+    c.rect(3, 24, 26, 8, P.blood1); // coat collar
+    c.ellipse(5, 26, 5, 4, P.steel1); // pauldrons
+    c.ellipse(27, 26, 5, 4, P.steel1);
+    c.rect(8, 3, 16, 21, P.steel1); // barbute
+    c.vline(8, 3, 21, P.steel2);
+    c.hline(8, 23, 16, P.stone1);
+    c.rect(14, 0, 4, 3, P.flame1); // crest
+    c.hline(10, 11, 12, P.ink); // visor slit
+    c.hline(10, 12, 12, P.ink);
+    c.rect(12, 11, 2, 2, P.wax2); // pale candle eyes
+    c.rect(18, 11, 2, 2, P.wax2);
+    c.rect(15, 14, 2, 7, P.ink); // the coin slot
+    c.set(22, 7, P.stone3); // dents
+    c.set(10, 18, P.stone3);
+  } else if (who === 'oskar') {
     c.rect(4, 22, 24, 10, P.wood1);
     c.hline(4, 22, 24, P.wood2);
     c.rect(8, 4, 16, 17, P.wax1);
@@ -2028,7 +2188,7 @@ function genNpcs() {
     });
     sheet(`npc_${name}`, img, { cell: [32, 32], pivot: [16, 28], layer: 'single' });
   }
-  const who = ['oskar', 'maudlin', 'pip'] as const;
+  const who = ['oskar', 'maudlin', 'pip', 'tollwarden'] as const;
   const portraits = new Img(32 * who.length, 32);
   who.forEach((w, i) => {
     const c = new Img(32, 32);
@@ -2488,5 +2648,6 @@ genRoadDecor();
 genHubDecor();
 genChest();
 genNpcs();
+genTollwarden();
 genFont();
 console.log(`gen-art: wrote ${written} file(s), skipped ${skipped} existing${skipped && !FORCE ? ' (use --force to overwrite)' : ''}`);

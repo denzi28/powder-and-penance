@@ -5,6 +5,8 @@
 //         stagger / parried / critVictim interrupt anything.
 // rhythm: stands, faces the player and repeats its first move every rhythmIntervalTicks (parry practice).
 // dummy:  does nothing; can be staggered and backstabbed.
+// boss:   dormant until its arena wakes it -> intro (entrance, player keeps control) -> the fighter's combat
+//         states, without searching, leashing or giving up.
 import { DATA } from '../data/config';
 import { DEG } from '../core/math';
 import type { State } from '../actors/StateMachine';
@@ -67,6 +69,8 @@ const notice: State<Enemy> = {
 
 /** Shared combat checks: lost the player, or dragged too far from home. */
 function combatExit(e: Enemy): string | undefined {
+  // A boss never gives up or wanders home: its arena is sealed until one of you falls.
+  if (e.def.boss) return e.player.dead ? 'idle' : undefined;
   if (e.player.dead || e.outsideLeash()) {
     e.awareness = 0;
     return 'return';
@@ -273,12 +277,51 @@ const dummyStagger: State<Enemy> = {
   },
 };
 
-const FIGHTER = { idle, suspicious, notice, approach, strafe, attack, stagger, parried, guardBroken, critVictim, return: ret, dead };
+/** Boss, before its fight: stands at its post and ignores everything until the arena wakes it. */
+const dormant: State<Enemy> = {
+  tick(e) {
+    e.steer(0, 0);
+    e.turnTo(e.homeFacing);
+  },
+};
 
-export const BRAINS: Record<'melee' | 'ranged' | 'dummy' | 'rhythm', Record<string, State<Enemy>>> = {
+/**
+ * Boss entrance: it turns to the player and performs (introAnim, weapon raised and slammed down on each
+ * slam tick, the screen shaking), then the fight starts. The player can act the whole time.
+ */
+const intro: State<Enemy> = {
+  enter(e) {
+    const b = e.def.boss!;
+    e.vx = e.vy = 0;
+    e.anim.play(b.introAnim, { restart: true });
+    if (b.roarSfx) e.ctx.bus.emit('sfx', { id: b.roarSfx, x: e.x, y: e.y });
+  },
+  tick(e, t) {
+    const b = e.def.boss!;
+    e.steer(0, 0);
+    e.turnTo(e.angleToPlayer());
+    if (b.slams.includes(t)) {
+      e.ctx.bus.emit('shake', { trauma: b.slamShake });
+      e.ctx.bus.emit('sfx', { id: b.slamSfx, x: e.x, y: e.y });
+      e.ctx.bus.emit('dust', { x: e.x + Math.cos(e.facing) * 14, y: e.y + Math.sin(e.facing) * 8, kind: 'roll' });
+    }
+    if (t >= b.introTicks) {
+      e.awareness = 1;
+      e.trackPlayer(); // it knows exactly where you are: you're in its sealed arena
+      e.attackGap = 20;
+      return 'approach';
+    }
+  },
+};
+
+const FIGHTER = { idle, suspicious, notice, approach, strafe, attack, stagger, parried, guardBroken, critVictim, return: ret, dead };
+const BOSS = { idle: dormant, intro, approach, strafe, attack, stagger, parried, guardBroken, critVictim, dead };
+
+export const BRAINS: Record<'melee' | 'ranged' | 'dummy' | 'rhythm' | 'boss', Record<string, State<Enemy>>> = {
   // Ranged differs only through data: spacing.retreatBelow and moves whose strikes throw projectiles.
   melee: FIGHTER,
   ranged: FIGHTER,
+  boss: BOSS,
   rhythm: { idle: rhythmIdle, attack, stagger, parried, critVictim },
   dummy: { idle: { tick: () => {} }, stagger: dummyStagger, critVictim },
 };

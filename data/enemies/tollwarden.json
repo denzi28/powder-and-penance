@@ -1,0 +1,127 @@
+{
+  "id": "tollwarden",
+  "name": "Tollwarden",
+  "ai": "boss",
+  "boss": {
+    "title": "The Tollwarden",
+    "introAnim": "intro",
+    "introTicks": 110,
+    "slams": [20, 60],
+    "slamShake": 0.45,
+    "slamSfx": "bell_slam",
+    "introLine": "Toll is paid in tallow, pilgrim. And tallow is paid in you.",
+    "roarSfx": "boss_roar",
+    "deathScript": "tollwarden_death"
+  },
+  "sprite": "tollwarden",
+  "weaponSprite": "toll_halberd",
+  "weaponRestDeg": 60,
+  "hp": 720,
+  "poise": { "max": 200, "resetTicks": 240 },
+  "tallow": 1200,
+  "speed": 34,
+  "strafeSpeed": 20,
+  "accelTicks": 12,
+  "turnDegPerTick": 4,
+  "collider": { "w": 16, "h": 6 },
+  "hurtbox": { "w": 22, "h": 38, "offsetY": -20 },
+  "bodyRadius": 11,
+  "knockbackResist": 0.9,
+  "spacing": { "preferred": 48, "strafeTicks": [50, 100] },
+  "attackGapTicks": [18, 45],
+  "staggerTicks": 45,
+  "parriedTicks": 90,
+  "deathTicks": 110,
+  "corpseTicks": 1800,
+  "blood": "blood1",
+  "moves": [
+    {
+      "id": "toll_sweep",
+      "range": [0, 58],
+      "weight": 3,
+      "cooldown": 60,
+      "strikes": [
+        {
+          "damage": 34, "poise": 45,
+          "windup": 30, "active": 7, "recovery": 34,
+          "trackDegPerTick": 3,
+          "hyperArmor": 40,
+          "telegraph": { "tick": 12, "kind": "normal" },
+          "hitbox": { "shape": "arc", "radius": 56, "halfAngle": 100 },
+          "originY": -10,
+          "sweep": { "fromDeg": -120, "toDeg": 120 },
+          "knockback": 160, "hitstop": 6, "shake": 0.3, "sfx": "swing_heavy", "anim": "sweep"
+        }
+      ]
+    },
+    {
+      "id": "last_call",
+      "range": [30, 96],
+      "weight": 3,
+      "cooldown": 110,
+      "strikes": [
+        {
+          "damage": 40, "poise": 50,
+          "windup": 58, "active": 6, "recovery": 40,
+          "trackDegPerTick": 4,
+          "hyperArmor": 50,
+          "telegraph": { "tick": 14, "kind": "normal" },
+          "lunge": { "distance": 44, "startTick": 54, "ticks": 6 },
+          "hitbox": { "shape": "arc", "radius": 40, "halfAngle": 25 },
+          "originY": -10,
+          "sweep": { "fromDeg": 0, "toDeg": 0, "reach": 16 },
+          "knockback": 150, "hitstop": 7, "shake": 0.3, "sfx": "swing_heavy", "anim": "thrust"
+        }
+      ]
+    },
+    {
+      "id": "gate_drop",
+      "range": [0, 50],
+      "weight": 2,
+      "cooldown": 120,
+      "strikes": [
+        {
+          "damage": 48, "poise": 70,
+          "windup": 40, "active": 6, "recovery": 50,
+          "trackDegPerTick": 3,
+          "hyperArmor": 60,
+          "unblockable": true,
+          "telegraph": { "tick": 16, "kind": "danger" },
+          "hitbox": { "shape": "circle", "radius": 32, "offset": 30 },
+          "originY": -4,
+          "sweep": { "fromDeg": -160, "toDeg": 10 },
+          "knockback": 220, "hitstop": 8, "shake": 0.55, "sfx": "bell_slam", "anim": "slam"
+        }
+      ]
+    },
+    {
+      "id": "collection",
+      "range": [0, 48],
+      "weight": 2,
+      "cooldown": 90,
+      "strikes": [
+        {
+          "damage": 22, "poise": 25,
+          "windup": 16, "active": 5, "recovery": 8,
+          "trackDegPerTick": 5,
+          "hyperArmor": 25,
+          "telegraph": { "tick": 6, "kind": "normal" },
+          "hitbox": { "shape": "arc", "radius": 44, "halfAngle": 50 },
+          "originY": -10,
+          "sweep": { "fromDeg": 0, "toDeg": 0, "reach": 10 },
+          "knockback": 60, "hitstop": 4, "shake": 0.15, "sfx": "swing", "anim": "thrust"
+        },
+        {
+          "damage": 30, "poise": 40,
+          "windup": 12, "active": 6, "recovery": 40,
+          "trackDegPerTick": 3,
+          "hyperArmor": 30,
+          "hitbox": { "shape": "arc", "radius": 54, "halfAngle": 110 },
+          "originY": -10,
+          "sweep": { "fromDeg": 120, "toDeg": -120 },
+          "knockback": 150, "hitstop": 6, "shake": 0.3, "sfx": "swing_heavy", "anim": "sweep"
+        }
+      ]
+    }
+  ]
+}

@@ -93,11 +93,12 @@ R('abbey_06_ossuary', [74, 44], 26, 18)
   .add({ type: 'item', id: 'abbey_salt', item: 'bitter_salt', at: [22, 15] })
   .prop('crate', 2, 2).prop('crate', 3, 2).prop('crate', 2, 3).prop('pot', 23, 2).prop('pot', 22, 2).prop('pot', 2, 15).prop('crate', 12, 15);
 
-// 7 Gatehouse — two Wardens (the mini-boss arena arrives in M6).
+// 7 Gatehouse — the Tollwarden's arena. Smoke seals both doorways when you walk in.
 R('abbey_07_gatehouse', [50, 46], 25, 16)
   .gap(24, 6, 1, 3).gap(0, 9)
   .fill(8, 3, 1, 3, '#').fill(8, 10, 1, 3, '#')
-  .enemy('bulwark_warden', 14, 6, 'E').enemy('bulwark_warden', 14, 10, 'E')
+  .enemy('tollwarden', 15, 8, 'E')
+  .add({ type: 'arena', id: 'gatehouse', boss: 'tollwarden', seals: [[24, 6], [24, 7], [24, 8], [0, 9]], at: [0, 0] })
   .add({ type: 'item', id: 'abbey_pouch', item: 'ammo_pouch', at: [3, 13] })
   .prop('pot', 2, 2).prop('pot', 22, 13);
 

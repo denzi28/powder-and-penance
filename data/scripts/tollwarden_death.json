@@ -1,0 +1,20 @@
+{
+  "id": "tollwarden_death",
+  "steps": [
+    { "camera": "enemy:tollwarden", "ticks": 45 },
+    { "wait": 20 },
+    { "say": "...So. The toll is paid.", "who": "tollwarden" },
+    { "say": "Thirty years I kept this gate. Every cart that went down to the Works, I counted. Every name, I wrote down. So that somebody would.", "who": "tollwarden" },
+    { "say": "They told me it was mercy. The dying, given to the flame. I believed that for the first ten years.", "who": "tollwarden" },
+    { "say": "After that I kept counting because I couldn't stop. If I stopped, they were only tallow.", "who": "tollwarden" },
+    { "wait": 30 },
+    { "say": "Take the key. You'll want to see where the carts go. You won't want to have seen it.", "who": "tollwarden" },
+    { "say": "Don't let them put me in the vats. Leave me here, where I can see the gate.", "who": "tollwarden" },
+    { "say": "And tell Maudlin... tell her Anselm kept the count.", "who": "tollwarden" },
+    { "wait": 50 },
+    { "say": "The candle behind his visor gutters, and goes out." },
+    { "give": "toll_key" },
+    { "set": "tollwarden_last_words" },
+    { "camera": "player", "ticks": 45 }
+  ]
+}

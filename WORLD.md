@@ -55,6 +55,7 @@ Target: **~2 h** first playthrough (2 h 15 min with the optional Powder Vault). 
 | Keyed doors (`requires`: a key item): Toll Key ✅, the two Seals later | hub_01 ✅ |
 | Dialogue, NPCs, cutscenes (see STORY.md: "Writing dialogue and cutscenes") | ✅ road and hub |
 | Slain enemies stay dead until you rest or die (`slain:` flags) | ✅ |
+| Bosses: `ai: "boss"` + `boss` block (entrance, slams, line, last-words script), `arena` room entity (smoke seals), boss bar, stays dead (`boss:<kind>`), Tallow drops at the arena door | ✅ Tollwarden |
 | Minimap and large map (M) | ✅ |
 | Slow floors (wax pools) | mire_01 |
 | Secret breakable walls | works_03 |
@@ -96,7 +97,11 @@ Exits into areas that aren't built yet (the Waxmire, the Tallow Works) show "The
 The 13 existing rooms stay. Changes:
 - **Porch:** a new north doorway from the Hill Stair ✅. New games no longer start here.
 - **Scriptorium:** Brother Aldous hides here (NPC).
-- **Gatehouse:** becomes the **Tollwarden** arena; drops the **Toll Key**.
+- **Gatehouse:** the **Tollwarden**'s arena ✅. Beating him gives you the **Toll Key**.
+  - Smoke seals both doorways when you walk in, and he performs his entrance while you keep control.
+  - His name and health bar sit at the bottom of the screen.
+  - Die and your Tallow lands just outside the doorway you came through.
+  - When he falls, he kneels and speaks his last words.
 - **Undercroft:** gets a sluice gate on its west side, the one-way shortcut up from the Waxmire.
 - **Nave Approach → Nave:** the great door needs **both Seals**. The **Chandler** fight, then the ending cutscene and the lift to Act 2 (sealed).
 

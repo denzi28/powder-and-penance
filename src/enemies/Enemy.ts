@@ -110,7 +110,15 @@ export class Enemy extends Actor {
   }
   /** Has the full combat AI (perception, room alerts, health bar). */
   get isFighter() {
-    return this.def.ai === 'melee' || this.def.ai === 'ranged';
+    return this.def.ai === 'melee' || this.def.ai === 'ranged' || this.def.ai === 'boss';
+  }
+  /** A boss that hasn't begun its fight yet (dormant or performing its entrance). */
+  get bossWaiting() {
+    return !!this.def.boss && (this.sm.name === 'idle' || this.sm.name === 'intro');
+  }
+  /** Begin the entrance (the arena calls this when the player walks in). */
+  startIntro() {
+    if (!this.dead && this.sm.name === 'idle') this.sm.change('intro');
   }
 
   // Shield guard
@@ -132,7 +140,7 @@ export class Enemy extends Actor {
     return this.guardPoints <= 0;
   }
   get backstabbable() {
-    return !this.dead && UNAWARE_STATES.has(this.sm.name);
+    return !this.dead && !this.def.boss && UNAWARE_STATES.has(this.sm.name);
   }
   /** State to fall back to after a stagger/parry/critical. */
   get recoverState() {
@@ -159,6 +167,9 @@ export class Enemy extends Actor {
       const pose = this.runner.pose();
       this.weaponAngle = pose.angle;
       this.weaponReach = pose.reach;
+    } else if (this.sm.name === 'intro') {
+      this.weaponAngle = this.introWeaponAngle();
+      this.weaponReach = 0;
     } else {
       this.weaponAngle = this.facing + this.def.weaponRestDeg * DEG * (Math.cos(this.facing) < 0 ? -1 : 1);
       this.weaponReach = 0;
@@ -170,7 +181,9 @@ export class Enemy extends Actor {
     if (this.def.ai === 'dummy') {
       if (this.anim.name === 'hit' && this.anim.done) this.anim.play('idle');
       this.anim.tick();
-    } else if (st === 'attack' || st === 'stagger' || st === 'dead' || st === 'parried' || st === 'critVictim' || st === 'guardBroken') {
+    } else if (
+      st === 'attack' || st === 'stagger' || st === 'dead' || st === 'parried' || st === 'critVictim' || st === 'guardBroken' || st === 'intro'
+    ) {
       this.anim.tick();
     } else if (speed > 4) {
       this.anim.play('walk');
@@ -255,9 +268,25 @@ export class Enemy extends Actor {
     this.sm.change('critVictim', true);
   }
 
+  /**
+   * During a boss entrance the weapon is raised over 20 ticks before each slam, driven into the ground on
+   * the slam, held there briefly, then returned to rest.
+   */
+  private introWeaponAngle() {
+    const t = this.sm.t;
+    const rest = this.facing + this.def.weaponRestDeg * DEG * (Math.cos(this.facing) < 0 ? -1 : 1);
+    const up = -Math.PI / 2;
+    const down = this.facing + 0.35 * (Math.cos(this.facing) < 0 ? -1 : 1);
+    for (const s of this.def.boss?.slams ?? []) {
+      if (t >= s - 20 && t < s) return rest + (up - rest) * ((t - (s - 20)) / 20);
+      if (t >= s && t < s + 14) return down;
+    }
+    return rest;
+  }
+
   /** Become certain and fight immediately (hit, or alerted by the room). */
   aggro() {
-    if (!this.isFighter || this.dead || COMBAT_STATES.has(this.sm.name)) return;
+    if (!this.isFighter || this.dead || COMBAT_STATES.has(this.sm.name) || this.bossWaiting) return;
     this.awareness = 1;
     this.noteSighting();
     this.sm.change('approach');
@@ -268,7 +297,7 @@ export class Enemy extends Actor {
   alertRoom() {
     if (this.room === null) return;
     for (const o of this.ctx.enemies()) {
-      if (o === this || o.dead || o.room !== this.room || !o.isFighter) continue;
+      if (o === this || o.dead || o.room !== this.room || !o.isFighter || o.def.boss) continue;
       const st = o.sm.name;
       if (st === 'idle' || st === 'suspicious' || st === 'return') {
         o.awareness = 1;

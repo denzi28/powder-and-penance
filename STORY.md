@@ -47,7 +47,9 @@ The map is in [WORLD.md](WORLD.md).
 | The Abbey view from the Hill of Candles (`abbey_view`) | ✅ |
 | Arriving at Wick's Rest (`arrive_wicks_rest`): Maudlin calls you to the fire | ✅ |
 | Maudlin at the shrine (`maudlin`): first meeting (warm hands), the Drip, the Abbey, the Toll Gate | ✅ (levelling comes later) |
-| Pip, Brother Aldous, the Tollwarden and the rest | Placed later with their areas |
+| **The Tollwarden** (Abbey Gatehouse). His entrance line: "Toll is paid in tallow, pilgrim. And tallow is paid in you." His last words (`tollwarden_death`): he kept count of every pilgrim sent to the Works so they wouldn't be only tallow. His name was **Anselm**. He gives you the Toll Key. | ✅ |
+| Maudlin hears of Anselm's death (a new option once you've heard his last words) | ✅ |
+| Pip, Brother Aldous and the rest | Placed later with their areas |
 
 ## Writing dialogue and cutscenes
 Everything is data; the game hot-reloads it and checks every reference when it loads.

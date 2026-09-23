@@ -30,7 +30,11 @@ function play(id: string, flags: Set<string>, maxTicks = 20000) {
       clearBuffer: () => {},
     },
     npcs: { speaking: null, refresh: () => {}, get: () => null },
-    player: { x: 0, y: 0 },
+    // enough of a player for `give` steps (grantItem)
+    player: { x: 0, y: 0, tallow: 0, slots: [], phials: { max: 3, charges: 3, level: 0 }, healAmount: 45, ammoFor: () => ({ reserve: 0 }) },
+    particles: { burst: () => {} },
+    save: () => {},
+    enemies: [],
     areaRoomList: [],
     bus: { emit: () => {} },
     cam: { addTrauma: () => {} },

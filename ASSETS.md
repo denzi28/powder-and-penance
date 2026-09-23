@@ -190,6 +190,15 @@ Enemies hold their weapon like the player does: `handAnchors` in the body manife
 - Dialogue-box portraits: 0 Oskar, 1 Maudlin, 2 Pip.
 - `data/npcs.json` picks each character's frame.
 
+### Bosses
+| Sheet | Cell | Pivot | Notes |
+|---|---|---|---|
+| `tollwarden` | 48×48 | 24,44 | Animations: `idle`, `walk`, `sweep`, `thrust`, `slam`, `intro` (loop: rear back, slam on frame 3 = tick 20 of each 40, straighten), `stagger`, `death` (sinks to his knees and stays kneeling for his last words) |
+| `toll_halberd` | 46×13 | 9,6 (grip) | tip (44,6) |
+| `smoke_veil` | 16×32 | 8,32 | 4 looping frames of pale smoke in a sealed doorway |
+
+Portrait frame 3 is the Tollwarden.
+
 ### `chest` (20×18, pivot 10,16)
 Frames: 0 closed; 1–3 opening (lid rising, light spilling out); 4 open and empty. The game picks the frame from the opening tick (`OPEN_TICKS` in `src/world/Pickups.ts`). The item pops out at `POP_TICK`. Closed chests show an occasional `item_glint` twinkle on the lid.
 
