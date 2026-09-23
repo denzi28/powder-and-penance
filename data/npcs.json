@@ -1,0 +1,7 @@
+{
+  "npcs": {
+    "oskar": { "name": "Oskar", "sprite": "npc_oskar", "portrait": 0 },
+    "maudlin": { "name": "Sister Maudlin", "sprite": "npc_maudlin", "portrait": 1 },
+    "pip": { "name": "Pip", "sprite": "npc_pip", "portrait": 2 }
+  }
+}

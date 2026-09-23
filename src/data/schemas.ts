@@ -208,6 +208,61 @@ export const ItemDef = z.object({
   ]),
 });
 
+// ---- Story: characters, dialogue and cutscene scripts (see STORY.md) ----
+/**
+ * A condition on world flags: "name" (set) or "!name" (not set); a list means all of them. Bare names are
+ * story flags ("story:<name>"); names with a colon are any world flag ("key:toll_key", "shrine:shrine_rest").
+ */
+export const Cond = z.union([z.string(), z.array(z.string())]);
+export type Cond = z.infer<typeof Cond>;
+/** A camera or position target: "player", "npc:<placement id>" or "point:<point id>". */
+const Target = z.string().regex(/^(player|npc:.+|point:.+)$/, 'expected "player", "npc:<id>" or "point:<id>"');
+
+export type Step =
+  | { say: string; who?: string }
+  | { menu: { text: string; when?: Cond; do?: Step[]; end?: boolean }[] }
+  | { if: Cond; then: Step[]; else?: Step[] }
+  | { set: string | string[] }
+  | { clear: string | string[] }
+  | { wait: number }
+  | { camera: string; ticks?: number }
+  | { fade: 'out' | 'in'; ticks?: number }
+  | { sfx: string }
+  | { shake: number }
+  | { give: string }
+  | { toast: [string, string] };
+export const Step: z.ZodType<Step> = z.lazy(() =>
+  z.union([
+    /** A line of dialogue. `who`: a character id (data/npcs.json); omitted = narration. */
+    z.object({ say: z.string(), who: z.string().optional() }).strict(),
+    /** Choices. Picking an option runs its `do`; the menu comes back until an option with `end` is picked. */
+    z
+      .object({
+        menu: z
+          .array(z.object({ text: z.string(), when: Cond.optional(), do: z.array(Step).optional(), end: z.boolean().optional() }).strict())
+          .min(1),
+      })
+      .strict(),
+    z.object({ if: Cond, then: z.array(Step), else: z.array(Step).optional() }).strict(),
+    z.object({ set: z.union([z.string(), z.array(z.string())]) }).strict(),
+    z.object({ clear: z.union([z.string(), z.array(z.string())]) }).strict(),
+    z.object({ wait: int.nonnegative() }).strict(),
+    /** Point the camera at a target over `ticks` (default 40); "player" gives it back. */
+    z.object({ camera: Target, ticks: int.nonnegative().optional() }).strict(),
+    z.object({ fade: z.enum(['out', 'in']), ticks: int.positive().optional() }).strict(),
+    z.object({ sfx: z.string() }).strict(),
+    z.object({ shake: num.min(0).max(1) }).strict(),
+    /** Give an item (data/items), explained like a chest's. */
+    z.object({ give: z.string() }).strict(),
+    z.object({ toast: z.tuple([z.string(), z.string()]) }).strict(),
+  ]),
+);
+/** data/scripts/*.json: a dialogue or cutscene. `skippable`: Esc jumps to the end (flags are still set). */
+export const ScriptDef = z.object({ id: z.string(), skippable: z.boolean().default(false), steps: z.array(Step) });
+/** data/npcs.json: characters. `portrait` is a frame of the `portraits` sheet. */
+export const NpcDef = z.object({ name: z.string(), sprite: z.string(), portrait: int.nonnegative() });
+export const Npcs = z.object({ npcs: z.record(z.string(), NpcDef) });
+
 export const DeathCfg = z.object({
   text: z.string(),
   overlayDelayTicks: int.nonnegative(),
@@ -553,6 +608,8 @@ export type SfxPreset = z.infer<typeof SfxPreset>;
 export type RoomData = z.infer<typeof RoomData>;
 export type TileKind = z.infer<typeof TileKind>;
 export type DecorDef = z.infer<typeof DecorDef>;
+export type ScriptDef = z.infer<typeof ScriptDef>;
+export type NpcDef = z.infer<typeof NpcDef>;
 export type FrameDef = z.infer<typeof FrameDef>;
 export type AnimDef = z.infer<typeof AnimDef>;
 export type SpriteManifest = z.infer<typeof SpriteManifest>;

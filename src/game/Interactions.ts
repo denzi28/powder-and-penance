@@ -1,4 +1,4 @@
-// "Press E" interactions: dropped weapons, chests, doors, shrines and racks (in that priority).
+// "Press E" interactions: dropped weapons, people, chests, doors, shrines and racks (in that priority).
 import { DATA } from '../data/config';
 import { hexToInt } from '../ui/colors';
 import { beginShrine } from './ShrineFlow';
@@ -28,6 +28,12 @@ export function nearestInteractable(gs: GameScene): Interactable | null {
         gs.markDirty();
       },
     };
+
+  const npc = gs.npcs.nearest(p.x, p.y);
+  if (npc?.talk) {
+    const talk = npc.talk;
+    return { label: `TALK TO ${DATA.npcs.npcs[npc.npc].name}`, use: () => gs.story.start(talk) };
+  }
 
   const chest = gs.pickups.nearest(p.x, p.y);
   if (chest)

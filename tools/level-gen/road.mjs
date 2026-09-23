@@ -65,9 +65,10 @@ R('road_01_wreck', [0, 0], 30, 17)
   .decor('boulder', 16, 4).decor('boulder', 19, 3).decor('boulder', 5, 5).decor('boulder', 23, 12)
   .decor('dead_tree', 9, 3).decor('dead_tree', 26, 6).decor('signpost', 25, 12)
   .prop('crate', 10, 11).prop('crate', 5, 10).prop('pot', 20, 12)
-  // story hooks (story systems milestone): the crash cutscene; Oskar locked in the wagon cage
-  .add({ type: 'cutscene', id: 'wreck_intro', at: [12, 11] })
-  .add({ type: 'npc', id: 'oskar', at: [8, 7] });
+  // the opening cutscene (plays where you wake), and Oskar locked in the wagon cage until you free him
+  .add({ type: 'cutscene', id: 'wreck_intro', script: 'wreck_intro', at: [12, 11], size: [1, 1] })
+  .add({ type: 'point', id: 'wagon', at: [8, 7] })
+  .add({ type: 'npc', id: 'oskar_wreck', npc: 'oskar', talk: 'oskar_wreck', when: '!oskar_freed', at: [9, 7] });
 
 // road_02 The Cutting — a narrow, winding road between cliffs. One Wickling stands on the road facing you:
 // the first fight (attack, roll). A guard who ran this way didn't make it.
@@ -79,6 +80,8 @@ R('road_02_cutting', [29, 3], 36, 12)
   .grassEdges()
   .paint(0, 6, 14, 2, '=').paint(14, 4, 6, 2, '=').paint(20, 5, 6, 2, '=').paint(26, 4, 10, 2, '=')
   .enemy('wickling', 12, 6, 'W')
+  // the guard who ran east with the cage key: it's in his satchel beside him
+  .add({ type: 'item', id: 'road_cage_key', item: 'cage_key', at: [6, 5] })
   .decor('guard_dead', 5, 6, true).decor('boulder', 7, 4).decor('boulder', 18, 6).decor('dead_tree', 24, 4)
   .decor('grass_tuft', 3, 5).decor('grass_tuft', 16, 3).decor('grass_tuft', 28, 6).decor('grass_tuft', 33, 6)
   .prop('pot', 33, 6).prop('pot', 22, 7);
@@ -134,7 +137,8 @@ R('road_05_hill_of_candles', [120, 16], 22, 20)
   .decor('signpost', 20, 9).decor('dead_tree', 17, 13)
   .decor('grass_tuft', 3, 7).decor('grass_tuft', 20, 11).decor('grass_tuft', 14, 13).decor('grass_tuft', 10, 3)
   .add({ type: 'shrine', id: 'shrine_hill', name: 'Hill Wick', at: [13, 12] })
-  .add({ type: 'cutscene', id: 'abbey_view', at: [19, 6] })
+  .add({ type: 'cutscene', id: 'abbey_view', script: 'abbey_view', at: [19, 5], size: [2, 3] })
+  .add({ type: 'point', id: 'hill_top', at: [10, 2] })
   // up to Wick's Rest
   .add({ type: 'exit', id: 'road_to_hub', at: [10, 0], size: [2, 1], to: { area: 'hub', spawn: 'from_road' } })
   .add({ type: 'spawn', id: 'from_hub', at: [10, 1] });

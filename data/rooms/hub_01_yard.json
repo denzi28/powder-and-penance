@@ -239,22 +239,31 @@
     {
       "type": "npc",
       "id": "maudlin",
-      "at": [12, 11]
+      "npc": "maudlin",
+      "at": [12, 10],
+      "talk": "maudlin"
     },
     {
       "type": "npc",
       "id": "oskar_stall",
-      "at": [22, 6]
+      "npc": "oskar",
+      "at": [22, 6],
+      "talk": "oskar_hub",
+      "when": "oskar_freed"
     },
     {
       "type": "npc",
       "id": "pip",
-      "at": [22, 16]
+      "npc": "pip",
+      "at": [22, 16],
+      "when": "pip_rescued"
     },
     {
       "type": "cutscene",
       "id": "arrive_wicks_rest",
-      "at": [17, 20]
+      "script": "arrive_wicks_rest",
+      "at": [16, 19],
+      "size": [4, 4]
     }
   ]
 }

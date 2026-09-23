@@ -41,7 +41,10 @@ function room(id, origin, w, h) {
     prop(kind, x, y) { return r.add({ type: 'prop', kind, at: [x, y] }); },
     spawn(id, x, y) { return r.add({ type: 'spawn', id, at: [x, y] }); },
     exit(id, x, y, w2, h2, area, spawn) { return r.add({ type: 'exit', id, at: [x, y], size: [w2, h2], to: { area, spawn } }); },
-    npc(id, x, y) { return r.add({ type: 'npc', id, at: [x, y] }); },
+    /** A character placement: shown while `when` holds; `talk` is the script run when you press E. */
+    npc(id, npc, x, y, talk, when) {
+      return r.add({ type: 'npc', id, npc, at: [x, y], ...(talk ? { talk } : {}), ...(when ? { when } : {}) });
+    },
   };
   return r;
 }
@@ -75,9 +78,11 @@ R('hub_01_yard', [0, 10], 34, 24)
   .exit('hub_to_road', 17, 23, 2, 1, 'road', 'from_hub')
   .exit('hub_to_mire', 0, 11, 1, 2, 'mire', 'from_hub')
   .exit('hub_to_works', 33, 10, 1, 3, 'works', 'from_hub')
-  // story hooks (story systems milestone)
-  .npc('maudlin', 12, 11).npc('oskar_stall', 22, 6).npc('pip', 22, 16)
-  .add({ type: 'cutscene', id: 'arrive_wicks_rest', at: [17, 20] });
+  // people: Maudlin by the shrine; Oskar behind his stall once freed; Pip by the fire once rescued (Act 1, mire)
+  .npc('maudlin', 'maudlin', 12, 10, 'maudlin')
+  .npc('oskar_stall', 'oskar', 22, 6, 'oskar_hub', 'oskar_freed')
+  .npc('pip', 'pip', 22, 16, null, 'pip_rescued')
+  .add({ type: 'cutscene', id: 'arrive_wicks_rest', script: 'arrive_wicks_rest', at: [16, 19], size: [4, 4] });
 
 // hub_02 Maudlin's Chapel — a grotto chapel dug into the hollow's side: flagstones, an altar, benches, her
 // bedroll and shelves. Where the Chandler's ledger is brought later.
@@ -86,7 +91,7 @@ R('hub_02_chapel', [0, 2], 11, 9)
   .paint(1, 1, 9, 7, ':').paint(5, 8, 1, 1, ':')
   .decor('altar', 6, 1).decor('bookshelf', 9, 1).decor('prayer_bench', 4, 4).decor('prayer_bench', 8, 4)
   .decor('bedroll', 2, 6).prop('candles', 1, 1).prop('candles', 3, 1).prop('pot', 9, 6)
-  .npc('maudlin_chapel', 5, 3);
+  .npc('maudlin_chapel', 'maudlin', 5, 3, null, 'maudlin_in_chapel');
 
 // hub_03 Hill Stair — a switchback path up the hollow's north side to the Abbey Porch. Ridges alternate
 // open ends (right, left, right); rows directly above a ridge are under its cap, so each landing leaves one.

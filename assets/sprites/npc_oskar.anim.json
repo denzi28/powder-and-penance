@@ -1,0 +1,12 @@
+{
+  "image": "npc_oskar.png",
+  "cell": [
+    32,
+    32
+  ],
+  "pivot": [
+    16,
+    28
+  ],
+  "layer": "single"
+}

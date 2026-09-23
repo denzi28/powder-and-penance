@@ -1,0 +1,47 @@
+{
+  "id": "maudlin",
+  "steps": [
+    {
+      "if": "!maudlin_met",
+      "then": [
+        { "say": "Another one up from the road. Sit, if your legs allow it. This is Wick's Rest, the last honest shrine this side of the Abbey.", "who": "maudlin" },
+        { "say": "Rest at it and your wounds close and your phial fills. The dead get up again too, I'm afraid. Nothing is free.", "who": "maudlin" },
+        { "say": "...Your hands. Give me your hand.", "who": "maudlin" },
+        { "wait": 30 },
+        { "say": "Warm. The Drip hasn't touched you at all. Hm.", "who": "maudlin" },
+        { "set": "maudlin_met" }
+      ],
+      "else": [{ "say": "Still warm? Good. Keep it that way.", "who": "maudlin" }]
+    },
+    {
+      "menu": [
+        {
+          "text": "What is the Drip?",
+          "do": [
+            { "say": "The slow death. First cold fingers, then a shine on the skin, then you're a candle that walks. The Great Wick keeps it back.", "who": "maudlin" },
+            { "say": "Kept it back.", "who": "maudlin" }
+          ]
+        },
+        {
+          "text": "What is the Abbey?",
+          "do": [
+            { "say": "The Guttering Abbey, up the Hill Stair. Penitents go there to give themselves to the flame. None come back down.", "who": "maudlin" },
+            { "say": "The Tollwarden keeps its gatehouse. He takes a toll from everyone who passes. What he takes, you'll see.", "who": "maudlin" }
+          ]
+        },
+        {
+          "text": "What is behind the locked gate?",
+          "when": "!key:toll_key",
+          "do": [
+            { "say": "The carters' road, down to the Tallow Works. The carts go through full and come back empty. The Tollwarden has the key.", "who": "maudlin" }
+          ]
+        },
+        {
+          "text": "Why are my hands warm?",
+          "do": [{ "say": "I don't know. And I'd rather not guess out loud. Keep your gloves on around the Order.", "who": "maudlin" }]
+        },
+        { "text": "Leave", "end": true, "do": [{ "say": "The flame keep you.", "who": "maudlin" }] }
+      ]
+    }
+  ]
+}

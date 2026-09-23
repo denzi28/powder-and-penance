@@ -131,12 +131,22 @@
     {
       "type": "cutscene",
       "id": "wreck_intro",
-      "at": [12, 11]
+      "script": "wreck_intro",
+      "at": [12, 11],
+      "size": [1, 1]
+    },
+    {
+      "type": "point",
+      "id": "wagon",
+      "at": [8, 7]
     },
     {
       "type": "npc",
-      "id": "oskar",
-      "at": [8, 7]
+      "id": "oskar_wreck",
+      "npc": "oskar",
+      "talk": "oskar_wreck",
+      "when": "!oskar_freed",
+      "at": [9, 7]
     }
   ]
 }

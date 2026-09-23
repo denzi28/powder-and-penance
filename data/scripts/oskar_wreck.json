@@ -1,0 +1,41 @@
+{
+  "id": "oskar_wreck",
+  "steps": [
+    { "set": "oskar_met" },
+    {
+      "if": "key:cage_key",
+      "then": [
+        { "say": "Is that the key? Don't just stand there admiring it.", "who": "oskar" },
+        {
+          "menu": [
+            {
+              "text": "Unlock the cage",
+              "end": true,
+              "do": [
+                { "fade": "out", "ticks": 20 },
+                { "sfx": "door_open" },
+                { "set": "oskar_freed" },
+                { "wait": 20 },
+                { "fade": "in", "ticks": 20 },
+                { "say": "Free! Hah! My legs have forgotten how to be legs.", "who": "oskar" },
+                { "say": "I'll make for Wick's Rest, up the hill. There's a shrine there, and folk who don't ask questions. Find me there. I'll have something for you.", "who": "oskar" }
+              ]
+            },
+            { "text": "Not yet", "end": true, "do": [{ "say": "Not yet? It's a key. It goes in a lock. This is a lock.", "who": "oskar" }] }
+          ]
+        }
+      ],
+      "else": [
+        { "say": "Still here. Still locked. Still hoping.", "who": "oskar" },
+        {
+          "menu": [
+            { "text": "Who are you?", "do": [{ "say": "Oskar Fennick. Powder-man, same as you. Well, not the same. I only sold the stuff. You made it.", "who": "oskar" }] },
+            { "text": "What attacked us?", "do": [{ "say": "Wicklings. Pilgrims gone to wax. They don't bleed and they don't stop. Mind the candles on their heads.", "who": "oskar" }] },
+            { "text": "Where is the key?", "do": [{ "say": "The guard who ran east, down the road. He bolted with it on his belt. Can't have got far.", "who": "oskar" }] },
+            { "text": "Leave", "end": true }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "id": "cage_key",
+  "name": "Cage Key",
+  "description": "Still on the belt of the guard who ran. He almost made it.",
+  "effect": { "type": "key", "opens": "the cage on the wrecked prison wagon, where Oskar is locked" }
+}

@@ -57,6 +57,8 @@ export class Enemy extends Actor {
   lastHit: { damage: number; poise: number; staggered: boolean; age: number } | null = null;
   /** Set once the corpse has faded; the scene removes the enemy. */
   remove = false;
+  /** Stable id of the room placement this enemy came from ("<room>#<index>"); null for debug spawns. */
+  spawnId: string | null = null;
   alpha = 1;
 
   constructor(ctx: WorldCtx, readonly kind: string, x: number, y: number, facing: number) {

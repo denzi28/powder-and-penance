@@ -1,0 +1,18 @@
+{
+  "id": "wreck_intro",
+  "skippable": true,
+  "steps": [
+    { "wait": 40 },
+    { "sfx": "hit_heavy" },
+    { "shake": 0.5 },
+    { "wait": 20 },
+    { "say": "Dusk on the Penance Road. The prison wagon lies on its side. Whatever stopped it has moved on." },
+    { "camera": "point:wagon", "ticks": 50 },
+    { "say": "Oi. OI! You there. Still breathing? Good. That makes two of us.", "who": "oskar" },
+    { "say": "The guards are dead and I'm still locked in this cage. The one who ran east down the road had the key on his belt.", "who": "oskar" },
+    { "say": "Find him. Find the key. Then come back and let me out, and I'll owe you my life. Not worth much, but it's yours.", "who": "oskar" },
+    { "set": "oskar_met" },
+    { "camera": "player", "ticks": 40 },
+    { "toast": ["THE PENANCE ROAD", "Weapons lie by the dead guards. Stand over one and press E to take it."] }
+  ]
+}

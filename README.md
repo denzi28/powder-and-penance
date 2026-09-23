@@ -27,7 +27,8 @@ npm run gen:art    # regenerate missing placeholder art (--force to overwrite al
 | Swap weapon slot (disabled while holding a two-handed weapon) | Tab / wheel | D-pad ← → |
 | Drop the weapon in hand (the slot becomes bare fists) | G | D-pad ↓ |
 | Drink a Mending Phial (about 1 s; a hit before it lands wastes the charge) | Q | X / □ |
-| Interact: shrines, items, doors, racks, dropped weapons | E | A / × |
+| Interact: talk, shrines, chests, doors, racks, dropped weapons | E | A / × |
+| Dialogue: next line / choose / skip cutscene | E, Enter, Space, click / W S or arrows / Esc | A / D-pad / B |
 | Map (pauses the game) | M (M or Esc closes) | Back / Select |
 | Menus: choose / confirm / back | W S or arrows / Enter, E, Space / Esc | stick or D-pad / A / B |
 
@@ -74,6 +75,8 @@ npm run gen:art    # regenerate missing placeholder art (--force to overwrite al
 ## Act 1 (in progress)
 Act 1 is being built room by room: the plan is in [WORLD.md](WORLD.md) and the story in [STORY.md](STORY.md).
 - **New games start on the Penance Road** (`road_01_wreck`) with bare fists. A sword and a flintlock lie in the wreck.
+- **The story has started.** The game opens with a short cutscene at the wreck. Oskar is locked in the wagon cage: find the Cage Key down the road to free him, and he turns up at his stall in Wick's Rest. Sister Maudlin waits by the hub shrine. How to write dialogue and cutscenes: [STORY.md](STORY.md).
+- **Slain enemies stay dead** until you rest at a shrine or die, even if you leave the area and come back.
 - **Items come in chests** (press E). You keep control while the lid opens. The banner explains the effect in plain numbers (e.g. "phial drinks 3 -> 4"), with the flavour text below.
 - **The route is walkable end to end:** Penance Road, then Wick's Rest (the hub), then up the Hill Stair to the Abbey Porch. Walking into an area exit fades to the next area and shows its name.
 - The Toll Gate (east of the hub) needs the **Toll Key**, which the Tollwarden will drop. The Waxmire and Tallow Works exits say they aren't open yet.

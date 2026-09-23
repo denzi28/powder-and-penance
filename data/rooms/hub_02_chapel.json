@@ -66,7 +66,9 @@
     {
       "type": "npc",
       "id": "maudlin_chapel",
-      "at": [5, 3]
+      "npc": "maudlin",
+      "at": [5, 3],
+      "when": "maudlin_in_chapel"
     }
   ]
 }

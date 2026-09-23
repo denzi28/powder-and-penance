@@ -1,0 +1,10 @@
+{
+  "id": "abbey_view",
+  "skippable": true,
+  "steps": [
+    { "camera": "point:hill_top", "ticks": 70 },
+    { "say": "Above the hollow stands the Guttering Abbey. A candle in every window, and over it a column of black smoke that never thins." },
+    { "say": "Somewhere past the smoke is the Cathedral, and the Great Wick. From here it looks like any other star." },
+    { "camera": "player", "ticks": 50 }
+  ]
+}

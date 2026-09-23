@@ -21,6 +21,8 @@ if (!DATA_ERROR) {
   for (const pr of Object.values(DATA.props)) need(pr.sprite, `data/props/${pr.id}.json`);
   for (const [id, a] of Object.entries(DATA.areas.areas)) need(a.tileset, `data/areas.json (${id})`);
   for (const [id, d] of Object.entries(DATA.decor.decor)) need(d.sprite, `data/decor.json (${id})`);
+  for (const [id, n] of Object.entries(DATA.npcs.npcs)) need(n.sprite, `data/npcs.json (${id})`);
+  need('portraits', 'dialogue portraits');
   for (const e of Object.values(DATA.enemies))
     for (const m of e.moves) for (const s of m.strikes) if (s.projectile) need(s.projectile.sprite, `data/enemies/${e.id}.json`);
   for (const e of Object.values(DATA.enemies)) {

@@ -1901,6 +1901,143 @@ function genHubDecor() {
   sheet('decor_hub', img, { cell: [W, H], pivot: [32, B], layer: 'single' });
 }
 
+// ---------------------------------------------------------------- NPCs (32x32, pivot 16,28) and portraits (32x32)
+// NPC frames: 0-1 idle (breathing), 2-3 talking (mouth open / closed). Skin is pale wax: everyone here is
+// half a candle already.
+type NpcPose = { breath: number; mouth: boolean };
+
+function drawOskar(c: Img, { breath, mouth }: NpcPose) {
+  const b = breath;
+  c.ellipse(16, 27, 6, 1.5, withAlpha(P.ink, 90)); // feet shadow
+  c.rect(11, 22, 4, 6, P.dark2); // legs
+  c.rect(17, 22, 4, 6, P.dark2);
+  c.rect(9, 12 + b, 14, 11, P.wood1); // broad body in convict's rags
+  c.hline(9, 12 + b, 14, P.wood2);
+  for (const y of [15, 18, 21]) c.hline(10, y + b, 12, P.dark2);
+  c.rect(7, 14 + b, 3, 7, P.wood1); // arms
+  c.rect(22, 14 + b, 3, 7, P.wood1);
+  c.rect(7, 20 + b, 3, 2, P.steel1); // shackles
+  c.rect(22, 20 + b, 3, 2, P.steel1);
+  c.rect(12, 4 + b, 8, 8, P.wax1); // big bald head
+  c.hline(12, 4 + b, 8, P.wax2);
+  c.set(14, 7 + b, P.ink); // eyes
+  c.set(17, 7 + b, P.ink);
+  c.rect(12, 9 + b, 8, 4, P.dark2); // beard
+  if (mouth) c.rect(15, 10 + b, 2, 1, P.blood1);
+  c.outline(P.ink);
+}
+
+function drawMaudlin(c: Img, { breath, mouth }: NpcPose) {
+  const b = breath;
+  c.ellipse(16, 27, 5, 1.5, withAlpha(P.ink, 90));
+  c.rect(11, 12 + b, 10, 16 - b, P.stone2); // grey habit to the ground
+  c.vline(11, 13 + b, 14, P.stone3);
+  c.vline(20, 13 + b, 15, P.stone1);
+  c.hline(12, 18 + b, 8, P.stone1); // cord belt
+  c.rect(13, 16 + b, 6, 3, P.stone3); // hands folded
+  c.rect(15, 13 + b, 2, 4, P.wax2); // a candle in her hands
+  c.set(15, 12 + b, P.flame2);
+  c.rect(11, 4 + b, 10, 9, P.stone1); // veil
+  c.rect(12, 5 + b, 8, 7, P.wax2); // wimple
+  c.rect(13, 6 + b, 6, 5, P.wax1); // face
+  c.set(14, 8 + b, P.ink);
+  c.set(17, 8 + b, P.ink);
+  if (mouth) c.set(15, 10 + b, P.blood1);
+  c.outline(P.ink);
+}
+
+function drawPip(c: Img, { breath, mouth }: NpcPose) {
+  const b = breath;
+  c.ellipse(16, 27, 4, 1.2, withAlpha(P.ink, 90));
+  c.rect(13, 23, 2, 5, P.dark2);
+  c.rect(17, 23, 2, 5, P.dark2);
+  c.rect(12, 16 + b, 8, 8 - b, P.teal2); // small cloak
+  c.hline(12, 23, 8, P.teal1);
+  c.rect(13, 10 + b, 6, 6, P.wax1); // face
+  c.rect(12, 9 + b, 8, 2, P.wood1); // messy hair
+  c.set(12, 11 + b, P.wood1);
+  c.set(14, 12 + b, P.ink);
+  c.set(17, 12 + b, P.ink);
+  if (mouth) c.set(15, 14 + b, P.blood1);
+  c.rect(19, 18 + b, 2, 3, P.wax2); // a candle stub
+  c.set(19, 17 + b, P.flame1);
+  c.outline(P.ink);
+}
+
+/** Head-and-shoulders portraits for the dialogue box, drawn at double detail. */
+function drawPortrait(c: Img, who: 'oskar' | 'maudlin' | 'pip') {
+  c.rect(0, 0, 32, 32, P.dark1);
+  if (who === 'oskar') {
+    c.rect(4, 22, 24, 10, P.wood1);
+    c.hline(4, 22, 24, P.wood2);
+    c.rect(8, 4, 16, 17, P.wax1);
+    c.hline(8, 4, 16, P.wax2);
+    c.rect(10, 9, 3, 2, P.ink);
+    c.rect(19, 9, 3, 2, P.ink);
+    c.hline(9, 7, 5, P.wood1); // heavy brows
+    c.hline(18, 7, 5, P.wood1);
+    c.rect(8, 14, 16, 9, P.dark2); // beard
+    c.rect(13, 16, 6, 2, P.blood1);
+    c.set(15, 12, P.stone3); // nose
+    c.set(16, 12, P.stone3);
+  } else if (who === 'maudlin') {
+    c.rect(4, 22, 24, 10, P.stone2);
+    c.rect(6, 2, 20, 22, P.stone1); // veil
+    c.rect(8, 4, 16, 18, P.wax2); // wimple
+    c.rect(10, 7, 12, 13, P.wax1); // face
+    c.rect(12, 11, 2, 2, P.ink);
+    c.rect(18, 11, 2, 2, P.ink);
+    c.hline(11, 10, 3, P.stone3);
+    c.hline(18, 10, 3, P.stone3);
+    c.hline(14, 17, 4, P.blood1);
+    c.vline(10, 8, 12, P.stone4); // lined cheeks: tired
+    c.vline(21, 8, 12, P.stone4);
+  } else {
+    c.rect(7, 22, 18, 10, P.teal2);
+    c.rect(9, 7, 14, 15, P.wax1);
+    c.rect(8, 4, 16, 5, P.wood1); // hair
+    c.rect(8, 9, 2, 4, P.wood1);
+    c.rect(22, 9, 2, 3, P.wood1);
+    c.rect(11, 12, 2, 3, P.ink); // big eyes
+    c.rect(19, 12, 2, 3, P.ink);
+    c.set(11, 12, P.wax2);
+    c.set(19, 12, P.wax2);
+    c.hline(15, 18, 2, P.blood1);
+  }
+  // frame
+  c.hline(0, 0, 32, P.stone3);
+  c.hline(0, 31, 32, P.stone3);
+  c.vline(0, 0, 32, P.stone3);
+  c.vline(31, 0, 32, P.stone3);
+}
+
+function genNpcs() {
+  const poses: NpcPose[] = [
+    { breath: 0, mouth: false },
+    { breath: 1, mouth: false },
+    { breath: 0, mouth: true },
+    { breath: 0, mouth: false },
+  ];
+  const draws = { oskar: drawOskar, maudlin: drawMaudlin, pip: drawPip } as const;
+  for (const [name, draw] of Object.entries(draws)) {
+    const img = new Img(32 * poses.length, 32);
+    poses.forEach((pose, i) => {
+      const c = new Img(32, 32);
+      draw(c, pose);
+      img.blit(c, i * 32, 0);
+    });
+    sheet(`npc_${name}`, img, { cell: [32, 32], pivot: [16, 28], layer: 'single' });
+  }
+  const who = ['oskar', 'maudlin', 'pip'] as const;
+  const portraits = new Img(32 * who.length, 32);
+  who.forEach((w, i) => {
+    const c = new Img(32, 32);
+    drawPortrait(c, w);
+    portraits.blit(c, i * 32, 0);
+  });
+  sheet('portraits', portraits, { cell: [32, 32], pivot: [0, 0], layer: 'ui' });
+}
+
 // ---------------------------------------------------------------- chest (20x18 cells, pivot = ground centre)
 // Frames: 0 closed, 1-3 opening (lid rising, light spilling out), 4 open and empty.
 function genChest() {
@@ -2350,5 +2487,6 @@ genRoadTiles();
 genRoadDecor();
 genHubDecor();
 genChest();
+genNpcs();
 genFont();
 console.log(`gen-art: wrote ${written} file(s), skipped ${skipped} existing${skipped && !FORCE ? ' (use --force to overwrite)' : ''}`);

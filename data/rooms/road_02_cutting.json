@@ -31,6 +31,12 @@
       "facing": "W"
     },
     {
+      "type": "item",
+      "id": "road_cage_key",
+      "item": "cage_key",
+      "at": [6, 5]
+    },
+    {
       "type": "decor",
       "kind": "guard_dead",
       "at": [5, 6],

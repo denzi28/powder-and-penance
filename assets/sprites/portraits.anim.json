@@ -1,0 +1,12 @@
+{
+  "image": "portraits.png",
+  "cell": [
+    32,
+    32
+  ],
+  "pivot": [
+    0,
+    0
+  ],
+  "layer": "ui"
+}

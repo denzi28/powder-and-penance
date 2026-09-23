@@ -53,7 +53,9 @@ Target: **~2 h** first playthrough (2 h 15 min with the optional Powder Vault). 
 | `exit` entity: walk into it to change area (fade out, arrive at a named `spawn`, fade in) | road_05 ✅ |
 | Area name banner on entering an area | road_05 ✅ |
 | Keyed doors (`requires`: a key item): Toll Key ✅, the two Seals later | hub_01 ✅ |
-| Dialogue, NPCs, cutscenes | Story systems milestone (after the road and hub are built) |
+| Dialogue, NPCs, cutscenes (see STORY.md: "Writing dialogue and cutscenes") | ✅ road and hub |
+| Slain enemies stay dead until you rest or die (`slain:` flags) | ✅ |
+| Minimap and large map (M) | ✅ |
 | Slow floors (wax pools) | mire_01 |
 | Secret breakable walls | works_03 |
 | Lift (a one-way shortcut that moves between areas) | works_04 |

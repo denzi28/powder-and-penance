@@ -111,7 +111,14 @@
     {
       "type": "cutscene",
       "id": "abbey_view",
-      "at": [19, 6]
+      "script": "abbey_view",
+      "at": [19, 5],
+      "size": [2, 3]
+    },
+    {
+      "type": "point",
+      "id": "hill_top",
+      "at": [10, 2]
     },
     {
       "type": "exit",

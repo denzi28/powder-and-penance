@@ -5,6 +5,7 @@ import { hexToInt } from '../ui/colors';
 import { MenuRenderer, wrap } from '../ui/MenuRenderer';
 import { TrailBar } from '../ui/TrailBar';
 import { MapView } from '../ui/MapView';
+import { DialogueBox } from '../ui/DialogueBox';
 import type { GameScene } from './GameScene';
 
 export class UIScene extends Phaser.Scene {
@@ -30,6 +31,7 @@ export class UIScene extends Phaser.Scene {
   private toastPanel!: Phaser.GameObjects.Rectangle;
   private areaText!: Phaser.GameObjects.BitmapText;
   private mapView!: MapView;
+  private dialogueBox!: DialogueBox;
   private menuUi!: MenuRenderer;
   private hpTrail!: TrailBar;
   private vignette!: Phaser.GameObjects.Graphics;
@@ -68,6 +70,7 @@ export class UIScene extends Phaser.Scene {
     this.toastPanel = this.add.rectangle(0, 0, 10, 10, hexToInt(DATA.palette.ink), 0.7).setOrigin(0, 0).setDepth(14);
     this.areaText = this.add.bitmapText(0, 0, 'pixel', '').setTint(hexToInt(DATA.palette.wax2)).setDepth(16);
     this.mapView = new MapView(this);
+    this.dialogueBox = new DialogueBox(this);
     this.menuUi = new MenuRenderer(this, 16);
     this.hpTrail = new TrailBar(this.gs.player.hp);
     this.vignette = this.add.graphics().setDepth(12);
@@ -141,6 +144,7 @@ export class UIScene extends Phaser.Scene {
     this.drawToast();
     this.drawAreaBanner();
     this.mapView.update(this.gs, dt);
+    this.dialogueBox.update(this.gs, dt);
     this.menuUi.draw(this.gs.menu);
     this.drawDeath();
   }
@@ -306,7 +310,7 @@ export class UIScene extends Phaser.Scene {
 
   private drawPrompt() {
     const gs = this.gs;
-    const target = gs.player.dead ? null : gs.nearestInteractable();
+    const target = gs.player.dead || gs.story.active || gs.mapOpen ? null : gs.nearestInteractable();
     this.prompt.setVisible(!!target);
     if (!target) return;
     const key = gs.controls.device === 'pad' ? 'A' : 'E';
@@ -339,7 +343,7 @@ export class UIScene extends Phaser.Scene {
     } else if (gs.respawnT >= 0) {
       veil = 1 - gs.respawnT / d.fadeBackTicks;
     }
-    this.veil.setAlpha(veil);
+    this.veil.setAlpha(Math.max(veil, gs.story.fadeAlpha));
     this.deathText.setText(d.text).setAlpha(text);
     const w = this.deathText.width;
     this.deathText.setPosition(Math.round((DATA.game.width - w) / 2), Math.round(DATA.game.height / 2 - 12));

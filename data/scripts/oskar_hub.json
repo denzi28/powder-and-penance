@@ -1,0 +1,21 @@
+{
+  "id": "oskar_hub",
+  "steps": [
+    {
+      "if": "!oskar_thanked",
+      "then": [
+        { "say": "You made it! Told you I'd be here. Look at this: a real stall. Well. A table with a roof.", "who": "oskar" },
+        { "say": "I owe you. When I've got stock worth selling, you get first pick. Powder, shot, the good stuff.", "who": "oskar" },
+        { "set": "oskar_thanked" }
+      ],
+      "else": [{ "say": "My favourite customer. My only customer, but still.", "who": "oskar" }]
+    },
+    {
+      "menu": [
+        { "text": "What do you sell?", "do": [{ "say": "Nothing yet. My real stock is hidden where the Order will never look. When I can reach it, you'll be the first to know.", "who": "oskar" }] },
+        { "text": "How did you end up on that wagon?", "do": [{ "say": "Sold powder to the wrong priest. Or the right priest, and he got caught. Either way the Order needed a penitent, and I was handy.", "who": "oskar" }] },
+        { "text": "Leave", "end": true, "do": [{ "say": "Mind the Hill Stair. Things come down it after dark.", "who": "oskar" }] }
+      ]
+    }
+  ]
+}

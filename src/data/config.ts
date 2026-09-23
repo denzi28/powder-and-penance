@@ -61,6 +61,8 @@ function loadAll(src: Record<string, unknown>) {
     rooms: dir(S.RoomData, 'rooms'),
     areas: one(S.Areas, 'areas'),
     decor: one(S.DecorTable, 'decor'),
+    npcs: one(S.Npcs, 'npcs'),
+    scripts: dir(S.ScriptDef, 'scripts'),
   };
 
   if (!errors.length) {
@@ -117,6 +119,7 @@ function loadAll(src: Record<string, unknown>) {
           errors.push(`data/rooms/${r.id}.json: shield_rack has unknown shield "${String(en.shield)}"`);
       }
     }
+    errors.push(...checkStory(data));
     if (!data.rooms[data.game.startRoom])
       errors.push(`data/config/game.json: startRoom "${data.game.startRoom}" has no file in data/rooms`);
   }
@@ -124,6 +127,48 @@ function loadAll(src: Record<string, unknown>) {
 }
 
 export type GameData = Extract<ReturnType<typeof loadAll>, { ok: true }>['data'];
+
+/** Story references: NPC placements, cutscene triggers and everything scripts point at. */
+function checkStory(data: {
+  rooms: Record<string, S.RoomData>;
+  npcs: { npcs: Record<string, S.NpcDef> };
+  scripts: Record<string, S.ScriptDef>;
+  items: Record<string, unknown>;
+  sfx: { presets: Record<string, unknown> };
+}): string[] {
+  const errors: string[] = [];
+  const npcPlacements = new Set<string>();
+  const points = new Set<string>();
+  for (const r of Object.values(data.rooms))
+    for (const en of r.entities) {
+      if (en.type === 'npc') {
+        if (!en.id) errors.push(`data/rooms/${r.id}.json: npc needs an "id"`);
+        else npcPlacements.add(en.id);
+        if (!data.npcs.npcs[String(en.npc)]) errors.push(`data/rooms/${r.id}.json: npc "${en.id}" has unknown character "${String(en.npc)}"`);
+        if (en.talk !== undefined && !data.scripts[String(en.talk)])
+          errors.push(`data/rooms/${r.id}.json: npc "${en.id}" talks with unknown script "${String(en.talk)}"`);
+      }
+      if (en.type === 'cutscene' && !data.scripts[String(en.script)])
+        errors.push(`data/rooms/${r.id}.json: cutscene "${en.id}" has unknown script "${String(en.script)}"`);
+      if (en.type === 'point' && en.id) points.add(en.id);
+    }
+  const walk = (file: string, steps: S.Step[]) => {
+    for (const s of steps) {
+      if ('say' in s && s.who && !data.npcs.npcs[s.who]) errors.push(`${file}: unknown speaker "${s.who}"`);
+      if ('give' in s && !data.items[s.give]) errors.push(`${file}: gives unknown item "${s.give}"`);
+      if ('sfx' in s && !data.sfx.presets[s.sfx]) errors.push(`${file}: unknown sound "${s.sfx}"`);
+      if ('camera' in s) {
+        const [kind, id] = s.camera.split(/:(.*)/);
+        if (kind === 'npc' && !npcPlacements.has(id)) errors.push(`${file}: camera target "${s.camera}": no npc placement "${id}"`);
+        if (kind === 'point' && !points.has(id)) errors.push(`${file}: camera target "${s.camera}": no point "${id}"`);
+      }
+      if ('menu' in s) for (const o of s.menu) walk(file, o.do ?? []);
+      if ('if' in s) walk(file, [...s.then, ...(s.else ?? [])]);
+    }
+  };
+  for (const sc of Object.values(data.scripts)) walk(`data/scripts/${sc.id}.json`, sc.steps);
+  return errors;
+}
 
 interface HotState {
   data: GameData;

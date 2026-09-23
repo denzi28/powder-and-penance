@@ -20,6 +20,8 @@ import { Doors } from '../world/Doors';
 import { Props } from '../world/Props';
 import { Decor } from '../world/Decor';
 import { markObstacles } from '../world/Obstacles';
+import { Npcs } from '../story/Npcs';
+import { Story } from '../story/Story';
 import { Exits, findSpawn, type Exit } from '../world/Exits';
 import { LootDrops, rollLoot, type LootDrop } from '../world/LootDrops';
 import { Pathfinder } from '../world/Pathfinder';
@@ -84,6 +86,9 @@ export class GameScene extends Phaser.Scene {
   doors!: Doors;
   props!: Props;
   decor!: Decor;
+  npcs!: Npcs;
+  /** Dialogue and cutscenes (data/scripts): pauses the world while a script runs. */
+  story = new Story(this);
   exits = new Exits();
   loot!: LootDrops;
   marker!: DeathMarker;
@@ -183,6 +188,8 @@ export class GameScene extends Phaser.Scene {
     this.doors = new Doors(this.lib);
     this.props = new Props(this.lib);
     this.decor = new Decor(this.lib);
+    this.npcs = new Npcs(this.lib);
+    this.story = new Story(this);
     this.loot = new LootDrops(this.lib);
     this.marker = new DeathMarker(this.lib);
     const spawn = this.respawnPoint();
@@ -241,6 +248,13 @@ export class GameScene extends Phaser.Scene {
       }
       return;
     }
+    if (this.story.active) {
+      // A conversation or cutscene: the script drives the dialogue box, camera and fades; the world waits.
+      this.story.tick();
+      if (this.toast && ++this.toast.t > this.toast.life) this.toast = null;
+      if (this.areaBanner && ++this.areaBanner.t > DATA.hud.areaBanner.ticks) this.areaBanner = null;
+      return;
+    }
     if (this.controls.pressed('map') && !this.menu && !this.player.dead && !this.shrineSeq && !this.travel) {
       this.mapOpen = true;
       return;
@@ -273,6 +287,7 @@ export class GameScene extends Phaser.Scene {
     this.tryRecoverMarker();
     this.markSeen();
     this.tickTravel();
+    if (!this.travel && !this.player.dead && !this.shrineSeq) this.story.checkTriggers();
     if (!this.player.dead) for (const d of this.loot.tick(this.player.x, this.player.y)) this.collectLoot(d);
 
     for (const e of this.enemies.filter(en => en.remove)) this.removeEnemy(e);
@@ -338,6 +353,7 @@ export class GameScene extends Phaser.Scene {
         if (d >= min || d < 0.001) continue;
         a.moveBy((dx / d) * (min - d), (dy / d) * (min - d));
       }
+    for (const a of list) this.npcs.pushOut(a);
   }
 
   // ------------------------------------------------------------------ menus, toasts, saving
@@ -431,6 +447,7 @@ export class GameScene extends Phaser.Scene {
   restoreWorld() {
     this.player.refill();
     this.player.poise.reset();
+    for (const f of [...this.flags]) if (f.startsWith('slain:')) this.flags.delete(f); // every enemy returns
     this.resetEnemies();
     this.props.build(this.ctxObj, this.rooms); // props respawn; their loot flags don't
     this.loot.clear();
@@ -487,6 +504,8 @@ export class GameScene extends Phaser.Scene {
     });
     this.bus.on('died', e => {
       if (e.actor instanceof Enemy) {
+        // Slain enemies stay dead (across areas and reloads) until the player rests or dies.
+        if (e.actor.spawnId) this.flags.add(`slain:${e.actor.spawnId}`);
         const gain = e.actor.def.tallow;
         if (gain > 0) {
           this.player.tallow += gain;
@@ -538,13 +557,17 @@ export class GameScene extends Phaser.Scene {
     this.spawnRoomEnemies();
   }
 
+  /** Placed enemies, except those slain since the last rest ("slain:<room>#<index>" flags). */
   private spawnRoomEnemies() {
     for (const r of this.rooms)
-      for (const en of r.entities) {
-        if (en.type !== 'enemy') continue;
+      r.entities.forEach((en, i) => {
+        if (en.type !== 'enemy') return;
+        const spawnId = `${r.id}#${i}`;
+        if (this.flags.has(`slain:${spawnId}`)) return;
         const facing = (DIR_ANGLE[(en.facing as Dir8) ?? 'S'] ?? 90) * (Math.PI / 180);
-        this.spawnEnemy(String(en.kind), (r.origin[0] + en.at[0]) * TILE + TILE / 2, (r.origin[1] + en.at[1]) * TILE + TILE - 2, facing);
-      }
+        const e = this.spawnEnemy(String(en.kind), (r.origin[0] + en.at[0]) * TILE + TILE / 2, (r.origin[1] + en.at[1]) * TILE + TILE - 2, facing);
+        if (e) e.spawnId = spawnId;
+      });
   }
 
   weaponTip(a: Actor): { x: number; y: number } {
@@ -555,7 +578,7 @@ export class GameScene extends Phaser.Scene {
   // ------------------------------------------------------------------ rendering
   update(_time: number, delta: number) {
     let alpha = this.loop.frame(delta);
-    if (this.hitstop > 0 || this.menu) alpha = 1; // hold still instead of interpolating
+    if (this.hitstop > 0 || this.menu || this.mapOpen || this.story.active) alpha = 1; // hold still instead of interpolating
     const fxDelta = delta * (this.loop.frozen ? 0 : this.loop.timeScale);
     this.fx.update(fxDelta);
     this.particles.update(fxDelta);
@@ -570,7 +593,12 @@ export class GameScene extends Phaser.Scene {
     this.props.render(alpha);
     this.loot.render();
     this.projectileView.render(this.projectiles.list, alpha);
-    this.cam.apply(this.cameras.main, feet.x, feet.y, alpha, this.roomBounds(this.player.x, this.player.y), delta);
+    this.npcs.update(delta, this.player.x);
+    // A script can point the camera elsewhere (cutscenes); otherwise it follows the player.
+    const focus = this.story.cameraPoint;
+    const camX = focus ? Math.round(focus.x) : feet.x;
+    const camY = focus ? Math.round(focus.y) : feet.y;
+    this.cam.apply(this.cameras.main, camX, camY, alpha, this.roomBounds(focus ? focus.x : this.player.x, focus ? focus.y : this.player.y), delta);
     this.enemyBars.draw(this.enemyViews.values(), fxDelta);
     this.debug.draw(this, feet.x, feet.y);
   }
@@ -678,6 +706,7 @@ export class GameScene extends Phaser.Scene {
     this.doors.build(this.rooms, this.grid, id => this.flags.has(`door:${id}`));
     this.props.build(this.ctxObj, this.rooms);
     this.exits.build(this.rooms);
+    this.npcs.build(this.rooms, this.flags);
     this.placeWeapons();
   }
 

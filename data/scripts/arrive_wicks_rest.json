@@ -1,0 +1,10 @@
+{
+  "id": "arrive_wicks_rest",
+  "skippable": true,
+  "steps": [
+    { "wait": 20 },
+    { "camera": "npc:maudlin", "ticks": 60 },
+    { "say": "Another one... Come up to the fire, pilgrim. Nobody here will hurt you.", "who": "maudlin" },
+    { "camera": "player", "ticks": 45 }
+  ]
+}

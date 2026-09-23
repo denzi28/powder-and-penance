@@ -182,6 +182,14 @@ Enemies hold their weapon like the player does: `handAnchors` in the body manife
 | `prop_crate`, `prop_pot`, `prop_candles` | 16×16 | 8,14 | none | Frame 0 = intact, frame 1 = rubble |
 | `loot` | 7×7 | 3,5 | none | Frame 0 = Tallow drop, frame 1 = powder drop |
 
+### NPCs (`npc_oskar`, `npc_maudlin`, `npc_pip`: 32×32, pivot 16,28)
+- Frames: 0–1 idle (breathing), 2–3 talking (mouth open, then closed).
+- Drawn facing the viewer; the game mirrors them to turn toward the player. Skin is pale wax (`wax1`).
+
+### `portraits` (32×32 per frame, ui)
+- Dialogue-box portraits: 0 Oskar, 1 Maudlin, 2 Pip.
+- `data/npcs.json` picks each character's frame.
+
 ### `chest` (20×18, pivot 10,16)
 Frames: 0 closed; 1–3 opening (lid rising, light spilling out); 4 open and empty. The game picks the frame from the opening tick (`OPEN_TICKS` in `src/world/Pickups.ts`). The item pops out at `POP_TICK`. Closed chests show an occasional `item_glint` twinkle on the lid.
 
