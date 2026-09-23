@@ -237,31 +237,59 @@
       "frames": [
         {
           "ticks": 1,
-          "phase": "windup"
+          "phase": "windup",
+          "hand": [
+            19,
+            -27
+          ]
         },
         {
           "ticks": 2,
-          "phase": "windup"
+          "phase": "windup",
+          "hand": [
+            22,
+            -36
+          ]
         },
         {
           "ticks": 2,
-          "phase": "windup"
+          "phase": "windup",
+          "hand": [
+            25,
+            -46
+          ]
         },
         {
           "ticks": 1,
-          "phase": "active"
+          "phase": "active",
+          "hand": [
+            28,
+            -56
+          ]
         },
         {
           "ticks": 1,
-          "phase": "active"
+          "phase": "active",
+          "hand": [
+            28,
+            -56
+          ]
         },
         {
           "ticks": 2,
-          "phase": "recovery"
+          "phase": "recovery",
+          "hand": [
+            22,
+            -36
+          ]
         },
         {
           "ticks": 1,
-          "phase": "recovery"
+          "phase": "recovery",
+          "hand": [
+            16,
+            -18
+          ]
         }
       ]
     },
@@ -277,16 +305,32 @@
       "loop": true,
       "frames": [
         {
-          "ticks": 10
+          "ticks": 10,
+          "hand": [
+            28,
+            -56
+          ]
         },
         {
-          "ticks": 10
+          "ticks": 10,
+          "hand": [
+            28,
+            -53
+          ]
         },
         {
-          "ticks": 10
+          "ticks": 10,
+          "hand": [
+            28,
+            -56
+          ]
         },
         {
-          "ticks": 10
+          "ticks": 10,
+          "hand": [
+            26,
+            -51
+          ]
         }
       ]
     },

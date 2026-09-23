@@ -1631,11 +1631,19 @@ function drawBones(c: Img, dir: Dir5, pose: BodyPose & { rise?: number; spread?:
     c.hline(32 + sh - w, y, w * 2 + 1, bone);
     if (i < 4) c.set(32 + sh - 2 + i, y + 1, i % 2 ? P.flame2 : P.ember);
   }
-  // Arms (spread = the summoning pose, arms raised wide)
+  // Arms (spread = the summoning pose, arms raised wide). Upper arm then forearm on both sides, mirrored
+  // around the spine (x = 32), so they're always the same length.
   const armY = 22 + b - o.spread * 6;
-  line(c, 25 + sh, 22 + b, 17 + sh + o.sway - o.spread * 4, armY + 10, bone);
-  line(c, 17 + sh + o.sway - o.spread * 4, armY + 10, 16 + sh + o.sway - o.spread * 6, armY + 18 - o.spread * 12, bone);
-  line(c, 39 + sh, 22 + b, 46 + sh + o.sway + o.spread * 4, armY + 10, bone);
+  const elbowOut = 15 + o.spread * 4; // shoulder-to-elbow reach from the spine
+  const handOut = 16 + o.spread * 6;
+  const handY = armY + 18 - o.spread * 12;
+  for (const side of [-1, 1]) {
+    const x0 = 32 + sh + side * 7; // shoulder
+    const ex = 32 + sh + o.sway + side * elbowOut;
+    const hx2 = 32 + sh + o.sway + side * handOut;
+    line(c, x0, 22 + b, ex, armY + 10, bone);
+    line(c, ex, armY + 10, hx2, handY, bone);
+  }
   if (o.spread > 0) {
     // wax gathering between her raised hands
     c.disc(32 + sh, armY - 4, 3 + o.spread, P.flame1);
@@ -1654,9 +1662,19 @@ function drawBones(c: Img, dir: Dir5, pose: BodyPose & { rise?: number; spread?:
     c.set(fx + 1, hy + 3, o.flinch ? P.wax2 : P.flame2);
   }
   for (const [x, y] of [[-4, -2], [0, -3], [4, -2]]) c.set(hx + x, hy + y, P.ember); // wick stumps, burnt out
-  const [ax, ay] = MOTHER_HAND[dir];
-  c.rect(ax - 1, ay - 1 + b, 3, 3, bone);
+  // The ladle hand sits at the end of the right forearm (where the game holds the ladle; see boneHand).
+  c.rect(32 + sh + o.sway + handOut - 1, handY - 1, 3, 3, bone);
 }
+
+/** Right-hand position relative to the pivot (32,58), matching drawBones' forearm, for per-frame `hand`. */
+function boneHand(p: BodyPose & { spread?: number }): [number, number] {
+  const s = p.spread ?? 0;
+  const armY = 22 + (p.bob ?? 0) - s * 6;
+  return [Math.round((p.sway ?? 0) + 16 + s * 6), Math.round(armY + 18 - s * 12 - 58)];
+}
+
+const SUMMON_POSES = [{ spread: 0.5 }, { spread: 1 }, { spread: 1.5, bob: -1 }, { spread: 2, bob: -2 }, { spread: 2, bob: -2 }, { spread: 1 }, {}];
+const CHANNEL_POSES = [{ spread: 2, bob: -2 }, { spread: 1.8, bob: -3, sway: 1 }, { spread: 2, bob: -2 }, { spread: 1.8, bob: -1, sway: -1 }];
 
 function bonesDeath(c: Img, f: number) {
   // The bones come apart and settle into a heap; the heap itself is what blows away as dust.
@@ -2064,16 +2082,17 @@ function genWorks() {
         loop: false,
       },
       {
+        // Raised-arm poses carry their own hand position, so the ladle goes up with the arm.
         name: 'summon',
-        frames: frames2(drawBones, [{ spread: 0.5 }, { spread: 1 }, { spread: 1.5, bob: -1 }, { spread: 2, bob: -2 }, { spread: 2, bob: -2 }, { spread: 1 }, {}]),
-        timing: P7,
+        frames: frames2(drawBones, SUMMON_POSES),
+        timing: P7.map((tm, i) => ({ ...tm, hand: boneHand(SUMMON_POSES[i]) })),
         loop: false,
       },
       {
         // Held while her summons live: arms raised, wax gathering between her hands, swaying slightly.
         name: 'channel',
-        frames: frames2(drawBones, [{ spread: 2, bob: -2 }, { spread: 1.8, bob: -3, sway: 1 }, { spread: 2, bob: -2 }, { spread: 1.8, bob: -1, sway: -1 }]),
-        timing: [{ ticks: 10 }, { ticks: 10 }, { ticks: 10 }, { ticks: 10 }],
+        frames: frames2(drawBones, CHANNEL_POSES),
+        timing: CHANNEL_POSES.map(p => ({ ticks: 10, hand: boneHand(p) })),
         loop: true,
       },
       {
