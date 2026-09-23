@@ -27,7 +27,8 @@ describe('The Guttering Abbey', () => {
   it('has 12+ rooms, two shrines and a one-way shortcut', () => {
     expect(rooms.length).toBeGreaterThanOrEqual(12);
     const shrines = rooms.flatMap(r => r.entities.filter(e => e.type === 'shrine'));
-    expect(shrines).toHaveLength(2);
+    expect(shrines.filter(s => s.when === undefined)).toHaveLength(2); // there from the start
+    expect(shrines.filter(s => s.when === 'boss:tollwarden')).toHaveLength(1); // appears after the Tollwarden
     const oneWay = rooms.flatMap(r => r.entities.filter(e => e.type === 'door' && e.opensFrom));
     expect(oneWay).toHaveLength(1);
   });

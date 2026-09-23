@@ -59,6 +59,8 @@ export class Player extends Actor {
   // Resources
   /** Carried currency: dropped where you die. */
   tallow = 0;
+  /** How solid the player is drawn (0..1): quick travel dissolves and re-forms them. */
+  fade = 1;
   phials = { charges: DATA.phial.startCharges, max: DATA.phial.startCharges, level: 0 };
   /** Set once the current drink's heal has landed (a hit before that wastes the charge). */
   healApplied = false;

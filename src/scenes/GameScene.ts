@@ -25,6 +25,7 @@ import { Story } from '../story/Story';
 import { BossArena } from '../game/BossArena';
 import { Levers } from '../world/Levers';
 import { check } from '../story/conditions';
+import { tickWarp, type WarpTarget } from '../game/Warp';
 import { Exits, findSpawn, type Exit } from '../world/Exits';
 import { LootDrops, rollLoot, type LootDrop } from '../world/LootDrops';
 import { Pathfinder } from '../world/Pathfinder';
@@ -133,6 +134,8 @@ export class GameScene extends Phaser.Scene {
   areaBanner: { name: string; t: number } | null = null;
   /** Large map open (M): the world is paused. */
   mapOpen = false;
+  /** Quick travel between shrines in progress (game/Warp): the world is paused. */
+  warp: { to: WarpTarget; t: number } | null = null;
 
   private ctxObj!: WorldCtx;
   private rooms: RoomData[] = [];
@@ -252,6 +255,10 @@ export class GameScene extends Phaser.Scene {
     this.tickCount++;
     this.controls.beginTick(this.simTick);
     this.tickDeath(); // fades keep running under menus
+    if (this.warp) {
+      tickWarp(this);
+      return;
+    }
     if (this.mapOpen) {
       // The large map pauses the world, like a menu.
       if (this.controls.pressed('map') || this.controls.pressed('back')) {
@@ -557,6 +564,25 @@ export class GameScene extends Phaser.Scene {
       p.tallow = 0;
       this.save();
     });
+    this.bus.on('summon', e => {
+      const caster = e.actor as Enemy;
+      const sm = e.strike.summon!;
+      caster.summons = caster.summons.filter(s => !s.dead);
+      for (let i = 0; i < sm.count; i++) {
+        const a = (i / sm.count) * Math.PI * 2 + caster.facing;
+        const x = caster.x + Math.cos(a) * sm.radius;
+        const y = caster.y + Math.sin(a) * sm.radius * 0.7;
+        // Keep them inside the walls: fall back to the caster's own spot.
+        const ok = !this.grid.isSolid(Math.floor(x / TILE), Math.floor(y / TILE));
+        const kid = this.spawnEnemy(sm.kind, ok ? x : caster.x, ok ? y : caster.y, a);
+        if (!kid) continue;
+        kid.aggro();
+        caster.summons.push(kid);
+        this.particles.burst(kid.x, kid.y, 4, -Math.PI / 2, Math.PI * 2, 10, 70, 'flame1', false);
+      }
+      if (sm.shield) caster.bubble = true;
+      this.bus.emit('sfx', { id: 'summon', x: caster.x, y: caster.y });
+    });
     this.bus.on('propBroken', e => {
       const p = e.prop;
       if (p.def.secretWall) {
@@ -583,6 +609,16 @@ export class GameScene extends Phaser.Scene {
     this.enemies.push(e);
     this.enemyViews.set(e, new EnemyView(this, e, this.lib));
     return e;
+  }
+
+  /** Shrines can depend on flags (a boss's shrine appears when it falls): rebuild after such a change. */
+  rebuildShrines() {
+    this.shrines.build(this.rooms, id => this.flags.has(`shrine:${id}`), this.flags);
+  }
+
+  /** Take an enemy out of the world immediately (no death), e.g. a boss replaced by its next phase. */
+  despawn(e: Enemy) {
+    this.removeEnemy(e);
   }
 
   private removeEnemy(e: Enemy) {
@@ -621,7 +657,7 @@ export class GameScene extends Phaser.Scene {
   // ------------------------------------------------------------------ rendering
   update(_time: number, delta: number) {
     let alpha = this.loop.frame(delta);
-    if (this.hitstop > 0 || this.menu || this.mapOpen || this.story.active) alpha = 1; // hold still instead of interpolating
+    if (this.hitstop > 0 || this.menu || this.mapOpen || this.story.active || this.warp) alpha = 1; // hold still instead of interpolating
     const fxDelta = delta * (this.loop.frozen ? 0 : this.loop.timeScale);
     this.fx.update(fxDelta);
     this.particles.update(fxDelta);
@@ -745,7 +781,7 @@ export class GameScene extends Phaser.Scene {
     this.decor.build(this.rooms);
     this.worldView.build(this.grid, DATA.areas.areas[this.area].tileset);
     this.racks.build(this.rooms);
-    this.shrines.build(this.rooms, id => this.flags.has(`shrine:${id}`));
+    this.shrines.build(this.rooms, id => this.flags.has(`shrine:${id}`), this.flags);
     this.pickups.build(this.rooms, id => this.flags.has(`item:${id}`));
     this.doors.build(this.rooms, this.grid, id => this.flags.has(`door:${id}`));
     this.props.build(this.ctxObj, this.rooms, this.brokenWall);

@@ -11,7 +11,14 @@
     "slamSfx": "bell_slam",
     "introLine": "(She hums a work song, and lifts her ladle.)",
     "roarSfx": "boss_roar",
-    "deathScript": "mother_tallow_death"
+    "next": {
+      "kind": "mother_bones",
+      "chest": { "id": "great_vat_igniter", "item": "igniter", "at": [12, 14] },
+      "prompt": "SET HER ALIGHT",
+      "hint": "Her wax still stirs, humming under the surface. It won't lie still until it burns.",
+      "fallenLine": "She sinks into her pool, but the wax keeps moving. Something has pushed up out of the floor.",
+      "igniteTicks": 80
+    }
   },
   "sprite": "mother_tallow",
   "weaponSprite": "mother_ladle",
@@ -32,7 +39,7 @@
   "staggerTicks": 50,
   "parriedTicks": 90,
   "deathTicks": 100,
-  "corpseTicks": 1800,
+  "corpseTicks": 999999,
   "blood": "wax1",
   "moves": [
     {

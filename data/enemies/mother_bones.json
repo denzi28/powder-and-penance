@@ -1,0 +1,166 @@
+{
+  "id": "mother_bones",
+  "name": "Mother Tallow, Unrendered",
+  "ai": "boss",
+  "boss": {
+    "title": "Mother Tallow, Unrendered",
+    "introAnim": "intro",
+    "introTicks": 115,
+    "slams": [80],
+    "slamShake": 0.5,
+    "slamSfx": "explosion",
+    "introLine": "(The wax burns away. What is left underneath gets up.)",
+    "roarSfx": "boss_roar",
+    "deathScript": "mother_tallow_death",
+    "dust": true
+  },
+  "sprite": "mother_bones",
+  "weaponSprite": "mother_ladle",
+  "weaponRestDeg": 50,
+  "hp": 800,
+  "poise": { "max": 240, "resetTicks": 240 },
+  "tallow": 2500,
+  "speed": 52,
+  "strafeSpeed": 34,
+  "accelTicks": 6,
+  "turnDegPerTick": 7,
+  "collider": { "w": 16, "h": 6 },
+  "hurtbox": { "w": 20, "h": 42, "offsetY": -22 },
+  "bodyRadius": 10,
+  "knockbackResist": 0.85,
+  "spacing": { "preferred": 56, "strafeTicks": [30, 70] },
+  "attackGapTicks": [6, 22],
+  "staggerTicks": 34,
+  "parriedTicks": 70,
+  "deathTicks": 90,
+  "corpseTicks": 60,
+  "blood": "wax2",
+  "moves": [
+    {
+      "id": "bone_sweep",
+      "range": [0, 62],
+      "weight": 3,
+      "cooldown": 40,
+      "strikes": [
+        {
+          "damage": 46, "poise": 55,
+          "windup": 16, "active": 6, "recovery": 22,
+          "trackDegPerTick": 6,
+          "hyperArmor": 60,
+          "telegraph": { "tick": 5, "kind": "normal" },
+          "hitbox": { "shape": "arc", "radius": 60, "halfAngle": 115 },
+          "originY": -14,
+          "sweep": { "fromDeg": -130, "toDeg": 130 },
+          "knockback": 200, "hitstop": 6, "shake": 0.35, "sfx": "swing_heavy", "anim": "sweep"
+        }
+      ]
+    },
+    {
+      "id": "triple_jab",
+      "range": [0, 70],
+      "weight": 3,
+      "cooldown": 70,
+      "strikes": [
+        {
+          "damage": 22, "poise": 20,
+          "windup": 12, "active": 4, "recovery": 4,
+          "trackDegPerTick": 8,
+          "hyperArmor": 40,
+          "telegraph": { "tick": 3, "kind": "normal" },
+          "lunge": { "distance": 16, "startTick": 9, "ticks": 4 },
+          "hitbox": { "shape": "arc", "radius": 50, "halfAngle": 30 },
+          "originY": -14,
+          "sweep": { "fromDeg": 0, "toDeg": 0, "reach": 14 },
+          "knockback": 50, "hitstop": 3, "shake": 0.1, "sfx": "swing", "anim": "jab"
+        },
+        {
+          "damage": 22, "poise": 20,
+          "windup": 8, "active": 4, "recovery": 4,
+          "trackDegPerTick": 8,
+          "hyperArmor": 40,
+          "lunge": { "distance": 16, "startTick": 5, "ticks": 4 },
+          "hitbox": { "shape": "arc", "radius": 50, "halfAngle": 30 },
+          "originY": -14,
+          "sweep": { "fromDeg": 0, "toDeg": 0, "reach": 14 },
+          "knockback": 50, "hitstop": 3, "shake": 0.1, "sfx": "swing", "anim": "jab"
+        },
+        {
+          "damage": 30, "poise": 40,
+          "windup": 10, "active": 5, "recovery": 30,
+          "trackDegPerTick": 6,
+          "hyperArmor": 40,
+          "lunge": { "distance": 24, "startTick": 7, "ticks": 5 },
+          "hitbox": { "shape": "arc", "radius": 54, "halfAngle": 34 },
+          "originY": -14,
+          "sweep": { "fromDeg": 0, "toDeg": 0, "reach": 18 },
+          "knockback": 160, "hitstop": 6, "shake": 0.25, "sfx": "swing_heavy", "anim": "jab"
+        }
+      ]
+    },
+    {
+      "id": "ember_spit",
+      "range": [60, 240],
+      "weight": 2,
+      "cooldown": 80,
+      "strikes": [
+        {
+          "damage": 0, "poise": 0,
+          "windup": 20, "active": 4, "recovery": 18,
+          "trackDegPerTick": 6,
+          "telegraph": { "tick": 6, "kind": "normal" },
+          "hitbox": { "shape": "circle", "radius": 1, "offset": 0 },
+          "originY": -30,
+          "sweep": { "fromDeg": -20, "toDeg": 20 },
+          "sfx": "throw", "anim": "spit",
+          "projectile": {
+            "sprite": "ember_glob",
+            "speed": 1, "range": 1,
+            "damage": 32, "poise": 30, "knockback": 130, "hitstop": 4, "shake": 0.25,
+            "radius": 4, "count": 5, "spreadDeg": 40,
+            "lob": { "flightTicks": 36, "arcHeight": 40, "blastRadius": 24, "sfx": "explosion" }
+          }
+        }
+      ]
+    },
+    {
+      "id": "leap_crush",
+      "range": [40, 130],
+      "weight": 2,
+      "cooldown": 110,
+      "strikes": [
+        {
+          "damage": 62, "poise": 90,
+          "windup": 30, "active": 6, "recovery": 40,
+          "trackDegPerTick": 5,
+          "hyperArmor": 90,
+          "unblockable": true,
+          "telegraph": { "tick": 10, "kind": "danger" },
+          "lunge": { "distance": 84, "startTick": 18, "ticks": 12 },
+          "hitbox": { "shape": "circle", "radius": 44, "offset": 10 },
+          "originY": -4,
+          "sweep": { "fromDeg": -150, "toDeg": 20 },
+          "knockback": 260, "hitstop": 10, "shake": 0.7, "sfx": "bell_slam", "anim": "leap"
+        }
+      ]
+    },
+    {
+      "id": "brood",
+      "range": [0, 400],
+      "weight": 2,
+      "cooldown": 420,
+      "strikes": [
+        {
+          "damage": 0, "poise": 0,
+          "windup": 36, "active": 6, "recovery": 30,
+          "trackDegPerTick": 0,
+          "hyperArmor": 200,
+          "telegraph": { "tick": 10, "kind": "danger" },
+          "hitbox": { "shape": "circle", "radius": 1, "offset": 0 },
+          "sweep": { "fromDeg": -90, "toDeg": -90 },
+          "summon": { "kind": "wax_slime", "count": 3, "radius": 46, "shield": true },
+          "sfx": "summon", "anim": "summon"
+        }
+      ]
+    }
+  ]
+}

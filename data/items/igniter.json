@@ -1,0 +1,6 @@
+{
+  "id": "igniter",
+  "name": "The Igniter",
+  "description": "A renderer's fire-striker on a brass chain. They used it to start the vats every morning.",
+  "effect": { "type": "quest", "note": "It sets wax burning. Use it on Mother Tallow's remains (E)." }
+}

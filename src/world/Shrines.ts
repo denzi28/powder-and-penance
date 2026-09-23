@@ -5,7 +5,8 @@ import { AnimPlayer } from '../anim/AnimPlayer';
 import { DEPTH } from '../render/depth';
 import { TILE } from './TileGrid';
 import type { SpriteLib } from '../anim/SpriteLib';
-import type { RoomData } from '../data/schemas';
+import type { Cond, RoomData } from '../data/schemas';
+import { check } from '../story/conditions';
 
 export interface Shrine {
   id: string;
@@ -25,12 +26,14 @@ export class Shrines {
 
   constructor(private lib: SpriteLib) {}
 
-  build(rooms: RoomData[], litIds: (id: string) => boolean) {
+  /** A shrine with a `when` condition (e.g. "boss:tollwarden") only exists once it holds. */
+  build(rooms: RoomData[], litIds: (id: string) => boolean, flags: ReadonlySet<string> = new Set()) {
     this.list.forEach(s => s.sprite.destroy());
     this.list = [];
     for (const r of rooms)
       for (const en of r.entities) {
         if (en.type !== 'shrine' || !en.id) continue;
+        if (!check(flags, en.when as Cond | undefined)) continue;
         const x = (r.origin[0] + en.at[0]) * TILE + TILE / 2;
         const y = (r.origin[1] + en.at[1]) * TILE + TILE - 2;
         const sprite = this.lib.sprite('shrine').setPosition(x, y).setDepth(DEPTH.actor(y));

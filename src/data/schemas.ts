@@ -348,6 +348,12 @@ export const StrikeDef = z.object({
   grab: z.object({ holdTicks: int.positive(), damage: num.min(0), throwKnockback: num.min(0) }).optional(),
   /** Hook: the knockback drags the target toward the attacker instead of pushing it away. */
   pull: z.boolean().default(false),
+  /**
+   * A spell instead of a swing: when the active frames start, `count` enemies of `kind` appear in a ring of
+   * `radius` px around the caster. With `shield`, the caster sits in an invulnerable bubble until they all
+   * die. (The caster won't cast again while any of them live.)
+   */
+  summon: z.object({ kind: z.string(), count: int.positive(), radius: pos.default(40), shield: z.boolean().default(false) }).optional(),
 });
 
 export const MoveDef = z.object({
@@ -383,6 +389,23 @@ export const EnemyDef = z.object({
       introLine: z.string().optional(),
       roarSfx: z.string().optional(),
       deathScript: z.string().optional(),
+      /**
+       * A second phase. When this one falls, a half-buried chest rises in the arena (`chest.at`, room
+       * tiles) holding `chest.item`; with that item (world flag "key:<item>") the player can use the
+       * remains (`prompt`) and `kind` rises in its place. Without it, `hint` says what's needed.
+       */
+      next: z
+        .object({
+          kind: z.string(),
+          chest: z.object({ id: z.string(), item: z.string(), at: Vec2 }),
+          prompt: z.string(),
+          hint: z.string(),
+          fallenLine: z.string(),
+          igniteTicks: int.positive().default(70),
+        })
+        .optional(),
+      /** On its final death the body crumbles away to dust instead of leaving a corpse. */
+      dust: z.boolean().default(false),
     })
     .optional(),
   /**

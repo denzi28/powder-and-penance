@@ -78,13 +78,14 @@ export class AttackRunner {
         o.moveBy((Math.cos(this.angle) * l.distance) / l.ticks, (Math.sin(this.angle) * l.distance) / l.ticks);
     }
     if (this.t === s.windup) {
-      if (s.projectile) {
+      if (s.summon) bus.emit('summon', { actor: o, strike: s });
+      else if (s.projectile) {
         const t = this.target ?? { x: o.x + Math.cos(this.angle) * 80, y: o.y + Math.sin(this.angle) * 80 };
         o.ctx.projectiles.spawn(o, o.x + Math.cos(this.angle) * 8, o.y + Math.sin(this.angle) * 4, this.angle, s.projectile, t);
         bus.emit('thrown', { actor: o });
       } else bus.emit('swing', { actor: o, strike: s, angle: this.angle, mirror: this.mirror });
     }
-    if (this.phase === 'active' && !this.visualOnly && !s.projectile)
+    if (this.phase === 'active' && !this.visualOnly && !s.projectile && !s.summon)
       o.ctx.combat.add({
         owner: o,
         strike: s,

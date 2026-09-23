@@ -1,10 +1,18 @@
 // Boss arenas. Room entity:
 //   { "type": "arena", "id": "<arena id>", "boss": "<enemy kind>", "seals": [[x, y], ...], "at": [0, 0] }
 // When the player walks into the arena's room (past its doorways), smoke rises in every seal tile (they
-// become walls), the boss performs its entrance, and its name and health bar appear. The seals lift when the
-// boss dies (for good: world flag "boss:<enemy kind>") or when the player dies (the fight resets with the world).
-// Dying inside puts your Tallow just outside the doorway you came through.
+// become walls), the boss performs its entrance, and its name and health bar appear.
+//
+// A boss with `boss.next` has a second phase. When the first falls, a half-buried chest rises in the arena
+// holding the item that wakes the next phase (the Igniter); using it on the remains burns them, and the
+// next phase rises there with its own entrance. The smoke stays up throughout.
+//
+// When the last phase falls: the boss stays dead for good (world flag "boss:<first kind>"), the smoke
+// lifts, shrines waiting on that flag appear, and its `deathScript` plays. A `dust` boss crumbles away.
+// If the player dies at any point, the smoke lifts and the whole fight resets with the world. Dying inside
+// puts your Tallow just outside the doorway you came through.
 import Phaser from 'phaser';
+import { DATA } from '../data/config';
 import { DEPTH } from '../render/depth';
 import { Cell, TILE } from '../world/TileGrid';
 import type { Enemy } from '../enemies/Enemy';
@@ -18,23 +26,34 @@ interface Arena {
   seals: { tx: number; ty: number; prev: Cell; sprite: Phaser.GameObjects.Sprite }[];
 }
 
-/** Ticks between the boss's death and its last words (let the death animation land). */
-const LAST_WORDS_DELAY = 30;
+type Stage =
+  | { name: 'fight'; boss: Enemy; deathT: number }
+  | { name: 'remains'; body: Enemy }
+  | { name: 'burning'; body: Enemy; t: number }
+  | { name: 'done' };
+
+/** Ticks between a boss's death and what happens next (let the death animation land). */
+const AFTER_DEATH = 30;
+/** How close you must stand to the remains to use them. */
+const REMAINS_REACH = 30;
 
 export class BossArena {
   /** The boss being fought (drives the boss bar), or null. */
   active: { enemy: Enemy; title: string } | null = null;
   private arenas: Arena[] = [];
   private current: Arena | null = null;
+  private stage: Stage | null = null;
   /** Where the player came in, for the Tallow rule. */
   private entry: { x: number; y: number } | null = null;
-  private deathT = -1;
   private smokeT = 0;
+  /** Created on first build: the scene's display list doesn't exist yet when the arena is constructed. */
+  private bubbles: Phaser.GameObjects.Graphics | null = null;
 
   constructor(private gs: GameScene) {}
 
   build(rooms: RoomData[]) {
     this.clear();
+    this.bubbles ??= this.gs.add.graphics();
     for (const r of rooms)
       for (const en of r.entities) {
         if (en.type !== 'arena' || !en.id) continue;
@@ -59,28 +78,32 @@ export class BossArena {
     return this.current ? this.entry : null;
   }
 
+  /** "Press E" on a fallen first phase: burn it (with the item) or be told what's needed. */
+  remainsInteraction(): { label: string; use: () => void } | null {
+    const st = this.stage;
+    if (st?.name !== 'remains') return null;
+    const p = this.gs.player;
+    if (Math.hypot(st.body.x - p.x, st.body.y - p.y) > REMAINS_REACH) return null;
+    const next = st.body.def.boss!.next!;
+    if (!this.gs.flags.has(`key:${next.chest.item}`))
+      return { label: 'HER REMAINS', use: () => this.gs.showToast('HER REMAINS', next.hint) };
+    return {
+      label: next.prompt,
+      use: () => {
+        this.stage = { name: 'burning', body: st.body, t: 0 };
+        this.gs.bus.emit('sfx', { id: 'ignite', x: st.body.x, y: st.body.y });
+      },
+    };
+  }
+
   tick() {
     const gs = this.gs;
-    if (this.current) {
-      const boss = this.active?.enemy;
+    if (this.current && this.stage) {
       if (gs.player.dead) {
-        // The fight resets with the world on respawn; lift the smoke now.
-        this.release();
+        this.release(); // the fight resets with the world on respawn; lift the smoke now
         return;
       }
-      if (boss?.dead) {
-        if (this.deathT < 0) {
-          this.deathT = 0;
-          gs.flags.add(`boss:${this.current.kind}`);
-          gs.markDirty();
-        }
-        if (++this.deathT === boss.def.deathTicks + LAST_WORDS_DELAY) {
-          this.release();
-          this.active = null;
-          const script = boss.def.boss?.deathScript;
-          if (script) gs.story.start(script);
-        }
-      }
+      this.tickStage(this.stage);
       return;
     }
     // Waiting: wake the boss when the player is inside the arena room, past its doorways.
@@ -100,10 +123,59 @@ export class BossArena {
     }
   }
 
+  private tickStage(st: Stage) {
+    const gs = this.gs;
+    if (st.name === 'fight') {
+      const b = st.boss;
+      if (!b.dead) return;
+      if (st.deathT === 0 && b.def.boss?.dust) this.crumble(b, 0);
+      st.deathT++;
+      if (b.def.boss?.dust && st.deathT % 12 === 0) this.crumble(b, st.deathT); // dust keeps drifting off
+      if (st.deathT < b.def.deathTicks + AFTER_DEATH) return;
+      const next = b.def.boss?.next;
+      if (next) {
+        // The first phase is down. A chest rises out of the floor with what wakes the next one.
+        this.active = null;
+        this.stage = { name: 'remains', body: b };
+        const [ox, oy] = this.current!.room.origin;
+        const tx = ox + next.chest.at[0];
+        const ty = oy + next.chest.at[1];
+        gs.pickups.addDynamic(next.chest.id, next.chest.item, tx, ty, gs.flags.has(`item:${next.chest.id}`), gs.grid);
+        gs.particles.burst(tx * TILE + 8, ty * TILE + 14, 2, -Math.PI / 2, 2.4, 20, 60, 'stone4', false);
+        gs.bus.emit('shake', { trauma: 0.3 });
+        gs.bus.emit('sfx', { id: 'door_open', x: tx * TILE, y: ty * TILE });
+        gs.showToast(b.def.boss!.title.toUpperCase(), next.fallenLine);
+        return;
+      }
+      this.finish(b);
+      return;
+    }
+    if (st.name === 'burning') {
+      // Fire climbs the remains, then the next phase gets up out of it.
+      st.t++;
+      const b = st.body;
+      if (st.t % 3 === 0) gs.particles.burst(b.x + (Math.random() - 0.5) * 20, b.y - 4, 6, -Math.PI / 2, 1.2, 3, 50, st.t % 2 ? 'flame2' : 'flame1', false);
+      if (st.t % 20 === 0) gs.bus.emit('shake', { trauma: 0.12 });
+      const next = b.def.boss!.next!;
+      if (st.t < next.igniteTicks) return;
+      const x = b.x;
+      const y = b.y;
+      gs.despawn(b);
+      const risen = gs.spawnEnemy(next.kind, x, y, -Math.PI / 2);
+      if (!risen) return;
+      gs.particles.burst(x, y, 6, -Math.PI / 2, Math.PI * 2, 30, 110, 'flame1', false);
+      gs.bus.emit('sfx', { id: 'explosion', x, y });
+      this.active = { enemy: risen, title: risen.def.boss?.title ?? risen.def.name };
+      this.stage = { name: 'fight', boss: risen, deathT: 0 };
+      risen.startIntro();
+      if (risen.def.boss?.introLine) gs.showToast(this.active.title.toUpperCase(), risen.def.boss.introLine);
+    }
+  }
+
   private begin(a: Arena, boss: Enemy) {
     const gs = this.gs;
     this.current = a;
-    this.deathT = -1;
+    this.stage = { name: 'fight', boss, deathT: 0 };
     // The Tallow rule: just outside the doorway nearest to where the player came in.
     const p = gs.player;
     const near = [...a.seals].sort((s1, s2) => Math.hypot(s1.tx * TILE - p.x, s1.ty * TILE - p.y) - Math.hypot(s2.tx * TILE - p.x, s2.ty * TILE - p.y))[0];
@@ -125,6 +197,35 @@ export class BossArena {
     if (line) gs.showToast(boss.def.boss!.title.toUpperCase(), line);
   }
 
+  /** The last phase fell: the boss is gone for good. */
+  private finish(b: Enemy) {
+    const gs = this.gs;
+    const a = this.current!;
+    gs.flags.add(`boss:${a.kind}`);
+    this.release();
+    this.active = null;
+    this.stage = null;
+    if (b.def.boss?.dust) gs.despawn(b); // nothing left but dust
+    // A shrine that waited for this victory kindles into being where the fight was.
+    const before = new Set(gs.shrines.list.map(s => s.id));
+    gs.rebuildShrines();
+    for (const s of gs.shrines.list.filter(s => !before.has(s.id))) {
+      gs.particles.burst(s.x, s.y, 4, -Math.PI / 2, Math.PI * 2, 24, 80, 'flame2', false);
+      gs.particles.burst(s.x, s.y, 20, -Math.PI / 2, 1.5, 14, 50, 'wax2', false);
+    }
+    gs.markDirty();
+    gs.save();
+    const script = b.def.boss?.deathScript;
+    if (script) gs.story.start(script);
+  }
+
+  /** A puff of bone dust off a crumbling body. */
+  private crumble(b: Enemy, t: number) {
+    const k = Math.min(1, t / (b.def.deathTicks + AFTER_DEATH));
+    const count = t === 0 ? 30 : 8;
+    this.gs.particles.burst(b.x, b.y - 20 * (1 - k), 14 * (1 - k) + 2, -Math.PI / 2, Math.PI * 1.2, count, 45, t % 24 ? 'stone4' : 'wax2', false);
+  }
+
   /** Lift the smoke (boss dead, or the player died). */
   private release() {
     const a = this.current;
@@ -134,14 +235,18 @@ export class BossArena {
       s.sprite.setVisible(false);
     }
     this.current = null;
-    if (this.gs.player.dead) this.active = null;
+    if (this.gs.player.dead) {
+      this.active = null;
+      this.stage = null;
+    }
   }
 
-  /** World reset (rest, respawn, area change): no fight in progress. */
+  /** World reset (rest, respawn, area change): no fight in progress, and no chest left mid-floor. */
   reset() {
     this.release();
     this.active = null;
-    this.deathT = -1;
+    this.stage = null;
+    this.gs.pickups.removeDynamic(this.gs.grid);
   }
 
   update(deltaMs: number) {
@@ -150,11 +255,23 @@ export class BossArena {
     for (const a of this.arenas)
       for (const s of a.seals)
         if (s.sprite.visible) s.sprite.setFrame(frame).setAlpha(Math.min(1, s.sprite.alpha + deltaMs / 400));
+    // Summoning bubbles: a pale, pulsing shell around any enemy sheltering in one.
+    if (!this.bubbles) return;
+    const g = this.bubbles.clear().setDepth(DEPTH.actor(99999));
+    const pal = DATA.palette;
+    for (const e of this.gs.enemies) {
+      if (!e.bubble || e.dead) continue;
+      const r = e.bodyRadius + 12 + Math.sin(this.smokeT / 160) * 1.5;
+      const cy = e.y - e.def.hurtbox.h / 2;
+      g.fillStyle(Phaser.Display.Color.HexStringToColor(pal.wax2).color, 0.12).fillEllipse(e.x, cy, r * 2, r * 2.4);
+      g.lineStyle(1, Phaser.Display.Color.HexStringToColor(pal.flame2).color, 0.7).strokeEllipse(e.x, cy, r * 2, r * 2.4);
+    }
   }
 
   /** Before building a new area: the old seals belong to the old map, so only forget them. */
   private clear() {
     this.current = null;
+    this.stage = null;
     for (const a of this.arenas) for (const s of a.seals) s.sprite.destroy();
     this.arenas = [];
     this.active = null;

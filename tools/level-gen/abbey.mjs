@@ -98,6 +98,7 @@ R('abbey_07_gatehouse', [50, 46], 25, 16)
   .gap(24, 6, 1, 3).gap(0, 9)
   .fill(8, 3, 1, 3, '#').fill(8, 10, 1, 3, '#')
   .enemy('tollwarden', 15, 8, 'E')
+  .add({ type: 'shrine', id: 'shrine_gatehouse', name: 'Gatehouse Wick', at: [18, 4], when: 'boss:tollwarden' })
   .add({ type: 'arena', id: 'gatehouse', boss: 'tollwarden', seals: [[24, 6], [24, 7], [24, 8], [0, 9]], at: [0, 0] })
   .add({ type: 'item', id: 'abbey_pouch', item: 'ammo_pouch', at: [3, 13] })
   .prop('pot', 2, 2).prop('pot', 22, 13);

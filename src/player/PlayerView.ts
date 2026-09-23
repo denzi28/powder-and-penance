@@ -82,6 +82,8 @@ export class PlayerView {
       tint(this.weapon.sprite, flash);
     }
     this.renderShield(x, y + torsoDy, depth, bf.flip, anchor, flash);
+    // Quick travel: the whole figure fades (legs, body, weapon, shield, shadow together).
+    for (const s of [this.shadow, this.legs, this.body, this.weapon.sprite, this.shield]) s?.setAlpha(p.fade);
     return { x: feetX, y: feetY };
   }
 

@@ -59,6 +59,10 @@ export class Enemy extends Actor {
   remove = false;
   /** Stable id of the room placement this enemy came from ("<room>#<index>"); null for debug spawns. */
   spawnId: string | null = null;
+  /** Enemies this one has summoned (strike.summon). */
+  summons: Enemy[] = [];
+  /** Sitting in a summoning bubble: invulnerable until every summon is dead. */
+  bubble = false;
   alpha = 1;
 
   constructor(ctx: WorldCtx, readonly kind: string, x: number, y: number, facing: number) {
@@ -160,6 +164,12 @@ export class Enemy extends Actor {
     }
 
     if (this.isFighter && !this.dead && this.sm.name !== 'critVictim') this.perceive();
+    if (this.bubble && !this.summons.some(s => !s.dead)) {
+      this.bubble = false; // the last summon fell: the bubble bursts
+      this.ctx.bus.emit('sfx', { id: 'break_pot', x: this.x, y: this.y });
+      this.ctx.bus.emit('shake', { trauma: 0.25 });
+    }
+    this.invulnerable = this.bubble && !this.dead;
     this.sm.tick();
     this.applyKnockback();
     this.hyperArmor = this.runner?.hyperArmor ?? 0;
@@ -389,7 +399,8 @@ export class Enemy extends Actor {
         d >= m.range[0] &&
         d <= m.range[1] &&
         !(this.cooldowns.get(m.id) ?? 0) &&
-        (!m.strikes[0].projectile || this.visible), // throwing needs a clear view of the target
+        (!m.strikes[0].projectile || this.visible) && // throwing needs a clear view of the target
+        (!m.strikes.some(s => s.summon) || !this.summons.some(s => !s.dead)), // one brood at a time
     );
     if (!options.length || !this.ctx.tokens.acquire(this)) return false;
     let roll = this.ctx.rng() * options.reduce((s, m) => s + m.weight, 0);

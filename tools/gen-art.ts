@@ -1602,6 +1602,77 @@ function motherDeath(c: Img, f: number) {
   drawMother(c, 'S', { rise, flinch: f < 2, hunch: f });
 }
 
+// --- The Bones of Mother Tallow (64x64): what is left when the wax burns away. A tall, stooped skeleton
+// with embers smouldering in the ribs and eye sockets, still holding the ladle.
+function drawBones(c: Img, dir: Dir5, pose: BodyPose & { rise?: number; spread?: number }) {
+  const o = { bob: 0, lean: 0, hunch: 0, step: -1, flinch: false, sway: 0, rise: 0, spread: 0, ...pose };
+  const b = o.bob + o.rise;
+  const { lx, ly, sh } = leanOffsets(dir, o.lean);
+  const bone = P.wax2;
+  const boneDark = P.stone4;
+  // Burnt floor and a few embers where she stands
+  c.ellipse(32, 58, 16, 3.5, P.dark1);
+  if (o.rise > 0) for (const x of [22, 30, 38, 44]) c.set(x, 56, P.flame1);
+  // Legs
+  const liftL = o.step === 1 ? 3 : 0;
+  const liftR = o.step === 3 ? 3 : 0;
+  if (44 + b < 57) {
+    c.vline(27, 44 + b, 13 - liftL - Math.max(0, b), bone);
+    c.vline(37, 44 + b, 13 - liftR - Math.max(0, b), bone);
+    c.hline(25, 57 - liftL, 4, boneDark);
+    c.hline(36, 57 - liftR, 4, boneDark);
+  }
+  // Pelvis, spine, ribs with embers inside
+  if (42 + b < 58) c.rect(26 + sh, 41 + b, 13, 3, boneDark);
+  c.vline(32 + sh, 20 + b, 22, bone);
+  for (let i = 0; i < 5; i++) {
+    const y = 23 + b + i * 3;
+    const w = 7 - Math.abs(i - 1);
+    c.hline(32 + sh - w, y, w * 2 + 1, bone);
+    if (i < 4) c.set(32 + sh - 2 + i, y + 1, i % 2 ? P.flame2 : P.ember);
+  }
+  // Arms (spread = the summoning pose, arms raised wide)
+  const armY = 22 + b - o.spread * 6;
+  line(c, 25 + sh, 22 + b, 17 + sh + o.sway - o.spread * 4, armY + 10, bone);
+  line(c, 17 + sh + o.sway - o.spread * 4, armY + 10, 16 + sh + o.sway - o.spread * 6, armY + 18 - o.spread * 12, bone);
+  line(c, 39 + sh, 22 + b, 46 + sh + o.sway + o.spread * 4, armY + 10, bone);
+  if (o.spread > 0) {
+    // wax gathering between her raised hands
+    c.disc(32 + sh, armY - 4, 3 + o.spread, P.flame1);
+    c.disc(32 + sh, armY - 4, 1 + o.spread, P.flame2);
+  }
+  // Skull
+  const hx = 32 + lx + (o.flinch ? -2 : 0);
+  const hy = 9 + b + o.hunch + ly;
+  c.ellipse(hx, hy + 4, 6, 6, bone);
+  c.rect(hx - 3, hy + 8, 7, 3, boneDark); // jaw
+  if (dir !== 'N' && dir !== 'NE') {
+    const fx = dir === 'S' ? hx : dir === 'SE' ? hx + 1 : hx + 3;
+    c.rect(fx - 3, hy + 3, 2, 2, P.ink);
+    c.rect(fx + 1, hy + 3, 2, 2, P.ink);
+    c.set(fx - 3, hy + 3, o.flinch ? P.wax2 : P.flame2); // ember eyes
+    c.set(fx + 1, hy + 3, o.flinch ? P.wax2 : P.flame2);
+  }
+  for (const [x, y] of [[-4, -2], [0, -3], [4, -2]]) c.set(hx + x, hy + y, P.ember); // wick stumps, burnt out
+  const [ax, ay] = MOTHER_HAND[dir];
+  c.rect(ax - 1, ay - 1 + b, 3, 3, bone);
+}
+
+function bonesDeath(c: Img, f: number) {
+  // The bones come apart and settle into a heap; the heap itself is what blows away as dust.
+  if (f === 0) {
+    drawBones(c, 'S', { flinch: true, hunch: 2, bob: 2 });
+    return;
+  }
+  const spread = f * 4;
+  for (const [x, y, len, dx] of [[20, 50, 10, 1], [34, 52, 12, -1], [26, 46, 8, 1], [40, 48, 9, 0], [30, 54, 14, 0]]) {
+    line(c, x - spread / 2, y + f, x + len * dx + spread / 2, y + f - (dx === 0 ? 0 : 3), P.wax2);
+  }
+  if (f < 4) c.ellipse(32, 50 + f, 5, 4, P.wax2); // the skull
+  if (f < 4) c.rect(30, 49 + f, 2, 2, P.ink);
+  c.ellipse(32, 57, 12 + f * 2, 2, P.stone4); // bone dust
+}
+
 function genWorks() {
   const T = 16;
   // ---- tileset: soot-black flagstones, iron grates, tallow spills, soot brick walls with iron tops
@@ -1960,7 +2031,97 @@ function genWorks() {
     MOTHER_HAND,
   );
 
+  rosterSheet(
+    'mother_bones',
+    64,
+    [32, 58],
+    7,
+    [
+      { name: 'idle', frames: frames2(drawBones, [{}, { bob: 1, sway: 1 }]), timing: [{ ticks: 14 }, { ticks: 14 }], loop: true },
+      { name: 'walk', frames: walk4(drawBones, f => ({ step: f, bob: f % 2 ? -1 : 0, lean: 1 })), timing: walkT(7), loop: true },
+      {
+        name: 'sweep',
+        frames: frames2(drawBones, [{ sway: -3, lean: -2 }, { sway: -4, lean: -3 }, { sway: -4, lean: -3, bob: 1 }, { sway: 4, lean: 4 }, { sway: 3, lean: 3 }, { sway: 1, lean: 1 }, {}]),
+        timing: P7,
+        loop: false,
+      },
+      {
+        name: 'jab',
+        frames: frames2(drawBones, [{ lean: -1 }, { lean: -3, hunch: 1 }, { lean: -3, hunch: 1 }, { lean: 5 }, { lean: 4 }, { lean: 2 }, {}]),
+        timing: P7,
+        loop: false,
+      },
+      {
+        name: 'spit',
+        frames: frames2(drawBones, [{ hunch: -1 }, { hunch: -2, lean: -2 }, { hunch: -3, lean: -2, bob: -1 }, { hunch: 2, lean: 3 }, { lean: 2 }, { lean: 1 }, {}]),
+        timing: P7,
+        loop: false,
+      },
+      {
+        name: 'leap',
+        frames: frames2(drawBones, [{ bob: 3, hunch: 2 }, { bob: 4, hunch: 3 }, { bob: -6, hunch: -2 }, { bob: 4, hunch: 3, lean: 3 }, { bob: 3, hunch: 2, lean: 2 }, { bob: 1 }, {}]),
+        timing: P7,
+        loop: false,
+      },
+      {
+        name: 'summon',
+        frames: frames2(drawBones, [{ spread: 0.5 }, { spread: 1 }, { spread: 1.5, bob: -1 }, { spread: 2, bob: -2 }, { spread: 2, bob: -2 }, { spread: 1 }, {}]),
+        timing: P7,
+        loop: false,
+      },
+      {
+        // Rising out of her own burning wax.
+        name: 'intro',
+        frames: frames2(drawBones, [{ rise: 30 }, { rise: 20 }, { rise: 12 }, { rise: 5 }, { rise: 0, hunch: 3 }, { rise: 0, spread: 1 }]),
+        timing: [{ ticks: 16 }, { ticks: 16 }, { ticks: 16 }, { ticks: 16 }, { ticks: 16 }, { ticks: 30 }],
+        loop: false,
+      },
+      { name: 'stagger', frames: frames2(drawBones, [{ lean: -2, flinch: true }, { lean: -1, bob: 1, flinch: true }, { bob: 1 }]), timing: staggerT, loop: false },
+    ],
+    [0, 1, 2, 3, 4].map(f => (c: Img) => bonesDeath(c, f)),
+    MOTHER_HAND,
+  );
+  // Wax slime: molten, glowing, summoned wax
+  const slimeDraw = (c: Img, d: Dir5, p: BodyPose) => {
+    drawCrawler(c, d, { ...p, size: 0.75 });
+    for (let y = 0; y < 32; y++)
+      for (let x = 0; x < 32; x++) {
+        const i = (y * 32 + x) * 4;
+        if (c.px[i + 3] === 0) continue;
+        // recolour the pale wax to molten orange
+        const [r, g] = [c.px[i], c.px[i + 1]];
+        if (r === P.wax1[0] && g === P.wax1[1]) c.set(x, y, P.flame1);
+        else if (r === P.wax2[0] && g === P.wax2[1]) c.set(x, y, P.flame2);
+      }
+  };
+  rosterSheet(
+    'wax_slime',
+    CELL,
+    PIVOT,
+    7,
+    [
+      { name: 'idle', frames: frames2(slimeDraw, [{}, { bob: 1 }]), timing: [{ ticks: 10 }, { ticks: 10 }], loop: true },
+      { name: 'walk', frames: walk4(slimeDraw, f => ({ bob: f % 2 ? 2 : 0, lean: f === 1 ? 1 : f === 3 ? -1 : 0 })), timing: walkT(6), loop: true },
+      {
+        name: 'engulf',
+        frames: frames2(slimeDraw, [{ bob: 2 }, { bob: 3 }, { bob: 4 }, { bob: -3, lean: 2 }, { bob: -2, lean: 2 }, { bob: 1 }, {}]),
+        timing: P7,
+        loop: false,
+      },
+      { name: 'stagger', frames: frames2(slimeDraw, [{ bob: 3, flinch: true }, { bob: 2, flinch: true }, { bob: 1 }]), timing: staggerT, loop: false },
+    ],
+    [0, 1, 2, 3, 4].map(f => (c: Img) => crawlerDeath(c, f, 0.75)),
+    null,
+  );
+
   // ---- weapons and projectiles
+  const ember = new Img(8, 8);
+  ember.disc(4, 4.5, 3, P.flame1);
+  ember.disc(4, 4, 1.5, P.flame2);
+  ember.set(4, 1, P.ember);
+  ember.outline(P.ink);
+  sheet('ember_glob', ember, { cell: [8, 8], pivot: [4, 4], layer: 'fx' });
+
   const hook = new Img(40, 9);
   for (let x = 1; x < 30; x += 3) hook.rect(x, 4, 2, 1, P.steel1); // chain
   hook.rect(30, 3, 3, 3, P.steel2);
@@ -2731,6 +2892,16 @@ function genChest() {
       }
     }
     c.outline(P.ink);
+    frames.push(c);
+  }
+  // Frames 5-9: the same five, half-buried: sunk 4 px, with a mound of broken floor over the bottom.
+  for (let f = 0; f < 5; f++) {
+    const c = new Img(W, H);
+    c.blit(frames[f], 0, 4);
+    for (let x = 0; x < W; x++) for (let y = 14; y < H; y++) c.set(x, y, null);
+    c.ellipse(10, 15, 10, 3, P.dark2);
+    c.ellipse(10, 14, 9, 2, P.stone2);
+    for (const x of [3, 8, 14, 17]) c.set(x, 13, P.stone3);
     frames.push(c);
   }
   const img = new Img(W * frames.length, H);

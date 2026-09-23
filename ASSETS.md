@@ -199,6 +199,11 @@ Enemies hold their weapon like the player does: `handAnchors` in the body manife
 
 | `mother_tallow` | 64×64 | 32,58 | `idle`, `walk`, `sweep`, `spit`, `crush`, `intro` (rises out of her vat's pool), `stagger`, `death` (sinks back into the wax) |
 | `mother_ladle` | 48×16 | 8,8 (grip) | tip (46,8) |
+| `mother_bones` | 64×64 | 32,58 | Phase 2. Animations: `idle`, `walk`, `sweep`, `jab`, `spit`, `leap`, `summon` (arms raised, wax gathering between the hands), `intro` (rising out of the fire), `stagger`, `death` (the bones come apart into a heap of dust) |
+| `wax_slime` | 32×32 | 16,28 | Summoned molten wax: the Vat Crawler drawing, smaller and recoloured orange |
+| `ember_glob` | 8×8 | 4,4 | Phase 2's burning lobbed globs |
+
+The `chest` sheet has 10 frames: 0–4 as below, and 5–9 the same chest half-buried (for chests that rise out of the floor mid-fight).
 
 Portrait frame 3 is the Tollwarden.
 

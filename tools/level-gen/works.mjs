@@ -152,6 +152,8 @@ R('works_10_great_vat', [52, 58], 24, 20)
   .paint(6, 6, 12, 9, '~')
   .decor('vat', 3, 3).decor('vat', 20, 3).decor('vat', 3, 17).decor('vat', 20, 17).decor('furnace', 12, 18)
   .enemy('mother_tallow', 12, 10, 'N')
+  // appears once she's gone for good
+  .add({ type: 'shrine', id: 'shrine_great_vat', name: 'Great Vat Wick', at: [12, 5], when: 'boss:mother_tallow' })
   .add({ type: 'arena', id: 'great_vat', boss: 'mother_tallow', seals: [[10, 0], [11, 0]], at: [0, 0] });
 
 // ---- write

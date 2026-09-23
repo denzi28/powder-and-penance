@@ -46,6 +46,8 @@ export interface GameEvents {
   blast: { x: number; y: number; radius: number; sfx: string };
   /** A thrown strike releases its projectile (throw sound). */
   thrown: { actor: Actor };
+  /** A summoning strike goes off: the scene spawns the summoned enemies around the caster. */
+  summon: { actor: Actor; strike: StrikeDef };
   /** Player caught by a grab / released from it. */
   grabbed: { by: Actor };
   propBroken: { prop: Prop };

@@ -7,6 +7,7 @@ import { TrailBar } from '../ui/TrailBar';
 import { MapView } from '../ui/MapView';
 import { DialogueBox } from '../ui/DialogueBox';
 import { BossBar } from '../ui/BossBar';
+import { warpVeil } from '../game/Warp';
 import type { GameScene } from './GameScene';
 
 export class UIScene extends Phaser.Scene {
@@ -314,7 +315,7 @@ export class UIScene extends Phaser.Scene {
 
   private drawPrompt() {
     const gs = this.gs;
-    const target = gs.player.dead || gs.story.active || gs.mapOpen ? null : gs.nearestInteractable();
+    const target = gs.player.dead || gs.story.active || gs.mapOpen || gs.warp ? null : gs.nearestInteractable();
     this.prompt.setVisible(!!target);
     if (!target) return;
     const key = gs.controls.device === 'pad' ? 'A' : 'E';
@@ -347,7 +348,7 @@ export class UIScene extends Phaser.Scene {
     } else if (gs.respawnT >= 0) {
       veil = 1 - gs.respawnT / d.fadeBackTicks;
     }
-    this.veil.setAlpha(Math.max(veil, gs.story.fadeAlpha));
+    this.veil.setAlpha(Math.max(veil, gs.story.fadeAlpha, warpVeil(gs)));
     this.deathText.setText(d.text).setAlpha(text);
     const w = this.deathText.width;
     this.deathText.setPosition(Math.round((DATA.game.width - w) / 2), Math.round(DATA.game.height / 2 - 12));

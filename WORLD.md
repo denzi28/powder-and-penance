@@ -61,6 +61,9 @@ Target: **~2 h** first playthrough (2 h 15 min with the optional Powder Vault). 
 | Secret breakable walls (prop with `secretWall`) | works_03 ✅ |
 | Lift: an `exit` with a `when` condition, opened by a `lever` entity | works_04 ✅ |
 | Hooks that pull (`pull` on a strike), enemies that split on death (`splitInto`), quest items | works ✅ |
+| Shrines with a `when` condition (a boss's shrine appears when it falls) | ✅ |
+| Quick travel between lit shrines (shrine menu, TRAVEL): dissolve into embers, fade, re-form | ✅ |
+| Multi-phase bosses (`boss.next`: half-buried chest, item, use the remains), summons with a shield bubble (`summon` strike), bosses that crumble to dust (`boss.dust`) | ✅ Mother Tallow |
 
 ---
 
@@ -126,7 +129,21 @@ All 10 rooms are built ✅ (`tools/level-gen/works.mjs`).
 | works_07 | **Foreman's Office** ✅ | **Foreman's Wick shrine**, the desk, **the Chandler's Ledger** (chest; Maudlin reacts to it). A door into the Hall that only opens from the office side (shortcut back to the shrine). |
 | works_08 | **Rendering Hall** ✅ | *Cutscene: the reveal.* Five vats, the robe racks. Renderer, two Crawlers, an Acolyte. |
 | works_09 | **Ember Flue** ✅ | Iron walkways over the furnace pit; two Hounds and a Renderer. Chest: Bitter Salt. |
-| works_10 | **The Great Vat** ✅ | **Boss: Mother Tallow.** She rises from her vat, humming. Lobbed wax, ladle sweeps, an unblockable crush. When she falls she sinks back into her vat; you receive the **Seal of Tallow**. |
+| works_10 | **The Great Vat** ✅ | **Boss: Mother Tallow, two phases.** See below. Afterwards, the **Great Vat Wick** appears. |
+
+**Mother Tallow**
+- **Phase 1:** she rises from her vat, humming. Lobbed wax, ladle sweeps, a double stir, an unblockable crush.
+- **When she falls:** she sinks into her pool, but the wax keeps moving, and a **half-buried chest** pushes up out of the floor holding **the Igniter**. Use it on her remains ("SET HER ALIGHT"); without it they only stir.
+- **Phase 2, "Mother Tallow, Unrendered":** the wax burns away and her **bones** get up out of the fire. Much faster and harder-hitting:
+  - a quick bone sweep
+  - a lunging triple jab
+  - five burning globs
+  - an unblockable **leap crush**
+  - **Brood:** she summons three **wax slimes** and sits in an invulnerable bubble until you kill them
+- **When the bones fall** they come apart and blow away as dust. Then the **Seal of Tallow**.
+- **If you die at any point** the whole fight resets. The Igniter stays yours.
+
+**After every boss**, a shrine appears in its arena: the **Gatehouse Wick** (Tollwarden) and the **Great Vat Wick** (Mother Tallow).
 
 ## The Waxmire (`mire`)
 The low ground where the Drip pools: a swamp of melted wax and drowned graves. **Wax pools slow you down.**

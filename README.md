@@ -87,7 +87,9 @@ Act 1 is being built room by room: the plan is in [WORLD.md](WORLD.md) and the s
   - A lift back up to the hub once you pull its lever.
   - A cracked wall to smash.
   - The Rendering Hall reveal.
-  - The boss, **Mother Tallow**, who drops the Seal of Tallow.
+  - The boss, **Mother Tallow**, in two phases. When she falls, open the chest that rises from the floor, set her remains alight with the Igniter, then beat what gets up. She drops the Seal of Tallow.
+- **A shrine appears after every boss.**
+- **Quick travel:** rest at any shrine and choose TRAVEL to go to any other lit shrine, in any area.
 - **Items come in chests** (press E). You keep control while the lid opens. The banner explains the effect in plain numbers (e.g. "phial drinks 3 -> 4"), with the flavour text below.
 - **The route is walkable end to end:** Penance Road, then Wick's Rest (the hub), then up the Hill Stair to the Abbey Porch. Walking into an area exit fades to the next area and shows its name.
 - The Toll Gate (east of the hub) needs the **Toll Key**, which the Tollwarden will drop. The Waxmire and Tallow Works exits say they aren't open yet.

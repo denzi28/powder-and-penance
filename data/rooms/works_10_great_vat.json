@@ -65,6 +65,13 @@
       "facing": "N"
     },
     {
+      "type": "shrine",
+      "id": "shrine_great_vat",
+      "name": "Great Vat Wick",
+      "at": [12, 5],
+      "when": "boss:mother_tallow"
+    },
+    {
       "type": "arena",
       "id": "great_vat",
       "boss": "mother_tallow",

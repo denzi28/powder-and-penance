@@ -72,6 +72,12 @@ function loadAll(src: Record<string, unknown>) {
       if (e.boss?.deathScript && !data.scripts[e.boss.deathScript])
         errors.push(`data/enemies/${e.id}.json: unknown deathScript "${e.boss.deathScript}"`);
       if (e.splitInto && !data.enemies[e.splitInto.kind]) errors.push(`data/enemies/${e.id}.json: splitInto unknown kind "${e.splitInto.kind}"`);
+      const next = e.boss?.next;
+      if (next && !data.enemies[next.kind]?.boss) errors.push(`data/enemies/${e.id}.json: next phase "${next.kind}" is not a boss`);
+      if (next && !data.items[next.chest.item]) errors.push(`data/enemies/${e.id}.json: next.chest has unknown item "${next.chest.item}"`);
+      for (const m of e.moves)
+        for (const s of m.strikes)
+          if (s.summon && !data.enemies[s.summon.kind]) errors.push(`data/enemies/${e.id}.json: move "${m.id}" summons unknown kind "${s.summon.kind}"`);
     }
     for (const r of Object.values(data.rooms))
       for (const en of r.entities)

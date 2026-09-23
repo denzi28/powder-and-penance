@@ -1,6 +1,8 @@
-// Kneeling at a Wick Shrine: kindle (first visit) or rest -> restore, respawn enemies, save, shrine menu.
+// Kneeling at a Wick Shrine: kindle (first visit) or rest -> restore, respawn enemies, save, shrine menu
+// (level up later; travel to any other lit shrine).
 import { DATA } from '../data/config';
 import { firstEnabled } from '../ui/Menu';
+import { beginWarp, travelTargets } from './Warp';
 import type { GameScene } from '../scenes/GameScene';
 import type { Shrine } from '../world/Shrines';
 
@@ -36,14 +38,43 @@ function rest(gs: GameScene, s: Shrine) {
   gs.restoreWorld();
   gs.save();
   gs.particles.burst(gs.player.x, gs.player.y, 12, -Math.PI / 2, 2.5, 12, 40, 'wax2', false);
+  shrineMenu(gs, s, 'Rested. Progress saved.');
+}
+
+function shrineMenu(gs: GameScene, s: Shrine, subtitle: string) {
   const leave = () => {
     gs.closeMenu();
     gs.player.sm.change('idle');
   };
+  const targets = travelTargets(gs, s.id);
   const items = [
-    { label: 'LEVEL UP', enabled: false, note: 'M7', action: () => {} },
-    { label: 'TRAVEL', enabled: false, note: 'later', action: () => {} },
+    { label: 'LEVEL UP', enabled: false, note: 'later', action: () => {} },
+    {
+      label: 'TRAVEL',
+      enabled: targets.length > 0,
+      note: targets.length ? undefined : 'no other lit shrine',
+      action: () => travelMenu(gs, s),
+    },
     { label: 'LEAVE', enabled: true, action: leave },
   ];
-  gs.menu = { title: s.name.toUpperCase(), subtitle: 'Rested. Progress saved.', items, index: firstEnabled(items), onBack: leave };
+  gs.menu = { title: s.name.toUpperCase(), subtitle, items, index: firstEnabled(items), onBack: leave };
+}
+
+/** Pick a lit shrine to travel to, grouped by area. */
+function travelMenu(gs: GameScene, s: Shrine) {
+  const back = () => shrineMenu(gs, s, 'Travel to another lit Wick.');
+  const targets = travelTargets(gs, s.id).sort((a, b) => a.area.localeCompare(b.area) || a.name.localeCompare(b.name));
+  const items = [
+    ...targets.map(t => ({
+      label: `${DATA.areas.areas[t.area].name.toUpperCase()}: ${t.name.toUpperCase()}`,
+      enabled: true,
+      action: () => {
+        gs.closeMenu();
+        gs.player.sm.change('idle');
+        beginWarp(gs, t);
+      },
+    })),
+    { label: 'BACK', enabled: true, action: back },
+  ];
+  gs.menu = { title: 'TRAVEL', subtitle: 'The flame knows the way to every Wick you have lit.', items, index: 0, onBack: back };
 }

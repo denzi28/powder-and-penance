@@ -29,6 +29,9 @@ export function nearestInteractable(gs: GameScene): Interactable | null {
       },
     };
 
+  const remains = gs.arena.remainsInteraction();
+  if (remains) return remains;
+
   const npc = gs.npcs.nearest(p.x, p.y);
   if (npc?.talk) {
     const talk = npc.talk;

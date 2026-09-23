@@ -34,6 +34,13 @@
       "facing": "E"
     },
     {
+      "type": "shrine",
+      "id": "shrine_gatehouse",
+      "name": "Gatehouse Wick",
+      "at": [18, 4],
+      "when": "boss:tollwarden"
+    },
+    {
       "type": "arena",
       "id": "gatehouse",
       "boss": "tollwarden",
