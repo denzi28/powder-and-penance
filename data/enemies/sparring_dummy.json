@@ -1,0 +1,39 @@
+{
+  "id": "sparring_dummy",
+  "name": "Sparring Post",
+  "ai": "rhythm",
+  "rhythmIntervalTicks": 110,
+  "immortal": true,
+  "sprite": "sparring",
+  "weaponSprite": "stick",
+  "weaponRestDeg": 60,
+  "hp": 9999,
+  "poise": { "max": 60, "resetTicks": 90 },
+  "turnDegPerTick": 4,
+  "collider": { "w": 10, "h": 5 },
+  "hurtbox": { "w": 12, "h": 20, "offsetY": -11 },
+  "bodyRadius": 7,
+  "knockbackResist": 1,
+  "staggerTicks": 30,
+  "parriedTicks": 90,
+  "blood": "wood2",
+  "moves": [
+    {
+      "id": "practice_swing",
+      "range": [0, 40],
+      "weight": 1,
+      "cooldown": 0,
+      "strikes": [
+        {
+          "damage": 10, "poise": 10,
+          "windup": 28, "active": 4, "recovery": 40,
+          "trackDegPerTick": 4,
+          "telegraph": { "tick": 10, "kind": "normal" },
+          "hitbox": { "shape": "arc", "radius": 28, "halfAngle": 60 },
+          "sweep": { "fromDeg": -120, "toDeg": 40 },
+          "knockback": 60, "hitstop": 3, "shake": 0.1, "sfx": "swing"
+        }
+      ]
+    }
+  ]
+}

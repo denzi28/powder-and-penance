@@ -1,0 +1,12 @@
+{
+  "image": "bullet.png",
+  "cell": [
+    6,
+    3
+  ],
+  "pivot": [
+    4,
+    1
+  ],
+  "layer": "fx"
+}

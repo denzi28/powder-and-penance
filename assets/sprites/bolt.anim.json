@@ -1,0 +1,12 @@
+{
+  "image": "bolt.png",
+  "cell": [
+    12,
+    3
+  ],
+  "pivot": [
+    8,
+    1
+  ],
+  "layer": "fx"
+}

@@ -1,0 +1,50 @@
+{
+  "image": "muzzle.png",
+  "cell": [
+    20,
+    16
+  ],
+  "pivot": [
+    0,
+    8
+  ],
+  "layer": "fx",
+  "animations": {
+    "small": {
+      "row": 0,
+      "dirs": [
+        "S"
+      ],
+      "loop": false,
+      "frames": [
+        {
+          "ticks": 2
+        },
+        {
+          "ticks": 2
+        },
+        {
+          "ticks": 4
+        }
+      ]
+    },
+    "large": {
+      "row": 1,
+      "dirs": [
+        "S"
+      ],
+      "loop": false,
+      "frames": [
+        {
+          "ticks": 2
+        },
+        {
+          "ticks": 2
+        },
+        {
+          "ticks": 4
+        }
+      ]
+    }
+  }
+}

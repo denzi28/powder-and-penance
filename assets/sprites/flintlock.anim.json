@@ -1,0 +1,18 @@
+{
+  "image": "flintlock.png",
+  "cell": [
+    20,
+    10
+  ],
+  "pivot": [
+    3,
+    5
+  ],
+  "layer": "weapon",
+  "points": {
+    "muzzle": [
+      18,
+      2
+    ]
+  }
+}

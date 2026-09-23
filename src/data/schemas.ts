@@ -39,7 +39,10 @@ export const PlayerCfg = z.object({
     walkAnimSpeedAt: pos,
   }),
   weaponBehindArcDeg: Vec2,
-  startWeapons: z.array(z.string()).min(1),
+  /** Two weapon slots (any mix of melee/ranged) and an optional off-hand shield. */
+  loadout: z.object({ slots: z.tuple([z.string(), z.string()]), shield: z.string().nullable() }),
+  swapTicks: int.positive(),
+  guardBreakTicks: int.positive(),
 });
 
 export const RollCfg = z
@@ -83,10 +86,28 @@ export const JuiceCfg = z.object({
   enemyBarTicks: int.nonnegative(),
 });
 
+const CritCfg = z.object({
+  /** Total paired-animation length for the attacker (invulnerable throughout). */
+  ticks: int.positive(),
+  /** Tick at which the damage lands. */
+  hitTick: int.nonnegative(),
+  range: pos,
+  /** Extra ticks the victim stays down after the attacker recovers. */
+  victimExtraTicks: int.nonnegative(),
+  hitstop: int.nonnegative(),
+  shake: num.min(0).max(1),
+});
 export const CombatCfg = z.object({
   knockbackDecay: num.min(0).max(0.99),
   bodyPush: num.min(0).max(1),
   heavyHitstop: int.nonnegative(),
+  /** Stamina lost per blocked hit = damage x (1 - shield stability) x this. */
+  blockStaminaMult: num.min(0),
+  /** The attacker must face the victim within this many degrees to start a critical. */
+  critFacingDeg: num.min(0).max(180),
+  riposte: CritCfg,
+  backstab: CritCfg.extend({ arcDeg: num.min(0).max(360) }),
+  parryHitstop: int.nonnegative(),
 });
 
 export const AiCfg = z.object({ maxAttackers: int.positive() });
@@ -140,6 +161,8 @@ export const StrikeDef = z.object({
   telegraph: z.object({ tick: int.nonnegative(), kind: z.enum(['normal', 'danger']) }).optional(),
   /** Extra poise buffer while winding up / active (resists stagger). */
   hyperArmor: num.min(0).default(0),
+  unblockable: z.boolean().default(false),
+  unparryable: z.boolean().default(false),
   /** Player only: tick (from strike start) from which the next light attack may chain. */
   comboFrom: int.nonnegative().optional(),
   /** Player only: tick from which a roll may cancel the recovery. */
@@ -158,7 +181,13 @@ export const MoveDef = z.object({
 export const EnemyDef = z.object({
   id: z.string(),
   name: z.string(),
-  ai: z.enum(['melee', 'dummy']),
+  /** melee = full AI; dummy = never acts or dies; rhythm = stands still and repeats its first move every intervalTicks. */
+  ai: z.enum(['melee', 'dummy', 'rhythm']),
+  rhythmIntervalTicks: int.positive().default(120),
+  /** Long stagger after being parried (riposte window). */
+  parriedTicks: int.positive().default(80),
+  /** Never dies: HP refills on every hit (training targets). */
+  immortal: z.boolean().default(false),
   sprite: z.string(),
   weaponSprite: z.string().optional(),
   weaponRestDeg: num.default(50),
@@ -173,9 +202,40 @@ export const EnemyDef = z.object({
   hurtbox: HurtBox,
   bodyRadius: pos,
   knockbackResist: num.min(0).max(1).default(0),
+  /**
+   * Stealth / awareness. Sight has no distance limit — only walls (line of sight) and the facing cone hide you.
+   * While seen, awareness (0..1) fills in `detectTicksNear` ticks at <= nearDistance, slowing linearly to
+   * `detectTicksFar` at >= farDistance. At `suspicionAt` the enemy turns suspicious ("?") and investigates;
+   * at 1 it is sure ("!"), reacts after reactionTicks, and alerts its whole room.
+   */
   perception: z
-    .object({ range: pos, halfAngleDeg: num.min(0).max(180), reactionTicks: Vec2, loseTicks: int.nonnegative(), alertShareRadius: num.min(0) })
-    .default({ range: 100, halfAngleDeg: 60, reactionTicks: [15, 25], loseTicks: 240, alertShareRadius: 80 }),
+    .object({
+      halfAngleDeg: num.min(0).max(180),
+      nearDistance: num.min(0),
+      farDistance: pos,
+      detectTicksNear: pos,
+      detectTicksFar: pos,
+      suspicionAt: num.min(0).max(1),
+      /** Awareness lost per tick while you are unseen. */
+      forgetPerTick: num.min(0),
+      /** How long a suspicious enemy searches the last seen spot before giving up. */
+      investigateTicks: int.nonnegative(),
+      reactionTicks: Vec2,
+      /** In combat: ticks without seeing you (and you outside its room) before it goes back to searching. */
+      loseTicks: int.nonnegative(),
+    })
+    .default({
+      halfAngleDeg: 70,
+      nearDistance: 48,
+      farDistance: 320,
+      detectTicksNear: 20,
+      detectTicksFar: 150,
+      suspicionAt: 0.3,
+      forgetPerTick: 0.004,
+      investigateTicks: 200,
+      reactionTicks: [12, 20],
+      loseTicks: 240,
+    }),
   leash: z.object({ distance: pos, healOnReturn: z.boolean() }).default({ distance: 200, healOnReturn: true }),
   spacing: z.object({ preferred: pos, strafeTicks: Vec2 }).default({ preferred: 30, strafeTicks: [40, 90] }),
   /** Random pause [min, max] ticks after finishing an attack before trying another. */
@@ -215,11 +275,69 @@ export const WeaponDef = z
     twoHanded: z.boolean(),
     view: z.object({ sprite: z.string(), restAngleOffsetDeg: num }),
     light: z.array(StrikeDef).default([]),
+    /** Melee: charged heavy. Ranged: the weapon bash (chargeTicks 0). */
     heavy: z
       .object({ chargeTicks: int.nonnegative(), chargeDamageMult: pos, chargePoiseMult: pos, strike: StrikeDef })
       .optional(),
+    ranged: z
+      .object({
+        clip: int.positive(),
+        reserveMax: int.nonnegative(),
+        fire: z.object({
+          windup: int.nonnegative(),
+          recovery: int.nonnegative(),
+          stamina: num.min(0),
+          moveMult: num.min(0).max(1),
+          /** Visual kick: weapon rotates up by recoilDeg and slides back by kick px, then settles. */
+          recoilDeg: num,
+          kick: num.min(0),
+          shake: num.min(0).max(1).default(0.08),
+          sfx: z.string(),
+        }),
+        reload: z.object({ ticks: int.positive(), stamina: num.min(0), moveMult: num.min(0).max(1) }),
+        projectile: z.object({
+          sprite: z.string(),
+          speed: pos,
+          range: pos,
+          damage: num.min(0),
+          poise: num.min(0),
+          pierce: int.nonnegative(),
+          knockback: num.min(0),
+          hitstop: int.nonnegative(),
+          shake: num.min(0).max(1).default(0.05),
+          radius: pos,
+          spreadDeg: num.min(0),
+          count: int.positive().default(1),
+        }),
+        casing: z.boolean().default(false),
+        muzzle: z.enum(['small', 'large', 'none']).default('small'),
+      })
+      .optional(),
+    /** Critical damage multipliers applied to the weapon's base damage (first light strike or bash). */
+    crit: z.object({ backstab: pos, riposte: pos }).default({ backstab: 2.5, riposte: 3 }),
   })
-  .passthrough();
+  .passthrough()
+  .superRefine((w, ctx) => {
+    if (w.kind === 'melee' && !w.light.length) ctx.addIssue({ code: 'custom', path: ['light'], message: 'melee weapons need at least one light strike' });
+    if (w.kind === 'ranged' && !w.ranged) ctx.addIssue({ code: 'custom', path: ['ranged'], message: 'ranged weapons need a "ranged" block' });
+  });
+
+export const ShieldDef = z.object({
+  id: z.string(),
+  name: z.string(),
+  sprite: z.string(),
+  /** Fraction of blocked damage NOT converted into stamina loss (higher = cheaper blocks). */
+  stability: num.min(0).max(1),
+  /** Fraction of damage blocked (the rest goes through as chip damage). */
+  absorption: num.min(0).max(1),
+  arcDeg: num.min(0).max(360),
+  parryWindowTicks: int.nonnegative(),
+  /** Block must be released this long before a new press can parry again (no mashing). */
+  parryRearmTicks: int.nonnegative(),
+  raiseTicks: int.nonnegative(),
+  blockMoveMult: num.min(0).max(1),
+  blockRegenMult: num.min(0).max(1),
+});
 
 export const TileKind = z.enum(['wall', 'floor', 'floor_moss', 'void']);
 export const RoomEntity = z.object({ type: z.string(), id: z.string().optional(), at: Vec2 }).passthrough();
@@ -275,6 +393,7 @@ export type StaminaCfg = z.infer<typeof StaminaCfg>;
 export type InputCfg = z.infer<typeof InputCfg>;
 export type WeaponDef = z.infer<typeof WeaponDef>;
 export type StrikeDef = z.infer<typeof StrikeDef>;
+export type ShieldDef = z.infer<typeof ShieldDef>;
 export type MoveDef = z.infer<typeof MoveDef>;
 export type EnemyDef = z.infer<typeof EnemyDef>;
 export type SfxPreset = z.infer<typeof SfxPreset>;

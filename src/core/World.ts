@@ -3,6 +3,7 @@ import type { Input } from '../input/Input';
 import type { EventBus, GameEvents } from './EventBus';
 import type { TileGrid } from '../world/TileGrid';
 import type { CombatSystem } from '../combat/CombatSystem';
+import type { Projectiles } from '../combat/Projectiles';
 import type { AttackTokens } from '../enemies/AttackTokens';
 import type { Player } from '../player/Player';
 import type { Enemy } from '../enemies/Enemy';
@@ -12,10 +13,13 @@ export interface WorldCtx {
   bus: EventBus<GameEvents>;
   grid: () => TileGrid;
   combat: CombatSystem;
+  projectiles: Projectiles;
   tokens: AttackTokens;
   rng: () => number;
   player: () => Player;
   enemies: () => readonly Enemy[];
+  /** Id of the room containing a world position (null outside every room). */
+  roomAt: (x: number, y: number) => string | null;
 }
 
 export function mulberry32(seed: number): () => number {

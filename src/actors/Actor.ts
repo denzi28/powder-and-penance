@@ -6,7 +6,7 @@ import type { Poise } from './Poise';
 import type { WorldCtx } from '../core/World';
 import type { Rect } from '../combat/shapes';
 import type { AttackRunner } from '../combat/AttackRunner';
-import type { HitInfo } from '../combat/CombatSystem';
+import type { Guard, HitInfo } from '../combat/CombatSystem';
 
 export type Team = 'player' | 'enemy';
 export interface HurtBox {
@@ -65,6 +65,17 @@ export abstract class Actor {
   abstract get stateTick(): number;
   abstract tick(): void;
   abstract onHit(hit: HitInfo): void;
+
+  /** Active guard (raised shield), if any. */
+  guard(): Guard | null {
+    return null;
+  }
+  /** Pay stamina for a blocked hit; returns true if that broke the guard. */
+  spendGuardStamina(_cost: number): boolean {
+    return false;
+  }
+  /** This actor's melee attack was parried by `_by`. */
+  onParried(_by: Actor) {}
 
   protected beginTick() {
     this.prevX = this.x;

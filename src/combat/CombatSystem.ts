@@ -1,6 +1,8 @@
-// Resolves hitboxes registered this tick against every actor's hurtbox, in a fixed order:
-// collect overlaps -> strongest hit per target -> i-frame check -> damage, poise, knockback -> events.
+// Resolves hits in a fixed order. Melee hitboxes registered this tick are checked against every hurtbox;
+// projectiles and criticals call applyHit() directly. Per hit:
+//   i-frames -> guard (parry / block / guard break) -> damage, poise, knockback -> events.
 import { DATA } from '../data/config';
+import { DEG } from '../core/math';
 import { shapeHitsRect, type HitShape } from './shapes';
 import type { Actor } from '../actors/Actor';
 import type { StrikeDef } from '../data/schemas';
@@ -17,18 +19,64 @@ export interface ActiveHitbox {
   shape: HitShape;
 }
 
+/** Everything that can hurt: a melee strike, a projectile, or a critical. */
+export interface HitSource {
+  owner: Actor;
+  kind: 'melee' | 'projectile' | 'critical';
+  damage: number;
+  poise: number;
+  knockback: number;
+  hitstop: number;
+  shake: number;
+  /** Direction the attack travels (swing direction / projectile velocity). */
+  angle: number;
+  unblockable: boolean;
+  unparryable: boolean;
+}
+
+/** An actor's active guard (raised shield). */
+export interface Guard {
+  facing: number;
+  arcDeg: number;
+  parry: boolean;
+  stability: number;
+  absorption: number;
+}
+
 export interface HitInfo {
+  source: HitSource;
   attacker: Actor;
   target: Actor;
-  strike: StrikeDef;
+  /** Damage actually dealt (chip damage when blocked). */
   damage: number;
   poiseDamage: number;
   staggered: boolean;
   killed: boolean;
-  /** Direction from attacker to target (knockback direction). */
+  blocked: boolean;
+  guardBroken: boolean;
+  /** Knockback direction. */
   angle: number;
   x: number;
   y: number;
+}
+
+function angleDiff(a: number, b: number) {
+  return Math.abs(Math.atan2(Math.sin(a - b), Math.cos(a - b)));
+}
+
+export function sourceFromStrike(owner: Actor, s: StrikeDef, angle: number, damageMult = 1, poiseMult = 1): HitSource {
+  return {
+    owner,
+    kind: 'melee',
+    damage: Math.round(s.damage * damageMult),
+    poise: s.poise * poiseMult,
+    knockback: s.knockback,
+    hitstop: s.hitstop,
+    shake: s.shake,
+    angle,
+    unblockable: s.unblockable,
+    unparryable: s.unparryable,
+  };
 }
 
 export class CombatSystem {
@@ -61,36 +109,85 @@ export class CombatSystem {
       // I-frames: ignored entirely and NOT marked as hit, so a lingering active window can still land later.
       if (target.invulnerable || target.god) continue;
       best.hitSet.add(target);
-      this.apply(best, target, bus);
+      this.applyHit(sourceFromStrike(best.owner, best.strike, best.angle, best.damageMult, best.poiseMult), target, bus);
     }
     this.boxes = [];
   }
 
-  private apply(b: ActiveHitbox, target: Actor, bus: EventBus<GameEvents>) {
-    const s = b.strike;
-    const damage = Math.round(s.damage * b.damageMult);
-    const poiseDamage = s.poise * b.poiseMult;
-    target.hp = Math.max(0, target.hp - damage);
+  /** Apply one hit. Returns null when it was parried or ignored (i-frames). */
+  applyHit(src: HitSource, target: Actor, bus: EventBus<GameEvents>): HitInfo | null {
+    if (target.dead || target.invulnerable || target.god) return null;
+    const attacker = src.owner;
+
+    const guard = src.kind === 'critical' ? null : target.guard();
+    if (guard) {
+      // Where the hit comes from: the attacker's position for melee, the reverse of travel for projectiles.
+      const from = src.kind === 'projectile' ? src.angle + Math.PI : Math.atan2(attacker.y - target.y, attacker.x - target.x);
+      if (angleDiff(from, guard.facing) <= (guard.arcDeg * DEG) / 2) {
+        if (guard.parry && src.kind === 'melee' && !src.unparryable) {
+          attacker.onParried(target);
+          bus.emit('parry', { parrier: target, attacker });
+          return null;
+        }
+        if (!src.unblockable) return this.applyBlocked(src, target, guard, bus);
+      }
+    }
+
+    target.hp = Math.max(0, target.hp - src.damage);
     const killed = target.hp <= 0;
-    const staggered = !killed && target.poise.hit(poiseDamage, target.hyperArmor);
-    const dx = target.x - b.owner.x;
-    const dy = target.y - b.owner.y;
-    const angle = dx === 0 && dy === 0 ? b.angle : Math.atan2(dy, dx);
-    target.knock(angle, s.knockback * (1 - target.knockbackResist));
+    const staggered = !killed && src.kind !== 'critical' && target.poise.hit(src.poise, target.hyperArmor);
+    const angle = this.knockAngle(src, target);
+    target.knock(angle, src.knockback * (1 - target.knockbackResist));
     target.flash = DATA.juice.flashTicks;
     const info: HitInfo = {
-      attacker: b.owner,
+      source: src,
+      attacker,
       target,
-      strike: s,
-      damage,
-      poiseDamage,
+      damage: src.damage,
+      poiseDamage: src.poise,
       staggered,
       killed,
+      blocked: false,
+      guardBroken: false,
       angle,
       x: target.x,
       y: target.chestY,
     };
     target.onHit(info);
     bus.emit('hit', info);
+    return info;
+  }
+
+  private applyBlocked(src: HitSource, target: Actor, guard: Guard, bus: EventBus<GameEvents>): HitInfo {
+    const cost = src.damage * (1 - guard.stability) * DATA.combat.blockStaminaMult;
+    const guardBroken = target.spendGuardStamina(cost);
+    const chip = Math.round(src.damage * (1 - guard.absorption));
+    target.hp = Math.max(0, target.hp - chip);
+    const angle = this.knockAngle(src, target);
+    target.knock(angle, src.knockback * 0.5 * (1 - target.knockbackResist));
+    const info: HitInfo = {
+      source: src,
+      attacker: src.owner,
+      target,
+      damage: chip,
+      poiseDamage: 0,
+      staggered: false,
+      killed: target.hp <= 0,
+      blocked: true,
+      guardBroken,
+      angle,
+      x: target.x,
+      y: target.chestY,
+    };
+    target.onHit(info);
+    bus.emit('hit', info);
+    return info;
+  }
+
+  private knockAngle(src: HitSource, target: Actor) {
+    if (src.kind === 'projectile') return src.angle;
+    const dx = target.x - src.owner.x;
+    const dy = target.y - src.owner.y;
+    return dx === 0 && dy === 0 ? src.angle : Math.atan2(dy, dx);
   }
 }

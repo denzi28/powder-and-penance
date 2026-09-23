@@ -1,5 +1,10 @@
 {
   "knockbackDecay": 0.8,
   "bodyPush": 0.5,
-  "heavyHitstop": 5
+  "heavyHitstop": 5,
+  "blockStaminaMult": 2,
+  "critFacingDeg": 60,
+  "riposte": { "ticks": 70, "hitTick": 30, "range": 24, "victimExtraTicks": 50, "hitstop": 10, "shake": 0.45 },
+  "backstab": { "ticks": 60, "hitTick": 24, "range": 20, "arcDeg": 110, "victimExtraTicks": 50, "hitstop": 9, "shake": 0.4 },
+  "parryHitstop": 8
 }

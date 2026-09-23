@@ -11,6 +11,8 @@ export interface StaminaParams {
 export class Stamina {
   value: number;
   locked = false;
+  /** Regen multiplier set by the current state (e.g. blocking regenerates slower). */
+  regenMult = 1;
   private delay = 0;
 
   constructor(private cfg: () => StaminaParams, private tickRate: () => number) {
@@ -42,7 +44,7 @@ export class Stamina {
       this.delay--;
       return;
     }
-    this.value = Math.min(c.max, this.value + c.regenPerSec / this.tickRate());
+    this.value = Math.min(c.max, this.value + (c.regenPerSec * this.regenMult) / this.tickRate());
     if (this.locked && this.value >= c.minToAct) this.locked = false;
   }
 

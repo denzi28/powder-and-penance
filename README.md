@@ -17,11 +17,15 @@ npm run gen:art    # regenerate missing placeholder art (--force to overwrite al
 |---|---|---|
 | Move | WASD / arrows | Left stick |
 | Aim | Mouse | Right stick |
-| Light attack (tap again to combo) | Left mouse | RT |
-| Heavy attack (hold to charge) | F / Mouse 4 | RB |
+| Light attack / fire (tap again to combo) | Left mouse | RT |
+| Heavy attack (hold to charge) / gun bash | F / Mouse 4 | RB |
+| Block (hold); the first few ticks parry | Right mouse | LT |
+| Riposte / backstab | Light attack near a parried enemy, or behind an unaware or staggered one | |
+| Reload (auto when firing empty) | R | Y / △ |
 | Roll | Space | B / ○ |
 | Sprint (hold) | Shift | L3 or LB |
-| Swap weapon (revolver is visual only until M3) | Tab / wheel | D-pad ← → |
+| Swap weapon slot | Tab / wheel | D-pad ← → |
+| Interact (weapon racks) | E | A / × |
 
 ## Debug keys
 | Key | Effect |
@@ -33,9 +37,14 @@ npm run gen:art    # regenerate missing placeholder art (--force to overwrite al
 | F5 | Time: normal → slow (×0.25) → frozen → normal |
 | F6 | Step one tick (freezes first if running) |
 | F8 | Test screen shake |
-| 1 / 2 | Spawn a Wickling / training dummy at the cursor |
+| 1 / 2 / 3 | Spawn a Wickling / training dummy / sparring post at the cursor |
 
-The test room's east doorway leads to the **debug arena** (2 training dummies that show damage/poise numbers, 2 Wicklings). One more Wickling guards the test room's south-east corner.
+- **Test room:** one Wickling stands facing the east wall in the south-east corner. Sneak up and backstab it.
+- **Debug arena** (through the test room's east doorway):
+  - **Weapon racks** along the north wall: straight sword, dagger, greataxe, revolver, flintlock, heavy crossbow, buckler, and "no shield". Press E to put one in your active slot.
+  - **2 training dummies:** damage/poise numbers, and you can backstab them from behind (they face south).
+  - **A sparring post** that swings on a fixed rhythm, for block, parry and riposte practice.
+  - **2 Wicklings** and a pillar to hide behind.
 
 ## Tuning
 All tuning lives in `data/`. Save a file and the running game picks it up instantly: no restart, and you keep your position. Invalid values show an on-screen error and the last good values stay active. Timings are in ticks (60 per second).

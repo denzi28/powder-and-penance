@@ -1,6 +1,6 @@
 import type { HitInfo } from '../combat/CombatSystem';
 import type { Actor } from '../actors/Actor';
-import type { StrikeDef } from '../data/schemas';
+import type { StrikeDef, WeaponDef } from '../data/schemas';
 
 type Handler<T> = (payload: T) => void;
 
@@ -32,5 +32,12 @@ export interface GameEvents {
   /** Player heavy reached full charge. */
   chargeFull: { actor: Actor };
   notice: { actor: Actor };
+  suspicious: { actor: Actor };
   died: { actor: Actor };
+  parry: { parrier: Actor; attacker: Actor };
+  /** A critical (riposte/backstab) lands. */
+  critical: { attacker: Actor; victim: Actor; kind: 'riposte' | 'backstab' };
+  /** A gun/crossbow fires; x/y = muzzle on the ground plane. */
+  shot: { actor: Actor; weapon: WeaponDef; x: number; y: number; angle: number };
+  projectileEnd: { x: number; y: number; angle: number; wall: boolean };
 }

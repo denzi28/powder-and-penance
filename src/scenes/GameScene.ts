@@ -8,16 +8,19 @@ import { Input } from '../input/Input';
 import { SpriteLib } from '../anim/SpriteLib';
 import { buildGrid, TILE, type TileGrid } from '../world/TileGrid';
 import { WorldView } from '../world/WorldView';
+import { Racks } from '../world/Racks';
 import { Player } from '../player/Player';
 import { PlayerView } from '../player/PlayerView';
 import { Enemy } from '../enemies/Enemy';
 import { EnemyView } from '../enemies/EnemyView';
 import { AttackTokens } from '../enemies/AttackTokens';
 import { CombatSystem } from '../combat/CombatSystem';
+import { PROJECTILE_HEIGHT, Projectiles } from '../combat/Projectiles';
 import { CameraRig } from '../render/CameraRig';
 import { Fx } from '../render/Fx';
 import { Particles } from '../render/Particles';
 import { FloatingText } from '../render/FloatingText';
+import { ProjectileView } from '../render/ProjectileView';
 import { DEPTH } from '../render/depth';
 import { Sfx } from '../audio/Sfx';
 import { DebugOverlay } from '../debug/DebugOverlay';
@@ -25,10 +28,13 @@ import { installDebugKeys } from '../debug/DebugKeys';
 import { hexToInt } from '../ui/colors';
 import type { Actor } from '../actors/Actor';
 import type { Dir8 } from '../core/math';
+import type { RoomData } from '../data/schemas';
 
 const DIR_ANGLE: Record<Dir8, number> = { E: 0, SE: 45, S: 90, SW: 135, W: 180, NW: 225, N: 270, NE: 315 };
 /** The arc in slash.png spans this radius; slashes are scaled to the strike's hitbox radius. */
 const SLASH_RADIUS = 22;
+/** Only these player states may interact with racks/objects. */
+const CAN_INTERACT = new Set(['idle', 'move', 'sprint']);
 
 export class GameScene extends Phaser.Scene {
   loop!: FixedLoop;
@@ -39,7 +45,9 @@ export class GameScene extends Phaser.Scene {
   player!: Player;
   enemies: Enemy[] = [];
   combat = new CombatSystem();
+  projectiles = new Projectiles();
   tokens = new AttackTokens();
+  racks!: Racks;
   debug!: DebugOverlay;
   sfx = new Sfx();
   /** Sim ticks (frozen during hit-stop). */
@@ -51,9 +59,11 @@ export class GameScene extends Phaser.Scene {
   respawnT = -1;
 
   private ctxObj!: WorldCtx;
+  private rooms: RoomData[] = [];
   private worldView!: WorldView;
   private playerView!: PlayerView;
   private enemyViews = new Map<Enemy, EnemyView>();
+  private projectileView!: ProjectileView;
   private cam!: CameraRig;
   private fx!: Fx;
   private particles!: Particles;
@@ -81,13 +91,16 @@ export class GameScene extends Phaser.Scene {
       bus: this.bus,
       grid: () => this.grid,
       combat: this.combat,
+      projectiles: this.projectiles,
       tokens: this.tokens,
       rng: this.rng,
       player: () => this.player,
       enemies: () => this.enemies,
+      roomAt: (x, y) => this.roomAt(x, y),
     };
 
     this.worldView = new WorldView(this, this.lib);
+    this.racks = new Racks(this.lib);
     this.buildWorld();
 
     const spawn = this.findSpawn();
@@ -99,6 +112,7 @@ export class GameScene extends Phaser.Scene {
     this.fx = new Fx(this, this.lib);
     this.particles = new Particles(this);
     this.numbers = new FloatingText(this);
+    this.projectileView = new ProjectileView(this, this.lib);
     this.bars = this.add.graphics().setDepth(DEPTH.overlay - 3);
     this.debug = new DebugOverlay(this);
     this.wireEvents();
@@ -134,13 +148,30 @@ export class GameScene extends Phaser.Scene {
     this.simTick++;
 
     const lead = this.updateAim();
+    this.handleInteract();
     this.player.tick();
     for (const e of this.enemies) e.tick();
     this.resolveBodies();
     this.combat.resolve(this.actors, this.bus);
+    this.projectiles.tick(this.actors, this.grid, this.combat, this.bus);
 
     for (const e of this.enemies.filter(en => en.remove)) this.removeEnemy(e);
     this.cam.tick(lead.x, lead.y);
+  }
+
+  private handleInteract() {
+    const p = this.player;
+    const rack = CAN_INTERACT.has(p.stateName) ? this.racks.nearest(p.x, p.y) : null;
+    if (!rack || !this.controls.consume('interact')) return;
+    if (rack.kind === 'weapon' && rack.id) {
+      p.slots[p.slot] = rack.id;
+      p.ammoFor(rack.id); // arrives loaded
+      this.numbers.add(DATA.weapons[rack.id].name.toUpperCase(), p.x, p.y - 34, hexToInt(DATA.palette.wax2));
+    } else if (rack.kind === 'shield') {
+      p.shieldId = rack.id;
+      this.numbers.add(rack.id ? DATA.shields[rack.id].name.toUpperCase() : 'NO SHIELD', p.x, p.y - 34, hexToInt(DATA.palette.wax2));
+    }
+    this.bus.emit('sfx', { id: 'pickup' });
   }
 
   /** Soft circle separation so actors don't overlap. Immovable actors (resist 1) push others fully. */
@@ -177,13 +208,14 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
-  /** M2: respawn at the room's spawn point; shrines replace this in M4. */
+  /** M2/M3: respawn at the room's spawn point; shrines replace this in M4. */
   respawn() {
     const s = this.findSpawn();
     this.deathT = -1;
     this.respawnT = 0;
     this.player.respawn(s.x, s.y);
     this.resetEnemies();
+    this.projectiles.clear();
     this.particles.clear();
     this.numbers.clear();
     this.hitstop = 0;
@@ -213,7 +245,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   private spawnRoomEnemies() {
-    for (const r of this.areaRooms())
+    for (const r of this.rooms)
       for (const en of r.entities) {
         if (en.type !== 'enemy') continue;
         const facing = (DIR_ANGLE[(en.facing as Dir8) ?? 'S'] ?? 90) * (Math.PI / 180);
@@ -224,6 +256,7 @@ export class GameScene extends Phaser.Scene {
   // ------------------------------------------------------------------ presentation events
   private wireEvents() {
     const bus = this.bus;
+    const pal = () => DATA.palette;
     bus.on('dust', e => this.fx.spawn('dust', e.kind === 'roll' ? 'puff' : 'step', e.x, e.y));
     bus.on('shake', e => this.cam.addTrauma(e.trauma));
     bus.on('sfx', e => {
@@ -236,25 +269,48 @@ export class GameScene extends Phaser.Scene {
     });
 
     bus.on('hit', h => {
-      const s = h.strike;
-      const heavy = s.hitstop >= DATA.combat.heavyHitstop || h.staggered || h.killed;
-      this.hitstop = Math.max(this.hitstop, s.hitstop + (h.killed ? 2 : 0));
-      const trauma = s.shake * (h.target === this.player ? 1.4 : 1) + (h.staggered ? 0.1 : 0);
-      if (trauma > 0) this.cam.addTrauma(trauma);
+      const s = h.source;
       const t = h.target;
       const z = -t.hurtbox.offsetY;
       const pc = DATA.juice.particles;
+      if (h.blocked) {
+        this.hitstop = Math.max(this.hitstop, h.guardBroken ? 8 : 3);
+        this.cam.addTrauma(h.guardBroken ? 0.35 : 0.12);
+        this.particles.burst(t.x, t.y, z, h.angle + Math.PI, 1.6, pc.sparks * 2, 130, 'flame2', false);
+        this.bus.emit('sfx', { id: h.guardBroken ? 'guard_break' : 'block', x: t.x, y: t.y });
+        return;
+      }
+      const heavy = s.hitstop >= DATA.combat.heavyHitstop || h.staggered || h.killed || s.kind === 'critical';
+      this.hitstop = Math.max(this.hitstop, s.hitstop + (h.killed ? 2 : 0));
+      const trauma = s.shake * (t === this.player ? 1.4 : 1) + (h.staggered ? 0.1 : 0);
+      if (trauma > 0) this.cam.addTrauma(trauma);
       this.particles.burst(t.x, t.y, z, h.angle, 1.4, pc.sparks, 110, 'flame2', false);
-      this.particles.burst(t.x, t.y, z, h.angle, 1.0, h.killed ? pc.bloodOnKill : pc.blood, 90, t.bloodColor, true);
+      const blood = h.killed || s.kind === 'critical' ? pc.bloodOnKill : pc.blood;
+      this.particles.burst(t.x, t.y, z, h.angle, 1.0, blood, 90, t.bloodColor, true);
       this.bus.emit('sfx', { id: heavy ? 'hit_heavy' : 'hit', x: t.x, y: t.y });
 
-      const isDummy = t instanceof Enemy && t.def.ai === 'dummy';
+      const training = t instanceof Enemy && t.def.immortal;
       const mode = DATA.juice.damageNumbers;
-      if (mode === 'all' || (mode === 'dummy' && isDummy)) {
-        const pal = DATA.palette;
-        this.numbers.add(String(h.damage), t.x, t.y - t.hurtbox.h - 12, hexToInt(h.staggered ? pal.flame2 : pal.wax2));
-        if (h.staggered) this.numbers.add('BREAK', t.x, t.y - t.hurtbox.h - 20, hexToInt(pal.ember));
+      if (mode === 'all' || (mode === 'dummy' && training)) {
+        this.numbers.add(String(h.damage), t.x, t.y - t.hurtbox.h - 12, hexToInt(h.staggered || s.kind === 'critical' ? pal().flame2 : pal().wax2));
+        if (h.staggered) this.numbers.add('BREAK', t.x, t.y - t.hurtbox.h - 20, hexToInt(pal().ember));
       }
+    });
+
+    bus.on('parry', e => {
+      this.hitstop = Math.max(this.hitstop, DATA.combat.parryHitstop);
+      this.cam.addTrauma(0.25);
+      const mx = (e.parrier.x + e.attacker.x) / 2;
+      const my = (e.parrier.y + e.attacker.y) / 2;
+      this.particles.burst(mx, my, 12, Math.atan2(e.attacker.y - e.parrier.y, e.attacker.x - e.parrier.x), 2.4, 14, 150, 'wax2', false);
+      this.fx.spawn('glint', 'normal', mx, my - 12, { depth: DEPTH.overlay - 5 });
+      this.bus.emit('sfx', { id: 'parry' });
+      this.numbers.add('PARRY', e.parrier.x, e.parrier.y - 34, hexToInt(pal().wax2));
+    });
+
+    bus.on('critical', e => {
+      this.bus.emit('sfx', { id: 'critical' });
+      this.numbers.add(e.kind === 'riposte' ? 'RIPOSTE' : 'BACKSTAB', e.victim.x, e.victim.y - e.victim.hurtbox.h - 22, hexToInt(pal().ember));
     });
 
     bus.on('swing', e => {
@@ -269,6 +325,23 @@ export class GameScene extends Phaser.Scene {
         depth: DEPTH.actor(e.actor.y) + 0.3,
       });
       this.bus.emit('sfx', { id: s.sfx, x: e.actor.x, y: e.actor.y });
+    });
+
+    bus.on('shot', e => {
+      const r = e.weapon.ranged!;
+      const tip = this.weaponTip(e.actor);
+      if (r.muzzle !== 'none') this.fx.spawn('muzzle', r.muzzle, tip.x, tip.y, { rotation: e.angle, depth: DEPTH.overlay - 6 });
+      if (r.casing) {
+        const side = e.angle + (Math.cos(e.angle) < 0 ? 1 : -1) * (Math.PI / 2 + 0.4);
+        this.particles.burst(e.actor.x, e.actor.y, 12, side, 0.5, 1, 60, 'flame1', true);
+      }
+      this.particles.burst(tip.x, tip.y + PROJECTILE_HEIGHT, PROJECTILE_HEIGHT, e.angle, 0.8, 3, 60, 'stone4', false);
+    });
+
+    bus.on('projectileEnd', e => {
+      if (!e.wall) return;
+      this.particles.burst(e.x, e.y + PROJECTILE_HEIGHT, PROJECTILE_HEIGHT, e.angle + Math.PI, 1.8, 4, 80, 'flame2', false);
+      this.bus.emit('sfx', { id: 'bullet_wall', x: e.x, y: e.y });
     });
 
     bus.on('telegraph', e => {
@@ -306,24 +379,40 @@ export class GameScene extends Phaser.Scene {
 
     const feet = this.playerView.render(alpha);
     for (const v of this.enemyViews.values()) v.render(alpha);
+    this.projectileView.render(this.projectiles.list, alpha);
     this.cam.apply(this.cameras.main, feet.x, feet.y, alpha);
     this.drawEnemyBars();
     this.debug.draw(this, feet.x, feet.y);
   }
 
+  /** Health bars (after taking damage) and stealth awareness meters (while not in combat). */
   private drawEnemyBars() {
     const g = this.bars;
     const pal = DATA.palette;
     g.clear();
     for (const v of this.enemyViews.values()) {
       const e = v.e;
-      if (e.dead || e.barTicks <= 0 || e.def.ai === 'dummy') continue;
+      if (e.dead || e.def.ai !== 'melee') continue;
       const w = 16;
       const x = v.x - w / 2;
-      const y = v.y - e.def.hurtbox.h - 9;
-      g.fillStyle(hexToInt(pal.ink), 1).fillRect(x - 1, y - 1, w + 2, 4);
-      g.fillStyle(hexToInt(pal.dark2), 1).fillRect(x, y, w, 2);
-      g.fillStyle(hexToInt(pal.blood2), 1).fillRect(x, y, Math.max(1, Math.round((w * e.hp) / e.maxHp)), 2);
+      let y = v.y - e.def.hurtbox.h - 9;
+      if (e.barTicks > 0) {
+        g.fillStyle(hexToInt(pal.ink), 1).fillRect(x - 1, y - 1, w + 2, 4);
+        g.fillStyle(hexToInt(pal.dark2), 1).fillRect(x, y, w, 2);
+        g.fillStyle(hexToInt(pal.blood2), 1).fillRect(x, y, Math.max(1, Math.round((w * e.hp) / e.maxHp)), 2);
+        y -= 4;
+      }
+      const st = e.stateName;
+      if (e.awareness > 0 && (st === 'idle' || st === 'suspicious' || st === 'return')) {
+        const aw = 10;
+        g.fillStyle(hexToInt(pal.ink), 1).fillRect(v.x - aw / 2 - 1, y - 1, aw + 2, 3);
+        g.fillStyle(hexToInt(e.awareness >= e.def.perception.suspicionAt ? pal.flame2 : pal.wax1), 1).fillRect(
+          v.x - aw / 2,
+          y,
+          Math.max(1, Math.round(aw * e.awareness)),
+          1,
+        );
+      }
     }
   }
 
@@ -364,11 +453,23 @@ export class GameScene extends Phaser.Scene {
     return Object.values(DATA.rooms).filter(r => r.area === start.area);
   }
 
+  /** Room containing a world position; shared wall tiles belong to the first room listed. */
+  roomAt(x: number, y: number): string | null {
+    const tx = Math.floor(x / TILE);
+    const ty = Math.floor(y / TILE);
+    for (const r of this.rooms) {
+      const [ox, oy] = r.origin;
+      if (tx >= ox && ty >= oy && tx < ox + r.tiles[0].length && ty < oy + r.tiles.length) return r.id;
+    }
+    return null;
+  }
+
   private buildWorld() {
-    const rooms = this.areaRooms();
-    this.roomsJson = JSON.stringify(rooms);
-    this.grid = buildGrid(rooms);
+    this.rooms = this.areaRooms();
+    this.roomsJson = JSON.stringify(this.rooms);
+    this.grid = buildGrid(this.rooms);
     this.worldView.build(this.grid);
+    this.racks.build(this.rooms);
   }
 
   private findSpawn() {

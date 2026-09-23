@@ -18,7 +18,7 @@
       "type": "enemy",
       "kind": "wickling",
       "at": [29, 18],
-      "facing": "W"
+      "facing": "E"
     }
   ],
   "tiles": [

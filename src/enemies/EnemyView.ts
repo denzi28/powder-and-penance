@@ -42,7 +42,12 @@ export class EnemyView {
       .setAlpha(e.alpha);
     tint(this.body, e.flash > 0);
 
-    this.pip.setVisible(e.stateName === 'notice').setPosition(x, y - e.def.hurtbox.h - 14).setDepth(DEPTH.overlay - 1);
+    const pip = e.stateName === 'notice' ? 'exclaim' : e.stateName === 'suspicious' ? 'question' : null;
+    this.pip.setVisible(pip !== null && e.alpha > 0);
+    if (pip) {
+      if (this.pip.texture.key !== pip) this.pip.setTexture(pip, 0);
+      this.pip.setPosition(x, y - e.def.hurtbox.h - 14).setDepth(DEPTH.overlay - 1);
+    }
 
     if (this.weapon) {
       this.weapon.setVisible(!e.dead);

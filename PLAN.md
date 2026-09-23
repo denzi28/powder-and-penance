@@ -10,9 +10,10 @@ All timings are in ticks (60/s). Everything tunable lives in `data/`, and edits 
 | Milestone | State |
 |---|---|
 | 1 Foundation, movement, roll | ✅ Done. Playtested. Fix: walls now block their full visual footprint. |
-| 2 Melee + first enemy | ✅ Built. Awaiting playtest. |
-| 3 Ranged, loadout, shield, criticals | ⏭ Next |
-| 4–7 | Planned |
+| 2 Melee + first enemy | ✅ Done. Wickling vision range tuned after playtest. |
+| 3 Ranged, loadout, shield, criticals, **+ stealth** | ✅ Built. Awaiting playtest. Stealth/awareness was added at the user's request (DESIGN §5.1). |
+| 4 Healing, shrines, saving, death loop | ⏭ Next |
+| 5–7 | Planned |
 | 8–12 (post-launch roadmap) | Proposed, see the end of this file |
 
 ---

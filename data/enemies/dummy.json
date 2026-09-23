@@ -2,6 +2,7 @@
   "id": "dummy",
   "name": "Training Dummy",
   "ai": "dummy",
+  "immortal": true,
   "sprite": "dummy",
   "hp": 9999,
   "poise": { "max": 40, "resetTicks": 90 },
@@ -10,5 +11,6 @@
   "bodyRadius": 7,
   "knockbackResist": 1,
   "staggerTicks": 30,
+  "parriedTicks": 80,
   "blood": "wood2"
 }

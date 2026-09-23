@@ -26,8 +26,17 @@ export class AttackRunner {
   /** -1 when attacking toward the left half, so swings mirror and always read top-to-bottom. */
   readonly mirror: number;
 
-  /** @param restRel weapon angle (rad, relative to the attack direction) before/after the swing */
-  constructor(readonly owner: Actor, readonly strike: StrikeDef, angle: number, private restRel = 0) {
+  /**
+   * @param restRel weapon angle (rad, relative to the attack direction) before/after the swing
+   * @param visualOnly animate and emit events but register no hitbox (criticals apply damage directly)
+   */
+  constructor(
+    readonly owner: Actor,
+    readonly strike: StrikeDef,
+    angle: number,
+    private restRel = 0,
+    private visualOnly = false,
+  ) {
     this.angle = angle;
     this.mirror = Math.cos(angle) < 0 ? -1 : 1;
     this.restRel *= this.mirror;
@@ -67,7 +76,7 @@ export class AttackRunner {
         o.moveBy((Math.cos(this.angle) * l.distance) / l.ticks, (Math.sin(this.angle) * l.distance) / l.ticks);
     }
     if (this.t === s.windup) bus.emit('swing', { actor: o, strike: s, angle: this.angle, mirror: this.mirror });
-    if (this.phase === 'active')
+    if (this.phase === 'active' && !this.visualOnly)
       o.ctx.combat.add({
         owner: o,
         strike: s,

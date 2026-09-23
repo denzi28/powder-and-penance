@@ -1,0 +1,18 @@
+{
+  "image": "greataxe.png",
+  "cell": [
+    31,
+    17
+  ],
+  "pivot": [
+    5,
+    8
+  ],
+  "layer": "weapon",
+  "points": {
+    "tip": [
+      27,
+      8
+    ]
+  }
+}

@@ -1,0 +1,91 @@
+{
+  "image": "sparring.png",
+  "cell": [
+    32,
+    32
+  ],
+  "pivot": [
+    16,
+    28
+  ],
+  "layer": "single",
+  "handAnchors": {
+    "S": [
+      5,
+      -12
+    ]
+  },
+  "animations": {
+    "idle": {
+      "row": 0,
+      "dirs": [
+        "S"
+      ],
+      "loop": true,
+      "frames": [
+        {
+          "ticks": 60,
+          "col": 0
+        }
+      ]
+    },
+    "walk": {
+      "row": 0,
+      "dirs": [
+        "S"
+      ],
+      "loop": true,
+      "frames": [
+        {
+          "ticks": 60,
+          "col": 0
+        }
+      ]
+    },
+    "attack": {
+      "row": 0,
+      "dirs": [
+        "S"
+      ],
+      "loop": false,
+      "frames": [
+        {
+          "ticks": 1,
+          "phase": "windup",
+          "col": 1
+        },
+        {
+          "ticks": 1,
+          "phase": "active",
+          "col": 2
+        },
+        {
+          "ticks": 1,
+          "phase": "recovery",
+          "col": 0
+        }
+      ]
+    },
+    "stagger": {
+      "row": 0,
+      "dirs": [
+        "S"
+      ],
+      "loop": false,
+      "frames": [
+        {
+          "ticks": 6,
+          "col": 1
+        },
+        {
+          "ticks": 6,
+          "col": 2
+        },
+        {
+          "ticks": 30,
+          "col": 0
+        }
+      ]
+    }
+  }
+}

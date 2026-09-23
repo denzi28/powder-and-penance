@@ -1,0 +1,18 @@
+{
+  "image": "crossbow.png",
+  "cell": [
+    21,
+    15
+  ],
+  "pivot": [
+    5,
+    7
+  ],
+  "layer": "weapon",
+  "points": {
+    "muzzle": [
+      19,
+      7
+    ]
+  }
+}

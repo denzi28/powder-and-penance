@@ -14,6 +14,20 @@
     "enemy_die":        { "wave": "sawtooth", "freq": 220, "freqEnd": 40, "duration": 0.45, "volume": 0.35, "filter": 1200, "filterEnd": 200 },
     "player_die":       { "wave": "triangle", "freq": 330, "freqEnd": 50, "duration": 1.2, "volume": 0.45, "filter": 1500, "filterEnd": 150 },
     "notice":           { "wave": "square", "freq": 660, "freqEnd": 880, "duration": 0.07, "volume": 0.18 },
-    "dummy_hit":        { "wave": "noise", "freq": 0.6, "duration": 0.08, "volume": 0.3, "filter": 1200 }
+    "dummy_hit":        { "wave": "noise", "freq": 0.6, "duration": 0.08, "volume": 0.3, "filter": 1200 },
+    "suspicious":       { "wave": "triangle", "freq": 520, "freqEnd": 610, "duration": 0.12, "volume": 0.15 },
+    "gunshot":          { "wave": "noise", "freq": 1.0, "duration": 0.22, "volume": 0.55, "filter": 5000, "filterEnd": 400 },
+    "gunshot_heavy":    { "wave": "noise", "freq": 0.7, "duration": 0.45, "volume": 0.7, "filter": 3500, "filterEnd": 150 },
+    "crossbow":         { "wave": "triangle", "freq": 180, "freqEnd": 70, "duration": 0.16, "volume": 0.4 },
+    "dry_fire":         { "wave": "square", "freq": 2200, "freqEnd": 1800, "duration": 0.03, "volume": 0.15 },
+    "reload_start":     { "wave": "square", "freq": 900, "freqEnd": 700, "duration": 0.05, "volume": 0.18, "filter": 3000 },
+    "reload_end":       { "wave": "square", "freq": 600, "freqEnd": 1200, "duration": 0.07, "volume": 0.22, "filter": 3000 },
+    "bullet_wall":      { "wave": "noise", "freq": 1.2, "duration": 0.05, "volume": 0.18, "filter": 2500 },
+    "swap":             { "wave": "noise", "freq": 0.9, "duration": 0.08, "volume": 0.15, "filter": 1800 },
+    "block":            { "wave": "square", "freq": 260, "freqEnd": 200, "duration": 0.1, "volume": 0.4, "filter": 1400 },
+    "parry":            { "wave": "sawtooth", "freq": 1600, "freqEnd": 900, "duration": 0.25, "volume": 0.45, "filter": 6000 },
+    "guard_break":      { "wave": "sawtooth", "freq": 300, "freqEnd": 80, "duration": 0.35, "volume": 0.5, "filter": 1600 },
+    "critical":         { "wave": "sawtooth", "freq": 90, "freqEnd": 30, "duration": 0.4, "volume": 0.6, "filter": 900 },
+    "pickup":           { "wave": "sine", "freq": 700, "freqEnd": 1100, "duration": 0.1, "volume": 0.2 }
   }
 }

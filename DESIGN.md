@@ -237,10 +237,19 @@ Heavy input with a ranged weapon does a short **weapon bash**: low damage, some 
 ## 5. Enemies
 
 ### 5.1 AI
-Each enemy has a small hierarchical state machine:
-`idle/patrol → notice (reaction delay 12–25 ticks, "!" pip) → approach → space/strafe → attack (chooses from its moves) → recover → (combat loop) … → return to post (if the player leaves the leash room or the leash distance)`.
+Each enemy has a small state machine:
+`idle → suspicious ("?") → notice ("!", reaction delay) → approach ⇄ strafe → attack (chooses from its moves) → … → return to post`.
+Stagger, parried and critVictim can interrupt any state.
 
-- Perception: a vision cone plus radius plus line of sight (grid raycast). Enemies are also alerted when damaged or when a nearby ally notices (within `alertShareRadius`).
+**Stealth and awareness** (added at the user's request in M3):
+- **No sight range limit.** Only walls (line of sight, via a grid raycast) and the facing cone (`halfAngleDeg`) hide you.
+- **Detection builds up.** While seen, an `awareness` meter (0..1) fills. It takes `detectTicksNear` at ≤ `nearDistance`, rising linearly to `detectTicksFar` at ≥ `farDistance`. Close = spotted fast, far = slow. A small meter shows above the enemy while it is filling.
+- **Suspicious.** At `suspicionAt` the enemy becomes suspicious ("?"). While it can still see you, it freezes and stares. Once it can't, it walks to your last seen spot and looks around for `investigateTicks`, then gives up and goes home. Unseen, awareness fades by `forgetPerTick`.
+- **Certain.** At 1.0 it is certain ("!"). After `reactionTicks` it attacks, and it **alerts every enemy in its room**.
+- **Alerted room.** Alerted enemies know where you are while you are inside that room, even behind walls. After you leave the room and stay unseen for `loseTicks`, they drop back to suspicious and search.
+- **Getting hit** makes an enemy certain immediately, and it alerts the room too.
+- **Backstabs** work on enemies that are unaware (idle, suspicious, returning), staggered or parried. Sneaking up from behind is the payoff for stealth.
+- Enemies have no pathfinding yet. An alerted enemy tracking you through a wall walks straight at you. Steering around obstacles comes with the full area in M5.
 - **Move selection:** each attack has `range [min,max]`, `weight`, `cooldownTicks` and optional conditions (`playerHealing`, `playerBehind`, `phase>=2`). Weighted random choice uses a seeded RNG.
 - **Aggression tokens:** at most `maxAttackers` (2) enemies can be in `attack` at once. The rest strafe. This keeps groups fair and readable.
 - Returning enemies heal if `healOnReturn` is set per archetype (default true).

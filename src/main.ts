@@ -12,7 +12,11 @@ if (!DATA_ERROR) {
   const need = (sprite: string, where: string) => {
     if (!SPRITES[sprite]) errors.push(`${where}: sprite "${sprite}" has no assets/sprites/${sprite}.anim.json`);
   };
-  for (const w of Object.values(DATA.weapons)) need(w.view.sprite, `data/weapons/${w.id}.json`);
+  for (const w of Object.values(DATA.weapons)) {
+    need(w.view.sprite, `data/weapons/${w.id}.json`);
+    if (w.ranged) need(w.ranged.projectile.sprite, `data/weapons/${w.id}.json`);
+  }
+  for (const s of Object.values(DATA.shields)) need(s.sprite, `data/shields/${s.id}.json`);
   for (const e of Object.values(DATA.enemies)) {
     need(e.sprite, `data/enemies/${e.id}.json`);
     if (e.weaponSprite) need(e.weaponSprite, `data/enemies/${e.id}.json`);

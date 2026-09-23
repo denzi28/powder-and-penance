@@ -4,6 +4,7 @@
   "kind": "melee",
   "twoHanded": false,
   "view": { "sprite": "sword", "restAngleOffsetDeg": 35 },
+  "crit": { "backstab": 2.8, "riposte": 3.0 },
   "light": [
     {
       "damage": 22, "poise": 11, "stamina": 14,

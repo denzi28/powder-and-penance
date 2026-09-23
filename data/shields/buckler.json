@@ -1,0 +1,13 @@
+{
+  "id": "buckler",
+  "name": "Iron Buckler",
+  "sprite": "buckler",
+  "stability": 0.55,
+  "absorption": 0.8,
+  "arcDeg": 140,
+  "parryWindowTicks": 7,
+  "parryRearmTicks": 20,
+  "raiseTicks": 3,
+  "blockMoveMult": 0.45,
+  "blockRegenMult": 0.3
+}

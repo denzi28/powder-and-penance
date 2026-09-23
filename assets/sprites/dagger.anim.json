@@ -1,0 +1,18 @@
+{
+  "image": "dagger.png",
+  "cell": [
+    14,
+    8
+  ],
+  "pivot": [
+    2,
+    4
+  ],
+  "layer": "weapon",
+  "points": {
+    "tip": [
+      12,
+      3
+    ]
+  }
+}

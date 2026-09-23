@@ -143,6 +143,22 @@ Enemies hold their weapon like the player does: `handAnchors` in the body manife
 | `glint` | 11×11 | 5,5 | `normal` (row 0), `danger` (row 1) | Telegraph star at the weapon tip. Also flashes when a heavy reaches full charge. |
 | `exclaim` | 7×11 | 3,10 | none (static) | "Noticed you" pip above an enemy's head |
 
+### Arsenal (M3)
+| Sheet | Cell | Pivot (grip) | Points | Notes |
+|---|---|---|---|---|
+| `dagger` | 14×8 | 2,4 | tip | |
+| `greataxe` | 31×17 | 5,8 | tip | Two-handed: the shield is hidden while it's equipped |
+| `crossbow` | 21×15 | 5,7 | muzzle | Two-handed |
+| `flintlock` | 20×10 | 3,5 | muzzle | |
+| `buckler` | 11×11 | 5,5 | none | Off-hand. Drawn at the mirrored hand anchor, or pushed toward the aim while blocking. |
+| `bullet`, `bolt`, `ball` | small | center-front | none | Projectiles drawn pointing right, rotated to their velocity, and flown 10 px above the ground plane |
+| `muzzle` | 20×16 | 0,8 | none | Animations `small` (row 0) and `large` (row 1). The flame extends right from the pivot. |
+| `rack` | 18×22 | 9,20 | none | Its weapon/shield is drawn on top at runtime |
+| `sparring` + `stick` | 32×32 / 18×5 | feet / grip | none | S only, 3 columns: rest, wind back, swing through |
+| `question` | 7×11 | 3,10 | none | "Suspicious" pip (the "!" pip is `exclaim`) |
+
+Shell casings, gun smoke and wall sparks are pixel particles, not sprites.
+
 ### Weapon motion during attacks
 - The weapon sprite's swing comes from **gameplay data**, not art: each strike's `sweep` (`fromDeg` → `toDeg`, plus `reach` for thrusts) in `data/weapons/*.json` and `data/enemies/*.json`.
 - The windup eases from the rest angle to `fromDeg`, the active frames sweep to `toDeg`, and recovery returns to rest.

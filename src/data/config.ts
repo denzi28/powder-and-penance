@@ -51,6 +51,7 @@ function loadAll(src: Record<string, unknown>) {
     sfx: one(S.SfxBank, 'audio/sfx'),
     palette: one(S.Palette, 'palette'),
     weapons: dir(S.WeaponDef, 'weapons'),
+    shields: dir(S.ShieldDef, 'shields'),
     enemies: dir(S.EnemyDef, 'enemies'),
     rooms: dir(S.RoomData, 'rooms'),
   };
@@ -62,8 +63,17 @@ function loadAll(src: Record<string, unknown>) {
       for (const en of r.entities)
         if (en.type === 'enemy' && !data.enemies[String(en.kind)])
           errors.push(`data/rooms/${r.id}.json: unknown enemy kind "${String(en.kind)}"`);
-    for (const w of data.player.startWeapons)
-      if (!data.weapons[w]) errors.push(`data/config/player.json: startWeapons references unknown weapon "${w}"`);
+    for (const w of data.player.loadout.slots)
+      if (!data.weapons[w]) errors.push(`data/config/player.json: loadout.slots references unknown weapon "${w}"`);
+    const sh = data.player.loadout.shield;
+    if (sh && !data.shields[sh]) errors.push(`data/config/player.json: loadout.shield references unknown shield "${sh}"`);
+    for (const r of Object.values(data.rooms))
+      for (const en of r.entities) {
+        if (en.type === 'weapon_rack' && !data.weapons[String(en.weapon)])
+          errors.push(`data/rooms/${r.id}.json: weapon_rack has unknown weapon "${String(en.weapon)}"`);
+        if (en.type === 'shield_rack' && en.shield !== null && !data.shields[String(en.shield)])
+          errors.push(`data/rooms/${r.id}.json: shield_rack has unknown shield "${String(en.shield)}"`);
+      }
     if (!data.rooms[data.game.startRoom])
       errors.push(`data/config/game.json: startRoom "${data.game.startRoom}" has no file in data/rooms`);
   }

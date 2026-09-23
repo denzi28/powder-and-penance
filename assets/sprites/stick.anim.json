@@ -1,0 +1,18 @@
+{
+  "image": "stick.png",
+  "cell": [
+    18,
+    5
+  ],
+  "pivot": [
+    2,
+    2
+  ],
+  "layer": "weapon",
+  "points": {
+    "tip": [
+      16,
+      2
+    ]
+  }
+}

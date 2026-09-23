@@ -1,0 +1,32 @@
+{
+  "id": "heavy_crossbow",
+  "name": "Heavy Crossbow",
+  "kind": "ranged",
+  "twoHanded": true,
+  "view": { "sprite": "crossbow", "restAngleOffsetDeg": 0 },
+  "crit": { "backstab": 2.5, "riposte": 2.5 },
+  "ranged": {
+    "clip": 1,
+    "reserveMax": 12,
+    "fire": { "windup": 6, "recovery": 30, "stamina": 8, "moveMult": 0.5, "recoilDeg": 10, "kick": 2, "shake": 0.1, "sfx": "crossbow" },
+    "reload": { "ticks": 120, "stamina": 12, "moveMult": 0.3 },
+    "projectile": {
+      "sprite": "bolt", "speed": 300, "range": 320,
+      "damage": 48, "poise": 25, "pierce": 2, "knockback": 90,
+      "hitstop": 4, "shake": 0.12, "radius": 2, "spreadDeg": 0
+    },
+    "casing": false,
+    "muzzle": "none"
+  },
+  "heavy": {
+    "chargeTicks": 0, "chargeDamageMult": 1, "chargePoiseMult": 1,
+    "strike": {
+      "damage": 12, "poise": 26, "stamina": 14,
+      "windup": 10, "active": 3, "recovery": 24,
+      "rollCancelFrom": 22,
+      "hitbox": { "shape": "circle", "radius": 13, "offset": 9 },
+      "sweep": { "fromDeg": 30, "toDeg": 0, "reach": 6 },
+      "knockback": 160, "hitstop": 3, "shake": 0.12, "sfx": "swing"
+    }
+  }
+}

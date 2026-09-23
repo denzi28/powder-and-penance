@@ -659,6 +659,190 @@ function genCombatFx() {
   sheet('exclaim', ex, { cell: [7, 11], pivot: [3, 10], layer: 'fx' });
 }
 
+// ---------------------------------------------------------------- arsenal (M3)
+function genArsenal() {
+  const outlined = (w: number, h: number, draw: (c: Img) => void) => {
+    const c = new Img(w, h);
+    draw(c);
+    c.outline(P.ink);
+    return c;
+  };
+
+  // Weapons are drawn pointing right; pivot = grip.
+  sheet(
+    'dagger',
+    outlined(14, 8, c => {
+      c.hline(1, 4, 3, P.wood1);
+      c.vline(4, 3, 3, P.steel1);
+      c.rect(5, 3, 6, 2, P.steel2);
+      c.hline(5, 4, 6, P.steel1);
+      c.set(11, 3, P.steel2);
+    }),
+    { cell: [14, 8], pivot: [2, 4], layer: 'weapon', points: { tip: [12, 3] } },
+  );
+
+  sheet(
+    'greataxe',
+    outlined(31, 17, c => {
+      c.hline(1, 8, 23, P.wood1); // haft
+      c.hline(1, 9, 23, P.wood2);
+      c.set(0, 8, P.steel1);
+      c.rect(17, 7, 3, 4, P.steel1); // back spike + socket
+      for (let y = 2; y <= 15; y++) {
+        const bulge = 3 - Math.abs(y - 8.5) / 2.5;
+        c.hline(20, y, Math.max(2, Math.round(3 + bulge)), P.steel1);
+        c.set(20 + Math.max(2, Math.round(3 + bulge)), y, P.steel2); // edge
+      }
+      c.set(24, 1, P.steel2);
+      c.set(24, 16, P.steel2);
+    }),
+    { cell: [31, 17], pivot: [5, 8], layer: 'weapon', points: { tip: [27, 8] } },
+  );
+
+  sheet(
+    'crossbow',
+    outlined(21, 15, c => {
+      c.rect(1, 6, 12, 3, P.wood1); // stock
+      c.hline(1, 6, 12, P.wood2);
+      c.vline(14, 1, 13, P.wood2); // prod
+      c.set(13, 0, P.wood2);
+      c.set(13, 14, P.wood2);
+      for (let y = 2; y <= 12; y++) c.set(12 - Math.round(Math.abs(y - 7) * 0.2), y, P.wax1); // string
+      c.hline(9, 7, 10, P.steel2); // loaded bolt
+      c.set(19, 7, P.steel1);
+    }),
+    { cell: [21, 15], pivot: [5, 7], layer: 'weapon', points: { muzzle: [19, 7] } },
+  );
+
+  sheet(
+    'flintlock',
+    outlined(20, 10, c => {
+      c.rect(6, 2, 12, 2, P.steel1); // long barrel
+      c.hline(6, 2, 12, P.steel2);
+      c.rect(2, 3, 6, 2, P.wood2); // stock
+      c.rect(1, 5, 3, 3, P.wood1); // grip
+      c.set(6, 4, P.dark2); // lock
+      c.set(5, 1, P.steel1); // cock
+      c.set(8, 5, P.dark2); // trigger guard
+    }),
+    { cell: [20, 10], pivot: [3, 5], layer: 'weapon', points: { muzzle: [18, 2] } },
+  );
+
+  sheet(
+    'buckler',
+    outlined(11, 11, c => {
+      c.disc(5.5, 5.5, 4.6, P.steel1);
+      c.disc(5.5, 5.5, 3.2, P.stone3);
+      c.rect(5, 5, 2, 2, P.steel2); // boss
+      c.set(3, 3, P.steel2);
+    }),
+    { cell: [11, 11], pivot: [5, 5], layer: 'weapon' },
+  );
+
+  // Projectiles (no outline: they read as streaks). Drawn pointing right.
+  const bullet = new Img(6, 3);
+  bullet.hline(0, 1, 3, P.flame1);
+  bullet.rect(3, 0, 2, 3, P.flame2);
+  bullet.set(5, 1, P.wax2);
+  sheet('bullet', bullet, { cell: [6, 3], pivot: [4, 1], layer: 'fx' });
+  const bolt = new Img(12, 3);
+  bolt.hline(1, 1, 9, P.wood2);
+  bolt.set(10, 1, P.steel2);
+  bolt.set(11, 1, P.steel2);
+  bolt.set(0, 0, P.wax1);
+  bolt.set(0, 2, P.wax1);
+  sheet('bolt', bolt, { cell: [12, 3], pivot: [8, 1], layer: 'fx' });
+  const ball = new Img(5, 5);
+  ball.disc(2.5, 2.5, 2, P.steel2);
+  ball.set(1, 1, P.wax2);
+  sheet('ball', ball, { cell: [5, 5], pivot: [2, 2], layer: 'fx' });
+
+  // Muzzle flash: row 0 small, row 1 large. Pivot at the muzzle (left edge), flame extends right.
+  const muzzle = new Img(20 * 3, 16 * 2);
+  [1, 1.5].forEach((s, row) => {
+    for (let f = 0; f < 3; f++) {
+      const c = new Img(20, 16);
+      if (f === 0) {
+        c.ellipse(2 + 5 * s, 8, 5 * s, 3 * s, P.flame2);
+        c.ellipse(1 + 2 * s, 8, 2 * s, 1.5 * s, P.wax2);
+      } else if (f === 1) {
+        c.ellipse(3 + 5 * s, 8, 5 * s, 2 * s, P.flame1);
+        c.ellipse(2 + 2 * s, 8, 2 * s, 1, P.flame2);
+      } else {
+        c.ellipse(6 + 3 * s, 8, 3 * s, 2 * s, P.stone4, (x, y) => (x + y) % 2 === 0);
+      }
+      muzzle.blit(c, f * 20, row * 16);
+    }
+  });
+  const flash = [{ ticks: 2 }, { ticks: 2 }, { ticks: 4 }];
+  sheet('muzzle', muzzle, {
+    cell: [20, 16],
+    pivot: [0, 8],
+    layer: 'fx',
+    animations: {
+      small: { row: 0, dirs: ['S'], loop: false, frames: flash },
+      large: { row: 1, dirs: ['S'], loop: false, frames: flash },
+    },
+  });
+
+  // Rack: a wooden stand; the rack's item is drawn on top at runtime.
+  sheet(
+    'rack',
+    outlined(18, 22, c => {
+      c.rect(3, 6, 2, 14, P.wood1);
+      c.rect(13, 6, 2, 14, P.wood1);
+      c.hline(2, 8, 14, P.wood2);
+      c.hline(2, 16, 14, P.wood2);
+      c.rect(1, 19, 16, 2, P.dark1);
+    }),
+    { cell: [18, 22], pivot: [9, 20], layer: 'single' },
+  );
+
+  // Sparring post: the training dummy with a stick arm. Frames: 0 rest, 1 wind back, 2 swing through.
+  const spar = new Img(CELL * 3, CELL);
+  [0, -1, 1].forEach((lean, f) => {
+    const c = new Img(CELL, CELL);
+    drawDummy(c, lean);
+    c.rect(20 + lean, 15, 2, 2, P.wax1); // hand
+    c.outline(P.ink);
+    spar.blit(c, f * CELL, 0);
+  });
+  sheet('sparring', spar, {
+    cell: [CELL, CELL],
+    pivot: PIVOT,
+    layer: 'single',
+    handAnchors: { S: [5, -12] },
+    animations: {
+      idle: { row: 0, dirs: ['S'], loop: true, frames: [{ ticks: 60, col: 0 }] },
+      walk: { row: 0, dirs: ['S'], loop: true, frames: [{ ticks: 60, col: 0 }] },
+      attack: {
+        row: 0,
+        dirs: ['S'],
+        loop: false,
+        frames: [
+          { ticks: 1, phase: 'windup', col: 1 },
+          { ticks: 1, phase: 'active', col: 2 },
+          { ticks: 1, phase: 'recovery', col: 0 },
+        ],
+      },
+      stagger: { row: 0, dirs: ['S'], loop: false, frames: [{ ticks: 6, col: 1 }, { ticks: 6, col: 2 }, { ticks: 30, col: 0 }] },
+    },
+  });
+  sheet(
+    'stick',
+    outlined(18, 5, c => {
+      c.hline(1, 2, 15, P.wood2);
+      c.set(1, 2, P.wood1);
+    }),
+    { cell: [18, 5], pivot: [2, 2], layer: 'weapon', points: { tip: [16, 2] } },
+  );
+
+  const q = new Img(7, 11);
+  for (const [x, y] of [[2, 1], [3, 1], [4, 1], [1, 2], [5, 2], [5, 3], [4, 4], [3, 5], [3, 6], [3, 8]]) q.set(x, y, P.wax2);
+  q.outline(P.ink);
+  sheet('question', q, { cell: [7, 11], pivot: [3, 10], layer: 'fx' });
+}
+
 // ---------------------------------------------------------------- tiles
 function genTiles() {
   const T = 16;
@@ -822,6 +1006,7 @@ genWeapons();
 genMisc();
 genEnemies();
 genCombatFx();
+genArsenal();
 genTiles();
 genFont();
 console.log(`gen-art: wrote ${written} file(s), skipped ${skipped} existing${skipped && !FORCE ? ' (use --force to overwrite)' : ''}`);

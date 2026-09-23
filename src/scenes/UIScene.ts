@@ -13,6 +13,10 @@ export class UIScene extends Phaser.Scene {
   private err!: Phaser.GameObjects.BitmapText;
   private veil!: Phaser.GameObjects.Rectangle;
   private deathText!: Phaser.GameObjects.BitmapText;
+  private slotIcons: Phaser.GameObjects.Sprite[] = [];
+  private ammoText!: Phaser.GameObjects.BitmapText;
+  private shieldIcon!: Phaser.GameObjects.Sprite;
+  private prompt!: Phaser.GameObjects.BitmapText;
 
   constructor() {
     super('ui');
@@ -35,6 +39,10 @@ export class UIScene extends Phaser.Scene {
       .setDepth(21)
       .setAlpha(0);
     this.err = this.add.bitmapText(4, 4, 'pixel', '').setTint(hexToInt(DATA.palette.blood2)).setDepth(30);
+    for (let i = 0; i < 2; i++) this.slotIcons.push(this.add.sprite(0, 0, '__DEFAULT').setOrigin(0.5).setDepth(2));
+    this.shieldIcon = this.add.sprite(0, 0, '__DEFAULT').setOrigin(0.5).setDepth(2);
+    this.ammoText = this.add.bitmapText(0, 0, 'pixel', '').setDepth(2);
+    this.prompt = this.add.bitmapText(0, 0, 'pixel', '').setTint(hexToInt(DATA.palette.wax2)).setDepth(2);
     const offErr = onDataError(msg => this.err.setText(`DATA ERROR (see console)\n${msg.split('\n').slice(0, 6).join('\n')}`));
     const offOk = onDataReload(() => this.err.setText(''));
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
@@ -92,7 +100,68 @@ export class UIScene extends Phaser.Scene {
       );
     }
 
+    this.drawLoadout();
+    this.drawPrompt();
     this.drawDeath();
+  }
+
+  /** Bottom-right: two weapon slots (active highlighted), ammo, reload bar, shield icon. */
+  private drawLoadout() {
+    const p = this.gs.player;
+    const pal = DATA.palette;
+    const g = this.g;
+    const W = DATA.game.width;
+    const H = DATA.game.height;
+    const bw = 32;
+    const bh = 18;
+    const y = H - 8 - bh;
+    const xs = [W - 8 - bw * 2 - 3, W - 8 - bw];
+    p.slots.forEach((id, i) => {
+      const x = xs[i];
+      const active = i === p.slot;
+      g.fillStyle(hexToInt(pal.ink), 0.75).fillRect(x, y, bw, bh);
+      g.fillStyle(hexToInt(active ? pal.wax2 : pal.stone2), 1);
+      g.fillRect(x, y, bw, 1).fillRect(x, y + bh - 1, bw, 1).fillRect(x, y, 1, bh).fillRect(x + bw - 1, y, 1, bh);
+      const icon = this.slotIcons[i];
+      const sprite = DATA.weapons[id].view.sprite;
+      if (icon.texture.key !== sprite) icon.setTexture(sprite, 0);
+      icon.setPosition(x + bw / 2, y + bh / 2).setAlpha(active ? 1 : 0.5);
+    });
+
+    const w = p.weapon;
+    const ax = xs[p.slot];
+    if (w.ranged) {
+      const a = p.ammoFor(p.weaponId);
+      this.ammoText
+        .setText(`${a.clip}/${a.reserve}`)
+        .setTint(hexToInt(a.clip === 0 ? pal.ember : pal.wax2))
+        .setVisible(true);
+      this.ammoText.setPosition(ax + bw - this.ammoText.width, y - 9);
+    } else this.ammoText.setVisible(false);
+    if (p.reloadProgress >= 0) {
+      g.fillStyle(hexToInt(pal.dark2), 1).fillRect(ax + 2, y + bh - 3, bw - 4, 1);
+      g.fillStyle(hexToInt(pal.flame2), 1).fillRect(ax + 2, y + bh - 3, Math.round((bw - 4) * Math.min(1, p.reloadProgress)), 1);
+    }
+
+    const sh = p.shieldId ? DATA.shields[p.shieldId] : null;
+    this.shieldIcon.setVisible(!!sh);
+    if (sh) {
+      if (this.shieldIcon.texture.key !== sh.sprite) this.shieldIcon.setTexture(sh.sprite, 0);
+      // Dimmed while a two-handed weapon is out (shield stowed).
+      this.shieldIcon.setPosition(xs[0] - 9, y + bh / 2).setAlpha(p.shield ? 1 : 0.3);
+    }
+  }
+
+  private drawPrompt() {
+    const gs = this.gs;
+    const p = gs.player;
+    const rack = !p.dead && ['idle', 'move', 'sprint'].includes(p.stateName) ? gs.racks.nearest(p.x, p.y) : null;
+    this.prompt.setVisible(!!rack);
+    if (!rack) return;
+    const key = gs.controls.device === 'pad' ? 'A' : 'E';
+    const name = rack.id ? (rack.kind === 'weapon' ? DATA.weapons[rack.id].name : DATA.shields[rack.id].name) : 'no shield';
+    this.prompt.setText(`[${key}] TAKE ${name.toUpperCase()}`);
+    this.prompt.setPosition(Math.round((DATA.game.width - this.prompt.width) / 2), DATA.game.height - 40);
   }
 
   private drawDeath() {

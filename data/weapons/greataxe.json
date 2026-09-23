@@ -1,0 +1,48 @@
+{
+  "id": "greataxe",
+  "name": "Bellfounder's Axe",
+  "kind": "melee",
+  "twoHanded": true,
+  "view": { "sprite": "greataxe", "restAngleOffsetDeg": 60 },
+  "crit": { "backstab": 2.2, "riposte": 2.5 },
+  "light": [
+    {
+      "damage": 42, "poise": 30, "stamina": 24,
+      "windup": 20, "active": 5, "recovery": 30,
+      "comboFrom": 26, "rollCancelFrom": 32,
+      "trackDegPerTick": 4,
+      "hyperArmor": 10,
+      "lunge": { "distance": 10, "startTick": 16, "ticks": 6 },
+      "hitbox": { "shape": "arc", "radius": 32, "halfAngle": 80 },
+      "sweep": { "fromDeg": -120, "toDeg": 80 },
+      "knockback": 150, "hitstop": 6, "shake": 0.3, "sfx": "swing_heavy"
+    },
+    {
+      "damage": 46, "poise": 32, "stamina": 26,
+      "windup": 22, "active": 5, "recovery": 36,
+      "comboFrom": 30, "rollCancelFrom": 38,
+      "trackDegPerTick": 4,
+      "hyperArmor": 10,
+      "lunge": { "distance": 10, "startTick": 18, "ticks": 6 },
+      "hitbox": { "shape": "arc", "radius": 32, "halfAngle": 80 },
+      "sweep": { "fromDeg": 90, "toDeg": -110 },
+      "knockback": 160, "hitstop": 6, "shake": 0.32, "sfx": "swing_heavy"
+    }
+  ],
+  "heavy": {
+    "chargeTicks": 40,
+    "chargeDamageMult": 1.5,
+    "chargePoiseMult": 1.6,
+    "strike": {
+      "damage": 64, "poise": 45, "stamina": 36,
+      "windup": 26, "active": 6, "recovery": 42,
+      "rollCancelFrom": 40,
+      "trackDegPerTick": 3,
+      "hyperArmor": 35,
+      "lunge": { "distance": 12, "startTick": 22, "ticks": 6 },
+      "hitbox": { "shape": "arc", "radius": 34, "halfAngle": 45 },
+      "sweep": { "fromDeg": -160, "toDeg": 20 },
+      "knockback": 200, "hitstop": 8, "shake": 0.45, "sfx": "swing_heavy"
+    }
+  }
+}

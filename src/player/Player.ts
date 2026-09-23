@@ -8,8 +8,14 @@ import { StateMachine } from '../actors/StateMachine';
 import { Poise } from '../actors/Poise';
 import { dir4FromAngle, dir8FromAngle, type Dir8 } from '../core/math';
 import type { WorldCtx } from '../core/World';
-import type { HitInfo } from '../combat/CombatSystem';
+import type { Guard, HitInfo } from '../combat/CombatSystem';
+import type { Enemy } from '../enemies/Enemy';
 import { PLAYER_STATES } from './PlayerStates';
+
+export interface Ammo {
+  clip: number;
+  reserve: number;
+}
 
 export class Player extends Actor {
   readonly team = 'player' as const;
@@ -25,6 +31,8 @@ export class Player extends Actor {
   moveX = 0;
   moveY = 0;
   moveMag = 0;
+  /** Ticks alive (for timing rules such as parry re-arm). */
+  age = 0;
 
   bodyDir: Dir8 = 'S';
   legsDir: Dir8 = 'S';
@@ -33,18 +41,36 @@ export class Player extends Actor {
   rollDirX = 0;
   rollDirY = 1;
   sprintNeedsRepress = false;
-  slot = 0;
   comboIndex = 0;
   /** Heavy attack charge ticks accumulated. */
   charge = 0;
   /** Freeze the body animation (heavy charge hold). */
   animHold = false;
 
+  // Loadout
+  slots: [string, string];
+  slot = 0;
+  shieldId: string | null;
+  private ammo = new Map<string, Ammo>();
+  /** Gun recoil 0..1 (decays), reload/swap progress 0..1 for the view and HUD. */
+  recoil = 0;
+  reloadProgress = -1;
+  weaponLowered = false;
+
+  // Shield
+  blockReleasedAt = -Infinity;
+  parryActive = false;
+
+  // Critical (riposte / backstab) in progress
+  crit: { victim: Enemy; kind: 'riposte' | 'backstab' } | null = null;
+
   constructor(ctx: WorldCtx, x: number, y: number) {
     super(ctx, x, y);
     this.hp = this.maxHp;
     this.aimX = x;
     this.aimY = y + 32;
+    this.slots = [...DATA.player.loadout.slots];
+    this.shieldId = DATA.player.loadout.shield;
     this.body.play('idle');
     this.legs.play('idle');
     this.sm = new StateMachine<Player>(this, PLAYER_STATES, 'idle');
@@ -76,11 +102,25 @@ export class Player extends Actor {
     return this.sm.t;
   }
   get weaponId() {
-    const list = DATA.player.startWeapons;
-    return list[this.slot % list.length];
+    return this.slots[this.slot];
   }
   get weapon() {
     return DATA.weapons[this.weaponId];
+  }
+  /** The usable shield: none while a two-handed weapon is held. */
+  get shield() {
+    if (!this.shieldId || this.weapon.twoHanded) return null;
+    return DATA.shields[this.shieldId] ?? null;
+  }
+
+  ammoFor(weaponId: string): Ammo {
+    let a = this.ammo.get(weaponId);
+    if (!a) {
+      const r = DATA.weapons[weaponId]?.ranged;
+      a = { clip: r?.clip ?? 0, reserve: r?.reserveMax ?? 0 };
+      this.ammo.set(weaponId, a);
+    }
+    return a;
   }
 
   setAim(ax: number, ay: number) {
@@ -91,9 +131,11 @@ export class Player extends Actor {
 
   tick() {
     this.beginTick();
+    this.age++;
     this.moveX = this.input.moveX;
     this.moveY = this.input.moveY;
     this.moveMag = Math.min(1, Math.hypot(this.moveX, this.moveY));
+    this.recoil = Math.max(0, this.recoil - 0.12);
 
     this.stamina.tick();
     this.sm.tick();
@@ -111,20 +153,40 @@ export class Player extends Actor {
     this.squash.tick();
   }
 
+  guard(): Guard | null {
+    const sh = this.shield;
+    if (!sh || this.sm.name !== 'block') return null;
+    return { facing: this.aimAngle, arcDeg: sh.arcDeg, parry: this.parryActive, stability: sh.stability, absorption: sh.absorption };
+  }
+
+  spendGuardStamina(cost: number): boolean {
+    this.stamina.spend(cost);
+    return this.stamina.value <= 0;
+  }
+
   onHit(h: HitInfo) {
+    if (h.killed) {
+      this.sm.change('dead');
+      return;
+    }
+    if (h.blocked) {
+      if (h.guardBroken) this.sm.change('guardBroken');
+      else this.squash.set(DATA.juice.squash.hit);
+      return;
+    }
     this.ctx.bus.emit('sfx', { id: 'player_hurt' });
-    if (h.killed) this.sm.change('dead');
-    else if (h.staggered) this.sm.change('stagger', true);
+    if (h.staggered) this.sm.change('stagger', true);
     else this.squash.set(DATA.juice.squash.hit);
   }
 
   swapWeapon() {
-    this.slot = (this.slot + 1) % DATA.player.startWeapons.length;
+    this.slot = (this.slot + 1) % this.slots.length;
   }
 
   refill() {
     this.hp = this.maxHp;
     this.stamina.refill();
+    this.ammo.clear(); // refilled lazily to full
   }
 
   respawn(x: number, y: number) {
@@ -141,7 +203,7 @@ export class Player extends Actor {
   private updateAnims() {
     const st = this.sm.name;
     if (this.runner) this.bodyDir = dir8FromAngle(this.runner.angle);
-    else if (st !== 'roll' && st !== 'dead' && st !== 'stagger') this.bodyDir = dir8FromAngle(this.aimAngle);
+    else if (st !== 'roll' && st !== 'dead' && st !== 'stagger' && st !== 'guardBroken') this.bodyDir = dir8FromAngle(this.aimAngle);
     this.body.tick(this.animHold ? 0 : 1);
 
     if (!this.legsVisible) return;

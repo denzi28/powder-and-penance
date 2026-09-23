@@ -1,0 +1,55 @@
+{
+  "id": "dagger",
+  "name": "Wick Knife",
+  "kind": "melee",
+  "twoHanded": false,
+  "view": { "sprite": "dagger", "restAngleOffsetDeg": 20 },
+  "crit": { "backstab": 5.0, "riposte": 3.5 },
+  "light": [
+    {
+      "damage": 13, "poise": 5, "stamina": 9,
+      "windup": 5, "active": 3, "recovery": 12,
+      "comboFrom": 8, "rollCancelFrom": 10,
+      "trackDegPerTick": 10,
+      "lunge": { "distance": 5, "startTick": 3, "ticks": 3 },
+      "hitbox": { "shape": "arc", "radius": 20, "halfAngle": 50 },
+      "sweep": { "fromDeg": -70, "toDeg": 60 },
+      "knockback": 30, "hitstop": 2, "shake": 0.06, "sfx": "swing"
+    },
+    {
+      "damage": 13, "poise": 5, "stamina": 9,
+      "windup": 5, "active": 3, "recovery": 12,
+      "comboFrom": 8, "rollCancelFrom": 10,
+      "trackDegPerTick": 10,
+      "lunge": { "distance": 5, "startTick": 3, "ticks": 3 },
+      "hitbox": { "shape": "arc", "radius": 20, "halfAngle": 50 },
+      "sweep": { "fromDeg": 60, "toDeg": -70 },
+      "knockback": 30, "hitstop": 2, "shake": 0.06, "sfx": "swing"
+    },
+    {
+      "damage": 16, "poise": 8, "stamina": 11,
+      "windup": 7, "active": 3, "recovery": 16,
+      "comboFrom": 11, "rollCancelFrom": 13,
+      "trackDegPerTick": 8,
+      "lunge": { "distance": 9, "startTick": 5, "ticks": 4 },
+      "hitbox": { "shape": "arc", "radius": 23, "halfAngle": 25 },
+      "sweep": { "fromDeg": 0, "toDeg": 0, "reach": 7 },
+      "knockback": 50, "hitstop": 3, "shake": 0.1, "sfx": "swing"
+    }
+  ],
+  "heavy": {
+    "chargeTicks": 20,
+    "chargeDamageMult": 1.5,
+    "chargePoiseMult": 1.5,
+    "strike": {
+      "damage": 24, "poise": 12, "stamina": 18,
+      "windup": 10, "active": 4, "recovery": 20,
+      "rollCancelFrom": 18,
+      "trackDegPerTick": 6,
+      "lunge": { "distance": 18, "startTick": 8, "ticks": 5 },
+      "hitbox": { "shape": "arc", "radius": 24, "halfAngle": 22 },
+      "sweep": { "fromDeg": 0, "toDeg": 0, "reach": 9 },
+      "knockback": 80, "hitstop": 4, "shake": 0.15, "sfx": "swing"
+    }
+  }
+}

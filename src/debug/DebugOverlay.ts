@@ -7,7 +7,7 @@ import { DEG } from '../core/math';
 import { DEPTH } from '../render/depth';
 import { hexToInt } from '../ui/colors';
 import { shapeOutline } from '../combat/shapes';
-import { Enemy } from '../enemies/Enemy';
+import { COMBAT_STATES, Enemy } from '../enemies/Enemy';
 import type { Actor } from '../actors/Actor';
 import type { GameScene } from '../scenes/GameScene';
 
@@ -42,8 +42,9 @@ export class DebugOverlay {
       const tags = [a.invulnerable ? 'IFR' : '', a.hyperArmor ? 'ARMOR' : '', a === gs.player && gs.player.stamina.locked ? 'EXH' : '']
         .filter(Boolean)
         .join(' ');
+      const aw = a instanceof Enemy && a.def.ai === 'melee' ? ` A${Math.round(a.awareness * 100)}` : '';
       label
-        .setText(`${a.stateName.toUpperCase()} ${a.stateTick}\nHP${Math.ceil(a.hp)} P${Math.round(a.poise.damage)}/${a.poise.max}${tags ? `\n${tags}` : ''}`)
+        .setText(`${a.stateName.toUpperCase()} ${a.stateTick}\nHP${Math.ceil(a.hp)} P${Math.round(a.poise.damage)}/${a.poise.max}${aw}${tags ? `\n${tags}` : ''}`)
         .setVisible(true);
       label.setPosition(x - Math.floor(label.width / 2), y - a.hurtbox.h - 34);
     }
@@ -62,11 +63,12 @@ export class DebugOverlay {
     box(this.g, x - hb.w / 2, y + hb.offsetY - hb.h / 2, hb.w, hb.h, hexToInt(color), a.dead ? 0.3 : 1);
   }
 
+  /** Vision cone (sight is unlimited; drawn 120 px long). Colour: pale = unaware, orange = suspicious/combat. */
   private drawCone(e: Enemy) {
     const per = e.def.perception;
-    const inCombat = !['idle', 'return'].includes(e.stateName);
+    const inCombat = COMBAT_STATES.has(e.stateName);
     const half = inCombat ? Math.PI : per.halfAngleDeg * DEG;
-    const r = inCombat ? per.range * 1.6 : per.range;
+    const r = 120;
     const cx = e.x;
     const cy = e.chestY;
     const pts: { x: number; y: number }[] = half < Math.PI ? [{ x: cx, y: cy }] : [];
@@ -76,7 +78,8 @@ export class DebugOverlay {
       pts.push({ x: cx + Math.cos(a) * r, y: cy + Math.sin(a) * r });
     }
     if (half < Math.PI) pts.push({ x: cx, y: cy });
-    this.g.lineStyle(1, hexToInt(DATA.palette[inCombat ? 'ember' : 'wax1']), 0.35);
+    const alarmed = inCombat || e.awareness >= per.suspicionAt;
+    this.g.lineStyle(1, hexToInt(DATA.palette[alarmed ? 'ember' : 'wax1']), e.visible ? 0.7 : 0.3);
     this.g.strokePoints(pts, false);
   }
 

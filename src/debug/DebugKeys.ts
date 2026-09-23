@@ -4,7 +4,7 @@
 import { DATA } from '../data/config';
 import type { GameScene } from '../scenes/GameScene';
 
-const SPAWN_KEYS: Record<string, string> = { Digit1: 'wickling', Digit2: 'dummy' };
+const SPAWN_KEYS: Record<string, string> = { Digit1: 'wickling', Digit2: 'dummy', Digit3: 'sparring_dummy' };
 
 export function installDebugKeys(scene: GameScene): () => void {
   const onKey = (e: KeyboardEvent) => {

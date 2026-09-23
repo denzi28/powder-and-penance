@@ -1,7 +1,32 @@
 {
   "id": "revolver",
-  "name": "Revolver",
+  "name": "Parish Revolver",
   "kind": "ranged",
   "twoHanded": false,
-  "view": { "sprite": "revolver", "restAngleOffsetDeg": 0 }
+  "view": { "sprite": "revolver", "restAngleOffsetDeg": 0 },
+  "crit": { "backstab": 3.0, "riposte": 3.0 },
+  "ranged": {
+    "clip": 6,
+    "reserveMax": 24,
+    "fire": { "windup": 3, "recovery": 22, "stamina": 6, "moveMult": 0.6, "recoilDeg": 25, "kick": 3, "shake": 0.08, "sfx": "gunshot" },
+    "reload": { "ticks": 110, "stamina": 8, "moveMult": 0.4 },
+    "projectile": {
+      "sprite": "bullet", "speed": 420, "range": 280,
+      "damage": 22, "poise": 9, "pierce": 0, "knockback": 50,
+      "hitstop": 2, "shake": 0.05, "radius": 2, "spreadDeg": 2
+    },
+    "casing": true,
+    "muzzle": "small"
+  },
+  "heavy": {
+    "chargeTicks": 0, "chargeDamageMult": 1, "chargePoiseMult": 1,
+    "strike": {
+      "damage": 8, "poise": 22, "stamina": 12,
+      "windup": 8, "active": 3, "recovery": 20,
+      "rollCancelFrom": 18,
+      "hitbox": { "shape": "circle", "radius": 12, "offset": 8 },
+      "sweep": { "fromDeg": 30, "toDeg": 0, "reach": 6 },
+      "knockback": 140, "hitstop": 3, "shake": 0.1, "sfx": "swing"
+    }
+  }
 }
