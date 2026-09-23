@@ -95,6 +95,7 @@ const approach: State<Enemy> = {
   tick(e) {
     const exit = combatExit(e);
     if (exit) return exit;
+    if (e.bubble) return 'channel';
     // Face the player when they're in sight; otherwise face where we're walking.
     if (e.visible) e.turnTo(e.angleToPlayer());
     if (e.tryAttack()) return 'attack';
@@ -117,6 +118,7 @@ const strafe: State<Enemy> = {
   tick(e) {
     const exit = combatExit(e);
     if (exit) return exit;
+    if (e.bubble) return 'channel';
     const a = e.angleToPlayer();
     e.turnTo(a);
     if (e.tryAttack()) return 'attack';
@@ -154,6 +156,7 @@ const attack: State<Enemy> = {
     }
     e.cooldowns.set(e.move!.id, e.move!.cooldown);
     e.attackGap = e.randRange(e.def.attackGapTicks);
+    if (e.bubble) return 'channel'; // just summoned: step back and let the brood fight
     return e.isFighter ? 'strafe' : 'idle';
   },
   exit(e) {
@@ -314,8 +317,31 @@ const intro: State<Enemy> = {
   },
 };
 
-const FIGHTER = { idle, suspicious, notice, approach, strafe, attack, stagger, parried, guardBroken, critVictim, return: ret, dead };
-const BOSS = { idle: dormant, intro, approach, strafe, attack, stagger, parried, guardBroken, critVictim, dead };
+/**
+ * Sheltering in a summoning bubble: no attacks. It walks to the side of its room away from the player,
+ * then holds its channelling pose (anim "channel") facing them, until the last summon dies.
+ */
+const channel: State<Enemy> = {
+  enter(e) {
+    e.channelSpot = e.sideSpot();
+    e.ctx.tokens.release(e);
+  },
+  tick(e) {
+    if (!e.bubble || e.player.dead) {
+      e.attackGap = Math.max(e.attackGap, 20);
+      return e.player.dead ? 'idle' : 'approach';
+    }
+    const s = e.channelSpot!;
+    if (Math.hypot(s.x - e.x, s.y - e.y) > 6) e.turnTo(e.navigateTo(s.x, s.y, e.def.speed));
+    else {
+      e.steer(0, 0);
+      e.turnTo(e.angleToPlayer());
+    }
+  },
+};
+
+const FIGHTER = { idle, suspicious, notice, approach, strafe, attack, stagger, parried, guardBroken, critVictim, return: ret, dead, channel };
+const BOSS = { idle: dormant, intro, approach, strafe, attack, stagger, parried, guardBroken, critVictim, dead, channel };
 
 export const BRAINS: Record<'melee' | 'ranged' | 'dummy' | 'rhythm' | 'boss', Record<string, State<Enemy>>> = {
   // Ranged differs only through data: spacing.retreatBelow and moves whose strikes throw projectiles.

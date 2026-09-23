@@ -2070,6 +2070,13 @@ function genWorks() {
         loop: false,
       },
       {
+        // Held while her summons live: arms raised, wax gathering between her hands, swaying slightly.
+        name: 'channel',
+        frames: frames2(drawBones, [{ spread: 2, bob: -2 }, { spread: 1.8, bob: -3, sway: 1 }, { spread: 2, bob: -2 }, { spread: 1.8, bob: -1, sway: -1 }]),
+        timing: [{ ticks: 10 }, { ticks: 10 }, { ticks: 10 }, { ticks: 10 }],
+        loop: true,
+      },
+      {
         // Rising out of her own burning wax.
         name: 'intro',
         frames: frames2(drawBones, [{ rise: 30 }, { rise: 20 }, { rise: 12 }, { rise: 5 }, { rise: 0, hunch: 3 }, { rise: 0, spread: 1 }]),

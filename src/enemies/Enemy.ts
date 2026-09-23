@@ -9,6 +9,7 @@ import { AnimPlayer } from '../anim/AnimPlayer';
 import { AttackRunner, turnToward } from '../combat/AttackRunner';
 import { DEG, dir8FromAngle, type Dir8 } from '../core/math';
 import { canSee } from './perception';
+import { TILE } from '../world/TileGrid';
 import { BRAINS } from './EnemyBrain';
 import type { WorldCtx } from '../core/World';
 import type { HitInfo } from '../combat/CombatSystem';
@@ -63,6 +64,25 @@ export class Enemy extends Actor {
   summons: Enemy[] = [];
   /** Sitting in a summoning bubble: invulnerable until every summon is dead. */
   bubble = false;
+  /** Where it waits out its bubble (the "channel" state). */
+  channelSpot: { x: number; y: number } | null = null;
+
+  /** An open spot on the side of its room away from the player, level with the room's middle. */
+  sideSpot(): { x: number; y: number } {
+    const r = this.room ? DATA.rooms[this.room] : null;
+    if (!r) return { x: this.x, y: this.y };
+    const w = r.tiles[0].length;
+    const h = r.tiles.length;
+    const midX = (r.origin[0] + w / 2) * TILE;
+    const tx = this.player.x < midX ? r.origin[0] + w - 4 : r.origin[0] + 3;
+    const ty = r.origin[1] + Math.floor(h / 2);
+    const grid = this.ctx.grid();
+    for (let d = 0; d < 6; d++)
+      for (let dy = -d; dy <= d; dy++)
+        for (let dx = -d; dx <= d; dx++)
+          if (!grid.isSolid(tx + dx, ty + dy)) return { x: (tx + dx) * TILE + TILE / 2, y: (ty + dy) * TILE + TILE - 2 };
+    return { x: this.x, y: this.y };
+  }
   alpha = 1;
 
   constructor(ctx: WorldCtx, readonly kind: string, x: number, y: number, facing: number) {
@@ -194,6 +214,9 @@ export class Enemy extends Actor {
     } else if (
       st === 'attack' || st === 'stagger' || st === 'dead' || st === 'parried' || st === 'critVictim' || st === 'guardBroken' || st === 'intro'
     ) {
+      this.anim.tick();
+    } else if (st === 'channel' && speed <= 4 && this.anim.has('channel')) {
+      this.anim.play('channel'); // holding the summoning pose
       this.anim.tick();
     } else if (speed > 4) {
       this.anim.play('walk');

@@ -265,8 +265,33 @@
         }
       ]
     },
-    "intro": {
+    "channel": {
       "row": 35,
+      "dirs": [
+        "S",
+        "SE",
+        "E",
+        "NE",
+        "N"
+      ],
+      "loop": true,
+      "frames": [
+        {
+          "ticks": 10
+        },
+        {
+          "ticks": 10
+        },
+        {
+          "ticks": 10
+        },
+        {
+          "ticks": 10
+        }
+      ]
+    },
+    "intro": {
+      "row": 40,
       "dirs": [
         "S",
         "SE",
@@ -297,7 +322,7 @@
       ]
     },
     "stagger": {
-      "row": 40,
+      "row": 45,
       "dirs": [
         "S",
         "SE",
@@ -319,7 +344,7 @@
       ]
     },
     "death": {
-      "row": 45,
+      "row": 50,
       "dirs": [
         "S"
       ],
