@@ -65,6 +65,7 @@ function loadAll(src: Record<string, unknown>) {
     chatter: one(S.Chatter, 'chatter'),
     ambience: one(S.Ambience, 'ambience'),
     ambient: one(S.AmbientAudioCfg, 'audio/ambient'),
+    music: one(S.MusicCfg, 'audio/music'),
     terrain: one(S.Terrain, 'terrain'),
     scripts: dir(S.ScriptDef, 'scripts'),
   };
@@ -142,6 +143,18 @@ function loadAll(src: Record<string, unknown>) {
           errors.push(`data/rooms/${r.id}.json: shield_rack has unknown shield "${String(en.shield)}"`);
       }
     }
+    for (const [boss, theme] of Object.entries(data.music.bosses)) {
+      if (!data.enemies[boss]) errors.push(`data/audio/music.json: unknown boss "${boss}"`);
+      if (!data.music.themes[theme]) errors.push(`data/audio/music.json: boss "${boss}" has unknown theme "${theme}"`);
+    }
+    for (const [id, th] of Object.entries(data.music.themes))
+      th.layers.forEach((l, i) =>
+        (l.melody ?? []).forEach((line, b) => {
+          const sum = line.split(' ').reduce((a, w) => a + Number(w.split(':')[1]), 0);
+          if (!/^((r|\d+[+-]?):\d+ ?)+$/.test(line) || sum !== th.steps)
+            errors.push(`data/audio/music.json: theme "${id}" layer ${i} bar ${b + 1}: "${line}" should be "degree:steps" words adding up to ${th.steps} steps`);
+        }),
+      );
     for (const k of Object.keys(data.ambient.decor)) if (!data.decor.decor[k]) errors.push(`data/audio/ambient.json: unknown decor kind "${k}"`);
     for (const r of Object.keys(data.ambient.roomEcho)) if (!data.rooms[r]) errors.push(`data/audio/ambient.json: roomEcho: unknown room "${r}"`);
     for (const a of Object.keys(data.ambient.areas)) if (!data.areas.areas[a]) errors.push(`data/audio/ambient.json: unknown area "${a}"`);

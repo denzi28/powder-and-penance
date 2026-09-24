@@ -42,6 +42,9 @@ export class AmbientAudio {
   private timers: number[] = [];
   private emitters: Emitter[] = [];
   private echo = 0;
+  private duckK = 1;
+  /** Footsteps: straight out, never ducked. */
+  private stepOut: GainNode | null = null;
   private room: string | null = null;
   private foot = 0;
   private music: GainNode | null = null;
@@ -73,6 +76,10 @@ export class AmbientAudio {
       lp.connect(this.echoFb);
       this.echoFb.connect(delay);
       lp.connect(this.out);
+      this.stepOut = ctx.createGain();
+      this.stepOut.gain.value = DATA.audio.master;
+      this.stepOut.connect(ctx.destination);
+      this.duckK = 1;
       this.musicPan = ctx.createStereoPanner();
       this.music = ctx.createGain();
       this.music.gain.value = 0;
@@ -156,6 +163,13 @@ export class AmbientAudio {
     this.sound(sound, volume * near, Math.max(-0.8, Math.min(0.8, (x - listener.x) / 160)), 0);
   }
 
+  /** Turn the ambience down under other music (1 = full). Footsteps stay as they are. */
+  duck(k: number) {
+    if (!this.ctx || !this.out || k === this.duckK) return;
+    this.duckK = k;
+    this.out.gain.setTargetAtTime(DATA.ambient.volume * DATA.audio.master * k, this.ctx.currentTime, 0.6);
+  }
+
   /** The player's footstep on a surface; false if sound isn't running yet. */
   step(surface: Surface, sprint: boolean): boolean {
     if (!this.ready() || !this.out) return false;
@@ -163,7 +177,7 @@ export class AmbientAudio {
     this.foot = 1 - this.foot; // left, right
     const vol = fs.volume * (sprint ? 1.3 : 1) * rnd(0.85, 1.1);
     const echo = this.echo > 0 ? fs.echo : 0;
-    this.sound(`step_${surface}`, vol, this.foot ? -0.12 : 0.12, echo);
+    this.sound(`step_${surface}`, vol * DATA.ambient.volume, this.foot ? -0.12 : 0.12, echo, this.stepOut!);
     return true;
   }
 
@@ -303,14 +317,14 @@ export class AmbientAudio {
   }
 
   // ---------------------------------------------------------------- one-off sounds
-  private sound(id: AmbientSound | StepSound, volume: number, pan: number, echo: number) {
+  private sound(id: AmbientSound | StepSound, volume: number, pan: number, echo: number, dest?: AudioNode) {
     const ctx = this.ctx!;
     if (volume < 0.01) return;
     const panner = ctx.createStereoPanner();
     panner.pan.value = pan;
     const g = ctx.createGain();
     g.gain.value = volume;
-    g.connect(panner).connect(this.out!);
+    g.connect(panner).connect(dest ?? this.out!);
     if (echo > 0) {
       const send = ctx.createGain();
       send.gain.value = echo;
@@ -589,7 +603,7 @@ const RECIPES: Record<AmbientSound | StepSound, Recipe> = {
 
 // ---------------------------------------------------------------- the harp
 /** A plucked harp string: a bright attack, upper partials dying first, a long soft tail. */
-function harp(ctx: BaseAudioContext, out: AudioNode, t: number, midi: number, vol: number) {
+export function harp(ctx: BaseAudioContext, out: AudioNode, t: number, midi: number, vol: number) {
   const f = 440 * Math.pow(2, (midi - 69) / 12);
   const sustain = Math.max(0.9, 2.6 - (midi - 40) * 0.035);
   const lp = ctx.createBiquadFilter();

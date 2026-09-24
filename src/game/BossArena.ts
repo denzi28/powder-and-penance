@@ -72,6 +72,19 @@ export class BossArena {
       }
   }
 
+  /** What the boss music should play (see audio/Music.ts), or null when there's no fight. */
+  musicState(): { arena: string; boss: string; level: number } | null {
+    const st = this.stage;
+    const a = this.current;
+    if (!st || !a || st.name === 'done') return null;
+    if (st.name === 'fight') {
+      const b = st.boss;
+      const level = b.stateName === 'intro' ? 0 : st.turning || b.dead ? -1 : b.hp <= b.maxHp * 0.5 ? 2 : 1;
+      return { arena: a.kind, boss: b.kind, level };
+    }
+    return { arena: a.kind, boss: st.body.kind, level: -1 }; // between phases
+  }
+
   /** Is this tile currently sealed by smoke? (Doors in a sealed doorway can't be used.) */
   sealed(tx: number, ty: number) {
     return !!this.current?.seals.some(s => s.tx === tx && s.ty === ty);

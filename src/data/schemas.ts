@@ -739,6 +739,48 @@ export const AmbientBed = z.object({
   chord: z.array(pos).optional(),
 });
 export type AmbientBed = z.infer<typeof AmbientBed>;
+// ---- Boss music (data/audio/music.json) ----
+export const MUSIC_INSTRUMENTS = ['drum', 'snare', 'hat', 'anvil', 'bell', 'bass', 'pad', 'choir', 'organ', 'lead', 'brass', 'hum', 'musicbox', 'pluck', 'harp'] as const;
+export const MusicLayer = z
+  .object({
+    inst: z.enum(MUSIC_INSTRUMENTS),
+    /** Plays from this intensity up: 0 entrance, 1 fight, 2 below half health. */
+    level: int.min(0).max(2).default(0),
+    /** Keeps playing between phases. */
+    hold: z.boolean().default(false),
+    vol: num.min(0).max(3).optional(),
+    /** Octaves up (+) or down (-) from the chord root / key. */
+    oct: int.min(-3).max(3).optional(),
+    /** One character per step: "x" plays, "X" plays louder, "." rests. */
+    pattern: z.string().regex(/^[xX.]+$/).optional(),
+    /** Chord tones to play ("1", "3", "5", "7", "8"), cycled one per hit (or all at once with `chord`). */
+    notes: z.string().regex(/^[13578]+$/).optional(),
+    chord: z.boolean().default(false),
+    /** Note length in steps. */
+    len: pos.optional(),
+    /** A melody line per bar: "degree:steps" words ("r" rests; "5+" raised, "7-" lowered). */
+    melody: z.array(z.string()).min(1).optional(),
+  })
+  .refine(l => !!l.pattern !== !!l.melody, { message: 'a layer has either a pattern or a melody' });
+export type MusicLayer = z.infer<typeof MusicLayer>;
+export const MusicTheme = z.object({
+  bpm: pos,
+  /** Sixteenth-note steps per bar (16 for 4/4, 12 for 3/4 or 6/8). */
+  steps: int.min(4).max(32),
+  /** The key's root, MIDI (48 = C3). */
+  root: int,
+  scale: z.enum(['minor', 'dorian', 'phrygian', 'major']),
+  /** One chord per bar: a scale degree from 0 (its triad in the scale), or "4M" / "3m" to force major / minor. */
+  chords: z.array(z.union([int.min(0), z.string().regex(/^\d+[Mm]$/)])).min(1),
+  layers: z.array(MusicLayer).min(1),
+});
+export type MusicTheme = z.infer<typeof MusicTheme>;
+export const MusicCfg = z.object({
+  volume: num.min(0).max(1),
+  /** Boss (enemy kind) -> theme. */
+  bosses: z.record(z.string()),
+  themes: z.record(MusicTheme),
+});
 export const AmbientAudioCfg = z.object({
   volume: num.min(0).max(1),
   areas: z.record(
