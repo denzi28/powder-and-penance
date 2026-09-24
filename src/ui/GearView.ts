@@ -194,13 +194,18 @@ export class GearView {
     const H = DATA.game.height;
     this.text(20, 16, 'SETTINGS', 'flame2', 2);
     SETTING_ROWS.forEach((r, i) => {
-      const y = 50 + i * 24;
+      const y = 46 + i * 22;
       const sel = s.index === i;
       if (sel) {
         this.g.fillStyle(this.col('dark2'), 1).fillRect(18, y - 5, W - 36, 18);
         this.g.fillStyle(this.col('flame1'), 1).fillRect(18, y - 5, 1, 18);
       }
       this.text(26, y, r.label, sel ? 'wax2' : 'stone4');
+      if (r.key === 'hints' || r.key === 'minimap') {
+        const on = SETTINGS[r.key];
+        this.text(200, y, on ? '< ON >' : '< OFF >', on ? (sel ? 'flame2' : 'stone4') : 'stone2');
+        return;
+      }
       const v = SETTINGS[r.key];
       const bx = 200;
       const bw = 200;
@@ -210,9 +215,10 @@ export class GearView {
       const pct = v === 0 ? 'OFF' : `${Math.round(v * 100)}%`;
       this.text(bx + bw + 10, y, pct, sel ? 'wax2' : 'stone4');
     });
-    this.text(26, 50 + SETTING_ROWS.length * 24 + 6, 'KEYS ARE CHANGED UNDER CONTROLS.', 'stone3');
+    this.text(26, 46 + SETTING_ROWS.length * 22 + 4, 'KEYS ARE CHANGED UNDER CONTROLS.', 'stone3');
     this.text(22, H - 18, 'UP/DOWN SELECT   LEFT/RIGHT CHANGE   ESC BACK', 'stone2');
   }
+
 
   // ------------------------------------------------------------------ the townsfolk's screens
   /** Title, and the Tallow you carry top-right. */

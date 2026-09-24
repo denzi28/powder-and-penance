@@ -4,7 +4,7 @@
 //   SETTINGS: volumes (master, music, effects, ambience) and screen shake, left/right in steps of 10%.
 // Settings are kept in the browser (src/game/Settings.ts), not in the save.
 import { DATA } from '../data/config';
-import { SETTINGS, bindKey, keyName, keysFor, resetKeys, setSetting } from '../game/Settings';
+import { SETTINGS, bindKey, keyName, keysFor, resetKeys, setSetting, toggleSetting } from '../game/Settings';
 import type { Input } from '../input/Input';
 import type { GameScene } from '../scenes/GameScene';
 
@@ -117,12 +117,14 @@ export class ControlsScreen {
   }
 }
 
-export const SETTING_ROWS: { key: 'master' | 'music' | 'sfx' | 'ambience' | 'shake'; label: string }[] = [
+export const SETTING_ROWS: { key: 'master' | 'music' | 'sfx' | 'ambience' | 'shake' | 'hints' | 'minimap'; label: string }[] = [
   { key: 'master', label: 'MASTER VOLUME' },
   { key: 'music', label: 'MUSIC' },
   { key: 'sfx', label: 'SOUND EFFECTS' },
   { key: 'ambience', label: 'AMBIENCE' },
   { key: 'shake', label: 'SCREEN SHAKE' },
+  { key: 'hints', label: 'BUTTON HINTS ON THE HUD' },
+  { key: 'minimap', label: 'MINIMAP' },
 ];
 
 export class SettingsScreen {
@@ -142,8 +144,13 @@ export class SettingsScreen {
       this.index = (this.index + step + n) % n;
       this.gs.bus.emit('sfx', { id: 'menu_move' });
     }
-    if (side) {
-      const k = SETTING_ROWS[this.index].key;
+    const k = SETTING_ROWS[this.index].key;
+    if (k === 'hints' || k === 'minimap') {
+      if (side || input.pressed('confirm')) {
+        toggleSetting(k);
+        this.gs.bus.emit('sfx', { id: 'menu_move' });
+      }
+    } else if (side) {
       setSetting(k, SETTINGS[k] + side * 0.1);
       this.gs.ambientAudio.applyVolume();
       // a sample of what changed: a click for effects, a small shake for shake

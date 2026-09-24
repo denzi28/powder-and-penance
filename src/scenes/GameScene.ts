@@ -61,7 +61,7 @@ import { installDebugKeys } from '../debug/DebugKeys';
 import { hexToInt } from '../ui/colors';
 import { wirePresentation } from '../game/Presentation';
 import { handleInteract, nearestInteractable } from '../game/Interactions';
-import { grantItem, useLine } from '../game/Items';
+import { beltKeys, grantItem, useLine } from '../game/Items';
 import { tickShrineSeq } from '../game/ShrineFlow';
 import { applySave, snapshot } from '../game/Persistence';
 import { updateAim } from '../game/aim';
@@ -423,7 +423,8 @@ export class GameScene extends Phaser.Scene {
     if (this.flags.has(`found:${id}`)) return;
     this.flags.add(`found:${id}`);
     const c = DATA.consumables[id];
-    const how = c.use.type === 'material' ? '' : ' It goes on your belt: X cycles, C (or R3) uses.';
+    const keys = beltKeys();
+    const how = c.use.type === 'material' ? '' : ` It goes on your belt: ${keys.cycle} cycles, ${keys.use} uses.`;
     this.showToast(c.name.toUpperCase(), `${useLine(id)}${how}`, c.description);
   }
 

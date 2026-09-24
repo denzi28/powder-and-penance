@@ -1,5 +1,6 @@
 // Applying placed items (data/items) and telling the player, in plain words and real numbers, what changed.
 // The item's own `description` is flavour text, shown under the explanation.
+import { keysFor, keyName } from './Settings';
 import { DATA } from '../data/config';
 import type { GameScene } from '../scenes/GameScene';
 
@@ -97,7 +98,7 @@ export function applyItem(gs: GameScene, itemId: string): string {
       const has = p.count(e.id);
       what =
         took > 0
-          ? `${took > 1 ? `${took} x ` : ''}${c.name}: ${useLine(e.id)} You carry ${has}${c.use.type === 'material' ? '' : ` of ${c.max}. ${p.belt === e.id ? 'It is on your belt: C (or R3) uses it, X cycles.' : 'X cycles your belt to it; C uses it.'}`}`
+          ? `${took > 1 ? `${took} x ` : ''}${c.name}: ${useLine(e.id)} You carry ${has}${c.use.type === 'material' ? '' : ` of ${c.max}. ${p.belt === e.id ? `It is on your belt: ${beltKeys().use} uses it, ${beltKeys().cycle} cycles.` : `${beltKeys().cycle} cycles your belt to it; ${beltKeys().use} uses it.`}`}`
           : `You can't carry more ${c.name} (${c.max}).`;
       break;
     }
@@ -152,4 +153,10 @@ function buffLine(m: import('../data/schemas').Mods, lose: boolean): string {
   if (m.poise) parts.push(`+${m.poise} poise, so you are hard to stagger`);
   const s = parts.join(', ');
   return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+/** The keys that use and cycle the belt, as bound now ("C", "X"; D-pad on a gamepad). */
+export function beltKeys(): { use: string; cycle: string } {
+  const k = (a: string) => keyName(keysFor(a, DATA.input.keyboard)[0] ?? '?');
+  return { use: `${k('useItem')} (D-pad right)`, cycle: `${k('cycleItem')} (D-pad up)` };
 }

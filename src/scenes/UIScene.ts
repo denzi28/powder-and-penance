@@ -1,5 +1,6 @@
 // Screen-space layer: temporary HUD bars, crosshair, death screen, debug readouts and data-reload errors.
 import Phaser from 'phaser';
+import { SETTINGS, keysFor, shortKey } from '../game/Settings';
 import { DATA, onDataError, onDataReload } from '../data/config';
 import { hexToInt } from '../ui/colors';
 import { MenuRenderer, wrap } from '../ui/MenuRenderer';
@@ -28,6 +29,8 @@ export class UIScene extends Phaser.Scene {
   private beltText!: Phaser.GameObjects.BitmapText;
   private beltKey!: Phaser.GameObjects.BitmapText;
   private buffIcons: Phaser.GameObjects.Image[] = [];
+  /** Where the message panel ends (0 when none), so banners can sit below it. */
+  private toastBottom = 0;
   private prompt!: Phaser.GameObjects.BitmapText;
   private phialIcons: Phaser.GameObjects.Sprite[] = [];
   private tallowIcon!: Phaser.GameObjects.Sprite;
@@ -121,10 +124,10 @@ export class UIScene extends Phaser.Scene {
     const fb = DATA.juice.hitFeedback;
     const dt = this.game.loop.delta;
     this.hpTrail.update(p.hp, p.maxHp, dt, fb.trailHoldMs, fb.trailDrainPerSec);
-    const hpW = Math.round(p.maxHp * hud.hpPxPerPoint); // a Parish Signet lengthens the bar
+    const hpW = Math.min(HP_BAR_MAX, Math.round(p.maxHp * hud.hpPxPerPoint)); // more HP, a longer bar, up to a point
     bar(hud.y, hpW, hud.hpHeight, p.hp / p.maxHp, pal.blood2, this.hpTrail.value / p.maxHp);
     this.drawVignette();
-    const stW = Math.round(p.stamina.max * hud.staminaPxPerPoint);
+    const stW = Math.min(STAMINA_BAR_MAX, Math.round(p.stamina.max * hud.staminaPxPerPoint));
     const stY = hud.y + hud.hpHeight + hud.gap;
     bar(stY, stW, hud.staminaHeight, p.stamina.value / p.stamina.max, p.stamina.locked ? pal.ember : pal.moss2);
 
@@ -247,7 +250,7 @@ export class UIScene extends Phaser.Scene {
   }
 
   /** Timed effects under the phials: each one's icon with a bar that drains as it wears off. */
-  private drawBuffs(y: number) {
+  private drawBuffs(y0: number) {
     const p = this.gs.player;
     const pal = DATA.palette;
     const n = p.buffs.length + (p.regen ? 1 : 0);
@@ -259,7 +262,9 @@ export class UIScene extends Phaser.Scene {
     });
     if (p.regen) items.push({ id: p.regen.id, frac: p.regen.left / p.regen.total, colour: 'flame2' });
     items.forEach((b, i) => {
-      const x = DATA.hud.x + i * 13;
+      // a row of BUFFS_PER_ROW, then the next row underneath
+      const x = DATA.hud.x + (i % BUFFS_PER_ROW) * 13;
+      const y = y0 + Math.floor(i / BUFFS_PER_ROW) * 15;
       const blink = b.frac < 0.15 && Math.floor(this.time.now / 200) % 2 === 0; // about to wear off
       this.buffIcons[i].setFrame(DATA.consumables[b.id]?.icon ?? 0).setPosition(x, y).setAlpha(blink ? 0.4 : 1);
       this.g.fillStyle(hexToInt(pal.dark2), 1).fillRect(x, y + 11, 10, 1);
@@ -267,30 +272,30 @@ export class UIScene extends Phaser.Scene {
     });
   }
 
-  /** Bottom-left: the quick-use belt (C uses, X cycles) and how many you carry. */
+  /**
+   * The belt, at the left of the equipment row (bottom-right): the item, how many you carry, and a dot for each
+   * other kind you could cycle to. Its button sits above it when hints are on.
+   */
   private drawBelt() {
     const p = this.gs.player;
     const pal = DATA.palette;
     const g = this.g;
-    const H = DATA.game.height;
-    const size = 20;
-    const x = 8;
-    const y = H - 8 - size;
+    const { x, y, w, h } = beltBox();
     const id = p.belt && p.count(p.belt) > 0 ? p.belt : null;
     const carried = this.gs.gear || this.gs.menu ? 0 : p.beltable.length; // hidden under the menus
     this.beltIcon.setVisible(!!id);
     this.beltText.setVisible(!!id);
-    this.beltKey.setVisible(carried > 0);
+    this.beltKey.setVisible(carried > 0 && SETTINGS.hints);
     if (!carried) return;
-    g.fillStyle(hexToInt(pal.ink), 0.75).fillRect(x, y, size, size);
+    g.fillStyle(hexToInt(pal.ink), 0.75).fillRect(x, y, w, h);
     g.fillStyle(hexToInt(p.stateName === 'useItem' ? pal.flame2 : pal.stone2), 1);
-    g.fillRect(x, y, size, 1).fillRect(x, y + size - 1, size, 1).fillRect(x, y, 1, size).fillRect(x + size - 1, y, 1, size);
-    // a tick for each other kind carried, so you know X has somewhere to go
-    for (let i = 1; i < Math.min(carried, 6); i++) g.fillStyle(hexToInt(pal.stone3), 1).fillRect(x + size + 2, y + size - i * 3, 2, 2);
+    g.fillRect(x, y, w, 1).fillRect(x, y + h - 1, w, 1).fillRect(x, y, 1, h).fillRect(x + w - 1, y, 1, h);
+    for (let i = 1; i < Math.min(carried, 6); i++) g.fillStyle(hexToInt(pal.stone3), 1).fillRect(x - 4, y + h - i * 3, 2, 2);
     if (!id) return;
-    this.beltIcon.setFrame(DATA.consumables[id].icon).setPosition(x + 2, y + 2);
-    this.beltText.setText(String(p.count(id))).setPosition(x + size - this.beltText.width, y + size - 6);
-    this.beltKey.setText(this.gs.controls.device === 'pad' ? 'R3' : 'C').setPosition(x + 1, y - 9);
+    this.beltIcon.setFrame(DATA.consumables[id].icon).setPosition(x + 2, y + 1);
+    this.beltText.setText(String(p.count(id))).setPosition(x + w - this.beltText.width - 1, y + h - 7);
+    const pad = this.gs.controls.device === 'pad';
+    this.beltKey.setText(pad ? 'D-R' : shortKey(keysFor('useItem', DATA.input.keyboard)[0])).setPosition(x, y - 9);
   }
 
   /** Top-right: carried Tallow; the number rolls toward the real value. */
@@ -310,40 +315,52 @@ export class UIScene extends Phaser.Scene {
     this.areaText.setVisible(!!b);
     if (!b) return;
     const cfg = DATA.hud.areaBanner;
+    const bannerY = Math.max(cfg.y, this.toastBottom + 8); // below a message that's showing
     const inT = 25;
     const outT = 50;
     const a = b.t < inT ? b.t / inT : b.t > cfg.ticks - outT ? Math.max(0, (cfg.ticks - b.t) / outT) : 1;
     const W = DATA.game.width;
     this.areaText.setScale(cfg.scale).setText(b.name.toUpperCase()).setAlpha(a);
     const x = Math.round((W - this.areaText.width) / 2);
-    this.areaText.setPosition(x, cfg.y);
-    const ruleY = cfg.y + Math.round(this.areaText.height / 2);
+    this.areaText.setPosition(x, bannerY);
+    const ruleY = bannerY + Math.round(this.areaText.height / 2);
     const len = 40;
     this.g.fillStyle(hexToInt(DATA.palette.flame1), a);
     this.g.fillRect(x - 8 - len, ruleY, len, 1);
     this.g.fillRect(x + this.areaText.width + 8, ruleY, len, 1);
   }
 
+  /**
+   * Item and event messages, at the top between your bars (left) and the minimap (right), so they never cover
+   * your health or your character. Banners (area names, minibosses) drop below a message that's showing.
+   */
   private drawToast() {
     const t = this.gs.menu ? null : this.gs.toast; // menus take the centre of the screen
     for (const o of [this.toastTitle, this.toastBody, this.toastNote, this.toastPanel]) o.setVisible(!!t);
+    this.toastBottom = 0;
     if (!t) return;
     const a = t.t < 15 ? t.t / 15 : t.t > t.life - 40 ? Math.max(0, (t.life - t.t) / 40) : 1;
-    const W = DATA.game.width;
     const cfg = DATA.hud.toast;
+    const left = DATA.hud.x + HP_BAR_MAX + 6;
+    // the minimap's column on the right, or at least room for the Tallow counter
+    const right = DATA.game.width - 8 - Math.max(SETTINGS.minimap && DATA.hud.minimap.enabled ? DATA.hud.minimap.w + 6 : 0, 64);
+    const cols = Math.min(cfg.cols, Math.floor((right - left - 10) / 6));
+    const cx = Math.round((left + right) / 2);
     const top = cfg.y + 3; // text starts 3 px inside the panel
-    this.toastTitle.setScale(cfg.titleScale).setText(t.title).setAlpha(a);
-    this.toastTitle.setPosition(Math.round((W - this.toastTitle.width) / 2), top);
+    this.toastTitle.setScale(cfg.titleScale).setText(wrap(t.title, cols)).setAlpha(a);
+    this.toastTitle.setPosition(Math.round(cx - this.toastTitle.width / 2), top);
     const bodyY = top + this.toastTitle.height + 3;
-    this.toastBody.setText(wrap(t.body, cfg.cols)).setAlpha(a);
-    this.toastBody.setPosition(Math.round((W - this.toastBody.width) / 2), bodyY);
+    this.toastBody.setText(wrap(t.body, cols)).setAlpha(a);
+    this.toastBody.setPosition(Math.round(cx - this.toastBody.width / 2), bodyY);
     const noteY = bodyY + this.toastBody.height + 2;
-    this.toastNote.setText(t.note ? wrap(t.note, cfg.cols) : '').setAlpha(a);
-    this.toastNote.setPosition(Math.round((W - this.toastNote.width) / 2), noteY);
+    this.toastNote.setText(t.note ? wrap(t.note, cols) : '').setAlpha(a);
+    this.toastNote.setPosition(Math.round(cx - this.toastNote.width / 2), noteY);
     const bottom = t.note ? noteY + this.toastNote.height : bodyY + this.toastBody.height;
     const w = Math.max(this.toastTitle.width, this.toastBody.width, this.toastNote.width) + 10;
-    this.toastPanel.setPosition(Math.round((W - w) / 2), cfg.y).setSize(w, bottom - cfg.y + 3).setAlpha(a);
+    this.toastPanel.setPosition(Math.round(cx - w / 2), cfg.y).setSize(w, bottom - cfg.y + 3).setAlpha(a);
+    this.toastBottom = bottom + 3;
   }
+
 
   /** Bottom-right: two weapon slots (active highlighted), ammo, reload bar, shield icon. */
   /**
@@ -354,12 +371,11 @@ export class UIScene extends Phaser.Scene {
     const p = this.gs.player;
     const pal = DATA.palette;
     const g = this.g;
-    const W = DATA.game.width;
     const H = DATA.game.height;
     const bw = 32;
     const bh = 18;
     const y = H - 8 - bh;
-    const xs = [W - 8 - bw * 2 - 3, W - 8 - bw]; // right hand, left hand (in mouse-button order)
+    const xs = [HANDS_X(), HANDS_X() + bw + 3]; // right hand, left hand (in mouse-button order)
     const pad = this.gs.controls.device === 'pad';
     const two = p.twoHanding;
     for (let i = 0; i < 2; i++) {
@@ -368,7 +384,8 @@ export class UIScene extends Phaser.Scene {
       g.fillStyle(hexToInt(pal.ink), 0.75).fillRect(x, y, bw, bh);
       g.fillStyle(hexToInt(inUse ? pal.wax2 : pal.stone2), 1);
       g.fillRect(x, y, bw, 1).fillRect(x, y + bh - 1, bw, 1).fillRect(x, y, 1, bh).fillRect(x + bw - 1, y, 1, bh);
-      this.handKeys[i].setText(pad ? (i === 0 ? 'RT' : 'LT') : i === 0 ? 'LMB' : 'RMB').setPosition(x, y - 9);
+      const bound = shortKey(keysFor(i === 0 ? 'light' : 'block', DATA.input.keyboard)[0]);
+      this.handKeys[i].setText(pad ? (i === 0 ? 'RT' : 'LT') : bound).setPosition(x, y - 9).setVisible(SETTINGS.hints);
       const icon = this.slotIcons[i];
       // what the hand holds: a weapon, the shield, or (two-handing) the same weapon's other end
       const id = i === 0 || two ? p.slots[0] : p.leftWeapon;
@@ -438,4 +455,16 @@ export class UIScene extends Phaser.Scene {
     const w = this.deathText.width;
     this.deathText.setPosition(Math.round((DATA.game.width - w) / 2), Math.round(DATA.game.height / 2 - 12));
   }
+}
+
+/** The HUD's longest bars (px): past these, more HP or stamina fills the same bar. */
+const HP_BAR_MAX = 180;
+const STAMINA_BAR_MAX = 150;
+/** Effect timers per row under the phials. */
+const BUFFS_PER_ROW = 6;
+/** The equipment row, bottom-right: belt (22 wide), then the right and left hands (32 each), 3 px apart. */
+const HANDS_X = () => DATA.game.width - 8 - 32 * 2 - 3;
+function beltBox() {
+  const h = 18;
+  return { x: HANDS_X() - 3 - 22 - 4, y: DATA.game.height - 8 - h, w: 22, h };
 }

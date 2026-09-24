@@ -762,7 +762,8 @@ export const HudCfg = z.object({
   x: int, y: int, hpPxPerPoint: pos, hpHeight: int.positive(),
   staminaPxPerPoint: pos, staminaHeight: int.positive(), gap: int.nonnegative(),
   /** Item/event banner: top edge (px), wrap width (characters), title scale (1 = same size as the body). */
-  toast: z.object({ y: int.nonnegative(), cols: int.positive(), titleScale: int.positive() }).default({ y: 14, cols: 60, titleScale: 1 }),
+  /** Item and event messages, top-centre between the bars and the minimap: `y` is their top; `cols` the widest. */
+  toast: z.object({ y: int.nonnegative(), cols: int.positive(), titleScale: int.positive() }).default({ y: 8, cols: 60, titleScale: 1 }),
   /** Area name shown on arrival: vertical position (px), text scale, how long it stays (ticks, fades included). */
   areaBanner: z.object({ y: int.nonnegative(), scale: int.positive(), ticks: int.positive() }).default({ y: 72, scale: 1, ticks: 180 }),
   /** Corner minimap: on/off, box size (px), pixels per tile. The large map (M) scales itself to fit. */

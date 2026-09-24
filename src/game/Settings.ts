@@ -11,11 +11,15 @@ export interface Settings {
   ambience: number;
   /** 0..1: how hard the screen shakes. */
   shake: number;
+  /** Show the button for each hand and the belt on the HUD. */
+  hints: boolean;
+  /** Show the minimap. */
+  minimap: boolean;
   /** Keyboard bindings that replace the defaults, by action (KeyboardEvent codes, "Mouse0"...). */
   keys: Record<string, string[]>;
 }
 
-const DEFAULTS: Settings = { master: 1, music: 1, sfx: 1, ambience: 1, shake: 1, keys: {} };
+const DEFAULTS: Settings = { master: 1, music: 1, sfx: 1, ambience: 1, shake: 1, hints: true, minimap: true, keys: {} };
 
 function load(): Settings {
   try {
@@ -32,6 +36,8 @@ function load(): Settings {
       sfx: num(s.sfx, 1),
       ambience: num(s.ambience, 1),
       shake: num(s.shake, 1),
+      hints: typeof s.hints === 'boolean' ? s.hints : true,
+      minimap: typeof s.minimap === 'boolean' ? s.minimap : true,
       keys,
     };
   } catch {
@@ -69,6 +75,18 @@ export function bindKey(action: string, code: string, defaults: Record<string, s
   }
   SETTINGS.keys[action] = [code];
   saveSettings();
+}
+
+export function toggleSetting(k: 'hints' | 'minimap') {
+  SETTINGS[k] = !SETTINGS[k];
+  saveSettings();
+}
+
+/** A short name for the HUD: mouse buttons as LMB/RMB, keys as they're written. */
+export function shortKey(code: string | undefined): string {
+  if (!code) return '';
+  const mouse: Record<string, string> = { Mouse0: 'LMB', Mouse1: 'MMB', Mouse2: 'RMB', Mouse3: 'M4', Mouse4: 'M5' };
+  return mouse[code] ?? keyName(code);
 }
 
 export function resetKeys() {

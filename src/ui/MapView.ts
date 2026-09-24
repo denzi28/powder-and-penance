@@ -2,6 +2,7 @@
 // one pixel per tile, containing only rooms the player has visited ("seen:<room>" flags). It is redrawn
 // only when something on it changes: a new room seen, the player's room, a door or shrine state.
 import Phaser from 'phaser';
+import { SETTINGS } from '../game/Settings';
 import { DATA } from '../data/config';
 import { Cell, TILE } from '../world/TileGrid';
 import { hexToInt } from './colors';
@@ -58,7 +59,7 @@ export class MapView {
     this.redrawIfChanged(gs);
     if (!this.tex) return;
     if (gs.mapOpen) this.drawBig(gs);
-    else if (DATA.hud.minimap.enabled && !gs.menu && !gs.player.dead) this.drawMini(gs);
+    else if (DATA.hud.minimap.enabled && SETTINGS.minimap && !gs.menu && !gs.player.dead) this.drawMini(gs);
   }
 
   // ------------------------------------------------------------------ texture
