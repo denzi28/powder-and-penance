@@ -35,6 +35,7 @@
   "deathTicks": 120,
   "corpseTicks": 999999,
   "blood": "flame1",
+  "steps": { "sfx": "b_step_flame", "volume": 0.5 },
   "moves": [
     {
       "id": "last_rite",

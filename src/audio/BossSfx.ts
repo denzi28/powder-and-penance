@@ -522,4 +522,38 @@ const RECIPES: Record<BossSound, Recipe> = {
     k.fire(0.1, 1.6, 0.55, 0.7);
     k.voice(0.2, 1.4, 311, 294, 'oo', 0.2, 0, 3, 25); // a thin, wrong choir behind him
   },
+  // ---- footfalls
+  // the Tollwarden: an iron-shod boot, his chains jingling
+  b_step_armor: k => {
+    k.boom(0, 70, 45, 0.28, 0.55);
+    k.clang(0, rnd(380, 460), 0.25, 0.08);
+    if (Math.random() < 0.5) k.chain(0.03, 0.12, 0.15);
+  },
+  // the Matron: a drowned thing dragging itself through water
+  b_step_wet: k => {
+    k.splash(0, 0.35, 0.3, true);
+    if (Math.random() < 0.3) k.bubbles(0.1, 2, 0.2, true);
+  },
+  // Mother Tallow: an enormous weight coming down, wax squelching under it
+  b_step_heavy: k => {
+    k.boom(0, 60, 30, 0.45, 0.8);
+    k.rumble(0, 0.4, 0.25);
+    k.splash(0.02, 0.25, 0.18, true);
+  },
+  // Unrendered: bone on stone, quick and hard
+  b_step_bone: k => {
+    k.rattle(0, 0.06, 0.45);
+    k.boom(0, 140, 90, 0.08, 0.25);
+  },
+  // the Chandler: robes brushing the floor, his snuffer's butt tapping the stone
+  b_step_robe: k => {
+    k.whoosh(0, 0.18, 500, 1400, 0.12, 0.4);
+    k.boom(0, 110, 80, 0.12, 0.25);
+    if (Math.random() < 0.5) k.clang(0.02, rnd(900, 1100), 0.15, 0.06);
+  },
+  // the Last Candle: a burning tread, the flame on him fluttering
+  b_step_flame: k => {
+    k.boom(0, 100, 60, 0.15, 0.4);
+    k.fire(0, 0.25, 0.12, 0.8);
+  },
 };

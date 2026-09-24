@@ -35,6 +35,7 @@
   "deathTicks": 90,
   "corpseTicks": 60,
   "blood": "wax2",
+  "steps": { "sfx": "b_step_bone", "volume": 0.5 },
   "moves": [
     {
       "id": "bone_sweep",

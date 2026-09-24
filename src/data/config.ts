@@ -170,6 +170,7 @@ function loadAll(src: Record<string, unknown>) {
           if (st.projectile?.lob?.sfx) ids.push(st.projectile.lob.sfx);
         }
       if (e.boss) ids.push(e.boss.slamSfx, ...(e.boss.roarSfx ? [e.boss.roarSfx] : []));
+      if (e.steps) ids.push(e.steps.sfx);
       for (const id of ids) if (!sound(id)) errors.push(`data/enemies/${e.id}.json: unknown sound "${id}"`);
     }
     for (const k of Object.keys(data.ambient.decor)) if (!data.decor.decor[k]) errors.push(`data/audio/ambient.json: unknown decor kind "${k}"`);

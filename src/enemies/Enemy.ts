@@ -243,7 +243,12 @@ export class Enemy extends Actor {
       this.anim.tick();
     } else if (speed > 4) {
       this.anim.play('walk');
+      const was = this.anim.index;
       this.anim.tick(speed / Math.max(1, this.def.speed));
+      // footfalls: on the walk cycle's contact frames (every other frame)
+      const steps = this.def.steps;
+      if (steps && this.anim.index !== was && this.anim.index % 2 === 0)
+        this.ctx.bus.emit('sfx', { id: steps.sfx, x: this.x, y: this.y, volume: steps.volume });
     } else {
       this.anim.play('idle');
       this.anim.tick();

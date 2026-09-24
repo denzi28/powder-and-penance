@@ -90,7 +90,7 @@ Stack: Phaser 3 + TypeScript + Vite. Zod-validated data files, Vitest tests.
   - Footsteps by surface (dirt, grass, stone, boards, iron grates, mud, grease, wax, moss), echoing in crypts, chapels, the nave and other enclosed rooms. Wren the harper sits by the hub's south road and plays a slow harp air, heard across the yard; she wanders over to the fire to chat with Pip and Tomas.
   - Boss music for every fight (`data/audio/music.json`, `src/audio/Music.ts`): a theme per phase that builds from the entrance to the fight to below half health, holds between phases, and ends on a closing chord when the last phase falls; it fades if you die. Themes are fast (138-188 bpm) with builds, a silent gap and drops.
   - Exploration music for every biome, Dark Souls quiet: slow, soft phrases with long silences between them, crossfading between areas, giving way to boss fights, ducking under Wren's harp.
-  - Boss attack sounds: every boss move has its own layered sound. There's a wind-up tell (a grunt, chain, breath, hum, bone rattle or chant) and the swing or impact (bell-hammer tolls, ladle crashes in wax, bone rattles, black-flame roars), plus a roar for each boss.
+  - Boss attack sounds: every boss move has its own layered sound. There's a wind-up tell (a grunt, chain, breath, hum, bone rattle or chant) and the swing or impact (bell-hammer tolls, ladle crashes in wax, bone rattles, black-flame roars), plus a roar for each boss and their own footsteps.
   - Engine: optional `fringe_<variant>` tiles give floor kinds soft, ragged edges (grass frays onto dirt, wax pools spread a rounded lip). This fixes the square-edged wax pools.
 - Dialogue voice blips per speaker.
 - The Chandler finale, as above.

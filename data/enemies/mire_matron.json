@@ -31,6 +31,7 @@
   "deathTicks": 110,
   "corpseTicks": 1800,
   "blood": "wax1",
+  "steps": { "sfx": "b_step_wet", "volume": 0.6 },
   "moves": [
     {
       "id": "drowning_sweep",

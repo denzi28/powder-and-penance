@@ -34,6 +34,7 @@
   "deathTicks": 110,
   "corpseTicks": 1800,
   "blood": "blood1",
+  "steps": { "sfx": "b_step_armor", "volume": 0.6 },
   "moves": [
     {
       "id": "toll_sweep",

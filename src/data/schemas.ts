@@ -542,6 +542,8 @@ export const EnemyDef = z.object({
   deathTicks: int.positive().default(40),
   corpseTicks: int.nonnegative().default(120),
   blood: z.string().default('blood2'),
+  /** Footfalls while walking (on the walk cycle's contact frames): a sound id and its volume. */
+  steps: z.object({ sfx: z.string(), volume: num.min(0).max(2).default(1) }).optional(),
   /** Not slowed by terrain (creatures of the mire move freely through its wax). */
   wader: z.boolean().default(false),
   /**
@@ -733,6 +735,7 @@ export const BOSS_SOUNDS = [
   'b_bone_rattle', 'b_bone_whoosh', 'b_bone_jab', 'b_bone_hiss', 'b_bone_leap', 'b_ground_slam', 'b_bone_summon', 'b_bone_screech',
   'b_chandler_chant', 'b_staff_whoosh', 'b_staff_thrust', 'b_flame_flick', 'b_censer', 'b_chandler_roar',
   'b_blackflame_whoosh', 'b_blackflame_jab', 'b_blackflame_slam', 'b_blackflame_leap', 'b_volley', 'b_fire_burst', 'b_flood', 'b_blackflame_roar',
+  'b_step_armor', 'b_step_wet', 'b_step_heavy', 'b_step_bone', 'b_step_robe', 'b_step_flame',
 ] as const;
 export type BossSound = (typeof BOSS_SOUNDS)[number];
 export const SURFACES = ['dirt', 'grass', 'stone', 'wood', 'metal', 'mud', 'grease', 'wax', 'moss'] as const;

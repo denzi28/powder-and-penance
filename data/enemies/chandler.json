@@ -40,6 +40,7 @@
   "deathTicks": 100,
   "corpseTicks": 999999,
   "blood": "wax1",
+  "steps": { "sfx": "b_step_robe", "volume": 0.5 },
   "moves": [
     {
       "id": "snuffer_sweep",

@@ -41,6 +41,7 @@
   "deathTicks": 100,
   "corpseTicks": 999999,
   "blood": "wax1",
+  "steps": { "sfx": "b_step_heavy", "volume": 0.7 },
   "moves": [
     {
       "id": "ladle_sweep",
