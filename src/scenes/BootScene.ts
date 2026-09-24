@@ -43,7 +43,7 @@ export class BootScene extends Phaser.Scene {
       'spacing.y': 0,
       'offset.x': 0,
       'offset.y': 0,
-      lineSpacing: 1,
+      lineSpacing: 0, // the 6 px cell already leaves a blank row under the 5 px letters
     });
     this.cache.bitmapFont.add('pixel_small', small);
     this.scene.start('title');

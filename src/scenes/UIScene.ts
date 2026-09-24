@@ -85,9 +85,9 @@ export class UIScene extends Phaser.Scene {
     this.tallowIcon = this.add.sprite(0, 0, 'tallow_icon', 0).setOrigin(0, 0).setDepth(2);
     this.tallowText = this.add.bitmapText(0, 0, 'pixel', '0').setTint(hexToInt(DATA.palette.wax2)).setDepth(2);
     this.tallowShown = this.gs.player.tallow;
-    this.toastTitle = this.add.bitmapText(0, 0, 'pixel', '').setTint(hexToInt(DATA.palette.flame2)).setDepth(15);
-    this.toastBody = this.add.bitmapText(0, 0, 'pixel', '').setTint(hexToInt(DATA.palette.wax2)).setDepth(15);
-    this.toastNote = this.add.bitmapText(0, 0, 'pixel', '').setTint(hexToInt(DATA.palette.stone4)).setDepth(15);
+    this.toastTitle = this.add.bitmapText(0, 0, 'pixel_small', '').setTint(hexToInt(DATA.palette.flame2)).setDepth(15);
+    this.toastBody = this.add.bitmapText(0, 0, 'pixel_small', '').setTint(hexToInt(DATA.palette.wax2)).setDepth(15);
+    this.toastNote = this.add.bitmapText(0, 0, 'pixel_small', '').setTint(hexToInt(DATA.palette.stone4)).setDepth(15);
     this.toastPanel = this.add.rectangle(0, 0, 10, 10, hexToInt(DATA.palette.ink), 0.7).setOrigin(0, 0).setDepth(14);
     this.areaText = this.add.bitmapText(0, 0, 'pixel', '').setTint(hexToInt(DATA.palette.wax2)).setDepth(16);
     this.cardTitle = this.add.bitmapText(0, 0, 'pixel', '').setScale(2).setTint(hexToInt(DATA.palette.flame2)).setDepth(22);
@@ -344,20 +344,20 @@ export class UIScene extends Phaser.Scene {
     const left = DATA.hud.x + HP_BAR_MAX + 6;
     // the minimap's column on the right, or at least room for the Tallow counter
     const right = DATA.game.width - 8 - Math.max(SETTINGS.minimap && DATA.hud.minimap.enabled ? DATA.hud.minimap.w + 6 : 0, 64);
-    const cols = Math.min(cfg.cols, Math.floor((right - left - 10) / 6));
+    const cols = Math.min(cfg.cols, Math.floor((right - left - 8) / 4)); // the small 3x5 font: 4 px a letter
     const cx = Math.round((left + right) / 2);
-    const top = cfg.y + 3; // text starts 3 px inside the panel
+    const top = cfg.y + 2; // text starts 2 px inside the panel
     this.toastTitle.setScale(cfg.titleScale).setText(wrap(t.title, cols)).setAlpha(a);
     this.toastTitle.setPosition(Math.round(cx - this.toastTitle.width / 2), top);
-    const bodyY = top + this.toastTitle.height + 3;
+    const bodyY = top + this.toastTitle.height + 1;
     this.toastBody.setText(wrap(t.body, cols)).setAlpha(a);
     this.toastBody.setPosition(Math.round(cx - this.toastBody.width / 2), bodyY);
-    const noteY = bodyY + this.toastBody.height + 2;
+    const noteY = bodyY + this.toastBody.height + 1;
     this.toastNote.setText(t.note ? wrap(t.note, cols) : '').setAlpha(a);
     this.toastNote.setPosition(Math.round(cx - this.toastNote.width / 2), noteY);
     const bottom = t.note ? noteY + this.toastNote.height : bodyY + this.toastBody.height;
-    const w = Math.max(this.toastTitle.width, this.toastBody.width, this.toastNote.width) + 10;
-    this.toastPanel.setPosition(Math.round(cx - w / 2), cfg.y).setSize(w, bottom - cfg.y + 3).setAlpha(a);
+    const w = Math.max(this.toastTitle.width, this.toastBody.width, this.toastNote.width) + 6;
+    this.toastPanel.setPosition(Math.round(cx - w / 2), cfg.y).setSize(w, bottom - cfg.y + 1).setAlpha(a);
     this.toastBottom = bottom + 3;
   }
 
