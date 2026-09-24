@@ -122,6 +122,29 @@
           "knockback": 150, "hitstop": 6, "shake": 0.3, "sfx": "swing_heavy", "anim": "sweep"
         }
       ]
+    },
+    {
+      "id": "toll",
+      "range": [80, 220],
+      "weight": 2,
+      "cooldown": 160,
+      "strikes": [
+        {
+          "damage": 0, "poise": 0,
+          "windup": 26, "active": 4, "recovery": 30,
+          "trackDegPerTick": 5,
+          "telegraph": { "tick": 8, "kind": "normal" },
+          "hitbox": { "shape": "circle", "radius": 1, "offset": 0 },
+          "originY": -26,
+          "sweep": { "fromDeg": 40, "toDeg": 40 },
+          "sfx": "throw", "anim": "toss",
+          "projectile": {
+            "sprite": "toll_coin", "speed": 200, "range": 240,
+            "damage": 14, "poise": 12, "knockback": 40, "hitstop": 2, "shake": 0.05,
+            "radius": 3, "count": 5, "spreadDeg": 44
+          }
+        }
+      ]
     }
   ]
 }

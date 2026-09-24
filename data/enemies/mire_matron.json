@@ -114,7 +114,7 @@
           "hitbox": { "shape": "circle", "radius": 58, "offset": 0 },
           "originY": -6,
           "sweep": { "fromDeg": -90, "toDeg": -90 },
-          "knockback": 280, "hitstop": 8, "shake": 0.5, "sfx": "boss_roar", "anim": "sing"
+          "knockback": 280, "hitstop": 8, "shake": 0.5, "sfx": "boss_roar", "anim": "wail"
         }
       ]
     },

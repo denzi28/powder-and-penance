@@ -134,6 +134,26 @@
           "knockback": 160, "hitstop": 6, "shake": 0.3, "sfx": "swing_heavy", "anim": "sweep"
         }
       ]
+    },
+    {
+      "id": "spill",
+      "range": [40, 180],
+      "weight": 2,
+      "cooldown": 260,
+      "strikes": [
+        {
+          "damage": 0, "poise": 0,
+          "windup": 30, "active": 4, "recovery": 32,
+          "trackDegPerTick": 4,
+          "hyperArmor": 40,
+          "telegraph": { "tick": 10, "kind": "normal" },
+          "hitbox": { "shape": "circle", "radius": 1, "offset": 0 },
+          "originY": -30,
+          "sweep": { "fromDeg": -70, "toDeg": 30 },
+          "pools": { "count": 3, "radius": 16, "spread": 34, "at": "target", "ticks": 480, "speedMult": 0.55 },
+          "sfx": "wax_spill", "anim": "tip"
+        }
+      ]
     }
   ]
 }

@@ -72,7 +72,8 @@ export class EnemyView {
         this.weapon.sprite.setDepth(DEPTH.shadow + 1); // lying on the floor, under everyone
         tint(this.weapon.sprite, false);
       } else if (!e.dead && e.weaponAngle !== null) {
-        const anchor = e.anim.frame.hand ?? this.lib.manifest(sheet).handAnchors?.[f.authoredDir] ?? [0, -10];
+        const anchor =
+          e.anim.frame.hands?.[f.authoredDir] ?? e.anim.frame.hand ?? this.lib.manifest(sheet).handAnchors?.[f.authoredDir] ?? [0, -10];
         const angle = e.prevWeaponAngle !== null ? lerpAngle(e.prevWeaponAngle, e.weaponAngle, alpha) : e.weaponAngle;
         this.weapon.place(x + (f.flip ? -anchor[0] : anchor[0]), y + anchor[1], angle, e.weaponReach, depth);
         tint(this.weapon.sprite, e.flash > 0);

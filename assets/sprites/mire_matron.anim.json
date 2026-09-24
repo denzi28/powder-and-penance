@@ -22,10 +22,16 @@
       "loop": true,
       "frames": [
         {
-          "ticks": 26
+          "ticks": 16
         },
         {
-          "ticks": 26
+          "ticks": 16
+        },
+        {
+          "ticks": 16
+        },
+        {
+          "ticks": 16
         }
       ]
     },
@@ -183,8 +189,49 @@
         }
       ]
     },
-    "intro": {
+    "wail": {
       "row": 25,
+      "dirs": [
+        "S",
+        "SE",
+        "E",
+        "NE",
+        "N"
+      ],
+      "loop": false,
+      "frames": [
+        {
+          "ticks": 1,
+          "phase": "windup"
+        },
+        {
+          "ticks": 2,
+          "phase": "windup"
+        },
+        {
+          "ticks": 2,
+          "phase": "windup"
+        },
+        {
+          "ticks": 1,
+          "phase": "active"
+        },
+        {
+          "ticks": 1,
+          "phase": "active"
+        },
+        {
+          "ticks": 2,
+          "phase": "recovery"
+        },
+        {
+          "ticks": 1,
+          "phase": "recovery"
+        }
+      ]
+    },
+    "intro": {
+      "row": 30,
       "dirs": [
         "S",
         "SE",
@@ -215,7 +262,7 @@
       ]
     },
     "stagger": {
-      "row": 30,
+      "row": 35,
       "dirs": [
         "S",
         "SE",
@@ -237,7 +284,7 @@
       ]
     },
     "death": {
-      "row": 35,
+      "row": 40,
       "dirs": [
         "S"
       ],

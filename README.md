@@ -79,6 +79,7 @@ Act 1 is being built room by room: the plan is in [WORLD.md](WORLD.md) and the s
 - **Slain enemies stay dead** until you rest at a shrine or die, even if you leave the area and come back.
 - **First boss: the Tollwarden,** in the Abbey Gatehouse (from the Porch: Courtyard, Cloister, Bell Passage, Crypt Stair, Ossuary).
   - Watch his delayed thrust: it flashes early and strikes late. The red-glint slam can't be blocked.
+  - Keep your distance and he digs into his purse and flings a spread of toll coins at you.
   - Beat him for the Toll Key, which opens the Toll Gate at Wick's Rest.
   - Tuning: `data/enemies/tollwarden.json`.
 - **The Tallow Works** (through the Toll Gate east of Wick's Rest), 10 rooms:
@@ -88,6 +89,7 @@ Act 1 is being built room by room: the plan is in [WORLD.md](WORLD.md) and the s
   - A cracked wall to smash.
   - The Rendering Hall reveal.
   - The boss, **Mother Tallow**, in two phases. When she falls, open the chest that rises from the floor, set her remains alight with the Igniter, then beat what gets up. She drops the Seal of Tallow.
+    - Stay back and she lifts her ladle high and tips it out over you: three slowing wax pools land around you.
 - **The Waxmire** (west of Wick's Rest), 10 rooms:
   - Wax pools slow you down.
   - Drowned Pilgrims rise out of them to ambush you.
@@ -96,6 +98,7 @@ Act 1 is being built room by room: the plan is in [WORLD.md](WORLD.md) and the s
   - Pip to send home.
   - A sluice shortcut into the Abbey Undercroft.
   - The boss, **the Mire Matron**, who drops the Seal of the Mire.
+    - Her lullaby and her wail look different now: when she rears back with her arms flung behind her and her mouth wide, the wail (unblockable) is coming. Roll away.
 - **The finale: the Chandler,** in the Abbey Nave. The great door in the Nave Approach needs **both Seals**.
   - Phase 1, the priest: wide snuffer sweeps, **Extinguish** (the bell comes down where you stand: unblockable, roll out), **taper volleys** thrown from his crown, and **censer smoke**: he vanishes and steps out behind you.
   - When his health runs out he doesn't fall. He walks to the altar and pours himself onto the fire, and **the Last Candle** rises out of it: fast combos, a leap slam that rings out black flame, lobbed volleys, and **wax floods** that leave slowing pools across the floor.

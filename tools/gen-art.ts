@@ -1238,7 +1238,14 @@ function rosterSheet(
   cell: number,
   pivot: [number, number],
   cols: number,
-  anims: { name: string; frames: ((c: Img, d: Dir5) => void)[]; timing: { ticks: number; phase?: string; events?: string[] }[]; loop: boolean }[],
+  anims: {
+    name: string;
+    frames: ((c: Img, d: Dir5) => void)[];
+    timing: { ticks: number; phase?: string; events?: string[] }[];
+    loop: boolean;
+    /** Weapon hand per direction and frame (cell pixels), when the arm moves during the animation. */
+    hand?: (d: Dir5, frame: number) => [number, number];
+  }[],
   death: ((c: Img) => void)[],
   hand: Record<Dir5, [number, number]> | null,
 ) {
@@ -1252,7 +1259,13 @@ function rosterSheet(
   const animations: Record<string, object> = {};
   anims.forEach((a, i) => {
     DIR5.forEach((d, r) => a.frames.forEach((f, col) => put(c => f(c, d), col, i * 5 + r)));
-    animations[a.name] = { row: i * 5, dirs: DIR5, loop: a.loop, frames: a.timing };
+    const frames = a.hand
+      ? a.timing.map((t, f) => ({
+          ...t,
+          hands: Object.fromEntries(DIR5.map(d => [d, [a.hand!(d, f)[0] - pivot[0], a.hand!(d, f)[1] - pivot[1]]])),
+        }))
+      : a.timing;
+    animations[a.name] = { row: i * 5, dirs: DIR5, loop: a.loop, frames };
   });
   const deathRow = anims.length * 5;
   death.forEach((f, col) => put(f, col, deathRow));
@@ -1654,63 +1667,158 @@ function bruteDeath(c: Img, f: number) {
 // candle eyes, a long toll-collector's coat in old red, gilt buttons, a ring of keys at the hip, a halberd.
 const TOLL_HAND: Record<Dir5, [number, number]> = { S: [34, 27], SE: [33, 26], E: [30, 26], NE: [32, 24], N: [32, 24] };
 
-function drawTollwarden(c: Img, dir: Dir5, pose: BodyPose & { kneel?: boolean }) {
-  const o = { bob: 0, lean: 0, hunch: 0, step: -1, flinch: false, sway: 0, kneel: false, ...pose };
+/** arm: halberd hand raised overhead (0..1); reach: hand drawn back (-) or driven forward (+); toss: off hand flung out. */
+type TollPose = BodyPose & { kneel?: boolean; arm?: number; reach?: number; toss?: number; flick?: number };
+
+/** Where the weapon hand is for a pose (cell pixels). Drawing and the manifest both use it, so the halberd follows the arm. */
+function tollHand(dir: Dir5, p: TollPose): [number, number] {
+  const [hx, hy] = TOLL_HAND[dir];
+  const [fx, fy] = FACE_VEC[dir];
+  const { lx, ly } = leanOffsets(dir, p.lean ?? 0);
+  const arm = p.arm ?? 0;
+  const reach = p.reach ?? 0;
+  return [
+    Math.round(hx + lx + reach * 6 * fx - arm * 3 * fx - (dir === 'S' ? arm * 3 : 0)),
+    Math.round(hy + (p.bob ?? 0) + ly + reach * 4 * fy - arm * 15),
+  ];
+}
+
+function drawTollwarden(c: Img, dir: Dir5, pose: TollPose) {
+  const o = { bob: 0, lean: 0, hunch: 0, step: -1, flinch: false, sway: 0, kneel: false, arm: 0, reach: 0, toss: 0, flick: 0, ...pose };
   const b = o.bob;
   const { lx, ly, sh } = leanOffsets(dir, o.lean);
+  const [fx, fy] = FACE_VEC[dir];
   const back = dir === 'N' || dir === 'NE';
+  const E = EN;
+  const coat = { c0: hex('#3a0d14'), c1: P.blood1, c2: P.blood2, c3: hex('#cf5058') };
+  const gold0 = mix(P.flame1, P.wood1, 0.45);
   // Legs: armoured greaves under the coat (or folded, kneeling)
   if (o.kneel) {
-    c.rect(15, 40, 9, 3, P.steel1);
-    c.rect(26, 38, 3, 5, P.steel1);
-    c.rect(24, 42, 8, 2, P.dark1);
+    c.rect(15, 40, 9, 3, E.steel2);
+    c.hline(15, 40, 9, E.steel3);
+    c.rect(26, 38, 3, 5, E.steel1);
+    c.rect(24, 42, 8, 2, E.steel0);
   } else {
     const liftL = o.step === 1 ? 2 : 0;
     const liftR = o.step === 3 ? 2 : 0;
-    c.rect(18, 34 + b, 4, 8 - liftL, P.steel1);
-    c.rect(17, 42 - liftL, 6, 2, P.dark1);
-    c.rect(27, 34 + b, 4, 8 - liftR, P.steel1);
-    c.rect(26, 42 - liftR, 6, 2, P.dark1);
+    for (const [x, lift, lit] of [[18, liftL, true], [27, liftR, false]] as const) {
+      c.rect(x, 34 + b, 4, 8 - lift, lit ? E.steel2 : E.steel1);
+      c.vline(x, 34 + b, 8 - lift, lit ? E.steel3 : E.steel2);
+      c.hline(x, 37 + b, 4, E.steel0); // knee plate
+      c.rect(x - 1, 42 - lift, 6, 2, E.steel0);
+      c.hline(x - 1, 42 - lift, 6, E.steel1);
+    }
   }
-  // The long coat: widening from the shoulders to the knees
+  // The long coat: widening from the shoulders to the knees, tails flaring as he turns
   for (let y = 17; y <= 38; y++) {
     const half = Math.round(7 + (y - 17) * 0.28);
-    c.hline(24 + sh - half, y + b, half * 2, P.blood1);
+    const flare = y > 29 ? Math.round((o.sway * (y - 29)) / 6) : 0;
+    shadedRow(c, 24 + sh - half + flare, y + b, half * 2, coat.c0, coat.c1, coat.c2, coat.c3);
   }
-  c.vline(24 + sh - 7, 17 + b, 20, P.blood2);
-  // Breastplate, gilt buttons, belt with the ring of keys
+  const hemL = 24 + sh - 13 + Math.round((o.sway * 9) / 6);
+  c.hline(hemL, 38 + b, 26, P.flame1); // gilt hem
+  c.hline(hemL, 39 + b, 26, gold0);
   if (!back) {
-    c.rect(19 + sh, 18 + b, 10, 10, P.steel1);
-    c.vline(19 + sh, 18 + b, 10, P.steel2);
-    for (const y of [20, 23, 26]) c.set(24 + sh + (dir === 'E' ? 2 : 0), y + b, P.flame2);
+    // the coat hangs open below the belt: dark under-tunic in the slit, gilt edging either side
+    for (let y = 29; y <= 38; y++) {
+      const w = Math.round((y - 29) / 4);
+      c.hline(24 + sh - w + Math.round((o.sway * (y - 29)) / 6), y + b, w * 2 + 1, coat.c0);
+    }
+    line(c, 23 + sh, 29 + b, 20 + sh + o.sway, 38 + b, P.flame1);
+    line(c, 25 + sh, 29 + b, 28 + sh + o.sway, 38 + b, gold0);
+  } else {
+    c.vline(24 + sh, 29 + b, 10, coat.c0); // the vent at the back
+    for (const x of [18, 30]) line(c, x + sh, 20 + b, x + sh + o.sway, 37 + b, coat.c1); // back seams
   }
-  c.hline(16 + sh, 28 + b, 16, P.dark2);
-  c.disc(17 + sh, 31 + b, 2, P.flame1); // keys
-  c.set(16 + sh, 33 + b, P.flame1);
-  c.set(18 + sh, 33 + b, P.flame1);
-  // Pauldrons
-  c.ellipse(15 + sh, 19 + b, 4, 3, P.steel1);
-  c.ellipse(33 + sh, 19 + b, 4, 3, P.steel1);
-  c.hline(12 + sh, 18 + b, 6, P.steel2);
-  // Tall barbute with a coin-slot visor
+  // Breastplate with brass studs; belt with the ring of keys and the toll purse
+  if (!back) {
+    c.rect(19 + sh, 18 + b, 10, 10, E.steel2);
+    c.vline(19 + sh, 18 + b, 10, E.steel3);
+    c.vline(20 + sh, 19 + b, 8, mix(E.steel2, E.steel3, 0.4));
+    c.vline(28 + sh, 18 + b, 10, E.steel0);
+    for (const y of [22, 25]) c.hline(19 + sh, y + b, 10, E.steel1); // lames
+    const bx = 24 + sh + (dir === 'E' ? 2 : 0);
+    for (const y of [20, 23, 26]) {
+      c.set(bx, y + b, P.flame2);
+      c.set(bx, y + b + 1, gold0);
+    }
+  }
+  c.hline(16 + sh, 28 + b, 16, P.dark1);
+  c.hline(16 + sh, 29 + b, 16, P.wood1);
+  if (!back) c.rect(23 + sh + (dir === 'E' ? 2 : 0), 28 + b, 2, 2, P.flame1); // buckle
+  // ring of keys at the left hip
+  c.disc(17 + sh, 31 + b, 2, gold0);
+  c.disc(17 + sh, 31 + b, 1, coat.c1);
+  c.set(16 + sh, 30 + b, P.flame2);
+  for (const [x, l] of [[16, 3], [18, 2]]) {
+    c.vline(x + sh, 33 + b, l, gold0);
+    c.set(x + sh, 33 + b + l, P.flame1);
+  }
+  // the toll purse at the right hip, a coin winking at its mouth
+  if (dir !== 'N') {
+    c.ellipse(30 + sh, 32 + b, 2.5, 2.5, P.wood1);
+    c.set(29 + sh, 31 + b, P.wood2);
+    c.hline(29 + sh, 30 + b, 3, P.dark1);
+    c.set(31 + sh, 30 + b, P.flame2);
+  }
+  // Off-hand arm: hangs at his side, or flung out to toss the coins
+  const lsx = 16 + sh;
+  const lsy = 20 + b;
+  const lh: [number, number] =
+    o.toss > 0 ? [Math.round(24 + sh + fx * 11 * o.toss - (dir === 'S' ? 7 : 0)), Math.round(22 + b + fy * 5 * o.toss - o.toss * 6)] : [14 + sh + o.sway, 30 + b];
+  for (let t = 0; t <= 1; t++) line(c, lsx + t, lsy, lh[0] + t, lh[1] - 2, t ? coat.c1 : coat.c2);
+  c.rect(lh[0] - 1, lh[1] - 2, 3, 3, E.steel2);
+  c.set(lh[0] - 1, lh[1] - 2, E.steel3);
+  if (o.toss > 0.9) for (const [dx, dy] of [[2, -2], [3, 0], [1, -3]]) c.set(lh[0] + dx * (fx < 0 ? -1 : 1), lh[1] + dy, P.flame2); // coins leaving the hand
+  // Pauldrons: two lames each, lit from the left
+  for (const [x, lit] of [[15, true], [33, false]] as const) {
+    c.ellipse(x + sh, 19 + b, 4, 3, lit ? E.steel2 : E.steel1);
+    c.hline(x + sh - 3, 18 + b, 4, lit ? E.steel3 : E.steel2);
+    c.hline(x + sh - 3, 21 + b, 7, E.steel0);
+    c.set(x + sh, 19 + b, P.flame1); // rivet
+  }
+  // Weapon arm: sleeve from the shoulder to the halberd hand
+  const [ax, ay] = tollHand(dir, o);
+  for (let t = 0; t <= 1; t++) line(c, 32 + sh + t, 20 + b, ax + t, ay - 1, t ? coat.c1 : coat.c2);
+  // Tall barbute: a T-shaped visor with a coin slot below it, and a brass toll bell for a crest
   const hx = 24 + lx + (o.flinch ? -2 : 0);
-  const hy = 4 + b + o.hunch + ly;
-  c.rect(hx - 5, hy, 10, 13, P.steel1);
-  c.rect(hx - 4, hy - 1, 8, 1, P.steel1);
-  c.vline(hx - 5, hy, 13, P.steel2);
-  c.hline(hx - 5, hy + 12, 10, P.stone1);
-  c.rect(hx - 1, hy - 3, 2, 2, P.flame1); // crest knob
+  const hy = Math.max(1, 5 + b + o.hunch + ly);
+  c.rect(hx - 5, hy, 10, 13, E.steel2);
+  c.rect(hx - 4, hy - 1, 8, 1, E.steel2);
+  c.vline(hx - 5, hy, 13, E.steel3);
+  c.vline(hx - 4, hy - 1, 12, mix(E.steel2, E.steel3, 0.5));
+  c.hline(hx - 3, hy - 1, 4, E.steel3);
+  c.vline(hx + 4, hy, 13, E.steel0);
+  c.vline(hx + 3, hy + 1, 11, E.steel1);
+  c.hline(hx - 5, hy + 12, 10, E.steel0);
+  for (const y of [2, 10]) {
+    c.set(hx - 4, hy + y, P.flame1); // rivets
+    c.set(hx + 3, hy + y, P.flame1);
+  }
+  // the bell (kept inside the cell even when he rears back)
+  const by = Math.max(hy, 4);
+  c.hline(hx - 1, by - 4, 2, P.flame1);
+  c.set(hx - 1, by - 4, P.flame2);
+  c.hline(hx - 2, by - 3, 4, P.flame1);
+  c.set(hx - 2, by - 3, P.flame2);
+  c.hline(hx - 2, by - 2, 5, gold0);
+  c.set(hx, by - 1, P.dark2); // clapper
   if (!back) {
-    const eye = o.flinch ? P.ember : P.wax2;
+    const eye = o.flinch ? P.ember : o.flick ? P.flame2 : P.wax2;
     const vx = dir === 'S' ? hx - 4 : dir === 'SE' ? hx - 2 : hx;
-    c.hline(vx, hy + 5, dir === 'E' ? 5 : 8, P.ink);
+    const vw = dir === 'E' ? 5 : 8;
+    c.hline(vx, hy + 5, vw, P.ink);
+    c.hline(vx, hy + 4, vw, E.steel1); // brow over the slit
     c.set(vx + 2, hy + 5, eye);
     if (dir !== 'E') c.set(vx + 5, hy + 5, eye);
-    c.vline(hx, hy + 7, 4, P.ink); // the coin slot
-  }
+    const sx = dir === 'S' ? hx : dir === 'SE' ? hx + 1 : hx + 2;
+    c.vline(sx, hy + 6, 5, P.ink); // the coin slot
+    c.vline(sx + 1, hy + 7, 3, E.steel3);
+  } else c.vline(hx, hy + 1, 11, E.steel1); // crest ridge
   // Gauntlet at the weapon hand
-  const [ax, ay] = TOLL_HAND[dir];
-  c.rect(ax - 2, ay - 2 + b, 4, 4, P.steel2);
+  c.rect(ax - 2, ay - 2, 4, 4, E.steel2);
+  c.hline(ax - 2, ay - 2, 4, E.steel3);
+  c.set(ax + 1, ay + 1, E.steel0);
 }
 
 function tollwardenDeath(c: Img, f: number) {
@@ -1721,65 +1829,116 @@ function tollwardenDeath(c: Img, f: number) {
 
 function genTollwarden() {
   const P7 = phased7();
-  const frames = <T,>(draw: (c: Img, d: Dir5, p: T) => void, poses: T[]) => poses.map(p => (c: Img, d: Dir5) => draw(c, d, p));
-  const walk4 = <T,>(draw: (c: Img, d: Dir5, p: T) => void, mk: (f: number) => T) => [0, 1, 2, 3].map(f => (c: Img, d: Dir5) => draw(c, d, mk(f)));
+  type Anim = { name: string; poses: TollPose[]; timing: { ticks: number; phase?: string; events?: string[] }[]; loop: boolean };
+  const anim = (a: Anim) => ({
+    name: a.name,
+    frames: a.poses.map(p => (c: Img, d: Dir5) => drawTollwarden(c, d, p)),
+    timing: a.timing,
+    loop: a.loop,
+    hand: (d: Dir5, f: number) => tollHand(d, a.poses[f]),
+  });
   rosterSheet(
     'tollwarden',
     48,
     [24, 44],
     7,
     [
-      { name: 'idle', frames: frames(drawTollwarden, [{}, { bob: 1 }]), timing: [{ ticks: 26 }, { ticks: 26 }], loop: true },
-      { name: 'walk', frames: walk4(drawTollwarden, f => ({ step: f, bob: f % 2 ? -1 : 0 })), timing: walkT(11), loop: true },
-      {
+      anim({ name: 'idle', poses: [{}, { flick: 1 }, { bob: 1 }, { bob: 1, flick: 1 }], timing: [{ ticks: 16 }, { ticks: 10 }, { ticks: 16 }, { ticks: 10 }], loop: true }),
+      anim({ name: 'walk', poses: [0, 1, 2, 3].map(f => ({ step: f, bob: f % 2 ? -1 : 0, sway: f === 1 ? 1 : f === 3 ? -1 : 0 })), timing: walkT(11), loop: true }),
+      // Toll sweep: the halberd hauled back past his hip, then swept across the whole front
+      anim({
         name: 'sweep',
-        frames: frames(drawTollwarden, [{ sway: -2, lean: -1 }, { sway: -2, lean: -2 }, { sway: -2, lean: -2, bob: 1 }, { lean: 3 }, { lean: 3 }, { lean: 1 }, {}]),
+        poses: [
+          { reach: -0.6, sway: -1, lean: -1 },
+          { reach: -1, sway: -2, lean: -2, arm: 0.3 },
+          { reach: -1.1, sway: -2, lean: -2, arm: 0.3, bob: 1 },
+          { reach: 1, sway: 2, lean: 3 },
+          { reach: 1.2, sway: 2, lean: 3 },
+          { reach: 0.5, sway: 1, lean: 1 },
+          {},
+        ],
         timing: P7,
         loop: false,
-      },
-      {
+      }),
+      // Last call: drawn far back and held (the delayed thrust), then driven through
+      anim({
         name: 'thrust',
-        frames: frames(drawTollwarden, [{ lean: -1 }, { lean: -3, hunch: 1 }, { lean: -3, hunch: 1, bob: 1 }, { lean: 4 }, { lean: 4, bob: 1 }, { lean: 2 }, {}]),
+        poses: [
+          { reach: -0.5, lean: -1 },
+          { reach: -1.2, lean: -3, hunch: 1 },
+          { reach: -1.4, lean: -3, hunch: 1, bob: 1 },
+          { reach: 1.7, lean: 4, sway: 1 },
+          { reach: 1.7, lean: 4, bob: 1, sway: 1 },
+          { reach: 0.8, lean: 2 },
+          {},
+        ],
         timing: P7,
         loop: false,
-      },
-      {
+      }),
+      // Gate drop: raised high over the helm, then brought down like a portcullis
+      anim({
         name: 'slam',
-        frames: frames(drawTollwarden, [
-          { lean: -2, bob: -2, hunch: -2 }, { lean: -3, bob: -2, hunch: -2 }, { lean: -3, bob: -2, hunch: -2 },
-          { lean: 3, bob: 2, hunch: 2 }, { lean: 3, bob: 3, hunch: 2 }, { lean: 2, bob: 2 }, {},
-        ]),
+        poses: [
+          { arm: 0.5, bob: -1, lean: -1 },
+          { arm: 1, bob: -2, hunch: -2, lean: -2 },
+          { arm: 1.1, bob: -2, hunch: -2, lean: -3 },
+          { reach: 1.2, bob: 2, hunch: 2, lean: 3 },
+          { reach: 1.2, bob: 3, hunch: 2, lean: 3, sway: 1 },
+          { reach: 0.5, bob: 2, lean: 2 },
+          {},
+        ],
         timing: P7,
         loop: false,
-      },
-      {
-        // The entrance: rears back with the halberd raised, drives it into the stones (the slam lands on the
-        // third frame, 20 ticks into each 40-tick cycle), straightens.
+      }),
+      // The entrance: rears back with the halberd raised, drives it into the stones (the slam lands on the
+      // third frame, 20 ticks into each 40-tick cycle), straightens.
+      anim({
         name: 'intro',
-        frames: frames(drawTollwarden, [{ lean: -2, bob: -1, hunch: -1 }, { lean: -3, bob: -2, hunch: -2 }, { lean: 3, bob: 2, hunch: 2 }, { lean: 1 }]),
+        poses: [{ arm: 0.7, lean: -2, bob: -1, hunch: -1 }, { arm: 1.1, lean: -3, bob: -2, hunch: -2 }, { reach: 1.2, lean: 3, bob: 2, hunch: 2 }, { reach: 0.3, lean: 1 }],
         timing: [{ ticks: 12 }, { ticks: 8 }, { ticks: 4 }, { ticks: 16 }],
         loop: true,
-      },
-      { name: 'stagger', frames: frames(drawTollwarden, [{ lean: -2, flinch: true }, { lean: -1, bob: 1, flinch: true }, { bob: 1 }]), timing: staggerT, loop: false },
+      }),
+      // Toll: a hand into the purse, and a fistful of coins flung at you
+      anim({
+        name: 'toss',
+        poses: [{ toss: 0.2 }, { toss: 0.5, lean: -1 }, { toss: 0.5, lean: -2, hunch: 1 }, { toss: 1.1, lean: 2 }, { toss: 1.1, lean: 2 }, { toss: 0.5, lean: 1 }, {}],
+        timing: P7,
+        loop: false,
+      }),
+      anim({ name: 'stagger', poses: [{ lean: -2, flinch: true, arm: 0.3 }, { lean: -1, bob: 1, flinch: true }, { bob: 1 }], timing: staggerT, loop: false }),
     ],
     [0, 1, 2, 3, 4].map(f => (c: Img) => tollwardenDeath(c, f)),
     TOLL_HAND,
   );
 
-  // The halberd: long haft, crescent axe, a spike at the tip, a hook behind
+  // The halberd: ash haft bound in iron, crescent axe, a spike at the tip, a hook behind
   const hal = new Img(46, 13);
-  hal.hline(1, 6, 36, P.wood1);
-  hal.hline(1, 7, 36, P.wood2);
+  hal.hline(1, 6, 36, P.wood2);
+  hal.hline(1, 7, 36, P.wood1);
+  for (const x of [8, 20]) hal.vline(x, 6, 2, EN.steel1); // iron bands
+  hal.rect(0, 5, 2, 4, P.flame1); // butt cap
   for (let y = 1; y <= 11; y++) {
     const w = Math.round(4 - Math.abs(y - 6) * 0.5);
-    hal.hline(33, y, w, P.steel2);
+    hal.hline(33, y, w, y < 6 ? EN.steel3 : EN.steel2);
+    hal.set(33 + w - 1, y, P.steel2); // the edge
   }
-  hal.vline(33, 1, 11, P.steel1);
-  hal.hline(37, 6, 8, P.steel2);
+  hal.vline(33, 1, 11, EN.steel1);
+  hal.hline(37, 6, 7, EN.steel3);
+  hal.hline(37, 7, 6, EN.steel1);
   hal.set(44, 6, P.steel2);
-  hal.rect(29, 4, 2, 2, P.steel1); // back hook
+  hal.rect(29, 4, 2, 2, EN.steel1); // back hook
+  hal.set(28, 3, EN.steel2);
   hal.outline(P.ink);
   sheet('toll_halberd', hal, { cell: [46, 13], pivot: [9, 6], layer: 'weapon', points: { tip: [44, 6] } });
+
+  // A toll coin, spinning (thrown by the Toll attack)
+  const coin = new Img(7, 7);
+  coin.disc(3.5, 3.5, 3, P.flame1);
+  coin.disc(3, 3, 1.8, P.flame2);
+  coin.set(4, 4, mix(P.flame1, P.wood1, 0.5));
+  coin.set(2, 2, P.white);
+  coin.outline(P.ink);
+  sheet('toll_coin', coin, { cell: [7, 7], pivot: [3, 3], layer: 'fx' });
 
   // Smoke veil (16x32, pivot 8,32): pale smoke rolling up through a sealed doorway, 4 looping frames
   const veil = new Img(16 * 4, 32);
@@ -1920,42 +2079,119 @@ function crawlerDeath(c: Img, f: number, size: number) {
 // A vast shape of wax in a rendering-woman's smock, a dozen guttering wicks along her shoulders, a ladle.
 const MOTHER_HAND: Record<Dir5, [number, number]> = { S: [48, 36], SE: [47, 35], E: [43, 35], NE: [46, 33], N: [46, 33] };
 
-function drawMother(c: Img, dir: Dir5, pose: BodyPose & { rise?: number }) {
-  const o = { bob: 0, lean: 0, hunch: 0, step: -1, flinch: false, sway: 0, rise: 0, ...pose };
+/** rise: sunk into her pool; arm: ladle hand raised; reach: hand swung back (-) or out (+); both: both arms up (the crush);
+ * mouth: open (spitting); tip: ladle tipped out over you (spilling); flick: the wick flames' other frame. */
+type MotherPose = BodyPose & { rise?: number; arm?: number; reach?: number; both?: number; mouth?: number; tip?: number; flick?: number };
+
+const WAXR = {
+  w0: mix(P.wax1, P.wood1, 0.55),
+  w1: mix(P.wax1, P.wood2, 0.25),
+  w2: P.wax1,
+  w3: P.wax2,
+};
+
+function motherHand(dir: Dir5, p: MotherPose): [number, number] {
+  const [hx, hy] = MOTHER_HAND[dir];
+  const [fx, fy] = FACE_VEC[dir];
+  const { lx, ly } = leanOffsets(dir, p.lean ?? 0);
+  const up = Math.max(p.arm ?? 0, p.both ?? 0) + (p.tip ?? 0) * 0.6;
+  const reach = (p.reach ?? 0) + (p.tip ?? 0) * 0.8;
+  const y = hy + (p.bob ?? 0) + (p.rise ?? 0) + ly + reach * 5 * fy - up * 16;
+  return [Math.round(hx + lx + (p.sway ?? 0) + reach * 8 * fx - up * 4 * fx), Math.round(Math.min(54, y))];
+}
+
+function drawMother(c: Img, dir: Dir5, pose: MotherPose) {
+  const o = { bob: 0, lean: 0, hunch: 0, step: -1, flinch: false, sway: 0, rise: 0, arm: 0, reach: 0, both: 0, mouth: 0, tip: 0, flick: 0, ...pose };
   const b = o.bob + o.rise; // rise: sunk into her wax pool (intro), 0 = full height
   const { lx, ly, sh } = leanOffsets(dir, o.lean);
-  // Her pool of wax, always around her
-  c.ellipse(32, 58, 22, 5, P.wax1);
-  c.ellipse(26, 57, 8, 2, P.wax2);
-  // Body: a great bell of wax under a stained smock
+  const [fx] = FACE_VEC[dir];
+  const back = dir === 'N' || dir === 'NE';
+  const W = WAXR;
+  const smock = { s0: mix(P.stone1, P.wood1, 0.35), s1: mix(P.stone2, P.wood1, 0.25), s2: mix(P.stone3, P.wood2, 0.25), s3: mix(P.stone3, P.wax1, 0.3) };
+  // Her pool of wax, always around her: a pale rim, a sheen, slow ripples
+  c.ellipse(32, 58, 23, 5.5, W.w0);
+  c.ellipse(32, 57.5, 22, 4.5, W.w2);
+  c.ellipse(25, 56.5, 9, 1.6, W.w3);
+  c.hline(40, 59, 8, W.w1);
+  c.hline(14, 58, 5, W.w1);
+  // Body: a great bell of wax under a stained smock; the wax runs out of the smock's hem in a ragged curtain
+  const shadeAt = (t: number, r: { c0: RGBA; c1: RGBA; c2: RGBA; c3: RGBA }) => (t < 0.1 ? r.c3 : t < 0.2 ? mix(r.c2, r.c3, 0.5) : t > 0.93 ? r.c0 : t > 0.8 ? r.c1 : r.c2);
+  const wr = { c0: W.w0, c1: W.w1, c2: W.w2, c3: W.w3 };
+  const sr = { c0: smock.s0, c1: smock.s1, c2: smock.s2, c3: smock.s3 };
+  const curtain = (x: number) => 44 + ((x * 7) % 5) - ((x * 3) % 4) + (x % 6 === 0 ? 3 : 0);
   for (let y = 22; y <= 56; y++) {
     if (y + b > 57) continue;
     const half = Math.round(10 + (y - 22) * 0.38);
-    c.hline(32 + sh - half, y + b, half * 2, y > 44 ? P.wax1 : P.stone2);
+    const x0 = 32 + sh - half;
+    for (let x = x0; x < x0 + half * 2; x++) {
+      const t = (x - x0) / Math.max(1, half * 2 - 1);
+      c.set(x, y + b, shadeAt(t, y > curtain(x - sh) ? wr : sr));
+    }
   }
-  c.rect(24 + sh, 30 + b, 16, 12, P.wood2); // smock bib, stained
-  c.set(28 + sh, 34 + b, P.blood1);
-  c.set(34 + sh, 38 + b, P.blood1);
-  // Arms
-  c.ellipse(17 + sh + o.sway, 36 + b, 4, 9, P.wax1);
-  c.ellipse(47 + sh + o.sway, 36 + b, 4, 9, P.wax1);
-  // Head: half melted, the face slid to one side; hair of wicks
+  if (!back) {
+    // the bib: a tapered apron hung from her neck, stained with what she renders
+    for (let y = 30; y <= 43; y++) {
+      const hw = 5 + Math.round((y - 30) * 0.25);
+      c.hline(32 + sh - hw, y + b, hw * 2, smock.s3);
+      c.set(32 + sh - hw, y + b, mix(smock.s3, P.wax2, 0.4));
+      c.set(32 + sh + hw - 1, y + b, smock.s2);
+    }
+    line(c, 27 + sh, 30 + b, 29 + sh, 24 + b, smock.s2); // neck strap
+    line(c, 37 + sh, 30 + b, 35 + sh, 24 + b, smock.s1);
+    c.rect(29 + sh, 36 + b, 6, 4, smock.s2); // pocket
+    c.hline(29 + sh, 36 + b, 6, smock.s1);
+    for (const [x, y, col] of [[28, 33, P.blood1], [35, 38, P.blood1], [31, 32, W.w1], [36, 34, W.w0], [28, 41, W.w1], [33, 42, W.w1]] as const) c.set(x + sh, y + b, col);
+  } else {
+    line(c, 23 + sh, 28 + b, 41 + sh, 40 + b, smock.s1); // apron strings
+    c.rect(30 + sh, 38 + b, 4, 3, smock.s1); // the bow
+  }
+  // wicks growing from her shoulders, like candles on a cake
+  for (const [x, y] of [[-12, 25], [-9, 23], [10, 23], [13, 25]]) {
+    c.vline(32 + sh + x, y + b - 2, 2, P.dark2);
+    c.set(32 + sh + x, y + b - 3, o.flinch ? P.ember : (x + o.flick) % 2 ? P.flame1 : P.flame2);
+  }
+  // Arms: thick wax, the smock sleeves rolled to the elbow. The right hand holds the ladle.
+  const [ax, ay] = motherHand(dir, o);
+  const lUp = o.both;
+  const lHand: [number, number] = [Math.round(17 + sh + o.sway - lUp * 2 - (o.tip > 0 ? 0 : 0)), Math.round(Math.min(54, 42 + b - lUp * 18))];
+  const arm = (sx: number, hand: [number, number], lit: boolean) => {
+    const sy = 26 + b;
+    for (let t = -3; t <= 3; t++) line(c, sx + t, sy, hand[0] + Math.round(t * 0.7), hand[1] - 2, t < -1 && lit ? W.w2 : t > 1 ? W.w0 : W.w1);
+    const mx = Math.round((sx + hand[0]) / 2);
+    const my = Math.round((sy + hand[1]) / 2);
+    c.hline(mx - 3, my - 3, 7, smock.s2); // rolled sleeve at the elbow
+    c.hline(mx - 3, my - 2, 7, smock.s1);
+    c.ellipse(hand[0], hand[1], 3, 2.6, W.w1); // a big soft hand
+    c.ellipse(hand[0] - 0.8, hand[1] - 0.8, 1.8, 1.4, W.w2);
+    c.set(hand[0] - 2, hand[1] - 2, W.w3);
+  };
+  arm(22 + sh, lHand, true);
+  arm(42 + sh, [ax, ay], false);
+  if (o.tip > 0.5) for (const k of [1, 2, 3]) c.set(ax + Math.round(fx * 4), ay + 2 + k * 3, W.w2); // spilling
+  // Head: half melted, the face slid to one side; hair of lit wicks
   const hx = 32 + lx + (o.flinch ? -2 : 0);
   const hy = 10 + b + o.hunch + ly;
-  c.ellipse(hx, hy + 7, 8, 9, P.wax1);
-  c.ellipse(hx + 3, hy + 13, 5, 4, P.wax1); // the slid-down cheek
-  if (dir !== 'N' && dir !== 'NE') {
-    const fx = dir === 'S' ? hx : dir === 'SE' ? hx + 2 : hx + 4;
-    c.set(fx - 3, hy + 6, P.ink);
-    c.set(fx + 2, hy + 7, P.ink);
-    c.hline(fx - 2, hy + 11, 4, o.flinch ? P.ember : P.dark2); // a humming mouth
+  c.ellipse(hx, hy + 7, 8, 9, W.w1);
+  c.ellipse(hx - 1.5, hy + 5, 6, 6.5, W.w2);
+  c.ellipse(hx - 3, hy + 2, 2.5, 2, W.w3);
+  c.ellipse(hx + 3, hy + 13, 5, 4, W.w1); // the slid-down cheek
+  c.hline(hx + 1, hy + 16, 6, W.w0);
+  if (!back) {
+    const f0 = dir === 'S' ? hx : dir === 'SE' ? hx + 2 : hx + 4;
+    c.rect(f0 - 4, hy + 5, 3, 2, W.w0); // sockets
+    c.set(f0 - 3, hy + 6, P.ink);
+    c.rect(f0 + 1, hy + 6, 3, 2, W.w0);
+    c.set(f0 + 2, hy + 7, P.ink);
+    c.set(f0 + 2, hy + 8, W.w3); // the eye weeping wax
+    const mh = 1 + Math.round(o.mouth * 3);
+    c.rect(f0 - 2, hy + 11, 4, mh, o.flinch ? P.ember : P.dark2); // a humming mouth, or wide open to spit
+    if (o.mouth > 0.5) c.rect(f0 - 1, hy + 12, 2, mh - 1, P.flame1); // the molten wax in her throat
   }
-  for (const [x, y] of [[-7, 0], [-4, -3], [0, -4], [4, -3], [7, 0], [-12, 8], [12, 8]]) {
+  for (const [x, y] of [[-7, 0], [-4, -3], [0, -4], [4, -3], [7, 0]]) {
     c.vline(hx + x, hy + y, 2, P.dark2);
-    c.set(hx + x, hy + y - 1, o.flinch ? P.ember : P.flame2);
+    c.set(hx + x, hy + y - 1, o.flinch ? P.ember : (x + o.flick) % 2 ? P.flame1 : P.flame2);
+    if (!o.flinch && (x + o.flick) % 2 === 0) c.set(hx + x, hy + y - 2, mix(P.flame1, P.ember, 0.4));
   }
-  const [ax, ay] = MOTHER_HAND[dir];
-  c.rect(ax - 2, ay - 2 + b, 5, 5, P.wax1);
 }
 function motherDeath(c: Img, f: number) {
   // She sinks back into her wax and the wicks go out one by one.
@@ -1965,77 +2201,138 @@ function motherDeath(c: Img, f: number) {
 
 // --- The Bones of Mother Tallow (64x64): what is left when the wax burns away. A tall, stooped skeleton
 // with embers smouldering in the ribs and eye sockets, still holding the ladle.
-function drawBones(c: Img, dir: Dir5, pose: BodyPose & { rise?: number; spread?: number }) {
-  const o = { bob: 0, lean: 0, hunch: 0, step: -1, flinch: false, sway: 0, rise: 0, spread: 0, ...pose };
+type BonePose = BodyPose & { rise?: number; spread?: number; reach?: number; flick?: number };
+const BONE = { b0: mix(P.stone3, P.dark2, 0.3), b1: P.stone4, b2: mix(P.wax1, P.stone4, 0.3), b3: P.wax2, char: mix(P.dark1, P.wood1, 0.3) };
+
+/** Right (ladle) hand for a pose, in cell pixels. */
+function boneHandAt(dir: Dir5, p: BonePose): [number, number] {
+  const s = p.spread ?? 0;
+  const { sh } = leanOffsets(dir, p.lean ?? 0);
+  const [fx, fy] = FACE_VEC[dir];
+  const reach = p.reach ?? 0;
+  const armY = 22 + (p.bob ?? 0) + (p.rise ?? 0) - s * 6;
+  return [Math.round(32 + sh + (p.sway ?? 0) + 16 + s * 6 + reach * 8 * fx), Math.round(Math.min(56, armY + 18 - s * 12 + reach * 5 * fy))];
+}
+
+/** A limb bone: 2 px thick, lit side and shadow side, knobbed ends. */
+function boneLine(c: Img, x0: number, y0: number, x1: number, y1: number) {
+  line(c, x0 + 1, y0 + 1, x1 + 1, y1 + 1, BONE.b0);
+  line(c, x0, y0, x1, y1, BONE.b2);
+  c.set(x0, y0, BONE.b3);
+  c.disc(x1, y1, 1.2, BONE.b2);
+}
+
+function drawBones(c: Img, dir: Dir5, pose: BonePose) {
+  const o = { bob: 0, lean: 0, hunch: 0, step: -1, flinch: false, sway: 0, rise: 0, spread: 0, reach: 0, flick: 0, ...pose };
   const b = o.bob + o.rise;
   const { lx, ly, sh } = leanOffsets(dir, o.lean);
-  const bone = P.wax2;
-  const boneDark = P.stone4;
-  // Burnt floor and a few embers where she stands
+  const back = dir === 'N' || dir === 'NE';
+  const ember = (x: number, y: number, k: number) => c.set(x, y, (k + o.flick) % 3 === 0 ? P.flame2 : (k + o.flick) % 3 === 1 ? P.flame1 : P.ember);
+  // Scorched floor, embers still in it where she rose
   c.ellipse(32, 58, 16, 3.5, P.dark1);
+  c.ellipse(32, 58, 11, 2.2, mix(P.dark1, P.ember, 0.25));
   if (o.rise > 0) for (const x of [22, 30, 38, 44]) c.set(x, 56, P.flame1);
-  // Legs
+  // Legs: femur and shin, knobbed knees
   const liftL = o.step === 1 ? 3 : 0;
   const liftR = o.step === 3 ? 3 : 0;
   if (44 + b < 57) {
-    c.vline(27, 44 + b, 13 - liftL - Math.max(0, b), bone);
-    c.vline(37, 44 + b, 13 - liftR - Math.max(0, b), bone);
-    c.hline(25, 57 - liftL, 4, boneDark);
-    c.hline(36, 57 - liftR, 4, boneDark);
+    for (const [x, lift] of [[27, liftL], [37, liftR]] as const) {
+      const bottom = 57 - lift;
+      if (bottom - (44 + b) > 2) {
+        boneLine(c, x + (x < 32 ? 1 : -1), 43 + b, x, 50 + b - Math.round(lift / 2));
+        boneLine(c, x, 50 + b - Math.round(lift / 2), x, bottom - 1);
+      }
+      c.hline(x - 2, bottom, 5, BONE.b1); // foot
+      c.hline(x - 2, bottom + 1, 5, BONE.b0);
+    }
   }
-  // Pelvis, spine, ribs with embers inside
-  if (42 + b < 58) c.rect(26 + sh, 41 + b, 13, 3, boneDark);
-  c.vline(32 + sh, 20 + b, 22, bone);
+  // Pelvis
+  if (42 + b < 58) {
+    c.ellipse(32 + sh, 42 + b, 7, 2.5, BONE.b1);
+    c.ellipse(31 + sh, 41.5 + b, 5, 1.5, BONE.b2);
+    c.rect(30 + sh, 42 + b, 4, 2, P.ink);
+  }
+  // Spine and ribs, the embers of her smouldering inside
+  for (let y = 20; y < 42; y += 2) {
+    c.rect(31 + sh, y + b, 2, 1, BONE.b2);
+    c.set(32 + sh, y + b + 1, BONE.b0);
+  }
+  c.ellipse(32 + sh, 29 + b, 5, 6, mix(P.ink, P.ember, 0.35)); // the glow inside the ribcage
+  c.ellipse(32 + sh, 30 + b, 3, 3.5, mix(P.ember, P.flame1, 0.4));
   for (let i = 0; i < 5; i++) {
     const y = 23 + b + i * 3;
     const w = 7 - Math.abs(i - 1);
-    c.hline(32 + sh - w, y, w * 2 + 1, bone);
-    if (i < 4) c.set(32 + sh - 2 + i, y + 1, i % 2 ? P.flame2 : P.ember);
+    // each rib curves round from the spine, lit on top
+    c.hline(32 + sh - w, y, w * 2 + 1, BONE.b2);
+    c.set(32 + sh - w, y + 1, BONE.b1);
+    c.set(32 + sh + w, y + 1, BONE.b0);
+    c.hline(32 + sh - w + 1, y + 1, w * 2 - 1, back ? BONE.b0 : mix(P.ink, P.ember, 0.3));
+    if (i < 4 && !back) ember(32 + sh - 2 + i, y + 1, i);
   }
+  c.hline(25 + sh, 21 + b, 15, BONE.b2); // collarbones
+  c.hline(25 + sh, 22 + b, 15, BONE.b0);
+  // charred wax still clinging to her
+  for (const [x, y] of [[-6, 22], [5, 26], [-4, 36], [6, 38], [-7, 30]]) c.set(32 + sh + x, y + b, BONE.char);
   // Arms (spread = the summoning pose, arms raised wide). Upper arm then forearm on both sides, mirrored
-  // around the spine (x = 32), so they're always the same length.
+  // around the spine, so they're always the same length. `reach` sends the ladle arm forward (the jab).
   const armY = 22 + b - o.spread * 6;
-  const elbowOut = 15 + o.spread * 4; // shoulder-to-elbow reach from the spine
+  const elbowOut = 15 + o.spread * 4;
   const handOut = 16 + o.spread * 6;
   const handY = armY + 18 - o.spread * 12;
+  const [rhx, rhy] = boneHandAt(dir, o);
   for (const side of [-1, 1]) {
     const x0 = 32 + sh + side * 7; // shoulder
-    const ex = 32 + sh + o.sway + side * elbowOut;
-    const hx2 = 32 + sh + o.sway + side * handOut;
-    line(c, x0, 22 + b, ex, armY + 10, bone);
-    line(c, ex, armY + 10, hx2, handY, bone);
+    const hx2 = side === 1 ? rhx : 32 + sh + o.sway - handOut;
+    const hy2 = side === 1 ? rhy : Math.min(56, handY);
+    const ex = side === 1 ? Math.round((x0 + hx2) / 2 + 4) : 32 + sh + o.sway - elbowOut;
+    const ey = side === 1 ? Math.round((22 + b + hy2) / 2 + (o.reach ? -2 : 2)) : armY + 10;
+    boneLine(c, x0, 22 + b, ex, ey);
+    boneLine(c, ex, ey, hx2, hy2);
+    // small flames licking along the arm bones
+    if (!o.flinch) {
+      c.set(ex, ey - 2, (side + o.flick) % 2 ? P.flame1 : P.flame2);
+      c.set(ex, ey - 3, P.ember);
+    }
   }
   if (o.spread > 0) {
     // wax gathering between her raised hands
     c.disc(32 + sh, armY - 4, 3 + o.spread, P.flame1);
-    c.disc(32 + sh, armY - 4, 1 + o.spread, P.flame2);
+    c.disc(32 + sh, armY - 4, 1.5 + o.spread, P.flame2);
+    c.disc(32 + sh - 1, armY - 5, 0.8 + o.spread * 0.4, P.white);
   }
-  // Skull
+  // Skull: long, stooped forward, jaw hanging a little open
   const hx = 32 + lx + (o.flinch ? -2 : 0);
   const hy = 9 + b + o.hunch + ly;
-  c.ellipse(hx, hy + 4, 6, 6, bone);
-  c.rect(hx - 3, hy + 8, 7, 3, boneDark); // jaw
-  if (dir !== 'N' && dir !== 'NE') {
+  c.ellipse(hx, hy + 4, 6, 6, BONE.b1);
+  c.ellipse(hx - 1.2, hy + 3, 4.5, 4.5, BONE.b2);
+  c.set(hx - 3, hy, BONE.b3);
+  c.set(hx - 2, hy - 1, BONE.b3);
+  c.rect(hx - 3, hy + 9, 7, 2, BONE.b1); // jaw
+  c.hline(hx - 3, hy + 11, 7, BONE.b0);
+  if (!back) {
     const fx = dir === 'S' ? hx : dir === 'SE' ? hx + 1 : hx + 3;
-    c.rect(fx - 3, hy + 3, 2, 2, P.ink);
-    c.rect(fx + 1, hy + 3, 2, 2, P.ink);
-    c.set(fx - 3, hy + 3, o.flinch ? P.wax2 : P.flame2); // ember eyes
-    c.set(fx + 1, hy + 3, o.flinch ? P.wax2 : P.flame2);
+    c.rect(fx - 4, hy + 3, 3, 3, P.ink);
+    c.rect(fx + 1, hy + 3, 3, 3, P.ink);
+    const eye = o.flinch ? P.wax2 : P.flame2;
+    c.set(fx - 3, hy + 4, eye); // ember eyes
+    c.set(fx + 2, hy + 4, eye);
+    c.set(fx - 3, hy + 5, P.ember);
+    c.set(fx + 2, hy + 5, P.ember);
+    c.set(fx, hy + 7, P.ink); // nose
+    for (let x = fx - 2; x <= fx + 2; x += 2) c.set(x, hy + 9, P.ink); // teeth
+    c.hline(fx - 5, hy + 6, 2, BONE.b0); // cheekbones
+    c.hline(fx + 4, hy + 6, 2, BONE.b0);
+  } else c.vline(hx, hy + 1, 7, BONE.b0);
+  for (const [x, y] of [[-4, -2], [0, -3], [4, -2]]) {
+    c.set(hx + x, hy + y, P.ink); // wick stumps, burnt down
+    c.set(hx + x, hy + y - 1, (x + o.flick) % 2 ? P.ember : mix(P.ember, P.ink, 0.5));
   }
-  for (const [x, y] of [[-4, -2], [0, -3], [4, -2]]) c.set(hx + x, hy + y, P.ember); // wick stumps, burnt out
-  // The ladle hand sits at the end of the right forearm (where the game holds the ladle; see boneHand).
-  c.rect(32 + sh + o.sway + handOut - 1, handY - 1, 3, 3, bone);
+  // The ladle hand sits at the end of the right forearm (where the game holds the ladle).
+  c.rect(rhx - 1, rhy - 1, 3, 3, BONE.b2);
 }
 
-/** Right-hand position relative to the pivot (32,58), matching drawBones' forearm, for per-frame `hand`. */
-function boneHand(p: BodyPose & { spread?: number }): [number, number] {
-  const s = p.spread ?? 0;
-  const armY = 22 + (p.bob ?? 0) - s * 6;
-  return [Math.round((p.sway ?? 0) + 16 + s * 6), Math.round(armY + 18 - s * 12 - 58)];
-}
-
-const SUMMON_POSES = [{ spread: 0.5 }, { spread: 1 }, { spread: 1.5, bob: -1 }, { spread: 2, bob: -2 }, { spread: 2, bob: -2 }, { spread: 1 }, {}];
-const CHANNEL_POSES = [{ spread: 2, bob: -2 }, { spread: 1.8, bob: -3, sway: 1 }, { spread: 2, bob: -2 }, { spread: 1.8, bob: -1, sway: -1 }];
+const SUMMON_POSES: BonePose[] = [{ spread: 0.5 }, { spread: 1 }, { spread: 1.5, bob: -1 }, { spread: 2, bob: -2 }, { spread: 2, bob: -2, flick: 1 }, { spread: 1 }, {}];
+const CHANNEL_POSES: BonePose[] = [{ spread: 2, bob: -2 }, { spread: 1.8, bob: -3, sway: 1, flick: 1 }, { spread: 2, bob: -2, flick: 2 }, { spread: 1.8, bob: -1, sway: -1 }];
 
 function bonesDeath(c: Img, f: number) {
   // The bones come apart and settle into a heap; the heap itself is what blows away as dust.
@@ -2044,12 +2341,21 @@ function bonesDeath(c: Img, f: number) {
     return;
   }
   const spread = f * 4;
-  for (const [x, y, len, dx] of [[20, 50, 10, 1], [34, 52, 12, -1], [26, 46, 8, 1], [40, 48, 9, 0], [30, 54, 14, 0]]) {
-    line(c, x - spread / 2, y + f, x + len * dx + spread / 2, y + f - (dx === 0 ? 0 : 3), P.wax2);
-  }
-  if (f < 4) c.ellipse(32, 50 + f, 5, 4, P.wax2); // the skull
-  if (f < 4) c.rect(30, 49 + f, 2, 2, P.ink);
   c.ellipse(32, 57, 12 + f * 2, 2, P.stone4); // bone dust
+  for (const [x, y, len, dx] of [[20, 50, 10, 1], [34, 52, 12, -1], [26, 46, 8, 1], [40, 48, 9, 0], [30, 54, 14, 0]]) {
+    const x0 = x - spread / 2;
+    const x1 = x + len * dx + spread / 2;
+    const y1 = y + f - (dx === 0 ? 0 : 3);
+    line(c, x0, y + f + 1, x1, y1 + 1, BONE.b0);
+    line(c, x0, y + f, x1, y1, BONE.b2);
+  }
+  if (f < 4) {
+    c.ellipse(32, 50 + f, 5, 4, BONE.b1); // the skull
+    c.ellipse(31, 49 + f, 3.5, 2.8, BONE.b2);
+    c.rect(29, 49 + f, 2, 2, P.ink);
+    c.rect(33, 49 + f, 2, 2, P.ink);
+    if (f < 3) c.set(29, 49 + f, P.ember);
+  }
 }
 
 function genWorks() {
@@ -2511,99 +2817,121 @@ function genWorks() {
       null,
     );
   }
+  const motherAnim = (name: string, poses: MotherPose[], timing: { ticks: number; phase?: string }[], loop: boolean) => ({
+    name,
+    frames: poses.map(p => (c: Img, d: Dir5) => drawMother(c, d, p)),
+    timing,
+    loop,
+    hand: (d: Dir5, f: number) => motherHand(d, poses[f]),
+  });
   rosterSheet(
     'mother_tallow',
     64,
     [32, 58],
     7,
     [
-      { name: 'idle', frames: frames2(drawMother, [{}, { bob: 1 }]), timing: [{ ticks: 30 }, { ticks: 30 }], loop: true },
-      { name: 'walk', frames: walk4(drawMother, f => ({ bob: f % 2 ? 1 : 0, sway: f === 1 ? 1 : f === 3 ? -1 : 0 })), timing: walkT(14), loop: true },
-      {
-        name: 'sweep',
-        frames: frames2(drawMother, [{ sway: -2, lean: -1 }, { sway: -3, lean: -2 }, { sway: -3, lean: -2, bob: 1 }, { sway: 3, lean: 3 }, { sway: 3, lean: 2 }, { sway: 1, lean: 1 }, {}]),
-        timing: P7,
-        loop: false,
-      },
-      {
-        name: 'spit',
-        frames: frames2(drawMother, [{ hunch: -1 }, { hunch: -2, lean: -2 }, { hunch: -2, lean: -2, bob: -1 }, { hunch: 1, lean: 3 }, { lean: 2 }, { lean: 1 }, {}]),
-        timing: P7,
-        loop: false,
-      },
-      {
-        name: 'crush',
-        frames: frames2(drawMother, [{ bob: -2, hunch: -2 }, { bob: -3, hunch: -3 }, { bob: -3, hunch: -3, sway: 1 }, { bob: 3, hunch: 3, lean: 2 }, { bob: 4, hunch: 3, lean: 2 }, { bob: 2 }, {}]),
-        timing: P7,
-        loop: false,
-      },
-      {
-        // The entrance: she rises out of her vat's pool, the wicks on her shoulders catching one by one.
-        name: 'intro',
-        frames: frames2(drawMother, [{ rise: 26 }, { rise: 18 }, { rise: 10 }, { rise: 3 }, { rise: 0, sway: -1 }, { rise: 0, sway: 1 }]),
-        timing: [{ ticks: 20 }, { ticks: 20 }, { ticks: 20 }, { ticks: 15 }, { ticks: 15 }, { ticks: 30 }],
-        loop: false,
-      },
-      { name: 'stagger', frames: frames2(drawMother, [{ lean: -2, flinch: true }, { lean: -1, bob: 1, flinch: true }, { bob: 1 }]), timing: staggerT, loop: false },
+      motherAnim('idle', [{}, { flick: 1 }, { bob: 1 }, { bob: 1, flick: 1 }], [{ ticks: 16 }, { ticks: 14 }, { ticks: 16 }, { ticks: 14 }], true),
+      motherAnim('walk', [0, 1, 2, 3].map(f => ({ bob: f % 2 ? 1 : 0, sway: f === 1 ? 1 : f === 3 ? -1 : 0, flick: f % 2 })), walkT(14), true),
+      // Ladle sweep (and the stir): swung back behind her, then out across the front
+      motherAnim(
+        'sweep',
+        [
+          { reach: -0.6, sway: -2, lean: -1 },
+          { reach: -1, sway: -3, lean: -2, arm: 0.2 },
+          { reach: -1.1, sway: -3, lean: -2, arm: 0.2, bob: 1 },
+          { reach: 1.1, sway: 3, lean: 3 },
+          { reach: 1.2, sway: 3, lean: 2, flick: 1 },
+          { reach: 0.5, sway: 1, lean: 1 },
+          {},
+        ],
+        P7,
+        false,
+      ),
+      // Wax spit: head thrown back, throat glowing, then the globs
+      motherAnim(
+        'spit',
+        [{ hunch: -1, mouth: 0.3 }, { hunch: -2, lean: -2, mouth: 0.6 }, { hunch: -3, lean: -2, bob: -1, mouth: 1 }, { hunch: 1, lean: 3, mouth: 1 }, { lean: 2, mouth: 0.6 }, { lean: 1, mouth: 0.2 }, {}],
+        P7,
+        false,
+      ),
+      // Crush: both arms up, and the whole weight of her brought down (unblockable)
+      motherAnim(
+        'crush',
+        [
+          { both: 0.5, bob: -1, hunch: -1 },
+          { both: 1, bob: -3, hunch: -3 },
+          { both: 1.1, bob: -3, hunch: -3, sway: 1, mouth: 0.5 },
+          { reach: 1, bob: 3, hunch: 3, lean: 2 },
+          { reach: 1, bob: 4, hunch: 3, lean: 2 },
+          { reach: 0.4, bob: 2 },
+          {},
+        ],
+        P7,
+        false,
+      ),
+      // Spill: the ladle lifted high and tipped out over you
+      motherAnim(
+        'tip',
+        [{ arm: 0.4 }, { arm: 0.8, lean: -1 }, { arm: 1, lean: -1, bob: -1 }, { tip: 1, lean: 2 }, { tip: 1.1, lean: 2, flick: 1 }, { tip: 0.5, lean: 1 }, {}],
+        P7,
+        false,
+      ),
+      // The entrance: she rises out of her vat's pool, the wicks on her shoulders catching one by one.
+      motherAnim(
+        'intro',
+        [{ rise: 26 }, { rise: 18 }, { rise: 10, flick: 1 }, { rise: 3 }, { rise: 0, sway: -1, arm: 0.5 }, { rise: 0, sway: 1, arm: 0.3, flick: 1 }],
+        [{ ticks: 20 }, { ticks: 20 }, { ticks: 20 }, { ticks: 15 }, { ticks: 15 }, { ticks: 30 }],
+        false,
+      ),
+      motherAnim('stagger', [{ lean: -2, flinch: true, arm: 0.3 }, { lean: -1, bob: 1, flinch: true }, { bob: 1 }], staggerT, false),
     ],
     [0, 1, 2, 3, 4].map(f => (c: Img) => motherDeath(c, f)),
     MOTHER_HAND,
   );
 
+  const boneAnim = (name: string, poses: BonePose[], timing: { ticks: number; phase?: string }[], loop: boolean) => ({
+    name,
+    frames: poses.map(p => (c: Img, d: Dir5) => drawBones(c, d, p)),
+    timing,
+    loop,
+    hand: (d: Dir5, f: number) => boneHandAt(d, poses[f]),
+  });
   rosterSheet(
     'mother_bones',
     64,
     [32, 58],
     7,
     [
-      { name: 'idle', frames: frames2(drawBones, [{}, { bob: 1, sway: 1 }]), timing: [{ ticks: 14 }, { ticks: 14 }], loop: true },
-      { name: 'walk', frames: walk4(drawBones, f => ({ step: f, bob: f % 2 ? -1 : 0, lean: 1 })), timing: walkT(7), loop: true },
-      {
-        name: 'sweep',
-        frames: frames2(drawBones, [{ sway: -3, lean: -2 }, { sway: -4, lean: -3 }, { sway: -4, lean: -3, bob: 1 }, { sway: 4, lean: 4 }, { sway: 3, lean: 3 }, { sway: 1, lean: 1 }, {}]),
-        timing: P7,
-        loop: false,
-      },
-      {
-        name: 'jab',
-        frames: frames2(drawBones, [{ lean: -1 }, { lean: -3, hunch: 1 }, { lean: -3, hunch: 1 }, { lean: 5 }, { lean: 4 }, { lean: 2 }, {}]),
-        timing: P7,
-        loop: false,
-      },
-      {
-        name: 'spit',
-        frames: frames2(drawBones, [{ hunch: -1 }, { hunch: -2, lean: -2 }, { hunch: -3, lean: -2, bob: -1 }, { hunch: 2, lean: 3 }, { lean: 2 }, { lean: 1 }, {}]),
-        timing: P7,
-        loop: false,
-      },
-      {
-        name: 'leap',
-        frames: frames2(drawBones, [{ bob: 3, hunch: 2 }, { bob: 4, hunch: 3 }, { bob: -6, hunch: -2 }, { bob: 4, hunch: 3, lean: 3 }, { bob: 3, hunch: 2, lean: 2 }, { bob: 1 }, {}]),
-        timing: P7,
-        loop: false,
-      },
-      {
-        // Raised-arm poses carry their own hand position, so the ladle goes up with the arm.
-        name: 'summon',
-        frames: frames2(drawBones, SUMMON_POSES),
-        timing: P7.map((tm, i) => ({ ...tm, hand: boneHand(SUMMON_POSES[i]) })),
-        loop: false,
-      },
-      {
-        // Held while her summons live: arms raised, wax gathering between her hands, swaying slightly.
-        name: 'channel',
-        frames: frames2(drawBones, CHANNEL_POSES),
-        timing: CHANNEL_POSES.map(p => ({ ticks: 10, hand: boneHand(p) })),
-        loop: true,
-      },
-      {
-        // Rising out of her own burning wax.
-        name: 'intro',
-        frames: frames2(drawBones, [{ rise: 30 }, { rise: 20 }, { rise: 12 }, { rise: 5 }, { rise: 0, hunch: 3 }, { rise: 0, spread: 1 }]),
-        timing: [{ ticks: 16 }, { ticks: 16 }, { ticks: 16 }, { ticks: 16 }, { ticks: 16 }, { ticks: 30 }],
-        loop: false,
-      },
-      { name: 'stagger', frames: frames2(drawBones, [{ lean: -2, flinch: true }, { lean: -1, bob: 1, flinch: true }, { bob: 1 }]), timing: staggerT, loop: false },
+      boneAnim('idle', [{}, { flick: 1 }, { bob: 1, sway: 1 }, { bob: 1, sway: 1, flick: 2 }], [{ ticks: 8 }, { ticks: 8 }, { ticks: 8 }, { ticks: 8 }], true),
+      boneAnim('walk', [0, 1, 2, 3].map(f => ({ step: f, bob: f % 2 ? -1 : 0, lean: 1, flick: f })), walkT(7), true),
+      boneAnim(
+        'sweep',
+        [{ sway: -3, lean: -2, reach: -0.5 }, { sway: -4, lean: -3, reach: -0.8 }, { sway: -4, lean: -3, bob: 1, reach: -0.8 }, { sway: 4, lean: 4, reach: 1 }, { sway: 3, lean: 3, reach: 1, flick: 1 }, { sway: 1, lean: 1, reach: 0.4 }, {}],
+        P7,
+        false,
+      ),
+      // Triple jab: coiled back, then the ladle arm snaps out to full length
+      boneAnim('jab', [{ lean: -1, reach: -0.4 }, { lean: -3, hunch: 1, reach: -0.9 }, { lean: -3, hunch: 1, reach: -0.9, flick: 1 }, { lean: 5, reach: 1.6 }, { lean: 4, reach: 1.4 }, { lean: 2, reach: 0.6 }, {}], P7, false),
+      boneAnim('spit', [{ hunch: -1 }, { hunch: -2, lean: -2 }, { hunch: -3, lean: -2, bob: -1, flick: 1 }, { hunch: 2, lean: 3 }, { lean: 2 }, { lean: 1 }, {}], P7, false),
+      // Leap crush: crouched low, arms flung up at the top of the jump, down onto you
+      boneAnim(
+        'leap',
+        [{ bob: 3, hunch: 2 }, { bob: 4, hunch: 3 }, { bob: -6, hunch: -2, spread: 1.4 }, { bob: 4, hunch: 3, lean: 3, reach: 1 }, { bob: 3, hunch: 2, lean: 2, reach: 1 }, { bob: 1, reach: 0.4 }, {}],
+        P7,
+        false,
+      ),
+      // Raised-arm poses carry their own hand position, so the ladle goes up with the arm.
+      boneAnim('summon', SUMMON_POSES, P7, false),
+      // Held while her summons live: arms raised, wax gathering between her hands, swaying slightly.
+      boneAnim('channel', CHANNEL_POSES, CHANNEL_POSES.map(() => ({ ticks: 10 })), true),
+      // Rising out of her own burning wax.
+      boneAnim(
+        'intro',
+        [{ rise: 30 }, { rise: 20, flick: 1 }, { rise: 12 }, { rise: 5, flick: 1 }, { rise: 0, hunch: 3 }, { rise: 0, spread: 1 }],
+        [{ ticks: 16 }, { ticks: 16 }, { ticks: 16 }, { ticks: 16 }, { ticks: 16 }, { ticks: 30 }],
+        false,
+      ),
+      boneAnim('stagger', [{ lean: -2, flinch: true }, { lean: -1, bob: 1, flinch: true }, { bob: 1 }], staggerT, false),
     ],
     [0, 1, 2, 3, 4].map(f => (c: Img) => bonesDeath(c, f)),
     MOTHER_HAND,
@@ -2615,10 +2943,11 @@ function genWorks() {
       for (let x = 0; x < 32; x++) {
         const i = (y * 32 + x) * 4;
         if (c.px[i + 3] === 0) continue;
-        // recolour the pale wax to molten orange
-        const [r, g] = [c.px[i], c.px[i + 1]];
-        if (r === P.wax1[0] && g === P.wax1[1]) c.set(x, y, P.flame1);
-        else if (r === P.wax2[0] && g === P.wax2[1]) c.set(x, y, P.flame2);
+        // recolour the pale wax to molten orange, keeping its shading (by brightness)
+        const [r, g, bl] = [c.px[i], c.px[i + 1], c.px[i + 2]];
+        if (r < 150 || r < bl) continue; // outline, eyes, wick
+        const l = (r + g + bl) / 3;
+        c.set(x, y, l > 225 ? P.white : l > 200 ? P.flame2 : l > 170 ? P.flame1 : P.ember);
       }
   };
   rosterSheet(
@@ -2658,11 +2987,21 @@ function genWorks() {
   hook.outline(P.ink);
   sheet('renderer_hook', hook, { cell: [40, 9], pivot: [3, 4], layer: 'weapon', points: { tip: [37, 4] } });
 
+  // The great ladle: a long wooden handle bound in iron, a dented iron bowl brimming with hot tallow
   const ladle = new Img(48, 16);
-  ladle.hline(1, 8, 34, P.wood1);
   ladle.hline(1, 7, 34, P.wood2);
-  ladle.ellipse(40, 8, 7, 6, P.steel1);
-  ladle.ellipse(40, 7, 5, 3, P.wax1);
+  ladle.hline(1, 8, 34, P.wood1);
+  for (const x of [4, 5]) ladle.vline(x, 7, 2, P.dark2); // grip wrapping
+  ladle.rect(30, 6, 4, 4, EN.steel1); // iron collar
+  ladle.hline(30, 6, 4, EN.steel3);
+  ladle.ellipse(40, 8.5, 7, 6, EN.steel1);
+  ladle.ellipse(39, 7.5, 6, 5, EN.steel2);
+  ladle.set(35, 5, EN.steel3);
+  ladle.set(44, 12, EN.steel0); // a dent
+  ladle.ellipse(40, 6.5, 5, 2.6, P.wax1);
+  ladle.hline(37, 5, 4, P.wax2);
+  ladle.set(42, 7, P.flame1); // still hot
+  ladle.vline(45, 9, 3, P.wax1); // running over the lip
   ladle.outline(P.ink);
   sheet('mother_ladle', ladle, { cell: [48, 16], pivot: [8, 8], layer: 'weapon', points: { tip: [46, 8] } });
 
@@ -2781,43 +3120,104 @@ function lanternDeath(c: Img, f: number) {
 // them. A tall veiled figure in a sodden habit, arms long as oars, her lower half gone into the wax.
 const MATRON_HAND: Record<Dir5, [number, number]> = { S: [47, 36], SE: [46, 35], E: [42, 35], NE: [45, 33], N: [45, 33] };
 
-function drawMatron(c: Img, dir: Dir5, pose: BodyPose & { rise?: number; spread?: number }) {
-  const o = { bob: 0, lean: 0, hunch: 0, step: -1, flinch: false, sway: 0, rise: 0, spread: 0, ...pose };
+/** spread: arms opened wide (singing); reach: both arms forward (the embrace); swing: one arm back (-) or across (+);
+ * mouth: open to sing (0..1); wail: head thrown back, arms flung behind, mouth wide; flick: candle flames' other frame. */
+type MatronPose = BodyPose & { rise?: number; spread?: number; reach?: number; swing?: number; mouth?: number; wail?: number; flick?: number };
+
+function drawMatron(c: Img, dir: Dir5, pose: MatronPose) {
+  const o = { bob: 0, lean: 0, hunch: 0, step: -1, flinch: false, sway: 0, rise: 0, spread: 0, reach: 0, swing: 0, mouth: 0, wail: 0, flick: 0, ...pose };
   const b = o.bob + o.rise;
   const { lx, ly, sh } = leanOffsets(dir, o.lean);
-  c.ellipse(32, 57, 20, 4.5, P.wax1); // her pool
-  c.ellipse(24, 56, 7, 1.5, P.wax2);
-  // Body: a long habit that melts into the pool
+  const [fx, fy] = FACE_VEC[dir];
+  const back = dir === 'N' || dir === 'NE';
+  const W = WAXR;
+  const hab = { c0: mix(P.teal1, P.ink, 0.45), c1: P.teal1, c2: mix(P.teal1, P.teal2, 0.6), c3: P.teal3 };
+  const skin = mix(P.wax2, P.teal3, 0.15);
+  const skinD = mix(P.wax1, P.teal2, 0.35);
+  // Her pool, with drowned candles floating in it
+  c.ellipse(32, 57.5, 21, 5, W.w0);
+  c.ellipse(32, 57, 20, 4, W.w2);
+  c.ellipse(24, 56, 7, 1.5, W.w3);
+  for (const [x, y, k] of [[13, 57, 0], [49, 58, 1], [44, 55, 2], [19, 59, 1]] as const) {
+    c.vline(x, y - 2, 2, P.wax2);
+    c.set(x, y - 3, (k + o.flick) % 2 ? P.flame1 : P.flame2);
+  }
+  // Body: a long habit that melts into the pool in a ragged curtain of wax
+  const shadeAt = (t: number, r: { c0: RGBA; c1: RGBA; c2: RGBA; c3: RGBA }) => (t < 0.1 ? r.c3 : t < 0.2 ? mix(r.c2, r.c3, 0.5) : t > 0.93 ? r.c0 : t > 0.8 ? r.c1 : r.c2);
+  const wr = { c0: W.w0, c1: W.w1, c2: W.w2, c3: W.w3 };
+  const curtain = (x: number) => 46 + ((x * 5) % 4) - ((x * 3) % 3) + (x % 5 === 0 ? 3 : 0);
   for (let y = 20; y <= 55; y++) {
     if (y + b > 56) continue;
     const half = Math.round(7 + (y - 20) * 0.2);
-    c.hline(32 + sh - half, y + b, half * 2, y > 46 ? P.wax1 : P.teal1);
+    const x0 = 32 + sh - half;
+    for (let x = x0; x < x0 + half * 2; x++) c.set(x, y + b, shadeAt((x - x0) / Math.max(1, half * 2 - 1), y > curtain(x - sh) ? wr : hab));
   }
-  c.vline(32 + sh - 7, 20 + b, 26, P.teal2);
-  c.rect(27 + sh, 24 + b, 10, 4, P.stone3); // collar / apron bib
-  // Arms: long as oars (spread = arms opened wide, singing)
+  if (!back) {
+    // the scapular: a pale band down the front, stained where the wax has soaked up it
+    for (let y = 24; y < 46; y++) if (y + b < 56) c.hline(30 + sh, y + b, 4, y > 40 ? W.w2 : mix(P.stone4, P.teal3, 0.25));
+    c.vline(30 + sh, 24 + b, 22, mix(P.stone4, P.wax2, 0.5));
+    // the bundle in its sling: a swaddled child of wax, its face turned in to her
+    line(c, 27 + sh, 21 + b, 37 + sh, 31 + b, P.stone3);
+    c.ellipse(33 + sh, 30 + b, 4.5, 3.5, P.wax1);
+    c.ellipse(32 + sh, 29 + b, 3, 2.2, P.wax2);
+    c.set(35 + sh, 29 + b, skinD); // the small face
+    c.set(36 + sh, 30 + b, skinD);
+    c.hline(30 + sh, 31 + b, 5, W.w0); // swaddling folds
+  } else {
+    line(c, 27 + sh, 31 + b, 37 + sh, 21 + b, P.stone3); // the sling's strap across her back
+  }
+  // Arms: long as oars; wide teal sleeves to the elbow, then pale wet forearms and long fingers
   const aY = 22 + b - o.spread * 3;
+  const hand = (side: number): [number, number] => {
+    if (o.wail > 0) return [Math.round(32 + sh + side * (14 + o.wail * 6)), Math.round(26 + b + o.wail * 4)];
+    if (o.reach > 0) return [Math.round(32 + sh + fx * (10 + o.reach * 9) + side * (6 - o.reach * 2)), Math.round(32 + b + fy * o.reach * 5 - o.reach * 3)];
+    const swing = side === 1 ? o.swing : 0;
+    if (o.spread > 0 || swing === 0)
+      return [Math.round(32 + sh + o.sway + side * (15 + o.spread * 9) + swing), Math.round(aY + 24 - o.spread * 8)];
+    return [Math.round(32 + sh + o.sway + side * 15 + swing * 9 * (fx || 1)), Math.round(aY + 22 - Math.abs(swing) * 6)];
+  };
   for (const side of [-1, 1]) {
-    const ex = 32 + sh + o.sway + side * (12 + o.spread * 6);
-    const hx2 = 32 + sh + o.sway + side * (15 + o.spread * 9);
-    line(c, 32 + sh + side * 6, 22 + b, ex, aY + 12, P.teal1);
-    line(c, 32 + sh + side * 7, 22 + b, ex + side, aY + 12, P.teal1);
-    line(c, ex, aY + 12, hx2, aY + 24 - o.spread * 8, P.wax2);
+    const sx = 32 + sh + side * 6;
+    if (22 + b > 52) continue; // still under the wax
+    const [hx2, hy2r] = hand(side);
+    const hy2 = Math.min(53, hy2r);
+    const ex = Math.round((sx + hx2) / 2 + side * 2);
+    const ey = Math.min(52, Math.round((22 + b + hy2) / 2 + 2));
+    for (let t = -1; t <= 1; t++) line(c, sx + t, 22 + b, ex + t, ey, t === -side ? hab.c2 : t === side ? hab.c0 : hab.c1);
+    c.hline(ex - 2, ey, 5, hab.c1); // the sleeve's wide mouth
+    c.hline(ex - 2, ey + 1, 5, hab.c0);
+    line(c, ex, ey + 1, hx2, hy2, skin);
+    line(c, ex + 1, ey + 1, hx2 + 1, hy2, skinD);
+    for (const d of [-1, 0, 1]) c.set(hx2 + d, hy2 + 1 + (d === 0 ? 1 : 0), skin); // fingers
+    c.set(hx2, hy2 + 3, W.w2); // wax dripping from them
   }
-  // Veiled head, face pale and calm
+  // Veiled head: black veil, white wimple, a pale calm face
   const hx = 32 + lx + (o.flinch ? -2 : 0);
-  const hy = 7 + b + o.hunch + ly;
-  c.rect(hx - 6, hy, 12, 15, P.stone1); // veil
-  c.rect(hx - 5, hy + 1, 10, 4, P.wax2); // wimple band
-  if (dir !== 'N' && dir !== 'NE') {
-    const fx = dir === 'S' ? hx : dir === 'SE' ? hx + 1 : hx + 3;
-    c.rect(fx - 3, hy + 5, 6, 7, P.wax1);
-    c.hline(fx - 2, hy + 7, 2, P.ink); // closed eyes
-    c.hline(fx + 1, hy + 7, 2, P.ink);
-    c.rect(fx - 1, hy + 10, 2, o.spread > 0 ? 2 : 1, o.flinch ? P.ember : P.dark2); // singing mouth
-  }
-  const [ax, ay] = MATRON_HAND[dir];
-  if (o.spread === 0) c.rect(ax - 1, ay - 1 + b, 3, 3, P.wax2);
+  const hy = 7 + b + o.hunch + ly - Math.round(o.wail * 2);
+  c.rect(hx - 6, hy, 12, 15, hab.c0); // veil
+  c.vline(hx - 6, hy + 1, 13, hab.c1);
+  c.hline(hx - 5, hy - 1, 10, hab.c0);
+  c.rect(hx - 5, hy + 15, 10, 3, hab.c0); // veil falling to the shoulders
+  c.set(hx - 6, hy, null); // rounded crown
+  c.set(hx + 5, hy, null);
+  c.set(hx - 5, hy - 1, null);
+  c.set(hx + 4, hy - 1, null);
+  c.rect(hx - 5, hy + 1, 10, 4, P.wax2); // coif band
+  c.hline(hx - 5, hy + 4, 10, mix(P.wax2, P.stone3, 0.4));
+  if (!back) {
+    const f0 = dir === 'S' ? hx : dir === 'SE' ? hx + 1 : hx + 3;
+    c.rect(f0 - 4, hy + 5, 8, 10, P.wax2); // wimple framing the face
+    c.rect(f0 - 3, hy + 5, 6, 7, skin);
+    c.vline(f0 + 2, hy + 5, 7, skinD);
+    const up = o.wail > 0.5 ? -1 : 0;
+    c.hline(f0 - 2, hy + 7 + up, 2, P.ink); // closed eyes
+    c.hline(f0 + 1, hy + 7 + up, 2, P.ink);
+    c.set(f0 - 2, hy + 8 + up, W.w1); // wax tear tracks
+    c.vline(f0 - 2, hy + 9 + up, 2, W.w2);
+    const mouthH = o.wail > 0 ? 3 : o.mouth > 0 ? 1 + Math.round(o.mouth) : 1;
+    const mouthW = o.wail > 0 ? 3 : 2;
+    c.rect(f0 - 1, hy + 10, mouthW, mouthH, o.flinch ? P.ember : o.wail > 0 ? P.ink : P.dark2);
+  } else c.rect(hx - 5, hy + 5, 10, 10, hab.c0);
 }
 function matronDeath(c: Img, f: number) {
   // She lies back into the pool, still, and it closes over her face last.
@@ -3213,39 +3613,55 @@ function genMire() {
     [0, 1, 2, 3, 4].map(f => (c: Img) => lanternDeath(c, f)),
     null,
   );
+  const matronAnim = (name: string, poses: MatronPose[], timing: { ticks: number; phase?: string }[], loop: boolean) => ({
+    name,
+    frames: poses.map(p => (c: Img, d: Dir5) => drawMatron(c, d, p)),
+    timing,
+    loop,
+  });
   rosterSheet(
     'mire_matron',
     64,
     [32, 58],
     7,
     [
-      { name: 'idle', frames: frames2(drawMatron, [{}, { bob: 1, sway: 1 }]), timing: [{ ticks: 26 }, { ticks: 26 }], loop: true },
-      { name: 'walk', frames: walk4(drawMatron, f => ({ bob: f % 2 ? 1 : 0, sway: f === 1 ? 1 : f === 3 ? -1 : 0 })), timing: walkT(12), loop: true },
-      {
-        name: 'sweep',
-        frames: frames2(drawMatron, [{ sway: -3, lean: -1 }, { sway: -4, lean: -2 }, { sway: -4, lean: -2, bob: 1 }, { sway: 4, lean: 3 }, { sway: 3, lean: 2 }, { sway: 1 }, {}]),
-        timing: P7,
-        loop: false,
-      },
-      {
-        name: 'embrace',
-        frames: frames2(drawMatron, [{ spread: 0.5 }, { spread: 1, lean: -1 }, { spread: 1.2, lean: -1 }, { spread: 0.2, lean: 4 }, { lean: 4 }, { lean: 2 }, {}]),
-        timing: P7,
-        loop: false,
-      },
-      {
-        name: 'sing',
-        frames: frames2(drawMatron, [{ spread: 0.5 }, { spread: 1, bob: -1 }, { spread: 1.5, bob: -2 }, { spread: 2, bob: -2 }, { spread: 2, bob: -1 }, { spread: 1 }, {}]),
-        timing: P7,
-        loop: false,
-      },
-      {
-        name: 'intro',
-        frames: frames2(drawMatron, [{ rise: 30 }, { rise: 22 }, { rise: 14 }, { rise: 6 }, { spread: 1 }, { spread: 2, bob: -1 }]),
-        timing: [{ ticks: 18 }, { ticks: 18 }, { ticks: 18 }, { ticks: 18 }, { ticks: 20 }, { ticks: 40 }],
-        loop: false,
-      },
-      { name: 'stagger', frames: frames2(drawMatron, [{ lean: -2, flinch: true }, { lean: -1, bob: 1, flinch: true }, { bob: 1 }]), timing: staggerT, loop: false },
+      matronAnim('idle', [{ mouth: 0.4 }, { bob: 1, sway: 1, flick: 1 }, { bob: 1, sway: 1, mouth: 0.4 }, { flick: 1 }], [{ ticks: 16 }, { ticks: 16 }, { ticks: 16 }, { ticks: 16 }], true),
+      matronAnim('walk', [0, 1, 2, 3].map(f => ({ bob: f % 2 ? 1 : 0, sway: f === 1 ? 1 : f === 3 ? -1 : 0, flick: f % 2 })), walkT(12), true),
+      // Drowning sweep: one long arm drawn back, then raked across the front
+      matronAnim(
+        'sweep',
+        [{ swing: -0.6, sway: -2, lean: -1 }, { swing: -1, sway: -3, lean: -2 }, { swing: -1.1, sway: -3, lean: -2, bob: 1 }, { swing: 1.2, sway: 3, lean: 3 }, { swing: 1.2, sway: 3, lean: 2, flick: 1 }, { swing: 0.4, sway: 1 }, {}],
+        P7,
+        false,
+      ),
+      // Embrace (a grab): arms opened wide to take you in, then closing
+      matronAnim(
+        'embrace',
+        [{ spread: 0.5, mouth: 0.4 }, { spread: 1, lean: -1, mouth: 0.6 }, { spread: 1.3, lean: -1, mouth: 0.6 }, { reach: 1, lean: 4 }, { reach: 1.1, lean: 4 }, { reach: 0.5, lean: 2 }, {}],
+        P7,
+        false,
+      ),
+      // Lullaby and calling the drowned: arms rising, singing
+      matronAnim(
+        'sing',
+        [{ spread: 0.5, mouth: 0.5 }, { spread: 1, bob: -1, mouth: 1 }, { spread: 1.5, bob: -2, mouth: 1 }, { spread: 2, bob: -2, mouth: 1, flick: 1 }, { spread: 2, bob: -1, mouth: 1 }, { spread: 1, mouth: 0.5 }, {}],
+        P7,
+        false,
+      ),
+      // The wail (unblockable): she rears back, arms flung behind her, mouth wide, then screams
+      matronAnim(
+        'wail',
+        [{ wail: 0.3, bob: -1 }, { wail: 0.7, bob: -2, lean: -2 }, { wail: 1, bob: -2, lean: -2, hunch: -1 }, { wail: 1, lean: 2, bob: 1, flick: 1 }, { wail: 1, lean: 2, bob: 1 }, { wail: 0.4, lean: 1 }, {}],
+        P7,
+        false,
+      ),
+      matronAnim(
+        'intro',
+        [{ rise: 30 }, { rise: 22, flick: 1 }, { rise: 14 }, { rise: 6, flick: 1 }, { spread: 1, mouth: 1 }, { spread: 2, bob: -1, mouth: 1 }],
+        [{ ticks: 18 }, { ticks: 18 }, { ticks: 18 }, { ticks: 18 }, { ticks: 20 }, { ticks: 40 }],
+        false,
+      ),
+      matronAnim('stagger', [{ lean: -2, flinch: true }, { lean: -1, bob: 1, flinch: true }, { bob: 1 }], staggerT, false),
     ],
     [0, 1, 2, 3, 4].map(f => (c: Img) => matronDeath(c, f)),
     MATRON_HAND,
@@ -4799,94 +5215,170 @@ function genRoadDecor() {
 // candle-snuffer on an iron staff.
 const CHANDLER_HAND: Record<Dir5, [number, number]> = { S: [42, 39], SE: [41, 38], E: [37, 38], NE: [40, 36], N: [40, 36] };
 
-/** kneel 0..1; reach: both hands forward and up (pouring); lift: the free hand up to the crown (plucking a taper); smoke: censer cloud; drip: wax running off him. */
-type PriestPose = BodyPose & { kneel?: number; reach?: number; lift?: number; smoke?: number; drip?: number };
+/** kneel 0..1; reach: both hands forward and up (pouring); lift: the free hand up to the crown (plucking a taper); smoke: censer cloud;
+ * drip: wax running off him; arm: snuffer raised overhead; swing: snuffer hand back (-) or out (+); censer: the censer swung out (0..1);
+ * flick: the candle flames' other frame. */
+type PriestPose = BodyPose & { kneel?: number; reach?: number; lift?: number; smoke?: number; drip?: number; arm?: number; swing?: number; censer?: number; flick?: number };
+
+function chandlerHand(dir: Dir5, p: PriestPose): [number, number] {
+  const [hx, hy] = CHANDLER_HAND[dir];
+  const [fx, fy] = FACE_VEC[dir];
+  const { sh } = leanOffsets(dir, p.lean ?? 0);
+  const b = (p.bob ?? 0) + Math.round((p.kneel ?? 0) * 9);
+  const up = p.arm ?? 0;
+  const sw = p.swing ?? 0;
+  if ((p.reach ?? 0) > 0) return [32 + sh + 5, Math.round(21 + b + 10 - (p.reach ?? 0) * 7)];
+  return [Math.round(hx + sh + sw * 8 * fx - up * 4 * fx - (dir === 'S' ? up * 5 : 0)), Math.round(Math.max(6, hy + b + sw * 4 * fy - up * 20))];
+}
 
 function drawChandler(c: Img, dir: Dir5, pose: PriestPose) {
-  const o = { bob: 0, lean: 0, hunch: 0, step: -1, flinch: false, sway: 0, kneel: 0, reach: 0, lift: 0, smoke: 0, drip: 0, ...pose };
+  const o = { bob: 0, lean: 0, hunch: 0, step: -1, flinch: false, sway: 0, kneel: 0, reach: 0, lift: 0, smoke: 0, drip: 0, arm: 0, swing: 0, censer: 0, flick: 0, ...pose };
   const b = o.bob + Math.round(o.kneel * 9);
   const { lx, ly, sh } = leanOffsets(dir, o.lean);
+  const [fx] = FACE_VEC[dir];
   const back = dir === 'N' || dir === 'NE';
   const cx = 32 + sh;
   const top = 21 + b; // shoulders
   const hem = 57;
+  const red = { c0: hex('#3a0d14'), c1: P.blood1, c2: P.blood2, c3: hex('#cf5058') };
+  const cream = { c0: mix(P.wax1, P.stone3, 0.5), c1: P.wax1, c2: P.wax2, c3: mix(P.wax2, P.white, 0.5) };
+  const gold0 = mix(P.flame1, P.wood1, 0.45);
+  const shadeAt = (t: number, r: { c0: RGBA; c1: RGBA; c2: RGBA; c3: RGBA }) => (t < 0.1 ? r.c3 : t < 0.2 ? mix(r.c2, r.c3, 0.5) : t > 0.92 ? r.c0 : t > 0.78 ? r.c1 : r.c2);
   // Red under-robe: a long bell to the floor, pooled wide when he kneels; the hem swings as he walks.
   for (let y = top; y <= hem; y++) {
     const k = (y - top) / Math.max(1, hem - top);
     const half = Math.round(5 + k * (7 + o.kneel * 5));
     const swing = y > hem - 6 && o.step >= 0 ? (o.step % 2 ? 1 : -1) : 0;
-    c.hline(cx - half + swing, y, half * 2 + 1, y >= hem - 1 ? P.flame1 : P.blood1);
+    const x0 = cx - half + swing;
+    for (let x = x0; x <= x0 + half * 2; x++) c.set(x, y, y >= hem - 1 ? (y === hem ? gold0 : P.flame1) : shadeAt((x - x0) / (half * 2), red));
   }
+  for (const x of [-5, 4]) line(c, cx + x, top + 26, cx + x * 1.6, hem - 2, red.c1); // folds of the under-robe
   // Cream chasuble over it, to the knees, edged in gold
   const chasBot = Math.min(hem - 5, top + 25);
   for (let y = top; y <= chasBot; y++) {
     const k = (y - top) / Math.max(1, chasBot - top);
     const half = Math.round(6 + k * 4);
-    c.hline(cx - half, y, half * 2 + 1, P.wax2);
+    for (let x = cx - half; x <= cx + half; x++) c.set(x, y, shadeAt((x - cx + half) / (half * 2), cream));
     c.set(cx - half, y, P.flame1);
-    c.set(cx + half, y, P.flame1);
+    c.set(cx + half, y, gold0);
   }
   c.hline(cx - 10, chasBot, 21, P.flame1);
-  // The orphrey: a gold band down the front, a gold cross on the back
+  c.hline(cx - 10, chasBot + 1, 21, gold0);
+  for (const x of [-7, 6]) line(c, cx + x, top + 12, cx + x * 1.3, chasBot - 1, cream.c1); // folds
+  // The orphrey: an embroidered gold band down the front, a gold cross on the back
   if (!back) {
     c.vline(cx - 1, top, chasBot - top, P.flame1);
     c.vline(cx, top, chasBot - top, P.flame2);
-    c.vline(cx + 1, top, chasBot - top, P.flame1);
+    c.vline(cx + 1, top, chasBot - top, gold0);
+    for (let y = top + 3; y < chasBot; y += 4) {
+      c.set(cx, y, P.blood2); // stitched flames
+      c.set(cx, y + 1, P.blood1);
+    }
   } else {
     c.vline(cx, top + 2, 18, P.flame1);
+    c.vline(cx + 1, top + 2, 18, gold0);
     c.hline(cx - 4, top + 7, 9, P.flame1);
+    c.hline(cx - 4, top + 8, 9, gold0);
   }
   // Wax stains running down under the gold: the Drip had him all along
-  for (const [x, y, l] of [[-5, 10, 5], [4, 14, 4], [-3, 20, 3]]) c.vline(cx + x, top + y, l + o.drip, P.wax1);
-  // Stiff red stole at the collar
-  c.hline(cx - 5, top, 11, P.blood2);
-  c.hline(cx - 4, top - 1, 9, P.blood2);
+  for (const [x, y, l] of [[-5, 10, 5], [4, 14, 4], [-3, 20, 3]]) {
+    c.vline(cx + x, top + y, l + o.drip, P.wax1);
+    c.set(cx + x, top + y + l + o.drip, cream.c0);
+  }
+  // Stiff red stole at the collar, gold at its ends
+  c.hline(cx - 5, top, 11, red.c2);
+  c.hline(cx - 4, top - 1, 9, red.c3);
+  if (!back) {
+    c.vline(cx - 4, top + 1, 5, red.c2);
+    c.vline(cx + 4, top + 1, 5, red.c1);
+    c.set(cx - 4, top + 6, P.flame1);
+    c.set(cx + 4, top + 6, P.flame1);
+  }
 
-  // Arms: heavy cream sleeves, red cuffs, grey hands. The right hand holds the staff (CHANDLER_HAND).
-  const [rx0, ry0] = CHANDLER_HAND[dir];
-  const rHand: [number, number] = o.reach > 0 ? [cx + 5, Math.round(top + 10 - o.reach * 7)] : [rx0 + sh, ry0 + b];
+  // Arms: red alb sleeves under the chasuble, gold cuffs, grey hands. The right hand holds the staff.
+  const rHand = chandlerHand(dir, o);
   const lHand: [number, number] =
-    o.reach > 0 ? [cx - 5, Math.round(top + 10 - o.reach * 7)] : o.lift > 0 ? [cx - 6, Math.round(top - 3 - o.lift * 5)] : [cx - 10 + o.sway, top + 17];
+    o.reach > 0
+      ? [cx - 5, Math.round(top + 10 - o.reach * 7)]
+      : o.lift > 0
+        ? [Math.round(cx - 6 + (o.lift > 1.5 ? fx * 8 : 0)), Math.round(top - 3 - Math.min(o.lift, 1.2) * 5 + (o.lift > 1.5 ? 8 : 0))]
+        : o.censer > 0
+          ? [Math.round(cx - 10 - o.censer * 4 + fx * o.censer * 6), Math.round(top + 12 - o.censer * 4)]
+          : [cx - 10 + o.sway, top + 17];
   for (const [side, hand] of [[1, rHand], [-1, lHand]] as const) {
-    // red alb sleeves under the chasuble, a gold cuff
-    for (let t = -1; t <= 1; t++) line(c, cx + side * 7 + t, top + 1, hand[0] + t, hand[1] - 2, t === side ? P.blood2 : P.blood1);
+    for (let t = -1; t <= 1; t++) line(c, cx + side * 7 + t, top + 1, hand[0] + t, hand[1] - 2, t === -1 ? red.c3 : t === 1 ? red.c1 : red.c2);
     c.hline(hand[0] - 1, hand[1] - 2, 3, P.flame1);
     c.rect(hand[0] - 1, hand[1] - 1, 3, 3, P.stone4);
+    c.set(hand[0] + 1, hand[1] + 1, P.stone3);
   }
   if (o.drip > 0) for (const h of [rHand, lHand]) c.vline(h[0], h[1] + 2, o.drip * 3, P.wax1); // pouring himself out
+  // The censer on its chain from his free hand (not while that hand is busy)
+  if (o.reach === 0 && o.lift === 0) {
+    const [chx, chy] = lHand;
+    const bx = Math.round(chx - 1 + o.censer * 5 * (fx || -1));
+    const by = chy + 7 - Math.round(o.censer * 3);
+    line(c, chx, chy + 1, bx, by - 2, gold0);
+    c.disc(bx, by, 2.2, P.flame1);
+    c.set(bx - 1, by - 1, P.flame2);
+    c.hline(bx - 2, by, 5, gold0);
+    c.set(bx, by + 2, P.ember); // coals glowing through its holes
+    c.set(bx, by - 3, withAlpha(P.stone4, 160)); // a thread of smoke
+    c.set(bx + 1, by - 4, withAlpha(P.stone4, 110));
+  }
 
-  // Head: long, thin and grey
+  // Head: long, thin and grey, grey hair at the temples
   const hx = 32 + lx + (o.flinch ? -2 : 0);
   const hy = 12 + b + o.hunch + ly;
-  c.ellipse(hx, hy + 1, 4, 5.5, back ? P.stone2 : P.stone4);
+  const skin = { c0: P.stone3, c1: mix(P.stone3, P.stone4, 0.5), c2: P.stone4, c3: mix(P.stone4, P.wax2, 0.4) };
+  c.ellipse(hx, hy + 1, 4, 5.5, back ? P.stone2 : skin.c1);
   if (!back) {
-    const fx = dir === 'S' ? hx : dir === 'SE' ? hx + 1 : hx + 2;
-    c.hline(fx - 3, hy, 2, P.dark2); // deep-set eyes
-    c.hline(fx + 1, hy, 2, P.dark2);
-    c.set(fx - 2, hy + 1, o.flinch ? P.ember : P.ink);
-    c.set(fx + 2, hy + 1, o.flinch ? P.ember : P.ink);
-    c.vline(fx - 3, hy + 2, 3, P.stone3); // hollow cheeks
-    c.vline(fx + 3, hy + 2, 3, P.stone3);
-    c.hline(fx - 1, hy + 4, 3, P.dark2); // a thin mouth
+    c.ellipse(hx - 0.8, hy, 3, 4.5, skin.c2);
+    c.set(hx - 2, hy - 3, skin.c3);
+    const f0 = dir === 'S' ? hx : dir === 'SE' ? hx + 1 : hx + 2;
+    c.hline(f0 - 3, hy, 2, P.dark2); // deep-set eyes under a heavy brow
+    c.hline(f0 + 1, hy, 2, P.dark2);
+    c.hline(f0 - 3, hy - 1, 6, skin.c0);
+    c.set(f0 - 2, hy + 1, o.flinch ? P.ember : P.ink);
+    c.set(f0 + 2, hy + 1, o.flinch ? P.ember : P.ink);
+    c.vline(f0 - 3, hy + 2, 3, skin.c0); // hollow cheeks
+    c.vline(f0 + 3, hy + 2, 3, skin.c0);
+    c.set(f0, hy + 2, skin.c0); // nose
+    c.hline(f0 - 1, hy + 4, 3, P.dark2); // a thin mouth
+    c.set(hx - 4, hy - 1, P.stone3); // grey hair at the temples
+    c.set(hx + 4, hy - 1, P.stone3);
+  } else {
+    c.ellipse(hx, hy + 1, 3.5, 4.5, P.stone3);
+    c.hline(hx - 2, hy - 2, 4, P.stone2);
   }
   // Crown of lit tapers on a gold band, like a halo
   const cy = hy - 4;
   c.hline(hx - 4, cy, 9, P.flame1);
+  c.hline(hx - 4, cy + 1, 9, gold0);
   if (!back) c.set(hx, cy, P.blood2);
   (back ? [-3, -1, 1, 3] : [-4, -2, 0, 2, 4]).forEach((dx, i) => {
     if (o.lift > 1.2 && dx === -2) return; // plucked, to throw
     const h = 3 + (i % 2) + (dx === 0 ? 1 : 0);
     c.vline(hx + dx, cy - h, h, P.wax2);
-    c.set(hx + dx, cy - h - 1, P.flame2);
-    if (!o.flinch) c.set(hx + dx, cy - h - 2, P.flame1);
+    c.set(hx + dx, cy - 1, P.wax1);
+    c.set(hx + dx, cy - h - 1, P.ink);
+    c.set(hx + dx, cy - h - 2, (i + o.flick) % 2 ? P.flame1 : P.flame2);
+    if (!o.flinch && (i + o.flick) % 2 === 0) c.set(hx + dx, cy - h - 3, mix(P.flame1, P.ember, 0.4));
   });
+  if (o.lift > 1.5) {
+    // the plucked taper, alight in his hand
+    c.vline(lHand[0], lHand[1] - 4, 3, P.wax2);
+    c.set(lHand[0], lHand[1] - 5, P.flame2);
+  }
   // Censer smoke curling around him
   if (o.smoke > 0) {
     const r = rng(900 + Math.round(o.smoke * 10));
     for (let i = 0; i < 90 * o.smoke; i++) {
       const a = r() * Math.PI * 2;
       const d = 8 + r() * 16;
-      c.set(32 + Math.cos(a) * d, 46 + Math.sin(a) * d * 0.6 - r() * 16, r() < 0.5 ? P.stone3 : P.stone4);
+      const x = 32 + Math.cos(a) * d;
+      const y = 46 + Math.sin(a) * d * 0.6 - r() * 16;
+      c.set(x, y, r() < 0.5 ? P.stone3 : P.stone4);
+      if (r() < 0.3) c.set(x + 1, y, P.stone3);
     }
   }
 }
@@ -4901,7 +5393,18 @@ function chandlerDeath(c: Img, f: number) {
 // wick rising from his head that burns with a black flame.
 const CANDLE_HAND: Record<Dir5, [number, number]> = { S: [43, 44], SE: [42, 43], E: [38, 43], NE: [41, 41], N: [41, 41] };
 
-type CandlePose = BodyPose & { rise?: number; spread?: number; flare?: number; melt?: number; out?: boolean };
+/** arm: snuffer raised overhead; swing: snuffer hand back (-) or out (+); flick: the fires' other frame. */
+type CandlePose = BodyPose & { rise?: number; spread?: number; flare?: number; melt?: number; out?: boolean; arm?: number; swing?: number; flick?: number };
+
+function candleHand(dir: Dir5, p: CandlePose): [number, number] {
+  const [hx, hy] = CANDLE_HAND[dir];
+  const [fx, fy] = FACE_VEC[dir];
+  const { sh } = leanOffsets(dir, p.lean ?? 0);
+  const up = p.arm ?? 0;
+  const sw = p.swing ?? 0;
+  const b = (p.bob ?? 0) + (p.rise ?? 0);
+  return [Math.round(hx + sh + sw * 8 * fx - up * 4 * fx - (dir === 'S' ? up * 5 : 0)), Math.round(Math.min(53, Math.max(8, hy + b + sw * 4 * fy - up * 20)))];
+}
 
 /** A teardrop of darkness with a pale rim: a flame that burns and gives no light. `base` = y of its root. */
 function blackFlame(c: Img, x: number, base: number, size: number, sway: number) {
@@ -4919,29 +5422,43 @@ function blackFlame(c: Img, x: number, base: number, size: number, sway: number)
 }
 
 function drawCandleMan(c: Img, dir: Dir5, pose: CandlePose) {
-  const o = { bob: 0, lean: 0, hunch: 0, step: -1, flinch: false, sway: 0, rise: 0, spread: 0, flare: 1, melt: 0, out: false, ...pose };
+  const o = { bob: 0, lean: 0, hunch: 0, step: -1, flinch: false, sway: 0, rise: 0, spread: 0, flare: 1, melt: 0, out: false, arm: 0, swing: 0, flick: 0, ...pose };
   const b = o.bob + o.rise;
   const { lx, ly, sh } = leanOffsets(dir, o.lean);
   const back = dir === 'N' || dir === 'NE';
   const cx = 32 + sh;
+  const W = WAXR;
+  const glow = mix(P.wax2, P.flame1, 0.45); // the light inside him, showing through the wax
   // His own wax, pooling where he stands
-  c.ellipse(32, 57, 12 + o.melt * 4, 3 + o.melt * 0.5, P.wax1);
-  c.ellipse(28, 56.5, 5, 1.2, P.wax2);
-  // The column of his body: wax, lit from inside (shorter than he was: he has been melting)
+  c.ellipse(32, 57.5, 12 + o.melt * 4, 3.5 + o.melt * 0.5, W.w0);
+  c.ellipse(32, 57, 11 + o.melt * 4, 3 + o.melt * 0.5, W.w2);
+  c.ellipse(28, 56.5, 5, 1.2, W.w3);
+  // The column of his body: wax lit from inside, brightest down the middle (he has been melting: shorter than he was)
   const top = 28 + b;
   for (let y = top; y <= 56; y++) {
     const k = (y - top) / Math.max(1, 56 - top);
     const half = Math.round(7 + k * 3 + (y > 50 ? (y - 50) * 0.6 : 0));
-    c.hline(cx - half, y, half * 2 + 1, P.wax1);
-    c.set(cx - half + 1, y, P.wax2);
-    if (!back && (y - top) % 5 === 2) c.set(cx + 2, y, P.flame1); // the glow through the wax
+    for (let x = cx - half; x <= cx + half; x++) {
+      const t = (x - cx + half) / (half * 2);
+      const col = t < 0.12 ? W.w3 : t > 0.88 ? W.w0 : t > 0.72 ? W.w1 : Math.abs(t - 0.45) < 0.14 && !back ? glow : W.w2;
+      c.set(x, y, col);
+    }
   }
-  for (const [x, y, l] of [[-8, 8, 4], [7, 12, 5], [-5, 18, 3], [9, 20, 4]]) if (top + y < 56) c.vline(cx + x, top + y, l, P.wax2); // drips
-  // Rags of burnt vestment at the hips
+  for (const [x, y, l] of [[-8, 8, 4], [7, 12, 5], [-5, 18, 3], [9, 20, 4]]) if (top + y < 56) {
+    c.vline(cx + x, top + y, l, W.w3); // drips
+    c.set(cx + x, top + y + l, W.w1);
+  }
+  // Rags of burnt vestment at the hips: red gone black at the edges, a scrap of gold
   const rag = rng(77);
-  for (let x = -9; x <= 9; x++) if (top + 14 < 56) c.vline(cx + x, top + 14, Math.min(3 + Math.floor(rag() * 5), 56 - top - 14), x % 3 === 0 ? P.blood1 : P.dark2);
+  for (let x = -9; x <= 9; x++) {
+    if (top + 14 >= 56) break;
+    const l = Math.min(3 + Math.floor(rag() * 5), 56 - top - 14);
+    c.vline(cx + x, top + 14, l, x % 3 === 0 ? P.blood1 : x % 3 === 1 ? mix(P.blood1, P.dark1, 0.6) : P.dark2);
+    c.set(cx + x, top + 14 + l - 1, P.ink); // burnt edge
+  }
+  c.hline(cx - 9, top + 14, 19, mix(P.flame1, P.dark1, 0.5)); // what is left of the gold hem
   // Fire licking up one flank, and cracks glowing through the wax
-  const fl = rng(31 + (o.sway + 3) * 7 + o.bob * 3);
+  const fl = rng(31 + (o.sway + 3) * 7 + o.bob * 3 + o.flick * 11);
   for (let i = 0; i < 7; i++) {
     const y = top + 6 + Math.floor(fl() * 24);
     if (y > 55) continue;
@@ -4952,33 +5469,45 @@ function drawCandleMan(c: Img, dir: Dir5, pose: CandlePose) {
     c.set(x + 1, y - 1, P.ember);
   }
   if (!back)
-    for (const [x0, y0, x1, y1] of [[-3, 5, 1, 9], [1, 9, -1, 13], [3, 17, 5, 22]]) if (top + y1 < 55) line(c, cx + x0, top + y0, cx + x1, top + y1, P.ember);
-  // Arms of wax (spread = raised wide). The right hand holds the snuffer (CANDLE_HAND) unless spread.
+    for (const [x0, y0, x1, y1] of [[-3, 5, 1, 9], [1, 9, -1, 13], [3, 17, 5, 22], [-6, 20, -4, 25]]) {
+      if (top + y1 >= 55) continue;
+      line(c, cx + x0, top + y0, cx + x1, top + y1, P.ember);
+      line(c, cx + x0 + 1, top + y0, cx + x1 + 1, top + y1, (x0 + o.flick) % 2 ? P.flame1 : P.flame2); // the crack's hot lip
+    }
+  // Arms of wax (spread = raised wide). The right hand holds the snuffer unless spread.
   const armY = top + 2;
   for (const side of [-1, 1]) {
     const held = side === 1 && !o.spread;
-    const hx2 = held ? CANDLE_HAND[dir][0] + sh : Math.round(cx + side * (11 + o.spread * 5));
-    const hy2 = Math.min(53, held ? CANDLE_HAND[dir][1] + b : Math.round(armY + 15 - o.spread * 12)); // sunk in: arms stay above the pool
+    const [chx, chy] = candleHand(dir, o);
+    const hx2 = held ? chx : Math.round(cx + side * (11 + o.spread * 5));
+    const hy2 = Math.min(53, held ? chy : Math.round(armY + 15 - o.spread * 12)); // sunk in: arms stay above the pool
     if (armY > 52) continue;
-    for (let t = 0; t <= 1; t++) line(c, cx + side * 7, armY + t, hx2, hy2 + t, P.wax1);
-    c.rect(hx2 - 1, hy2 - 1, 3, 3, P.wax2);
-    c.vline(hx2, hy2 + 2, 2 + (o.spread ? 2 : 0), P.wax1);
+    for (let t = -1; t <= 1; t++) line(c, cx + side * 7, armY + t, hx2, hy2 + t, t < 0 ? W.w3 : t > 0 ? W.w1 : W.w2);
+    c.disc(hx2, hy2, 1.8, W.w2);
+    c.set(hx2 - 1, hy2 - 1, W.w3);
+    c.vline(hx2, hy2 + 2, 2 + (o.spread ? 2 : 0), W.w2); // dripping off his fingers
+    c.set(hx2, hy2 + 4 + (o.spread ? 2 : 0), W.w1);
   }
   // Head: melted to one side, one ember eye left
   const hx = 32 + lx + (o.flinch ? -2 : 0);
   const hy = 18 + b + o.hunch + ly;
-  c.ellipse(hx, hy + 2, 5, 6, P.wax1);
-  c.ellipse(hx + 2, hy + 7, 3, 2, P.wax1);
+  c.ellipse(hx, hy + 2, 5, 6, W.w1);
+  c.ellipse(hx - 1, hy + 1, 3.5, 4.5, W.w2);
+  c.set(hx - 3, hy - 2, W.w3);
+  c.ellipse(hx + 2, hy + 7, 3, 2, W.w1);
+  c.hline(hx + 1, hy + 9, 3, W.w0);
   if (!back) {
-    const fx = dir === 'S' ? hx : dir === 'SE' ? hx + 1 : hx + 2;
-    c.rect(fx - 3, hy + 1, 2, 2, P.ink);
-    c.set(fx - 3, hy + 1, o.flinch ? P.wax2 : P.flame2);
-    c.hline(fx + 1, hy + 2, 2, P.wax2); // the other eye, melted shut
-    c.hline(fx - 1, hy + 5, 3, o.flinch ? P.ember : P.dark2);
+    const f0 = dir === 'S' ? hx : dir === 'SE' ? hx + 1 : hx + 2;
+    c.rect(f0 - 3, hy + 1, 2, 2, P.ink);
+    c.set(f0 - 3, hy + 1, o.flinch ? P.wax2 : P.flame2);
+    c.set(f0 - 2, hy + 2, o.flinch ? P.wax2 : P.ember);
+    c.hline(f0 + 1, hy + 2, 2, W.w3); // the other eye, melted shut
+    c.hline(f0 + 1, hy + 3, 2, W.w0);
+    c.hline(f0 - 1, hy + 5, 3, o.flinch ? P.ember : P.dark2);
   }
   // The wick, and its black flame
   c.vline(hx, hy - 6, 3, P.ink);
-  if (!o.out) blackFlame(c, hx, hy - 6, o.flare, o.sway);
+  if (!o.out) blackFlame(c, hx, hy - 6, o.flare + o.flick * 0.3, o.sway);
   // Rising out of the altar fire: flames around what hasn't come up yet
   if (o.rise > 0 && o.melt === 0) {
     const r = rng(600 + o.rise);
@@ -5005,15 +5534,23 @@ function candleDeath(c: Img, f: number) {
 
 function drawSnuffer(img: Img, lit: boolean) {
   // Iron staff, brass pommel and collar, and the snuffer's bell at the end (mouth toward the tip)
-  img.hline(2, 8, 44, P.dark2);
-  img.hline(2, 7, 44, P.steel1);
+  const gold0 = mix(P.flame1, P.wood1, 0.45);
+  img.hline(2, 8, 44, EN.steel0);
+  img.hline(2, 7, 44, EN.steel2);
+  for (const x of [14, 28]) img.vline(x, 6, 4, gold0); // brass rings along the staff
   img.rect(0, 6, 3, 4, P.flame1);
-  img.rect(44, 6, 3, 4, P.flame1);
+  img.set(0, 6, P.flame2);
+  img.rect(44, 5, 3, 6, P.flame1); // collar
+  img.vline(44, 5, 6, P.flame2);
+  img.vline(46, 5, 6, gold0);
   for (let x = 47; x <= 58; x++) {
     const half = Math.round(1 + (x - 47) * 0.45);
-    img.vline(x, 8 - half, half * 2 + 1, x > 55 ? P.steel2 : P.steel1);
-    img.set(x, 8 - half, P.steel2);
+    img.vline(x, 8 - half, half * 2 + 1, EN.steel2);
+    img.set(x, 8 - half, EN.steel3); // lit rim of the bell
+    img.set(x, 8 - half + 1, mix(EN.steel2, EN.steel3, 0.5));
+    img.set(x, 8 + half, EN.steel0);
   }
+  img.vline(52, 6, 5, EN.steel1); // a seam in the bell
   img.vline(59, 3, 11, P.dark1); // the dark mouth of the bell
   if (lit) {
     // black flames lick out of the bell and along the staff; embers in the iron
@@ -5025,129 +5562,118 @@ function drawSnuffer(img: Img, lit: boolean) {
 
 function genNave() {
   const P7 = phased7();
-  const frames = <T,>(draw: (c: Img, d: Dir5, p: T) => void, poses: T[]) => poses.map(p => (c: Img, d: Dir5) => draw(c, d, p));
-  const walk4 = <T,>(draw: (c: Img, d: Dir5, p: T) => void, mk: (f: number) => T) => [0, 1, 2, 3].map(f => (c: Img, d: Dir5) => draw(c, d, mk(f)));
 
+  const priest = (name: string, poses: PriestPose[], timing: { ticks: number; phase?: string }[], loop: boolean) => ({
+    name,
+    frames: poses.map(p => (c: Img, d: Dir5) => drawChandler(c, d, p)),
+    timing,
+    loop,
+    hand: (d: Dir5, f: number) => chandlerHand(d, poses[f]),
+  });
   rosterSheet(
     'chandler',
     64,
     [32, 58],
     7,
     [
-      { name: 'idle', frames: frames(drawChandler, [{}, { bob: 1 }]), timing: [{ ticks: 26 }, { ticks: 26 }], loop: true },
-      { name: 'walk', frames: walk4(drawChandler, f => ({ step: f, bob: f % 2 ? 1 : 0, sway: f === 1 ? 1 : f === 3 ? -1 : 0 })), timing: walkT(11), loop: true },
-      {
-        name: 'sweep',
-        frames: frames(drawChandler, [{ lean: -1 }, { lean: -2, sway: -1 }, { lean: -2, sway: -1, bob: 1 }, { lean: 3 }, { lean: 2 }, { lean: 1 }, {}]),
-        timing: P7,
-        loop: false,
-      },
-      {
-        // Extinguish: the bell raised high, then brought down over you
-        name: 'slam',
-        frames: frames(drawChandler, [{ hunch: -1, bob: -1 }, { hunch: -2, bob: -2 }, { hunch: -2, bob: -2 }, { hunch: 2, bob: 2, lean: 3 }, { hunch: 2, bob: 3, lean: 3 }, { bob: 1, lean: 1 }, {}]),
-        timing: P7,
-        loop: false,
-      },
-      {
-        name: 'jab',
-        frames: frames(drawChandler, [{ lean: -1 }, { lean: -2 }, { lean: -2, hunch: 1 }, { lean: 4 }, { lean: 3 }, { lean: 1 }, {}]),
-        timing: P7,
-        loop: false,
-      },
-      {
-        // Taper volley: plucks candles from his crown and flicks them
-        name: 'flick',
-        frames: frames(drawChandler, [{ lift: 0.5 }, { lift: 1 }, { lift: 1.6 }, { lift: 0.4, lean: 2 }, { lean: 2 }, { lean: 1 }, {}]),
-        timing: P7,
-        loop: false,
-      },
-      {
-        // Censer smoke: the cloud swallows him
-        name: 'censer',
-        frames: frames(drawChandler, [{ smoke: 0.3, sway: 1 }, { smoke: 0.6 }, { smoke: 1, bob: 1 }, { smoke: 1.4, bob: 2 }, { smoke: 1.6, bob: 2 }, { smoke: 1 }, { smoke: 0.4 }]),
-        timing: P7,
-        loop: false,
-      },
-      {
-        // The entrance: kneeling at the altar, he finishes his prayer and rises
-        name: 'intro',
-        frames: frames(drawChandler, [{ kneel: 1 }, { kneel: 1, hunch: 1 }, { kneel: 0.6 }, { kneel: 0.2 }, {}, { hunch: -1 }]),
-        timing: [{ ticks: 30 }, { ticks: 30 }, { ticks: 20 }, { ticks: 20 }, { ticks: 20 }, { ticks: 40 }],
-        loop: false,
-      },
-      {
-        // His turn: hands over the altar fire, pouring out the wax he is made of
-        name: 'pour',
-        frames: frames(drawChandler, [{ reach: 1.5, drip: 1 }, { reach: 1.6, drip: 2, bob: 1 }, { reach: 1.5, drip: 3 }, { reach: 1.4, drip: 2, bob: 1 }]),
-        timing: [{ ticks: 12 }, { ticks: 12 }, { ticks: 12 }, { ticks: 12 }],
-        loop: true,
-      },
-      { name: 'stagger', frames: frames(drawChandler, [{ lean: -2, flinch: true }, { lean: -1, bob: 1, flinch: true }, { bob: 1 }]), timing: staggerT, loop: false },
+      priest('idle', [{}, { flick: 1 }, { bob: 1, censer: 0.2 }, { bob: 1, flick: 1, censer: 0.2 }], [{ ticks: 14 }, { ticks: 14 }, { ticks: 14 }, { ticks: 14 }], true),
+      priest('walk', [0, 1, 2, 3].map(f => ({ step: f, bob: f % 2 ? 1 : 0, sway: f === 1 ? 1 : f === 3 ? -1 : 0, flick: f % 2, censer: f === 1 ? 0.3 : f === 3 ? -0.1 : 0.1 })), walkT(11), true),
+      // Snuffer sweep (and vespers): hauled back past his hip, then swept wide
+      priest(
+        'sweep',
+        [{ swing: -0.6, lean: -1 }, { swing: -1, lean: -2, sway: -1, arm: 0.2 }, { swing: -1.1, lean: -2, sway: -1, bob: 1, arm: 0.2 }, { swing: 1.1, lean: 3 }, { swing: 1.2, lean: 2, flick: 1 }, { swing: 0.5, lean: 1 }, {}],
+        P7,
+        false,
+      ),
+      // Extinguish: the bell raised high over his crown, up on his toes, then brought down over you
+      priest(
+        'slam',
+        [{ arm: 0.5, hunch: -1, bob: -1 }, { arm: 1, hunch: -2, bob: -2 }, { arm: 1.1, hunch: -2, bob: -2, flick: 1 }, { swing: 1.2, hunch: 2, bob: 2, lean: 3 }, { swing: 1.2, hunch: 2, bob: 3, lean: 3 }, { swing: 0.5, bob: 1, lean: 1 }, {}],
+        P7,
+        false,
+      ),
+      // Stepping out of the smoke: a short, fast thrust
+      priest('jab', [{ swing: -0.4, lean: -1 }, { swing: -0.8, lean: -2 }, { swing: -0.8, lean: -2, hunch: 1 }, { swing: 1.4, lean: 4 }, { swing: 1.3, lean: 3 }, { swing: 0.5, lean: 1 }, {}], P7, false),
+      // Taper volley: plucks candles from his crown and flicks them
+      priest('flick', [{ lift: 0.5 }, { lift: 1 }, { lift: 1.2, flick: 1 }, { lift: 1.8, lean: 2 }, { lift: 1.8, lean: 2 }, { lean: 1 }, {}], P7, false),
+      // Censer smoke: he swings the censer out and the cloud swallows him
+      priest(
+        'censer',
+        [{ censer: 0.6, smoke: 0.3, sway: 1 }, { censer: 1, smoke: 0.6 }, { censer: 1, smoke: 1, bob: 1 }, { censer: 0.4, smoke: 1.4, bob: 2 }, { smoke: 1.6, bob: 2 }, { smoke: 1 }, { smoke: 0.4 }],
+        P7,
+        false,
+      ),
+      // The entrance: kneeling at the altar, he finishes his prayer and rises
+      priest(
+        'intro',
+        [{ kneel: 1 }, { kneel: 1, hunch: 1, flick: 1 }, { kneel: 0.6 }, { kneel: 0.2, flick: 1 }, {}, { hunch: -1, arm: 0.3 }],
+        [{ ticks: 30 }, { ticks: 30 }, { ticks: 20 }, { ticks: 20 }, { ticks: 20 }, { ticks: 40 }],
+        false,
+      ),
+      // His turn: hands over the altar fire, pouring out the wax he is made of
+      priest('pour', [{ reach: 1.5, drip: 1 }, { reach: 1.6, drip: 2, bob: 1, flick: 1 }, { reach: 1.5, drip: 3 }, { reach: 1.4, drip: 2, bob: 1, flick: 1 }], [{ ticks: 12 }, { ticks: 12 }, { ticks: 12 }, { ticks: 12 }], true),
+      priest('stagger', [{ lean: -2, flinch: true, arm: 0.2 }, { lean: -1, bob: 1, flinch: true }, { bob: 1 }], staggerT, false),
     ],
     [0, 1, 2, 3, 4].map(f => (c: Img) => chandlerDeath(c, f)),
     CHANDLER_HAND,
   );
 
+  const candle = (name: string, poses: CandlePose[], timing: { ticks: number; phase?: string }[], loop: boolean) => ({
+    name,
+    frames: poses.map(p => (c: Img, d: Dir5) => drawCandleMan(c, d, p)),
+    timing,
+    loop,
+    hand: (d: Dir5, f: number) => candleHand(d, poses[f]),
+  });
   rosterSheet(
     'chandler_wick',
     64,
     [32, 58],
     7,
     [
-      { name: 'idle', frames: frames(drawCandleMan, [{ flare: 1 }, { flare: 1.4, bob: 1, sway: 1 }]), timing: [{ ticks: 10 }, { ticks: 10 }], loop: true },
-      {
-        name: 'walk',
-        frames: walk4(drawCandleMan, f => ({ step: f, bob: f % 2 ? -1 : 0, lean: 1, sway: f === 1 ? 1 : f === 3 ? -1 : 0, flare: 1 + (f % 2) * 0.4 })),
-        timing: walkT(7),
-        loop: true,
-      },
-      {
-        name: 'sweep',
-        frames: frames(drawCandleMan, [{ sway: -2, lean: -2 }, { sway: -3, lean: -3 }, { sway: -3, lean: -3, bob: 1 }, { sway: 3, lean: 4, flare: 1.6 }, { sway: 2, lean: 3 }, { sway: 1, lean: 1 }, {}]),
-        timing: P7,
-        loop: false,
-      },
-      {
-        name: 'jab',
-        frames: frames(drawCandleMan, [{ lean: -1 }, { lean: -3, hunch: 1 }, { lean: -3, hunch: 1 }, { lean: 5, sway: -2 }, { lean: 4 }, { lean: 2 }, {}]),
-        timing: P7,
-        loop: false,
-      },
-      {
-        name: 'slam',
-        frames: frames(drawCandleMan, [{ hunch: -1, bob: -2 }, { hunch: -2, bob: -3, flare: 2 }, { hunch: -2, bob: -3, flare: 2 }, { hunch: 2, bob: 2, lean: 3 }, { hunch: 2, bob: 3, lean: 3 }, { bob: 1 }, {}]),
-        timing: P7,
-        loop: false,
-      },
-      {
-        name: 'leap',
-        frames: frames(drawCandleMan, [{ bob: 3, hunch: 2 }, { bob: 4, hunch: 3 }, { bob: -7, hunch: -2, flare: 2.5 }, { bob: 4, hunch: 3, lean: 3 }, { bob: 3, hunch: 2, lean: 2 }, { bob: 1 }, {}]),
-        timing: P7,
-        loop: false,
-      },
-      {
-        // Flame volley: the black flame on his head swells and flings burning wax
-        name: 'volley',
-        frames: frames(drawCandleMan, [{ flare: 1.5 }, { flare: 2, hunch: -1 }, { flare: 2.6, hunch: -2, bob: -1 }, { flare: 1, lean: 3, sway: 2 }, { flare: 1.2, lean: 2 }, { lean: 1 }, {}]),
-        timing: P7,
-        loop: false,
-      },
-      {
-        // Wax flood: arms thrown wide, his wax running out across the floor
-        name: 'flood',
-        frames: frames(drawCandleMan, [{ spread: 0.5 }, { spread: 1 }, { spread: 1.5, bob: -1 }, { spread: 2, bob: -2, melt: 1, flare: 2 }, { spread: 2, melt: 1, flare: 2 }, { spread: 1, melt: 1 }, {}]),
-        timing: P7,
-        loop: false,
-      },
-      {
-        // Rising out of the altar fire, arms opening
-        name: 'intro',
-        frames: frames(drawCandleMan, [{ rise: 26, flare: 2.5 }, { rise: 18, flare: 2.5 }, { rise: 10, flare: 2 }, { rise: 4, flare: 2 }, { spread: 1.5, flare: 3 }, { spread: 1, flare: 2 }]),
-        timing: [{ ticks: 16 }, { ticks: 16 }, { ticks: 16 }, { ticks: 16 }, { ticks: 26 }, { ticks: 20 }],
-        loop: false,
-      },
-      { name: 'stagger', frames: frames(drawCandleMan, [{ lean: -2, flinch: true }, { lean: -1, bob: 1, flinch: true }, { bob: 1 }]), timing: staggerT, loop: false },
+      candle('idle', [{ flare: 1 }, { flare: 1.3, flick: 1 }, { flare: 1.4, bob: 1, sway: 1 }, { flare: 1.1, bob: 1, sway: 1, flick: 1 }], [{ ticks: 6 }, { ticks: 6 }, { ticks: 6 }, { ticks: 6 }], true),
+      candle('walk', [0, 1, 2, 3].map(f => ({ step: f, bob: f % 2 ? -1 : 0, lean: 1, sway: f === 1 ? 1 : f === 3 ? -1 : 0, flare: 1 + (f % 2) * 0.4, flick: f % 2 })), walkT(7), true),
+      candle(
+        'sweep',
+        [{ swing: -0.6, sway: -2, lean: -2 }, { swing: -1, sway: -3, lean: -3 }, { swing: -1.1, sway: -3, lean: -3, bob: 1, flick: 1 }, { swing: 1.2, sway: 3, lean: 4, flare: 1.6 }, { swing: 1.2, sway: 2, lean: 3 }, { swing: 0.5, sway: 1, lean: 1 }, {}],
+        P7,
+        false,
+      ),
+      candle('jab', [{ swing: -0.4, lean: -1 }, { swing: -0.9, lean: -3, hunch: 1 }, { swing: -0.9, lean: -3, hunch: 1, flick: 1 }, { swing: 1.5, lean: 5, sway: -2 }, { swing: 1.4, lean: 4 }, { swing: 0.6, lean: 2 }, {}], P7, false),
+      candle(
+        'slam',
+        [{ arm: 0.5, hunch: -1, bob: -2 }, { arm: 1, hunch: -2, bob: -3, flare: 2 }, { arm: 1.1, hunch: -2, bob: -3, flare: 2, flick: 1 }, { swing: 1.2, hunch: 2, bob: 2, lean: 3 }, { swing: 1.2, hunch: 2, bob: 3, lean: 3 }, { swing: 0.5, bob: 1 }, {}],
+        P7,
+        false,
+      ),
+      candle(
+        'leap',
+        [{ bob: 3, hunch: 2, swing: -0.5 }, { bob: 4, hunch: 3, swing: -0.5 }, { bob: -7, hunch: -2, flare: 2.5, arm: 1 }, { bob: 4, hunch: 3, lean: 3, swing: 1.2 }, { bob: 3, hunch: 2, lean: 2, swing: 1.2 }, { bob: 1, swing: 0.4 }, {}],
+        P7,
+        false,
+      ),
+      // Flame volley: the black flame on his head swells and flings burning wax
+      candle(
+        'volley',
+        [{ flare: 1.5 }, { flare: 2, hunch: -1 }, { flare: 2.6, hunch: -2, bob: -1, flick: 1 }, { flare: 1, lean: 3, sway: 2 }, { flare: 1.2, lean: 2 }, { lean: 1 }, {}],
+        P7,
+        false,
+      ),
+      // Wax flood: arms thrown wide, his wax running out across the floor
+      candle(
+        'flood',
+        [{ spread: 0.5 }, { spread: 1 }, { spread: 1.5, bob: -1, flick: 1 }, { spread: 2, bob: -2, melt: 1, flare: 2 }, { spread: 2, melt: 1, flare: 2, flick: 1 }, { spread: 1, melt: 1 }, {}],
+        P7,
+        false,
+      ),
+      // Rising out of the altar fire, arms opening
+      candle(
+        'intro',
+        [{ rise: 26, flare: 2.5 }, { rise: 18, flare: 2.5, flick: 1 }, { rise: 10, flare: 2 }, { rise: 4, flare: 2, flick: 1 }, { spread: 1.5, flare: 3 }, { spread: 1, flare: 2 }],
+        [{ ticks: 16 }, { ticks: 16 }, { ticks: 16 }, { ticks: 16 }, { ticks: 26 }, { ticks: 20 }],
+        false,
+      ),
+      candle('stagger', [{ lean: -2, flinch: true, arm: 0.2 }, { lean: -1, bob: 1, flinch: true }, { bob: 1 }], staggerT, false),
     ],
     [0, 1, 2, 3, 4].map(f => (c: Img) => candleDeath(c, f)),
     CANDLE_HAND,

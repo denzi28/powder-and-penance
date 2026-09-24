@@ -681,6 +681,8 @@ export const FrameDef = z.object({
   phase: z.string().optional(),
   events: z.array(z.string()).optional(),
   hand: Vec2.optional(),
+  /** Per-direction weapon hand for this frame (relative to the pivot); wins over `hand` for the listed directions. */
+  hands: z.record(z.string(), Vec2).optional(),
   torsoDy: num.optional(),
   hurtbox: Box.optional(),
 });

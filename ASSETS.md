@@ -74,6 +74,7 @@ The placeholders come from `npm run gen:art`. That script **never overwrites exi
 | `events` | Cosmetic events fired when the frame starts (list below) |
 | `col` | Use a different column than the frame's position (reuse frames) |
 | `hand` | Override the hand anchor (relative to pivot) for this frame, e.g. during a swing |
+| `hands` | The same per direction: `{ "S": [x, y], "SE": ..., ... }`. Wins over `hand`. The bosses use it so the weapon follows the arm (raised overhead in a slam windup, hauled back before a sweep). |
 | `torsoDy` | Legs layer only: vertical offset applied to the torso this frame (walk bob) |
 | `hurtbox` | Override the body hurtbox for this frame, relative to the pivot (e.g. smaller mid-roll). Used from M2. |
 
