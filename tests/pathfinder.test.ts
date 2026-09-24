@@ -49,8 +49,34 @@ describe('Pathfinder', () => {
     }
   });
 
-  it('returns null for unreachable goals', () => {
+  it('heads for the nearest open tile when the goal is inside a wall; null when nothing near is open', () => {
     const s = at(2, 2);
-    expect(pf.find(s.x, s.y, 4 * TILE + 8, 2 * TILE + 10, 5)).toBeNull(); // goal inside the wall
+    const p = pf.find(s.x, s.y, 4 * TILE + 8, 2 * TILE + 10, 5); // goal inside the dividing wall
+    expect(p).not.toBeNull();
+    expect(pf.find(s.x, s.y, 40 * TILE, 2 * TILE, 5)).toBeNull(); // far outside the room
+  });
+
+  it('plans a wide body around a one-tile gap it cannot fit, and still finds a way for a narrow one', () => {
+    // a wall with a one-tile gap at the top and a three-tile opening at the bottom
+    const r2 = RoomData.parse({
+      id: 'r2',
+      origin: [0, 0],
+      legend: { '#': 'wall', '.': 'floor' },
+      tiles: ['###########', '#.........#', '#####.#####', '#.........#', '#.........#', '#.........#', '###...#####', '#.........#', '###########'],
+    });
+    const g2 = buildGrid([r2]);
+    const pf2 = new Pathfinder(() => g2);
+    const s = { x: 5 * TILE + 8, y: 4 * TILE + 10 };
+    const t = { x: 5 * TILE + 8, y: 1 * TILE + 10 };
+    // narrow: straight up through the one-tile gap; wide (a boss): the gap won't take it, and there's no other way
+    expect(pf2.fits(5, 2, 5)).toBe(true);
+    expect(pf2.fits(5, 2, 13)).toBe(false);
+    const narrow = pf2.find(s.x, s.y, t.x, t.y, 5);
+    expect(narrow).not.toBeNull();
+    // down instead: the wide body goes through the three-tile opening
+    const down = { x: 4 * TILE + 8, y: 7 * TILE + 10 };
+    const wide = pf2.find(s.x, s.y, down.x, down.y, 13)!;
+    expect(wide).not.toBeNull();
+    expect(wide.every(q => pf2.fits(Math.floor(q.x / TILE), Math.floor((q.y - 2) / TILE), 13) || q === wide[wide.length - 1])).toBe(true);
   });
 });

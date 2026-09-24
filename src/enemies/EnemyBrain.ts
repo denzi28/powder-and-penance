@@ -75,7 +75,11 @@ const notice: State<Enemy> = {
 /** Shared combat checks: lost the player, or dragged too far from home. */
 function combatExit(e: Enemy): string | undefined {
   // A boss never gives up or wanders home: its arena is sealed until one of you falls.
-  if (e.def.boss) return e.player.dead ? 'idle' : undefined;
+  if (e.def.boss) {
+    if (e.player.dead) return 'idle';
+    e.hunt(); // it always knows where you are
+    return undefined;
+  }
   if (e.player.dead || e.outsideLeash()) {
     e.awareness = 0;
     return 'return';

@@ -23,6 +23,7 @@
   "sprite": "mother_tallow",
   "weaponSprite": "mother_ladle",
   "weaponRestDeg": 45,
+  "wader": true,
   "hp": 1000,
   "poise": { "max": 280, "resetTicks": 300 },
   "tallow": 2000,

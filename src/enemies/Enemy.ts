@@ -20,6 +20,9 @@ export const COMBAT_STATES: ReadonlySet<string> = new Set(['approach', 'strafe',
 /** States in which it is not expecting you: backstabs allowed from behind. */
 const UNAWARE_STATES: ReadonlySet<string> = new Set(['idle', 'suspicious', 'return', 'stagger', 'parried', 'guardBroken']);
 
+/** Ticks of trying to move without getting anywhere before an enemy counts as stuck. */
+const STUCK_TICKS = 30;
+
 export class Enemy extends Actor {
   readonly team = 'enemy' as const;
   readonly poise: Poise;
@@ -60,6 +63,11 @@ export class Enemy extends Actor {
   remove = false;
   /** Stable id of the room placement this enemy came from ("<room>#<index>"); null for debug spawns. */
   spawnId: string | null = null;
+  /** Stuck detection for navigateTo: where it was, for how long, and the spot it's stepping out to. */
+  private stuckX = 0;
+  private stuckY = 0;
+  private stuckTicks = 0;
+  private unstick: { x: number; y: number; t: number } | null = null;
   /** Set when its room placement makes it a miniboss (a name bar, more health, a drop, dead for good). */
   miniboss: MinibossPlacement | null = null;
   /** A miniboss has made its entrance (banner, cry) this life. */
@@ -287,6 +295,11 @@ export class Enemy extends Actor {
     }
   }
 
+  /** A boss fighting you always knows where you are: its arena is sealed, there's nowhere to hide. */
+  hunt() {
+    if (!this.player.dead) this.noteSighting();
+  }
+
   private noteSighting() {
     this.lastSeen = this.age;
     this.lastSeenX = this.player.x;
@@ -424,6 +437,27 @@ export class Enemy extends Actor {
   navigateTo(tx: number, ty: number, speed: number): number {
     const hw = this.collider.w / 2 + 1;
     const nav = this.ctx.nav;
+    // Stuck: trying to move, but it has hardly budged for a while (wedged on a corner, in a gap too narrow for
+    // it). Step out to the nearest open spot it fits, then plan afresh.
+    const moved = Math.hypot(this.x - this.stuckX, this.y - this.stuckY);
+    if (moved > 6 || speed <= 0 || Math.hypot(tx - this.x, ty - this.y) < 12) {
+      this.stuckX = this.x;
+      this.stuckY = this.y;
+      this.stuckTicks = 0;
+    } else if (++this.stuckTicks > STUCK_TICKS && !this.unstick) {
+      const spot = nav.nearestFit(this.x, this.y, hw, 3);
+      if (spot) this.unstick = { x: spot.x, y: spot.y, t: 30 };
+      this.stuckTicks = 0;
+      this.path = [];
+      this.repathIn = 0;
+    }
+    if (this.unstick) {
+      const u = this.unstick;
+      if (--u.t <= 0 || Math.hypot(u.x - this.x, u.y - this.y) < 2) this.unstick = null;
+      const a = Math.atan2(u.y - this.y, u.x - this.x);
+      this.steer(Math.cos(a) * speed, Math.sin(a) * speed);
+      return a;
+    }
     let gx = tx;
     let gy = ty;
     if (!nav.clearLine(this.x, this.y, tx, ty, hw)) {
@@ -467,13 +501,17 @@ export class Enemy extends Actor {
     if (this.attackGap > 0 || this.player.dead) return false;
     const d = this.distToPlayer();
     const a = this.angleToPlayer();
-    if (Math.abs(Math.atan2(Math.sin(a - this.facing), Math.cos(a - this.facing))) > 70 * DEG) return false;
+    const facing = Math.abs(Math.atan2(Math.sin(a - this.facing), Math.cos(a - this.facing))) <= 70 * DEG;
+    // A boss can lob over what's in the way, turning as it throws: a nook it can't reach or see into is no
+    // hiding place from an arcing pot.
+    const lobs = (m: MoveDef) => !!this.def.boss && !!m.strikes[0].projectile?.lob;
     const options = this.def.moves.filter(
       m =>
+        (facing || lobs(m)) &&
         d >= m.range[0] &&
         d <= m.range[1] &&
         !(this.cooldowns.get(m.id) ?? 0) &&
-        (!m.strikes[0].projectile || this.visible) && // throwing needs a clear view of the target
+        (!m.strikes[0].projectile || this.visible || lobs(m)) && // throwing straight needs a clear view
         (!m.strikes.some(s => s.summon) || !this.summons.some(s => !s.dead)), // one brood at a time
     );
     if (!options.length || !this.ctx.tokens.acquire(this)) return false;

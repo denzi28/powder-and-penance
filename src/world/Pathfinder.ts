@@ -81,21 +81,61 @@ export class Pathfinder {
     return true;
   }
 
-  /** Waypoints (world px, tile centres, smoothed) from (sx,sy) to (tx,ty), or null if unreachable. */
+  /**
+   * Can a body of half-width `hw` stand centred on tile (x, y)? A body wider than a tile needs the tiles on
+   * either side open too (bodies are shallow, so only their width matters).
+   */
+  fits(x: number, y: number, hw: number): boolean {
+    const g = this.grid();
+    const cx = x * TILE + TILE / 2;
+    for (let tx = Math.floor((cx - hw) / TILE); tx <= Math.floor((cx + hw) / TILE); tx++) if (g.isSolid(tx, y)) return false;
+    return true;
+  }
+
+  /** The tile nearest to a world point (within `r` tiles) where a body of half-width `hw` fits; null if none. */
+  nearestFit(px: number, py: number, hw: number, r = 3): Point | null {
+    const x0 = Math.floor(px / TILE);
+    const y0 = Math.floor((py - 2) / TILE);
+    let best: { x: number; y: number; d: number } | null = null;
+    for (let dy = -r; dy <= r; dy++)
+      for (let dx = -r; dx <= r; dx++) {
+        if (!this.fits(x0 + dx, y0 + dy, hw)) continue;
+        const d = Math.hypot((x0 + dx) * TILE + TILE / 2 - px, (y0 + dy) * TILE + TILE / 2 + 2 - py);
+        if (!best || d < best.d) best = { x: x0 + dx, y: y0 + dy, d };
+      }
+    return best ? { x: best.x * TILE + TILE / 2, y: best.y * TILE + TILE / 2 + 2 } : null;
+  }
+
+  /**
+   * Waypoints (world px, tile centres, smoothed) from (sx,sy) to (tx,ty), or null if unreachable. Planned for
+   * the body's width first (a big boss isn't sent through a one-tile gap it can't fit), then, if nothing fits,
+   * as for a one-tile body. A start or goal where the body doesn't fit (wedged at a wall, a player standing
+   * against one) is moved to the nearest place it does.
+   */
   find(sx: number, sy: number, tx: number, ty: number, hw: number, maxNodes = 4000): Point[] | null {
+    if (hw > TILE / 2) {
+      const wide = this.search(sx, sy, tx, ty, hw, (x, y) => this.fits(x, y, hw), maxNodes);
+      if (wide) return wide;
+    }
+    const g = this.grid();
+    return this.search(sx, sy, tx, ty, hw, (x, y) => !g.isSolid(x, y), maxNodes);
+  }
+
+  private search(sx: number, sy: number, tx: number, ty: number, hw: number, open: (x: number, y: number) => boolean, maxNodes: number): Point[] | null {
     const g = this.grid();
     const W = g.w;
     const toKey = (x: number, y: number) => (y - g.oy) * W + (x - g.ox);
-    const open = (x: number, y: number) => !g.isSolid(x, y);
-    let s = { x: Math.floor(sx / TILE), y: Math.floor((sy - 2) / TILE) };
-    const t = { x: Math.floor(tx / TILE), y: Math.floor((ty - 2) / TILE) };
-    if (!open(s.x, s.y)) {
-      // Nudged into a wall edge (knockback, separation): start from the nearest open neighbour.
-      const n = DIRS.map(([dx, dy]) => ({ x: s.x + dx, y: s.y + dy })).find(p => open(p.x, p.y));
-      if (!n) return null;
-      s = n;
-    }
-    if (!open(t.x, t.y)) return null;
+    // the nearest tile (within 3) that's open for this body
+    const near = (x: number, y: number) => {
+      if (open(x, y)) return { x, y };
+      for (let r = 1; r <= 3; r++)
+        for (let dy = -r; dy <= r; dy++)
+          for (let dx = -r; dx <= r; dx++) if (Math.max(Math.abs(dx), Math.abs(dy)) === r && open(x + dx, y + dy)) return { x: x + dx, y: y + dy };
+      return null;
+    };
+    const s = near(Math.floor(sx / TILE), Math.floor((sy - 2) / TILE));
+    const t = near(Math.floor(tx / TILE), Math.floor((ty - 2) / TILE));
+    if (!s || !t) return null;
 
     const startKey = toKey(s.x, s.y);
     const goalKey = toKey(t.x, t.y);
