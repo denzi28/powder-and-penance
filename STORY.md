@@ -36,7 +36,9 @@ The map is in [WORLD.md](WORLD.md).
 | **Tomas** | Hub | The lamplighter. Walks the yard lighting the lamps; ask him the way and he tells you where to go next. |
 | **Hedda** | Hub | The water-carrier: well to fire and back. Wells are for talking at, so she hears everything: she points you at secrets you haven't found. |
 | **Bede** | Hub | The woodcutter. Splits logs at his block and carries them to the fire. Gives you what he found in the woodpile. |
-| **Old Agnes** | Hub | A pilgrim who kneels at the shrine all day. Remembers when the Wick burned bright. |
+| **Old Agnes** | Hub | A pilgrim who kneels at the shrine, and at the graves in the south-west yard. Remembers when the Wick burned bright. |
+| **Ulla** | Hub | A pilgrim wife from the coast who keeps the west camp's fire going. Talks about the graves and why they stay. |
+| **Jost** | Hub | Ulla's husband, an old pilgrim with a scallop shell whose knees won't take the road home. Points the way to the Abbey. |
 | **The Tollwarden** | Abbey Gatehouse | Speaks before the fight: "Toll is paid in tallow, pilgrim. And tallow is paid in you." |
 | **Mother Tallow** | Works | Wordless. Hums a work song. |
 | **Mire Matron** | Waxmire | Sings; asks if you've come to be born again |

@@ -146,6 +146,92 @@
         ["pip", "Who's the hooded man on the board?"],
         ["hedda", "Nobody, love. Nobody we've seen."]
       ]
+    },
+    {
+      "id": "sea",
+      "who": ["jost", "ulla"],
+      "lines": [
+        ["jost", "Smell that? Salt. The wind's off the sea tonight."],
+        ["ulla", "That's the stew, love. I put the fish in."],
+        ["jost", "Then the stew smells like home."]
+      ]
+    },
+    {
+      "id": "knees_old",
+      "who": ["ulla", "jost"],
+      "lines": [
+        ["ulla", "Up and walk a bit, Jost. You'll grow into that log."],
+        ["jost", "The log and I have an understanding."]
+      ]
+    },
+    {
+      "id": "promise",
+      "who": ["jost", "ulla"],
+      "lines": [
+        ["jost", "Do you think we'd have come, if we'd known?"],
+        ["ulla", "You'd have come. I'd have come to fetch you."]
+      ]
+    },
+    {
+      "id": "poker",
+      "who": ["ulla", "jost"],
+      "lines": [
+        ["ulla", "Pass me more of that kindling."],
+        ["jost", "It's across the fire. My arms are across the fire from it."],
+        ["ulla", "Forty years married to a pair of feet."]
+      ]
+    },
+    {
+      "id": "west_lamp",
+      "who": ["tomas", "ulla"],
+      "lines": [
+        ["tomas", "Lamp's lit for the camp, Ulla. So you can find your way back."],
+        ["ulla", "I only go as far as the well, Tomas."],
+        ["tomas", "All the more reason."]
+      ]
+    },
+    {
+      "id": "shell",
+      "who": ["tomas", "jost"],
+      "lines": [
+        ["tomas", "Still wearing that shell, old man?"],
+        ["jost", "Only one of us has seen the sea, lamp-man."],
+        ["tomas", "And only one of us can find the privy in the dark."]
+      ]
+    },
+    {
+      "id": "buckets",
+      "who": ["hedda", "ulla"],
+      "lines": [
+        ["ulla", "Leave me a bucket, Hedda. The stew's gone thick."],
+        ["hedda", "Take two. And don't tell Bede, he'll want stew."]
+      ]
+    },
+    {
+      "id": "news",
+      "who": ["hedda", "ulla"],
+      "lines": [
+        ["hedda", "Heard the new one's been down the Mire."],
+        ["ulla", "And came back? Then they're luckier than my brother."]
+      ]
+    },
+    {
+      "id": "gate_open",
+      "who": ["jost", "ulla"],
+      "when": "boss:tollwarden",
+      "lines": [
+        ["jost", "They say the Gatehouse is open. We could go on up."],
+        ["ulla", "With those knees? We'd get there for the funeral. Ours."]
+      ]
+    },
+    {
+      "id": "quiet_abbey",
+      "who": ["jost", "ulla"],
+      "when": "boss:chandler",
+      "lines": [
+        ["jost", "The bell's stopped. Listen, Ulla. Just the fire."],
+        ["ulla", "I'd forgotten what the fire sounded like."]
+      ]
     }
   ]
 }

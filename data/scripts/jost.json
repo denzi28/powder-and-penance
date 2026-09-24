@@ -1,0 +1,39 @@
+{
+  "id": "jost",
+  "steps": [
+    {
+      "if": "!jost_met",
+      "then": [
+        { "say": "Eh? Oh. Sit, sit, if your legs'll let you. Mine won't. Jost. Pilgrim, once.", "who": "jost" },
+        { "say": "See the shell on my coat? You get that at the sea shrine. You get the candle up there. I got the shell.", "who": "jost" },
+        { "set": "jost_met" }
+      ]
+    },
+    {
+      "menu": [
+        {
+          "text": "The road to the Abbey?",
+          "do": [
+            {
+              "if": "!boss:tollwarden",
+              "then": [{ "say": "Through the Gatehouse to the east, then up. The Tollwarden takes a toll. It isn't coin.", "who": "jost" }],
+              "else": [{ "say": "The Gatehouse is open, they tell me. I'd go myself if the hill were half as tall.", "who": "jost" }]
+            }
+          ]
+        },
+        {
+          "text": "The Wick?",
+          "do": [
+            { "say": "When I was young it was a promise. You walked to it and it forgave you. Didn't matter what for.", "who": "jost" },
+            { "say": "Now it's a smell. A smell of fat and a bell ringing. Forgive me for saying so.", "who": "jost" }
+          ]
+        },
+        {
+          "text": "Leave",
+          "end": true,
+          "do": [{ "say": "Walk careful. The road remembers feet.", "who": "jost" }]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "id": "ulla",
+  "steps": [
+    {
+      "if": "!ulla_met",
+      "then": [
+        { "say": "Mind the smoke, it follows the pretty ones. Ulla. That lump by the fire is my Jost.", "who": "ulla" },
+        { "say": "We walked from the coast to see the Wick burn. Three months on foot. It was smaller than they said.", "who": "ulla" },
+        { "set": "ulla_met" }
+      ]
+    },
+    {
+      "menu": [
+        {
+          "text": "Why stay?",
+          "do": [
+            { "say": "Jost's knees won't take the road home. And the Order don't open the Abbey gate for pilgrims any more.", "who": "ulla" },
+            { "say": "So we wait. Everyone at Wick's Rest is waiting for something. Keeps the fire fed.", "who": "ulla" }
+          ]
+        },
+        {
+          "text": "The graves?",
+          "do": [
+            { "say": "Pilgrims who came up the road and didn't go back down it. Agnes tends them. She knew most of them.", "who": "ulla" },
+            { "say": "Every stone's got a candle. The candles in the Drip burn crooked, so they all lean toward the Abbey.", "who": "ulla" }
+          ]
+        },
+        {
+          "text": "Leave",
+          "end": true,
+          "do": [
+            {
+              "if": "boss:chandler",
+              "then": [{ "say": "The fire's catching better since the bell went quiet. Don't ask me why. I'm just glad.", "who": "ulla" }],
+              "else": [{ "say": "Come and sit when you're tired. There's always a spot on the log.", "who": "ulla" }]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -4173,7 +4173,7 @@ function line(img: Img, x0: number, y0: number, x1: number, y1: number, c: RGBA)
 
 
 /** Head-and-shoulders portraits for the dialogue box, drawn at double detail. */
-function drawPortrait(c: Img, who: 'oskar' | 'maudlin' | 'pip' | 'tollwarden' | 'matron' | 'chandler' | 'tomas' | 'hedda' | 'bede' | 'agnes') {
+function drawPortrait(c: Img, who: 'oskar' | 'maudlin' | 'pip' | 'tollwarden' | 'matron' | 'chandler' | 'tomas' | 'hedda' | 'bede' | 'agnes' | 'ulla' | 'jost') {
   c.rect(0, 0, 32, 32, P.dark1);
   const skin = mix(P.wax1, P.wood2, 0.35);
   const oldSkin = mix(P.wax1, P.stone3, 0.3);
@@ -4226,6 +4226,21 @@ function drawPortrait(c: Img, who: 'oskar' | 'maudlin' | 'pip' | 'tollwarden' | 
     c.hline(17, 12, 3, P.ink);
     for (const y of [15, 18]) c.hline(11, y, 2, mix(oldSkin, P.wood1, 0.4)); // lines
     for (let x = 10; x < 23; x += 2) c.set(x, 27 + ((x / 2) % 2), P.wood2); // prayer beads
+  } else if (who === 'ulla') {
+    // the pilgrim wife: a moss-green kerchief, soot on her cheek, a brown shawl
+    c.rect(3, 24, 26, 8, mix(P.wood1, P.stone2, 0.4));
+    face(9, 8, 14, 15, skin);
+    c.set(19, 16, P.dark2); // soot
+    c.hline(13, 19, 6, mix(skin, P.blood1, 0.5));
+    c.rect(7, 3, 18, 6, mix(P.moss1, P.stone2, 0.4));
+    c.hline(8, 3, 16, mix(P.moss2, P.wax1, 0.3));
+  } else if (who === 'jost') {
+    // the old pilgrim: a brown hood, a white beard, a scallop badge
+    c.rect(3, 24, 26, 8, P.stone2);
+    c.rect(5, 2, 22, 22, mix(P.wood1, P.stone2, 0.3)); // hood
+    face(10, 8, 12, 14, oldSkin);
+    for (let y = 16; y < 24; y++) c.hline(11 + Math.floor((y - 16) / 3), y, 10 - Math.floor((y - 16) / 3) * 2, mix(P.stone4, P.wax1, 0.3));
+    c.rect(6, 26, 3, 3, P.wax2); // scallop
   } else if (who === 'chandler') {
     c.rect(3, 24, 26, 8, P.wax2); // chasuble
     c.hline(3, 24, 26, P.flame1);
@@ -4322,7 +4337,7 @@ function drawPortrait(c: Img, who: 'oskar' | 'maudlin' | 'pip' | 'tollwarden' | 
 
 function genNpcs() {
   genTownsfolk();
-  const who = ['oskar', 'maudlin', 'pip', 'tollwarden', 'matron', 'chandler', 'tomas', 'hedda', 'bede', 'agnes'] as const;
+  const who = ['oskar', 'maudlin', 'pip', 'tollwarden', 'matron', 'chandler', 'tomas', 'hedda', 'bede', 'agnes', 'ulla', 'jost'] as const;
   const portraits = new Img(32 * who.length, 32);
   who.forEach((w, i) => {
     const c = new Img(32, 32);
@@ -7020,6 +7035,33 @@ function genTownsfolk() {
       line(c, r[0], r[1] + 3, r[0] - 3, r[1] - 6, P.wood2); // axe on his shoulder
       box(c, r[0] - 5, r[1] - 8, 3, 3, IRON);
       return { r };
+    },
+  });
+  // Ulla: a pilgrim wife in a brown shawl who keeps the west camp's fire going, poking it with a stick.
+  villagerSheet('npc_ulla', {
+    cloth: { c0: mix(P.wood1, P.ink, 0.3), c1: mix(P.wood1, P.stone2, 0.4), c2: mix(P.wood2, P.stone3, 0.4), c3: mix(P.wood2, P.wax1, 0.4) },
+    long: true, legs: P.dark2, skin, head: 'kerchief', headCol: mix(P.moss1, P.stone2, 0.4), apron: mix(P.wax1, P.stone3, 0.4),
+    job: (c, f, g) => {
+      if (f.kind !== 'work') return;
+      const r: [number, number] = [g.cx + 6, g.waist - 1 + f.k];
+      line(c, r[0], r[1], r[0] + 5, r[1] + 5 - f.k * 2, P.wood1); // the poker
+      if (f.k) c.set(r[0] + 6, r[1] + 4, P.ember);
+      return { r };
+    },
+  });
+  // Jost: her husband, an old pilgrim with a walking staff and a scallop badge, mostly sitting by the fire.
+  villagerSheet('npc_jost', {
+    cloth: { c0: mix(P.stone1, P.ink, 0.3), c1: P.stone2, c2: P.stone3, c3: mix(P.stone3, P.wax1, 0.4) },
+    long: true, legs: P.dark2, skin: oldSkin, head: 'hood', headCol: mix(P.wood1, P.stone2, 0.3), beard: mix(P.stone4, P.wax1, 0.3),
+    job: (c, f, g) => {
+      c.set(g.cx - 2, g.body + 3, P.wax2); // scallop badge
+      c.set(g.cx - 1, g.body + 3, P.wax1);
+      if (f.kind === 'sit') {
+        line(c, g.cx + 6, g.feet - 1, g.cx + 9, g.top - 1, P.wood2); // staff leaned on his shoulder
+        return { r: [g.cx + 6, g.waist] };
+      }
+      c.vline(g.cx + 7, g.top + 1, g.feet - g.top - 1, P.wood2);
+      return { r: [g.cx + 7, g.waist - 2] };
     },
   });
   // Old Agnes: a pilgrim in a black shawl who prays at the shrine.

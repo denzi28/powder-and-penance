@@ -1,7 +1,7 @@
 {
   "id": "hub_01_yard",
   "area": "hub",
-  "origin": [0, 10],
+  "origin": [-10, 10],
   "legend": {
     "#": "wall",
     ".": "floor",
@@ -12,189 +12,199 @@
     " ": "void"
   },
   "tiles": [
-    "#####,###########==###############",
-    "####,.,,,,,,,,,,,==,,,,,##########",
-    "####,............==.....,,,,######",
-    "#,,,.............==........,######",
-    "#,...............==........,######",
-    "#,...............==........,######",
-    "#,...............==........,######",
-    "#,...............==........,######",
-    "#,...............==........,######",
-    "#,...............==........,######",
-    "#,...............==........,#,,,,,",
-    "==================================",
-    "============================#=====",
-    "#,...............==........,######",
-    "#,...............==........,######",
-    "#,...............==........,######",
-    "#,...............==........,######",
-    "#,...............==........,######",
-    "#,,,.............==........,######",
-    "####,............==.....,,,,######",
-    "####,............==....,##########",
-    "####,............==....,##########",
-    "####,,,,,,,,,,,,,==,,,,,##########",
-    "#################==###############"
+    "###############,###########==###############",
+    "#,,,,,,,,,,,,,,,,,,,,,,,,,,==,,,,,,,,,######",
+    "#,,,,......................==........,######",
+    "#,,,,......................==........,######",
+    "#,,,,......................==........,######",
+    "#,,,,......................==........,######",
+    "#,,,,......................==........,######",
+    "#,,,,......................==........,######",
+    "#,,,,......................==........,######",
+    "#,,,,......................==........,######",
+    "#,.........................==........,#,,,,,",
+    "============================================",
+    "======================================#=====",
+    "#,.........................==........,######",
+    "#,.........................==........,######",
+    "#,.........................==........,######",
+    "#,.........................==........,######",
+    "#,.........................==........,######",
+    "#,.........................==........,######",
+    "#,.........................==........,######",
+    "#,.........................==........,######",
+    "#,.........................==........,######",
+    "#,.........................==........,######",
+    "#,.........................==........,######",
+    "#,.,,,,,,,,,,,,............==..,,,,,,,######",
+    "#,.,,,,,,,,,,,,............==..,,,,,,,######",
+    "#,.,,,,,,,,,,,,............==..,,,,,,,######",
+    "#,.,,,,,,,,,,,,............==..,,,,,,,######",
+    "#,.,,,,,,,,,,,,............==..,,,,,,,######",
+    "#,.,,,,,,,,,,,,............==..,,,,,,,######",
+    "#,.,,,,,,,,,,,,............==..,,,,,,,######",
+    "#,.........................==........,######",
+    "#,,,,,,,,,,,,,,,,,,,,,,,,,,==,,,,,,,,,######",
+    "###########################==###############"
   ],
   "entities": [
     {
       "type": "door",
       "id": "hub_toll_gate",
-      "at": [28, 11],
+      "at": [38, 11],
       "requires": "toll_key"
     },
     {
       "type": "shrine",
       "id": "shrine_rest",
       "name": "Wick's Rest",
-      "at": [14, 9]
+      "at": [24, 9]
     },
     {
       "type": "decor",
       "kind": "campfire",
-      "at": [21, 15]
+      "at": [31, 15]
     },
     {
       "type": "decor",
       "kind": "bedroll",
-      "at": [19, 17]
+      "at": [29, 17]
     },
     {
       "type": "decor",
       "kind": "bedroll",
-      "at": [23, 17],
+      "at": [33, 17],
       "flip": true
     },
     {
       "type": "decor",
       "kind": "stall",
-      "at": [22, 7]
+      "at": [32, 7]
     },
     {
       "type": "decor",
       "kind": "lantern_post",
-      "at": [25, 8]
+      "at": [35, 8]
     },
     {
       "type": "decor",
       "kind": "notice_board",
-      "at": [20, 8]
+      "at": [30, 8]
     },
     {
       "type": "decor",
       "kind": "well",
-      "at": [9, 16]
+      "at": [19, 16]
     },
     {
       "type": "decor",
       "kind": "tent",
-      "at": [5, 17]
+      "at": [15, 17]
     },
     {
       "type": "decor",
       "kind": "tent",
-      "at": [13, 19]
+      "at": [23, 19]
     },
     {
       "type": "decor",
       "kind": "hand_cart",
-      "at": [26, 5]
+      "at": [36, 5]
     },
     {
       "type": "decor",
       "kind": "ruin_wall",
-      "at": [10, 5]
+      "at": [20, 5]
     },
     {
       "type": "decor",
       "kind": "ruin_wall",
-      "at": [6, 7]
+      "at": [16, 7]
     },
     {
       "type": "decor",
       "kind": "fence",
-      "at": [4, 14]
+      "at": [14, 14]
     },
     {
       "type": "decor",
       "kind": "fence",
-      "at": [5, 14]
+      "at": [15, 14]
     },
     {
       "type": "decor",
       "kind": "fence",
-      "at": [6, 14]
+      "at": [16, 14]
     },
     {
       "type": "decor",
       "kind": "lantern_post",
-      "at": [15, 13]
+      "at": [25, 13]
     },
     {
       "type": "decor",
       "kind": "lantern_post",
-      "at": [20, 13]
+      "at": [30, 13]
     },
     {
       "type": "decor",
       "kind": "signpost",
-      "at": [2, 10]
+      "at": [12, 10]
     },
     {
       "type": "decor",
       "kind": "signpost",
-      "at": [26, 13]
+      "at": [36, 13]
     },
     {
       "type": "decor",
       "kind": "grass_tuft",
-      "at": [3, 5]
+      "at": [13, 5]
     },
     {
       "type": "decor",
       "kind": "grass_tuft",
-      "at": [11, 20]
+      "at": [21, 20]
     },
     {
       "type": "decor",
       "kind": "grass_tuft",
-      "at": [26, 18]
+      "at": [36, 18]
     },
     {
       "type": "decor",
       "kind": "grass_tuft",
-      "at": [8, 2]
+      "at": [18, 2]
     },
     {
       "type": "prop",
       "kind": "crate",
-      "at": [27, 9]
+      "at": [37, 9]
     },
     {
       "type": "prop",
       "kind": "crate",
-      "at": [20, 6]
+      "at": [30, 6]
     },
     {
       "type": "prop",
       "kind": "pot",
-      "at": [23, 6]
+      "at": [33, 6]
     },
     {
       "type": "prop",
       "kind": "pot",
-      "at": [12, 16]
+      "at": [22, 16]
     },
     {
       "type": "prop",
       "kind": "crate",
-      "at": [27, 3]
+      "at": [37, 3]
     },
     {
       "type": "spawn",
       "id": "from_road",
-      "at": [17, 21]
+      "at": [27, 31]
     },
     {
       "type": "spawn",
@@ -204,22 +214,22 @@
     {
       "type": "spawn",
       "id": "from_works",
-      "at": [31, 11]
+      "at": [41, 11]
     },
     {
       "type": "spawn",
       "id": "from_works_lift",
-      "at": [25, 15]
+      "at": [35, 15]
     },
     {
       "type": "decor",
       "kind": "lift_cage",
-      "at": [25, 17]
+      "at": [35, 17]
     },
     {
       "type": "exit",
       "id": "hub_lift_down",
-      "at": [25, 17],
+      "at": [35, 17],
       "size": [2, 1],
       "to": {
         "area": "works",
@@ -231,7 +241,7 @@
     {
       "type": "exit",
       "id": "hub_to_road",
-      "at": [17, 23],
+      "at": [27, 33],
       "size": [2, 1],
       "to": {
         "area": "road",
@@ -251,7 +261,7 @@
     {
       "type": "exit",
       "id": "hub_to_works",
-      "at": [33, 10],
+      "at": [43, 10],
       "size": [1, 3],
       "to": {
         "area": "works",
@@ -261,87 +271,414 @@
     {
       "type": "decor",
       "kind": "prayer_bench",
-      "at": [13, 7]
+      "at": [23, 7]
     },
     {
       "type": "decor",
       "kind": "candle_cairn",
-      "at": [16, 8]
+      "at": [26, 8]
     },
     {
       "type": "decor",
       "kind": "candle_cairn",
-      "at": [11, 8]
+      "at": [21, 8]
     },
     {
       "type": "decor",
       "kind": "rubble",
-      "at": [8, 4]
+      "at": [18, 4]
     },
     {
       "type": "decor",
       "kind": "grass_tuft",
-      "at": [3, 8]
+      "at": [13, 8]
     },
     {
       "type": "decor",
       "kind": "barrels",
-      "at": [25, 6]
+      "at": [35, 6]
     },
     {
       "type": "decor",
       "kind": "sacks",
-      "at": [26, 7]
+      "at": [36, 7]
     },
     {
       "type": "decor",
       "kind": "water_barrel",
-      "at": [8, 15]
+      "at": [18, 15]
     },
     {
       "type": "decor",
       "kind": "laundry_line",
-      "at": [8, 18]
+      "at": [18, 18]
     },
     {
       "type": "decor",
       "kind": "woodpile",
-      "at": [5, 20]
+      "at": [15, 20]
     },
     {
       "type": "decor",
       "kind": "chopping_block",
-      "at": [7, 21]
+      "at": [17, 21]
     },
     {
       "type": "decor",
       "kind": "log_seat",
-      "at": [24, 15]
+      "at": [34, 15]
     },
     {
       "type": "decor",
       "kind": "trestle_table",
-      "at": [22, 20]
+      "at": [32, 20]
     },
     {
       "type": "decor",
       "kind": "lantern_post",
-      "at": [3, 13]
+      "at": [13, 13]
+    },
+    {
+      "type": "decor",
+      "kind": "campfire",
+      "at": [8, 6]
+    },
+    {
+      "type": "decor",
+      "kind": "log_seat",
+      "at": [9, 4]
+    },
+    {
+      "type": "decor",
+      "kind": "tent",
+      "at": [5, 3]
+    },
+    {
+      "type": "decor",
+      "kind": "tent",
+      "at": [12, 3],
+      "flip": true
+    },
+    {
+      "type": "decor",
+      "kind": "bedroll",
+      "at": [6, 8]
+    },
+    {
+      "type": "decor",
+      "kind": "bedroll",
+      "at": [11, 8],
+      "flip": true
+    },
+    {
+      "type": "decor",
+      "kind": "hand_cart",
+      "at": [3, 8]
+    },
+    {
+      "type": "decor",
+      "kind": "sacks",
+      "at": [2, 6]
+    },
+    {
+      "type": "decor",
+      "kind": "barrels",
+      "at": [2, 3]
+    },
+    {
+      "type": "decor",
+      "kind": "lantern_post",
+      "at": [10, 10]
+    },
+    {
+      "type": "decor",
+      "kind": "grass_tuft",
+      "at": [4, 5]
+    },
+    {
+      "type": "decor",
+      "kind": "grass_tuft",
+      "at": [2, 9]
+    },
+    {
+      "type": "decor",
+      "kind": "pillar_ruin",
+      "at": [3, 14]
+    },
+    {
+      "type": "decor",
+      "kind": "ruin_wall",
+      "at": [6, 17]
+    },
+    {
+      "type": "decor",
+      "kind": "rubble",
+      "at": [8, 18]
+    },
+    {
+      "type": "decor",
+      "kind": "boulder",
+      "at": [11, 20]
+    },
+    {
+      "type": "decor",
+      "kind": "grass_tuft",
+      "at": [4, 21]
+    },
+    {
+      "type": "decor",
+      "kind": "grass_tuft",
+      "at": [9, 15]
+    },
+    {
+      "type": "decor",
+      "kind": "dead_tree",
+      "at": [2, 19]
+    },
+    {
+      "type": "decor",
+      "kind": "fence",
+      "at": [3, 23]
+    },
+    {
+      "type": "decor",
+      "kind": "fence",
+      "at": [4, 23]
+    },
+    {
+      "type": "decor",
+      "kind": "fence",
+      "at": [5, 23]
+    },
+    {
+      "type": "decor",
+      "kind": "fence",
+      "at": [6, 23]
+    },
+    {
+      "type": "decor",
+      "kind": "fence",
+      "at": [7, 23]
+    },
+    {
+      "type": "decor",
+      "kind": "fence",
+      "at": [10, 23]
+    },
+    {
+      "type": "decor",
+      "kind": "fence",
+      "at": [11, 23]
+    },
+    {
+      "type": "decor",
+      "kind": "fence",
+      "at": [12, 23]
+    },
+    {
+      "type": "decor",
+      "kind": "fence",
+      "at": [13, 23]
+    },
+    {
+      "type": "decor",
+      "kind": "fence",
+      "at": [14, 23]
+    },
+    {
+      "type": "decor",
+      "kind": "gravestone",
+      "at": [4, 25]
+    },
+    {
+      "type": "decor",
+      "kind": "grave_cross",
+      "at": [6, 25]
+    },
+    {
+      "type": "decor",
+      "kind": "stone_angel",
+      "at": [10, 27]
+    },
+    {
+      "type": "decor",
+      "kind": "gravestone",
+      "at": [12, 25]
+    },
+    {
+      "type": "decor",
+      "kind": "grave_cross",
+      "at": [13, 27]
+    },
+    {
+      "type": "decor",
+      "kind": "gravestone",
+      "at": [7, 27]
+    },
+    {
+      "type": "decor",
+      "kind": "drowned_candles",
+      "at": [6, 27]
+    },
+    {
+      "type": "decor",
+      "kind": "gravestone",
+      "at": [4, 28]
+    },
+    {
+      "type": "decor",
+      "kind": "grave_cross",
+      "at": [11, 28]
+    },
+    {
+      "type": "decor",
+      "kind": "coffin",
+      "at": [10, 30]
+    },
+    {
+      "type": "decor",
+      "kind": "dead_willow",
+      "at": [3, 30]
+    },
+    {
+      "type": "decor",
+      "kind": "grass_tuft",
+      "at": [13, 30]
+    },
+    {
+      "type": "decor",
+      "kind": "grass_tuft",
+      "at": [5, 30]
+    },
+    {
+      "type": "decor",
+      "kind": "fence",
+      "at": [31, 23]
+    },
+    {
+      "type": "decor",
+      "kind": "fence",
+      "at": [32, 23]
+    },
+    {
+      "type": "decor",
+      "kind": "fence",
+      "at": [34, 23]
+    },
+    {
+      "type": "decor",
+      "kind": "fence",
+      "at": [35, 23]
+    },
+    {
+      "type": "decor",
+      "kind": "fence",
+      "at": [36, 23]
+    },
+    {
+      "type": "decor",
+      "kind": "laundry_line",
+      "at": [33, 26]
+    },
+    {
+      "type": "decor",
+      "kind": "water_barrel",
+      "at": [36, 25]
+    },
+    {
+      "type": "decor",
+      "kind": "barrels",
+      "at": [31, 29]
+    },
+    {
+      "type": "decor",
+      "kind": "sacks",
+      "at": [32, 29]
+    },
+    {
+      "type": "decor",
+      "kind": "hand_cart",
+      "at": [36, 29]
+    },
+    {
+      "type": "decor",
+      "kind": "grass_tuft",
+      "at": [34, 28]
+    },
+    {
+      "type": "decor",
+      "kind": "grass_tuft",
+      "at": [31, 26]
+    },
+    {
+      "type": "decor",
+      "kind": "lantern_post",
+      "at": [26, 25]
+    },
+    {
+      "type": "decor",
+      "kind": "lantern_post",
+      "at": [29, 25]
+    },
+    {
+      "type": "decor",
+      "kind": "dead_tree",
+      "at": [18, 26]
+    },
+    {
+      "type": "decor",
+      "kind": "boulder",
+      "at": [22, 30]
+    },
+    {
+      "type": "decor",
+      "kind": "grass_tuft",
+      "at": [20, 24]
+    },
+    {
+      "type": "decor",
+      "kind": "grass_tuft",
+      "at": [16, 30]
+    },
+    {
+      "type": "decor",
+      "kind": "candle_cairn",
+      "at": [30, 31]
+    },
+    {
+      "type": "decor",
+      "kind": "wheel_debris",
+      "at": [20, 27]
+    },
+    {
+      "type": "decor",
+      "kind": "pillar_ruin",
+      "at": [15, 25]
+    },
+    {
+      "type": "decor",
+      "kind": "grass_tuft",
+      "at": [23, 27]
+    },
+    {
+      "type": "decor",
+      "kind": "grass_tuft",
+      "at": [17, 29]
     },
     {
       "type": "npc",
       "id": "maudlin",
       "npc": "maudlin",
-      "at": [12, 10],
+      "at": [22, 10],
       "talk": "maudlin",
       "routine": [
         {
-          "at": [12, 10],
+          "at": [22, 10],
           "do": "idle",
           "ticks": 420
         },
         {
-          "at": [13, 9],
+          "at": [23, 9],
           "do": "work",
           "ticks": 240,
           "face": 1
@@ -352,18 +689,18 @@
       "type": "npc",
       "id": "oskar_stall",
       "npc": "oskar",
-      "at": [24, 7],
+      "at": [34, 7],
       "talk": "oskar_hub",
       "when": "oskar_freed",
       "routine": [
         {
-          "at": [24, 7],
+          "at": [34, 7],
           "do": "idle",
           "ticks": 300,
           "face": -1
         },
         {
-          "at": [24, 7],
+          "at": [34, 7],
           "do": "work",
           "ticks": 200,
           "face": -1
@@ -374,7 +711,7 @@
       "type": "npc",
       "id": "pip",
       "npc": "pip",
-      "at": [22, 16],
+      "at": [32, 16],
       "talk": "pip_hub",
       "when": "pip_rescued",
       "pose": "sit",
@@ -384,45 +721,59 @@
       "type": "npc",
       "id": "tomas",
       "npc": "tomas",
-      "at": [26, 8],
+      "at": [36, 8],
       "talk": "tomas",
       "routine": [
         {
-          "at": [26, 8],
+          "at": [36, 8],
           "do": "work",
           "ticks": 170,
           "face": -1
         },
         {
-          "via": [[25, 10], [19, 10]],
-          "at": [19, 13],
+          "via": [[35, 10], [29, 10]],
+          "at": [29, 13],
           "do": "work",
           "ticks": 170,
           "face": 1
         },
         {
-          "via": [[17, 12]],
-          "at": [16, 13],
+          "via": [[27, 12]],
+          "at": [26, 13],
           "do": "work",
           "ticks": 170,
           "face": -1
         },
         {
-          "via": [[15, 12], [5, 12]],
-          "at": [4, 13],
+          "via": [[25, 14]],
+          "at": [25, 25],
+          "do": "work",
+          "ticks": 170,
+          "face": 1
+        },
+        {
+          "via": [[24, 14], [24, 12], [15, 12]],
+          "at": [14, 13],
           "do": "work",
           "ticks": 170,
           "face": -1
         },
         {
-          "via": [[5, 12]],
-          "at": [13, 11],
+          "via": [[13, 12], [9, 12]],
+          "at": [9, 10],
+          "do": "work",
+          "ticks": 170,
+          "face": 1
+        },
+        {
+          "via": [[9, 12], [15, 12]],
+          "at": [23, 11],
           "do": "idle",
           "ticks": 320
         },
         {
-          "via": [[18, 11], [18, 10]],
-          "at": [25, 10],
+          "via": [[28, 11], [28, 10]],
+          "at": [35, 10],
           "do": "idle",
           "ticks": 60
         }
@@ -432,30 +783,36 @@
       "type": "npc",
       "id": "hedda",
       "npc": "hedda",
-      "at": [10, 16],
+      "at": [20, 16],
       "talk": "hedda",
       "routine": [
         {
-          "at": [10, 16],
+          "at": [20, 16],
           "do": "work",
           "ticks": 220,
           "face": -1
         },
         {
-          "via": [[11, 14], [16, 14], [19, 15]],
-          "at": [20, 16],
+          "via": [[21, 14], [26, 14], [29, 15]],
+          "at": [30, 16],
           "do": "work",
           "ticks": 150,
           "face": 1
         },
         {
-          "at": [21, 18],
+          "at": [31, 18],
           "do": "idle",
           "ticks": 280
         },
         {
-          "via": [[16, 18], [11, 17]],
-          "at": [10, 17],
+          "via": [[30, 19], [30, 22], [33, 22]],
+          "at": [33, 25],
+          "do": "idle",
+          "ticks": 220
+        },
+        {
+          "via": [[33, 22], [26, 18], [21, 17]],
+          "at": [20, 17],
           "do": "idle",
           "ticks": 40
         }
@@ -465,24 +822,24 @@
       "type": "npc",
       "id": "bede",
       "npc": "bede",
-      "at": [8, 21],
+      "at": [18, 21],
       "talk": "bede",
       "routine": [
         {
-          "at": [8, 21],
+          "at": [18, 21],
           "do": "work",
           "ticks": 600,
           "face": -1
         },
         {
-          "via": [[16, 21], [19, 19]],
-          "at": [20, 18],
+          "via": [[26, 21], [29, 19]],
+          "at": [30, 18],
           "do": "idle",
           "ticks": 150
         },
         {
-          "via": [[16, 21]],
-          "at": [9, 21],
+          "via": [[26, 21]],
+          "at": [19, 21],
           "do": "idle",
           "ticks": 40
         }
@@ -492,17 +849,96 @@
       "type": "npc",
       "id": "agnes",
       "npc": "agnes",
-      "at": [15, 8],
+      "at": [25, 8],
       "talk": "agnes",
-      "pose": "kneel",
-      "face": -1
+      "face": -1,
+      "routine": [
+        {
+          "at": [25, 8],
+          "do": "kneel",
+          "ticks": 1500,
+          "face": -1
+        },
+        {
+          "via": [[25, 10], [21, 10], [21, 22], [9, 22], [9, 26]],
+          "at": [8, 27],
+          "do": "kneel",
+          "ticks": 900,
+          "face": -1
+        },
+        {
+          "via": [[9, 26], [9, 22], [21, 22], [21, 10], [25, 10]],
+          "at": [25, 8],
+          "do": "kneel",
+          "ticks": 10,
+          "face": -1
+        }
+      ]
+    },
+    {
+      "type": "npc",
+      "id": "ulla",
+      "npc": "ulla",
+      "at": [7, 6],
+      "talk": "ulla",
+      "routine": [
+        {
+          "at": [7, 6],
+          "do": "work",
+          "ticks": 420,
+          "face": 1
+        },
+        {
+          "via": [[7, 7], [7, 12], [17, 12]],
+          "at": [17, 15],
+          "do": "idle",
+          "ticks": 200,
+          "face": 1
+        },
+        {
+          "via": [[17, 12], [7, 12], [7, 9]],
+          "at": [6, 9],
+          "do": "idle",
+          "ticks": 150,
+          "face": 1
+        }
+      ]
+    },
+    {
+      "type": "npc",
+      "id": "jost",
+      "npc": "jost",
+      "at": [10, 6],
+      "talk": "jost",
+      "routine": [
+        {
+          "at": [10, 6],
+          "do": "sit",
+          "ticks": 900,
+          "face": -1
+        },
+        {
+          "via": [[11, 7], [13, 8]],
+          "at": [14, 9],
+          "do": "idle",
+          "ticks": 260,
+          "face": 1
+        },
+        {
+          "via": [[13, 8], [11, 7]],
+          "at": [10, 6],
+          "do": "sit",
+          "ticks": 20,
+          "face": -1
+        }
+      ]
     },
     {
       "type": "cutscene",
       "id": "arrive_wicks_rest",
       "script": "arrive_wicks_rest",
-      "at": [16, 19],
-      "size": [4, 4]
+      "at": [25, 28],
+      "size": [5, 4]
     }
   ]
 }

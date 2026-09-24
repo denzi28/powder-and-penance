@@ -10,6 +10,8 @@
     "tomas": { "name": "Tomas", "sprite": "npc_tomas", "portrait": 6, "voice": { "sfx": "voice_low", "pitch": 0.85, "every": 3, "volume": 0.9 } },
     "hedda": { "name": "Hedda", "sprite": "npc_hedda", "portrait": 7, "voice": { "sfx": "voice", "pitch": 1.1, "every": 2 } },
     "bede": { "name": "Bede", "sprite": "npc_bede", "portrait": 8, "voice": { "sfx": "voice_low", "pitch": 0.75, "every": 3 }, "workSfx": "break_wood" },
-    "agnes": { "name": "Old Agnes", "sprite": "npc_agnes", "portrait": 9, "voice": { "sfx": "voice_soft", "pitch": 1.0, "every": 3, "volume": 0.8 } }
+    "agnes": { "name": "Old Agnes", "sprite": "npc_agnes", "portrait": 9, "voice": { "sfx": "voice_soft", "pitch": 1.0, "every": 3, "volume": 0.8 } },
+    "ulla": { "name": "Ulla", "sprite": "npc_ulla", "portrait": 10, "voice": { "sfx": "voice", "pitch": 1.2, "every": 2, "volume": 0.9 } },
+    "jost": { "name": "Jost", "sprite": "npc_jost", "portrait": 11, "voice": { "sfx": "voice_low", "pitch": 0.9, "every": 3, "volume": 0.85 } }
   }
 }
