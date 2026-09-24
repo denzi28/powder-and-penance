@@ -5,7 +5,7 @@
 import { DATA } from '../data/config';
 import { hallImpulse } from './Music';
 import type { Sfx } from './Sfx';
-import type { BossSound } from '../data/schemas';
+import type { LayeredSound } from '../data/schemas';
 
 const rnd = (a: number, b: number) => a + Math.random() * (b - a);
 
@@ -36,12 +36,12 @@ export class BossSfx {
     return ctx;
   }
 
-  static has(id: string): id is BossSound {
+  static has(id: string): id is LayeredSound {
     return id in RECIPES;
   }
 
   /** @param pan -1 left .. 1 right */
-  play(id: BossSound, volume = 1, pan = 0) {
+  play(id: LayeredSound, volume = 1, pan = 0) {
     const ctx = this.ready();
     if (!ctx || volume <= 0.01) return;
     const g = ctx.createGain();
@@ -306,6 +306,40 @@ class Kit {
     if (growl > 0) this.noiseSrc(at, dur).connect(this.filt('bandpass', F1, 2)).connect(this.env(at, 0.05, dur, vol * 0.4 * growl));
   }
 
+  /** A blade drawn through the air: a thin, fast, rising hiss. */
+  slice(dt: number, dur: number, vol: number) {
+    const at = this.t + dt;
+    const hp = this.filt('bandpass', 3000, 2);
+    hp.frequency.setValueAtTime(2000, at);
+    hp.frequency.exponentialRampToValueAtTime(7000, at + dur);
+    this.noiseSrc(at, dur).connect(hp).connect(this.env(at, dur * 0.5, dur, vol));
+  }
+
+  /** Glass breaking: bright pings scattering and a crunch. */
+  glass(dt: number, vol: number) {
+    const at = this.t + dt;
+    this.noiseSrc(at, 0.15).connect(this.filt('highpass', 3500)).connect(this.env(at, 0.001, 0.15, vol * 0.7));
+    for (let i = 0; i < 9; i++) {
+      const pt = at + Math.pow(Math.random(), 1.5) * 0.35;
+      this.osc('sine', rnd(2500, 6500), pt, 0.12).connect(this.env(pt, 0.001, 0.12, vol * rnd(0.1, 0.35)));
+    }
+  }
+
+  /** A flame going out: a puff and a hiss. */
+  snuff(dt: number, vol: number) {
+    this.breath(dt, 0.3, vol * 0.8, false);
+    this.sizzle(dt + 0.05, 0.4, vol * 0.4);
+  }
+
+  /** A pop, like a bubble bursting or a cork. */
+  pop(dt: number, f: number, vol: number) {
+    const at = this.t + dt;
+    const o = this.osc('sine', f, at, 0.07);
+    o.frequency.exponentialRampToValueAtTime(f * 2.5, at + 0.05);
+    o.connect(this.env(at, 0.002, 0.07, vol));
+    this.noiseSrc(at, 0.02).connect(this.filt('bandpass', f * 4, 2)).connect(this.env(at, 0.001, 0.02, vol * 0.5));
+  }
+
   /** Breath drawn in (or out): shaped noise. */
   breath(dt: number, dur: number, vol: number, inhale = true) {
     const at = this.t + dt;
@@ -323,7 +357,7 @@ class Kit {
 
 // ---------------------------------------------------------------- the bosses' sounds
 type Recipe = (k: Kit) => void;
-const RECIPES: Record<BossSound, Recipe> = {
+const RECIPES: Record<LayeredSound, Recipe> = {
   // ---- the Tollwarden: a giant gaoler with a bell for a hammer
   b_toll_heft: k => {
     k.voice(0, 0.35, 95, 80, 'uh', 0.5, 0.8);
@@ -555,5 +589,254 @@ const RECIPES: Record<BossSound, Recipe> = {
   b_step_flame: k => {
     k.boom(0, 100, 60, 0.15, 0.4);
     k.fire(0, 0.25, 0.12, 0.8);
+  },
+
+  // ======================================================== regular enemies ("e_")
+  // ---- Wickling: a scrawny candle-headed imp with a cleaver; squeaky, quick, burns out when it dies
+  e_wick_chitter: k => k.voice(0, 0.25, rnd(560, 640), 720, 'eh', 0.22, 0.6),
+  e_cleaver: k => {
+    k.whoosh(0, 0.2, 500, 1800, 0.45, 0.5);
+    k.clang(0.14, rnd(1100, 1300), 0.3, 0.1);
+  },
+  e_wick_swipe: k => k.whoosh(0, 0.16, 700, 2200, 0.35, 0.5),
+  e_wick_shove: k => {
+    k.voice(0, 0.15, 500, 420, 'uh', 0.18, 0.5);
+    k.boom(0.05, 150, 100, 0.08, 0.25);
+  },
+  e_wick_alert: k => k.voice(0, 0.28, 480, 950, 'eh', 0.25, 0.4),
+  e_wick_hurt: k => k.voice(0, 0.16, 900, 560, 'eh', 0.22, 0.5),
+  e_wick_die: k => {
+    k.voice(0, 0.45, 800, 300, 'eh', 0.22, 0.4);
+    k.snuff(0.3, 0.35);
+  },
+  e_step_patter: k => k.boom(0, rnd(180, 220), 140, 0.05, 0.12),
+
+  // ---- Taper Hound: a lean dog with a candle on its back; growls, snaps, yelps
+  e_growl: k => k.voice(0, 0.45, 120, 110, 'uh', 0.35, 1),
+  e_bite: k => {
+    k.whoosh(0, 0.1, 800, 2400, 0.25, 0.4);
+    k.clang(0.07, rnd(700, 850), 0.06, 0.12); // teeth
+    k.pop(0.07, 400, 0.2);
+  },
+  e_lunge: k => {
+    k.voice(0, 0.3, 170, 130, 'ah', 0.3, 1);
+    k.whoosh(0.05, 0.3, 300, 1500, 0.4);
+  },
+  e_bark: k => {
+    k.voice(0, 0.14, 380, 280, 'ah', 0.35, 0.6);
+    k.voice(0.22, 0.14, 400, 290, 'ah', 0.35, 0.6);
+  },
+  e_yelp: k => k.voice(0, 0.18, 950, 650, 'eh', 0.3, 0.2),
+  e_whine: k => {
+    k.voice(0, 0.7, 760, 380, 'oo', 0.28, 0.15);
+    k.snuff(0.5, 0.25);
+  },
+  e_step_paws: k => k.boom(0, rnd(230, 280), 180, 0.035, 0.08),
+
+  // ---- Powder Acolyte: a robed monk lobbing firepots; chants, hisses a fuse
+  e_acolyte_chant: k => k.voice(0, 0.4, 196, 185, 'oh', 0.25, 0.1, 2, 15),
+  e_fuse: k => {
+    k.sizzle(0, 0.5, 0.25);
+    k.fire(0.1, 0.3, 0.12, 1.6);
+  },
+  e_lob: k => k.whoosh(0, 0.35, 400, 1500, 0.35, 0.4),
+  e_firepot_blast: k => {
+    k.glass(0, 0.5);
+    k.boom(0, 120, 45, 0.5, 0.75);
+    k.fire(0, 0.7, 0.45, 1.1);
+  },
+  e_shove: k => {
+    k.voice(0, 0.15, 190, 160, 'uh', 0.25, 0.4);
+    k.whoosh(0, 0.18, 400, 1200, 0.3);
+    k.boom(0.08, 150, 100, 0.08, 0.2);
+  },
+  e_acolyte_alert: k => k.voice(0, 0.3, 230, 250, 'ah', 0.3, 0.3, 1, 10),
+  e_acolyte_hurt: k => k.voice(0, 0.2, 210, 165, 'uh', 0.3, 0.5),
+  e_acolyte_die: k => k.voice(0, 0.8, 190, 95, 'oh', 0.3, 0.3),
+  e_step_sandal: k => k.whoosh(0, 0.07, 600, 1400, 0.07, 0.3),
+
+  // ---- Belfry Brute: a hulking bell-ringer with a bell on a chain; slow, huge, grunting
+  e_brute_heave: k => {
+    k.voice(0, 0.5, 80, 110, 'ah', 0.45, 0.9);
+    k.chain(0.05, 0.35, 0.3);
+  },
+  e_brute_slam: k => {
+    k.clang(0, 210, 1.3, 0.5);
+    k.bell(0, 147, 2.2, 0.4);
+    k.boom(0, 80, 35, 0.7, 0.85);
+    k.rumble(0.02, 1.0, 0.4);
+    k.debris(0.04, 0.5, 0.3);
+  },
+  e_brute_whoosh: k => {
+    k.whoosh(0, 0.4, 150, 800, 0.75);
+    k.chain(0.15, 0.25, 0.2);
+  },
+  e_brute_grab: k => {
+    k.voice(0, 0.3, 95, 80, 'uh', 0.4, 0.9);
+    k.whoosh(0.05, 0.25, 250, 900, 0.4);
+  },
+  e_brute_roar: k => k.voice(0, 1.0, 92, 70, 'ah', 0.55, 1, 2),
+  e_brute_hurt: k => k.voice(0, 0.25, 95, 80, 'uh', 0.4, 0.8),
+  e_brute_die: k => {
+    k.voice(0, 1.2, 90, 50, 'oh', 0.5, 0.9);
+    k.boom(0.8, 70, 30, 0.7, 0.8); // he falls
+    k.rumble(0.8, 0.8, 0.35);
+    k.clang(0.85, 210, 1, 0.25);
+  },
+  e_step_brute: k => {
+    k.boom(0, 58, 35, 0.35, 0.55);
+    k.rumble(0, 0.3, 0.15);
+  },
+
+  // ---- Bulwark Warden: an armoured guard with a tower shield and spear
+  e_armor_shift: k => {
+    for (let i = 0; i < 3; i++) k.clang(i * 0.06, rnd(500, 800), 0.12, 0.1);
+    k.voice(0.02, 0.2, 140, 125, 'uh', 0.2, 0.6);
+  },
+  e_shield_bash: k => {
+    k.clang(0, 180, 0.7, 0.5);
+    k.boom(0, 110, 60, 0.25, 0.6);
+  },
+  e_spear_thrust: k => {
+    k.whoosh(0, 0.18, 500, 2000, 0.45, 0.4);
+    k.slice(0.05, 0.12, 0.2);
+  },
+  e_spear_overhead: k => {
+    k.whoosh(0, 0.35, 250, 1200, 0.6);
+    k.clang(0.25, 650, 0.5, 0.15);
+  },
+  e_warden_alert: k => {
+    k.voice(0, 0.35, 150, 165, 'ah', 0.35, 0.5);
+    k.clang(0.05, 190, 0.5, 0.25); // spear on shield
+  },
+  e_warden_hurt: k => {
+    k.voice(0, 0.2, 145, 120, 'uh', 0.3, 0.6);
+    k.clang(0, rnd(500, 700), 0.2, 0.12);
+  },
+  e_warden_die: k => {
+    k.voice(0, 0.7, 140, 85, 'oh', 0.35, 0.6);
+    k.clang(0.45, 180, 0.9, 0.4); // the shield falls
+    k.boom(0.45, 100, 50, 0.4, 0.5);
+    for (let i = 0; i < 4; i++) k.clang(0.55 + i * 0.07, rnd(450, 900), 0.2, 0.12);
+  },
+  e_step_warden: k => {
+    k.boom(0, 90, 60, 0.12, 0.3);
+    k.clang(0, rnd(700, 900), 0.1, 0.05);
+  },
+
+  // ---- Drowned Pilgrim: a waterlogged corpse that claws and drags you under
+  e_gurgle: k => {
+    k.bubbles(0, 4, 0.3, true);
+    k.voice(0, 0.4, 150, 140, 'oo', 0.2, 0.7);
+  },
+  e_wet_claw: k => {
+    k.whoosh(0, 0.2, 400, 1400, 0.35, 0.5);
+    k.splash(0.12, 0.25, 0.25);
+  },
+  e_drag: k => {
+    k.splash(0, 0.5, 0.45, true);
+    k.voice(0.05, 0.6, 160, 120, 'oh', 0.25, 0.5);
+    k.bubbles(0.2, 5, 0.3, true);
+  },
+  e_drowned_moan: k => k.voice(0, 0.8, 185, 150, 'oh', 0.3, 0.4, 2, 15),
+  e_drowned_hurt: k => {
+    k.voice(0, 0.2, 170, 140, 'uh', 0.25, 0.6);
+    k.bubbles(0.05, 2, 0.2, true);
+  },
+  e_drowned_die: k => {
+    k.voice(0, 0.6, 170, 90, 'oo', 0.28, 0.5);
+    k.splash(0.35, 0.6, 0.45, true);
+    k.bubbles(0.5, 6, 0.3, true);
+  },
+  e_drowned_rise: k => {
+    k.splash(0, 0.7, 0.6, true);
+    k.bubbles(0, 6, 0.35, true);
+    k.voice(0.3, 0.9, 150, 175, 'oh', 0.28, 0.6, 2, 12); // a long wet moan as it stands
+  },
+  e_step_drowned: k => k.splash(0, 0.2, 0.12, true),
+
+  // ---- Renderer: a Works butcher in an apron with a hook on a chain
+  e_hook_whirl: k => {
+    for (let i = 0; i < 3; i++) k.whoosh(i * 0.16, 0.16, 400, 1300, 0.25, 0.5);
+    k.chain(0, 0.45, 0.2);
+  },
+  e_hook_throw: k => {
+    k.whoosh(0, 0.3, 500, 2000, 0.4, 0.4);
+    k.chain(0.02, 0.4, 0.3);
+  },
+  e_butcher_grunt: k => k.voice(0, 0.22, 120, 100, 'uh', 0.3, 0.8),
+  e_flense: k => {
+    k.whoosh(0, 0.18, 500, 1800, 0.4, 0.5);
+    k.slice(0.06, 0.14, 0.25);
+  },
+  e_butcher_alert: k => {
+    k.voice(0, 0.3, 125, 140, 'ah', 0.35, 0.8);
+    k.chain(0.1, 0.2, 0.2);
+  },
+  e_butcher_hurt: k => k.voice(0, 0.2, 125, 100, 'uh', 0.3, 0.8),
+  e_butcher_die: k => {
+    k.voice(0, 0.8, 120, 70, 'oh', 0.35, 0.8);
+    k.clang(0.5, 900, 0.4, 0.2); // the hook clatters down
+    k.chain(0.5, 0.3, 0.25);
+  },
+  e_step_boot: k => k.boom(0, rnd(95, 110), 70, 0.1, 0.22),
+
+  // ---- the Works' wax things: Vat Crawler, Vat Spawn, Wax Slime
+  e_blob_rise: k => {
+    k.splash(0, 0.4, 0.25, true);
+    k.bubbles(0.1, 5, 0.3, true);
+    k.swell(0, 0.35, 90, 0.12);
+  },
+  e_engulf: k => {
+    k.splash(0, 0.45, 0.5, true);
+    k.boom(0, 120, 60, 0.2, 0.35);
+    k.pop(0.25, 140, 0.3); // a gulp
+  },
+  e_blob_nip: k => {
+    k.splash(0, 0.15, 0.2);
+    k.pop(0.03, 380, 0.2);
+  },
+  e_sizzle_rise: k => {
+    k.sizzle(0, 0.4, 0.25);
+    k.bubbles(0.1, 3, 0.25);
+  },
+  e_scald: k => {
+    k.splash(0, 0.25, 0.35);
+    k.sizzle(0.05, 0.5, 0.3);
+  },
+  e_blob_gurgle: k => k.bubbles(0, 6, 0.35, true),
+  e_blob_chirp: k => {
+    k.bubbles(0, 3, 0.3);
+    k.voice(0.05, 0.12, 700, 900, 'oo', 0.12);
+  },
+  e_blob_hurt: k => {
+    k.splash(0, 0.18, 0.3);
+    k.pop(0.02, 300, 0.2);
+  },
+  e_blob_die: k => {
+    k.splash(0, 0.6, 0.5, true);
+    k.bubbles(0.15, 6, 0.35, true);
+    k.sizzle(0.2, 0.6, 0.15);
+  },
+  e_blob_pop: k => {
+    k.pop(0, 260, 0.4);
+    k.splash(0.02, 0.25, 0.25);
+  },
+  e_slime_die: k => {
+    k.sizzle(0, 0.7, 0.3);
+    k.splash(0, 0.35, 0.35);
+  },
+  e_step_slime: k => k.splash(0, 0.15, 0.1, true),
+
+  // ---- Mire Lantern: a floating watch-lamp that rings out when it sees you
+  e_lantern_alarm: k => {
+    k.bell(0, 587, 1.4, 0.35);
+    k.bell(0.18, 784, 1.2, 0.3);
+    k.fire(0, 0.4, 0.2, 1.4);
+  },
+  e_lantern_hurt: k => k.clang(0, rnd(900, 1100), 0.4, 0.3),
+  e_lantern_die: k => {
+    k.glass(0, 0.5);
+    k.snuff(0.1, 0.4);
   },
 };

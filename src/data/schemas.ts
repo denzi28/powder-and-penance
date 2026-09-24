@@ -544,6 +544,9 @@ export const EnemyDef = z.object({
   blood: z.string().default('blood2'),
   /** Footfalls while walking (on the walk cycle's contact frames): a sound id and its volume. */
   steps: z.object({ sfx: z.string(), volume: num.min(0).max(2).default(1) }).optional(),
+  /** Its voice: a cry when it spots you (`alert`), when it's hurt (`hurt`), as it dies (`die`, else the generic
+   *  death), and as an ambusher comes up out of hiding (`rise`). */
+  voice: z.object({ alert: z.string().optional(), hurt: z.string().optional(), die: z.string().optional(), rise: z.string().optional() }).optional(),
   /** Not slowed by terrain (creatures of the mire move freely through its wax). */
   wader: z.boolean().default(false),
   /**
@@ -727,8 +730,8 @@ export type AmbientDecor = z.infer<typeof AmbientDecor>;
 // ---- Ambient sound (data/audio/ambient.json) ----
 export const AMBIENT_SOUNDS = ['crow', 'creak', 'owl', 'bell', 'crickets', 'frog', 'bubble', 'drip', 'clank', 'steam', 'chain', 'choir', 'humming', 'crackle', 'roar', 'wings', 'squeak', 'plop'] as const;
 export type AmbientSound = (typeof AMBIENT_SOUNDS)[number];
-/** Boss sound effects: layered recipes in src/audio/BossSfx.ts, usable anywhere an effect id is (sfx). */
-export const BOSS_SOUNDS = [
+/** Layered sound effects (bosses "b_", regular enemies "e_"): recipes in src/audio/BossSfx.ts, usable anywhere an effect id is. */
+export const LAYERED_SOUNDS = [
   'b_toll_heft', 'b_hammer_whoosh', 'b_hammer_thrust', 'b_bell_rise', 'b_bell_slam', 'b_toss', 'b_toll_roar',
   'b_matron_breath', 'b_wet_swipe', 'b_matron_hush', 'b_embrace', 'b_matron_sing', 'b_matron_wail', 'b_matron_lullaby',
   'b_mother_grunt', 'b_ladle_whoosh', 'b_spit', 'b_wax_splat', 'b_mother_heave', 'b_ladle_crush', 'b_mother_hum', 'b_wax_pour', 'b_mother_roar',
@@ -736,8 +739,26 @@ export const BOSS_SOUNDS = [
   'b_chandler_chant', 'b_staff_whoosh', 'b_staff_thrust', 'b_flame_flick', 'b_censer', 'b_chandler_roar',
   'b_blackflame_whoosh', 'b_blackflame_jab', 'b_blackflame_slam', 'b_blackflame_leap', 'b_volley', 'b_fire_burst', 'b_flood', 'b_blackflame_roar',
   'b_step_armor', 'b_step_wet', 'b_step_heavy', 'b_step_bone', 'b_step_robe', 'b_step_flame',
+  // wickling
+  'e_wick_chitter', 'e_cleaver', 'e_wick_swipe', 'e_wick_shove', 'e_wick_alert', 'e_wick_hurt', 'e_wick_die', 'e_step_patter',
+  // taper hound
+  'e_growl', 'e_bite', 'e_lunge', 'e_bark', 'e_yelp', 'e_whine', 'e_step_paws',
+  // powder acolyte
+  'e_acolyte_chant', 'e_fuse', 'e_lob', 'e_firepot_blast', 'e_shove', 'e_acolyte_alert', 'e_acolyte_hurt', 'e_acolyte_die', 'e_step_sandal',
+  // belfry brute
+  'e_brute_heave', 'e_brute_slam', 'e_brute_whoosh', 'e_brute_grab', 'e_brute_roar', 'e_brute_hurt', 'e_brute_die', 'e_step_brute',
+  // bulwark warden
+  'e_armor_shift', 'e_shield_bash', 'e_spear_thrust', 'e_spear_overhead', 'e_warden_alert', 'e_warden_hurt', 'e_warden_die', 'e_step_warden',
+  // drowned pilgrim
+  'e_gurgle', 'e_wet_claw', 'e_drag', 'e_drowned_moan', 'e_drowned_hurt', 'e_drowned_die', 'e_drowned_rise', 'e_step_drowned',
+  // renderer
+  'e_hook_whirl', 'e_hook_throw', 'e_butcher_grunt', 'e_flense', 'e_butcher_alert', 'e_butcher_hurt', 'e_butcher_die', 'e_step_boot',
+  // vat crawler, vat spawn, wax slime
+  'e_blob_rise', 'e_engulf', 'e_blob_nip', 'e_sizzle_rise', 'e_scald', 'e_blob_gurgle', 'e_blob_chirp', 'e_blob_hurt', 'e_blob_die', 'e_blob_pop', 'e_slime_die', 'e_step_slime',
+  // mire lantern
+  'e_lantern_alarm', 'e_lantern_hurt', 'e_lantern_die',
 ] as const;
-export type BossSound = (typeof BOSS_SOUNDS)[number];
+export type LayeredSound = (typeof LAYERED_SOUNDS)[number];
 export const SURFACES = ['dirt', 'grass', 'stone', 'wood', 'metal', 'mud', 'grease', 'wax', 'moss'] as const;
 export type Surface = (typeof SURFACES)[number];
 const Sound = z.enum(AMBIENT_SOUNDS);

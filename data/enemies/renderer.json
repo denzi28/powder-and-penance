@@ -22,6 +22,8 @@
   "deathTicks": 40,
   "corpseTicks": 150,
   "blood": "blood1",
+  "steps": { "sfx": "e_step_boot", "volume": 0.6 },
+  "voice": { "alert": "e_butcher_alert", "hurt": "e_butcher_hurt", "die": "e_butcher_die" },
   "moves": [
     {
       "id": "hook_throw",
@@ -38,7 +40,7 @@
           "originY": -10,
           "sweep": { "fromDeg": 0, "toDeg": 0, "reach": 58 },
           "pull": true,
-          "knockback": 480, "hitstop": 5, "shake": 0.2, "sfx": "throw", "anim": "throw"
+          "knockback": 480, "hitstop": 5, "shake": 0.2, "windupSfx": "e_hook_whirl", "sfx": "e_hook_throw", "anim": "throw"
         }
       ]
     },
@@ -56,7 +58,7 @@
           "hitbox": { "shape": "arc", "radius": 28, "halfAngle": 80 },
           "originY": -10,
           "sweep": { "fromDeg": -100, "toDeg": 80 },
-          "knockback": 80, "hitstop": 4, "shake": 0.1, "sfx": "swing", "anim": "swipe"
+          "knockback": 80, "hitstop": 4, "shake": 0.1, "windupSfx": "e_butcher_grunt", "sfx": "e_flense", "anim": "swipe"
         }
       ]
     }

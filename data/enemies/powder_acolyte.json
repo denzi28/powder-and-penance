@@ -32,6 +32,8 @@
   "deathTicks": 50,
   "corpseTicks": 150,
   "blood": "blood2",
+  "steps": { "sfx": "e_step_sandal", "volume": 0.6 },
+  "voice": { "alert": "e_acolyte_alert", "hurt": "e_acolyte_hurt", "die": "e_acolyte_die" },
   "moves": [
     {
       "id": "firepot",
@@ -46,11 +48,11 @@
           "telegraph": { "tick": 10, "kind": "normal" },
           "hitbox": { "shape": "circle", "radius": 1 },
           "sweep": { "fromDeg": -120, "toDeg": 40 },
-          "anim": "throw",
+          "windupSfx": "e_fuse", "sfx": "e_lob", "anim": "throw",
           "projectile": {
             "sprite": "firepot", "speed": 1, "range": 1,
             "damage": 24, "poise": 30, "knockback": 140, "hitstop": 4, "shake": 0.3, "radius": 3,
-            "lob": { "flightTicks": 48, "arcHeight": 40, "blastRadius": 22, "sfx": "explosion" }
+            "lob": { "flightTicks": 48, "arcHeight": 40, "blastRadius": 22, "sfx": "e_firepot_blast" }
           }
         }
       ]
@@ -67,7 +69,7 @@
           "telegraph": { "tick": 4, "kind": "normal" },
           "hitbox": { "shape": "circle", "radius": 12, "offset": 8 },
           "sweep": { "fromDeg": 0, "toDeg": 0, "reach": 4 },
-          "knockback": 200, "hitstop": 3, "shake": 0.12, "anim": "shove"
+          "knockback": 200, "hitstop": 3, "shake": 0.12, "windupSfx": "e_acolyte_chant", "sfx": "e_shove", "anim": "shove"
         }
       ]
     }

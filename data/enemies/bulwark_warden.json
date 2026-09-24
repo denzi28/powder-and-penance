@@ -45,6 +45,8 @@
   "deathTicks": 50,
   "corpseTicks": 150,
   "blood": "blood1",
+  "steps": { "sfx": "e_step_warden", "volume": 0.6 },
+  "voice": { "alert": "e_warden_alert", "hurt": "e_warden_hurt", "die": "e_warden_die" },
   "moves": [
     {
       "id": "shield_bash",
@@ -59,7 +61,7 @@
           "telegraph": { "tick": 5, "kind": "normal" },
           "hitbox": { "shape": "circle", "radius": 12, "offset": 9 },
           "sweep": { "fromDeg": 10, "toDeg": 0, "reach": 3 },
-          "knockback": 180, "hitstop": 4, "shake": 0.2, "sfx": "block", "anim": "bash"
+          "knockback": 180, "hitstop": 4, "shake": 0.2, "windupSfx": "e_armor_shift", "sfx": "e_shield_bash", "anim": "bash"
         }
       ]
     },
@@ -77,7 +79,7 @@
           "lunge": { "distance": 14, "startTick": 19, "ticks": 4 },
           "hitbox": { "shape": "arc", "radius": 34, "halfAngle": 18 },
           "sweep": { "fromDeg": 0, "toDeg": 0, "reach": 10 },
-          "knockback": 90, "hitstop": 4, "shake": 0.15, "anim": "thrust"
+          "knockback": 90, "hitstop": 4, "shake": 0.15, "windupSfx": "e_armor_shift", "sfx": "e_spear_thrust", "anim": "thrust"
         }
       ]
     },
@@ -97,7 +99,7 @@
           "lunge": { "distance": 8, "startTick": 31, "ticks": 4 },
           "hitbox": { "shape": "arc", "radius": 28, "halfAngle": 45 },
           "sweep": { "fromDeg": -150, "toDeg": 20 },
-          "knockback": 150, "hitstop": 6, "shake": 0.35, "sfx": "swing_heavy", "anim": "overhead"
+          "knockback": 150, "hitstop": 6, "shake": 0.35, "windupSfx": "e_armor_shift", "sfx": "e_spear_overhead", "anim": "overhead"
         }
       ]
     }

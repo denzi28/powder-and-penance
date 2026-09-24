@@ -20,6 +20,8 @@
   "deathTicks": 30,
   "corpseTicks": 90,
   "blood": "wax1",
+  "steps": { "sfx": "e_step_slime", "volume": 0.4 },
+  "voice": { "alert": "e_blob_chirp", "hurt": "e_blob_hurt", "die": "e_blob_pop" },
   "moves": [
     {
       "id": "nip",
@@ -36,7 +38,7 @@
           "hitbox": { "shape": "circle", "radius": 10, "offset": 6 },
           "originY": -3,
           "sweep": { "fromDeg": 0, "toDeg": 0 },
-          "knockback": 40, "hitstop": 2, "shake": 0.05, "sfx": "bite", "anim": "engulf"
+          "knockback": 40, "hitstop": 2, "shake": 0.05, "windupSfx": "e_blob_chirp", "sfx": "e_blob_nip", "anim": "engulf"
         }
       ]
     }

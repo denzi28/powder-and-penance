@@ -35,6 +35,8 @@
   "deathTicks": 60,
   "corpseTicks": 200,
   "blood": "blood1",
+  "steps": { "sfx": "e_step_brute", "volume": 0.7 },
+  "voice": { "alert": "e_brute_roar", "hurt": "e_brute_hurt", "die": "e_brute_die" },
   "moves": [
     {
       "id": "bell_slam",
@@ -51,7 +53,7 @@
           "hitbox": { "shape": "circle", "radius": 26, "offset": 24 },
           "originY": -4,
           "sweep": { "fromDeg": -160, "toDeg": 10 },
-          "knockback": 220, "hitstop": 8, "shake": 0.5, "sfx": "bell_slam", "anim": "slam"
+          "knockback": 220, "hitstop": 8, "shake": 0.5, "windupSfx": "e_brute_heave", "sfx": "e_brute_slam", "anim": "slam"
         }
       ]
     },
@@ -69,7 +71,7 @@
           "telegraph": { "tick": 12, "kind": "normal" },
           "hitbox": { "shape": "arc", "radius": 40, "halfAngle": 100 },
           "sweep": { "fromDeg": -110, "toDeg": 110 },
-          "knockback": 180, "hitstop": 6, "shake": 0.35, "sfx": "swing_heavy", "anim": "sweep"
+          "knockback": 180, "hitstop": 6, "shake": 0.35, "windupSfx": "e_brute_heave", "sfx": "e_brute_whoosh", "anim": "sweep"
         }
       ]
     },
@@ -90,7 +92,7 @@
           "hitbox": { "shape": "circle", "radius": 14, "offset": 16 },
           "sweep": { "fromDeg": 0, "toDeg": 0, "reach": 4 },
           "grab": { "holdTicks": 60, "damage": 40, "throwKnockback": 260 },
-          "sfx": "swing", "anim": "grab"
+          "sfx": "e_brute_grab", "anim": "grab"
         }
       ]
     }

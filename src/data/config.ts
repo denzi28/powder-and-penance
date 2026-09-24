@@ -160,7 +160,7 @@ function loadAll(src: Record<string, unknown>) {
         }),
       );
     // every sound an enemy makes must exist: a preset, or a layered boss sound
-    const sound = (id: string) => !!data.sfx.presets[id] || (S.BOSS_SOUNDS as readonly string[]).includes(id);
+    const sound = (id: string) => !!data.sfx.presets[id] || (S.LAYERED_SOUNDS as readonly string[]).includes(id);
     for (const e of Object.values(data.enemies) as S.EnemyDef[]) {
       const ids: string[] = [];
       for (const m of e.moves ?? [])
@@ -171,6 +171,7 @@ function loadAll(src: Record<string, unknown>) {
         }
       if (e.boss) ids.push(e.boss.slamSfx, ...(e.boss.roarSfx ? [e.boss.roarSfx] : []));
       if (e.steps) ids.push(e.steps.sfx);
+      for (const v of Object.values(e.voice ?? {})) if (v) ids.push(v);
       for (const id of ids) if (!sound(id)) errors.push(`data/enemies/${e.id}.json: unknown sound "${id}"`);
     }
     for (const k of Object.keys(data.ambient.decor)) if (!data.decor.decor[k]) errors.push(`data/audio/ambient.json: unknown decor kind "${k}"`);

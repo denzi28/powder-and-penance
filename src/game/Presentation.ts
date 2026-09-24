@@ -60,6 +60,7 @@ export function wirePresentation(gs: GameScene) {
     const blood = h.killed || s.kind === 'critical' ? pc.bloodOnKill : pc.blood;
     gs.particles.burst(t.x, t.y, z, h.angle, 1.0, blood, 90, t.bloodColor, true);
     bus.emit('sfx', { id: heavy ? 'hit_heavy' : 'hit', x: t.x, y: t.y });
+    if (t instanceof Enemy && !h.killed && t.def.voice?.hurt) bus.emit('sfx', { id: t.def.voice.hurt, x: t.x, y: t.y }); // its cry of pain
     t.flinch(h.angle, heavy ? fb.flinchHeavy : fb.flinch);
 
     if (t === gs.player) {

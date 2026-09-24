@@ -62,6 +62,7 @@ const notice: State<Enemy> = {
     e.reactTicks = e.randRange(e.def.perception.reactionTicks);
     e.ctx.bus.emit('notice', { actor: e });
     e.ctx.bus.emit('sfx', { id: 'notice', x: e.x, y: e.y });
+    if (e.def.voice?.alert) e.ctx.bus.emit('sfx', { id: e.def.voice.alert, x: e.x, y: e.y });
     e.alertRoom();
   },
   tick(e, t) {
@@ -251,7 +252,8 @@ const dead: State<Enemy> = {
     e.vx = e.vy = 0;
     e.ctx.tokens.release(e);
     e.anim.play('death', { restart: true });
-    e.ctx.bus.emit('sfx', { id: 'enemy_die', x: e.x, y: e.y });
+    e.ctx.bus.emit('sfx', { id: 'enemy_die', x: e.x, y: e.y, volume: e.def.voice?.die ? 0.5 : 1 });
+    if (e.def.voice?.die) e.ctx.bus.emit('sfx', { id: e.def.voice.die, x: e.x, y: e.y });
     e.ctx.bus.emit('died', { actor: e });
   },
   tick(e, t) {
@@ -305,7 +307,7 @@ const rise: State<Enemy> = {
     e.vx = e.vy = 0;
     e.turnTo(e.angleToPlayer());
     e.anim.play(e.anim.has('rise') ? 'rise' : 'idle', { restart: true });
-    e.ctx.bus.emit('sfx', { id: 'break_pot', x: e.x, y: e.y });
+    e.ctx.bus.emit('sfx', { id: e.def.voice?.rise ?? 'break_pot', x: e.x, y: e.y });
     e.ctx.bus.emit('dust', { x: e.x, y: e.y, kind: 'roll' });
   },
   tick(e, t) {

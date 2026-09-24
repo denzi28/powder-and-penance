@@ -34,5 +34,6 @@
   "deathTicks": 30,
   "corpseTicks": 80,
   "blood": "steel1",
+  "voice": { "alert": "e_lantern_alarm", "hurt": "e_lantern_hurt", "die": "e_lantern_die" },
   "moves": []
 }

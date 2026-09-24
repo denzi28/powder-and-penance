@@ -21,6 +21,8 @@
   "deathTicks": 40,
   "corpseTicks": 120,
   "blood": "wax1",
+  "steps": { "sfx": "e_step_slime", "volume": 0.6 },
+  "voice": { "alert": "e_blob_gurgle", "hurt": "e_blob_hurt", "die": "e_blob_die" },
   "splitInto": { "kind": "vat_spawn", "count": 2 },
   "moves": [
     {
@@ -38,7 +40,7 @@
           "hitbox": { "shape": "circle", "radius": 16, "offset": 8 },
           "originY": -4,
           "sweep": { "fromDeg": 0, "toDeg": 0 },
-          "knockback": 90, "hitstop": 4, "shake": 0.15, "sfx": "hit", "anim": "engulf"
+          "knockback": 90, "hitstop": 4, "shake": 0.15, "windupSfx": "e_blob_rise", "sfx": "e_engulf", "anim": "engulf"
         }
       ]
     }

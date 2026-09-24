@@ -32,6 +32,8 @@
   "deathTicks": 40,
   "corpseTicks": 150,
   "blood": "blood2",
+  "steps": { "sfx": "e_step_paws", "volume": 0.6 },
+  "voice": { "alert": "e_bark", "hurt": "e_yelp", "die": "e_whine" },
   "moves": [
     {
       "id": "lunge_bite",
@@ -47,7 +49,7 @@
           "lunge": { "distance": 56, "startTick": 16, "ticks": 7 },
           "hitbox": { "shape": "arc", "radius": 16, "halfAngle": 50 },
           "sweep": { "fromDeg": 0, "toDeg": 0 },
-          "knockback": 90, "hitstop": 4, "shake": 0.15, "sfx": "bite", "anim": "lunge"
+          "knockback": 90, "hitstop": 4, "shake": 0.15, "windupSfx": "e_growl", "sfx": "e_lunge", "anim": "lunge"
         }
       ]
     },
@@ -65,7 +67,7 @@
           "lunge": { "distance": 6, "startTick": 10, "ticks": 3 },
           "hitbox": { "shape": "arc", "radius": 16, "halfAngle": 60 },
           "sweep": { "fromDeg": 0, "toDeg": 0 },
-          "knockback": 40, "hitstop": 2, "shake": 0.06, "sfx": "bite", "anim": "bite"
+          "knockback": 40, "hitstop": 2, "shake": 0.06, "windupSfx": "e_growl", "sfx": "e_bite", "anim": "bite"
         },
         {
           "damage": 8, "poise": 7,
@@ -74,7 +76,7 @@
           "lunge": { "distance": 6, "startTick": 6, "ticks": 3 },
           "hitbox": { "shape": "arc", "radius": 16, "halfAngle": 60 },
           "sweep": { "fromDeg": 0, "toDeg": 0 },
-          "knockback": 40, "hitstop": 2, "shake": 0.06, "sfx": "bite", "anim": "bite"
+          "knockback": 40, "hitstop": 2, "shake": 0.06, "sfx": "e_bite", "anim": "bite"
         },
         {
           "damage": 10, "poise": 9,
@@ -83,7 +85,7 @@
           "lunge": { "distance": 8, "startTick": 6, "ticks": 3 },
           "hitbox": { "shape": "arc", "radius": 16, "halfAngle": 60 },
           "sweep": { "fromDeg": 0, "toDeg": 0 },
-          "knockback": 70, "hitstop": 3, "shake": 0.1, "sfx": "bite", "anim": "bite"
+          "knockback": 70, "hitstop": 3, "shake": 0.1, "sfx": "e_bite", "anim": "bite"
         }
       ]
     }

@@ -22,6 +22,8 @@
   "deathTicks": 40,
   "corpseTicks": 100,
   "blood": "wax1",
+  "steps": { "sfx": "e_step_drowned", "volume": 0.6 },
+  "voice": { "alert": "e_drowned_moan", "hurt": "e_drowned_hurt", "die": "e_drowned_die", "rise": "e_drowned_rise" },
   "moves": [
     {
       "id": "claw",
@@ -37,7 +39,7 @@
           "hitbox": { "shape": "arc", "radius": 28, "halfAngle": 80 },
           "originY": -10,
           "sweep": { "fromDeg": -90, "toDeg": 80 },
-          "knockback": 70, "hitstop": 4, "shake": 0.1, "sfx": "swing", "anim": "claw"
+          "knockback": 70, "hitstop": 4, "shake": 0.1, "windupSfx": "e_gurgle", "sfx": "e_wet_claw", "anim": "claw"
         }
       ]
     },
@@ -57,7 +59,7 @@
           "originY": -10,
           "sweep": { "fromDeg": 0, "toDeg": 0, "reach": 8 },
           "pull": true,
-          "knockback": 120, "hitstop": 5, "shake": 0.15, "sfx": "bite", "anim": "claw"
+          "knockback": 120, "hitstop": 5, "shake": 0.15, "windupSfx": "e_gurgle", "sfx": "e_drag", "anim": "claw"
         }
       ]
     }
