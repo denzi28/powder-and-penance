@@ -47,6 +47,7 @@ import { EnemyBars } from '../render/EnemyBars';
 import { LightCones } from '../render/LightCones';
 import { Ambience } from '../world/Ambience';
 import { Sfx } from '../audio/Sfx';
+import { AmbientAudio } from '../audio/Ambient';
 import { SaveSystem, type SaveData } from '../save/SaveSystem';
 import { MenuNav, type Menu } from '../ui/Menu';
 import { DebugOverlay } from '../debug/DebugOverlay';
@@ -82,6 +83,7 @@ export class GameScene extends Phaser.Scene {
   projectiles = new Projectiles();
   tokens = new AttackTokens();
   sfx = new Sfx();
+  ambientAudio = new AmbientAudio(this.sfx);
   saves = new SaveSystem();
 
   // Actors and world objects
@@ -212,6 +214,7 @@ export class GameScene extends Phaser.Scene {
     this.props = new Props(this.lib);
     this.decor = new Decor(this.lib);
     this.ambience = new Ambience(this, this.lib);
+    this.ambience.onSound = (id, x, y) => this.ambientAudio.play(id, x, y, this.player);
     this.npcs = new Npcs(this.lib);
     this.chatter = new Chatter(this, this.npcs, this.bus);
     this.npcs.onWorkStroke = n => {
@@ -257,6 +260,7 @@ export class GameScene extends Phaser.Scene {
     const offReload = onDataReload(() => this.onDataReload());
     const offKeys = installDebugKeys(this);
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.ambientAudio.stop();
       offReload();
       offKeys();
       window.removeEventListener('keydown', unlock);
@@ -746,6 +750,7 @@ export class GameScene extends Phaser.Scene {
     this.npcs.update(delta, this.player, still);
     this.chatter.update(delta, this.player, this.flags, still);
     this.ambience.update(delta, this.player, this.cameras.main.worldView, still || !!this.hitstop);
+    if (!this.mapOpen) this.ambientAudio.update(Math.min(delta, 100) / 1000, this.area, this.player, this.flags);
     this.arena.update(delta);
     // A script can point the camera elsewhere (cutscenes); otherwise it follows the player.
     const focus = this.story.cameraPoint;
@@ -911,6 +916,7 @@ export class GameScene extends Phaser.Scene {
     markObstacles(this.grid, this.rooms, this.brokenWall);
     this.decor.build(this.rooms);
     this.ambience.build(this.rooms, this.grid, this.area);
+    this.ambientAudio.build(this.rooms);
     this.worldView.build(this.grid, DATA.areas.areas[this.area].tileset);
     this.racks.build(this.rooms);
     this.shrines.build(this.rooms, id => this.flags.has(`shrine:${id}`), this.flags);

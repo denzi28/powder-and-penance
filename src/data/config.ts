@@ -64,6 +64,7 @@ function loadAll(src: Record<string, unknown>) {
     npcs: one(S.Npcs, 'npcs'),
     chatter: one(S.Chatter, 'chatter'),
     ambience: one(S.Ambience, 'ambience'),
+    ambient: one(S.AmbientAudioCfg, 'audio/ambient'),
     terrain: one(S.Terrain, 'terrain'),
     scripts: dir(S.ScriptDef, 'scripts'),
   };
@@ -141,6 +142,8 @@ function loadAll(src: Record<string, unknown>) {
           errors.push(`data/rooms/${r.id}.json: shield_rack has unknown shield "${String(en.shield)}"`);
       }
     }
+    for (const k of Object.keys(data.ambient.decor)) if (!data.decor.decor[k]) errors.push(`data/audio/ambient.json: unknown decor kind "${k}"`);
+    for (const a of Object.keys(data.ambient.areas)) if (!data.areas.areas[a]) errors.push(`data/audio/ambient.json: unknown area "${a}"`);
     for (const k of Object.keys(data.ambience.decor)) if (!data.decor.decor[k]) errors.push(`data/ambience.json: unknown decor kind "${k}"`);
     for (const [a, amb] of Object.entries(data.ambience.areas)) {
       if (!data.areas.areas[a]) errors.push(`data/ambience.json: unknown area "${a}"`);

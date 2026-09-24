@@ -396,6 +396,7 @@ Why not Tiled?
 
 ## 12. Audio
 - Placeholder SFX are **synthesised at runtime with WebAudio** (a small sfxr-style generator, with presets in `data/audio/sfx.json`). These include swing, hit, block, parry, roll, footstep, gunshot, reload clicks, telegraph cues, phial, shrine, death and UI.
+- Ambient sound is synthesised the same way (`src/audio/Ambient.ts`, `data/audio/ambient.json`). Each area has beds (gusting `wind`, a low `rumble`, a soft `drone` chord or a machine `hum`) that crossfade when the area changes. Each area also has one-off events every few seconds (crows, a creaking gibbet, owls, crickets, frogs, bubbles, drips, clanks, steam, chains, a monks' choir, someone humming over the Mire, the distant bell), panned left and right. Events can hang on story conditions: the bell and choir stop once the Chandler falls, and the humming stops once the Matron does. An area can send sounds through an echo. Scenery makes sound when you're near it (campfire and cairn crackle, furnace roar, vat bubbling, gibbet creak), and fleeing critters flap, squeak or plop.
 - Real audio files can replace any preset later: if `public/assets/audio/<id>.ogg` exists, it wins.
 - Minimal cues exist from Milestone 2, because telegraphs need audio. The full pass is in Milestone 7.
 

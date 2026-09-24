@@ -10,7 +10,7 @@ import { DEPTH } from '../render/depth';
 import { hexToInt } from '../ui/colors';
 import { Cell, TILE } from './TileGrid';
 import type { TileGrid } from './TileGrid';
-import type { AmbientArea, AmbientDecor, CRITTERS, RoomData } from '../data/schemas';
+import type { AmbientArea, AmbientDecor, AmbientSound, CRITTERS, RoomData } from '../data/schemas';
 import type { SpriteLib } from '../anim/SpriteLib';
 
 type Kind = (typeof CRITTERS)[number];
@@ -124,6 +124,8 @@ export class Ambience {
   private floorFx: Phaser.GameObjects.Graphics;
   private t = 0;
   private dripAcc = 0;
+  /** Critters make a sound (wings, a squeak, a plop). */
+  onSound: ((id: AmbientSound, x: number, y: number) => void) | null = null;
 
   constructor(
     private scene: Phaser.Scene,
@@ -367,12 +369,15 @@ export class Ambience {
         c.vy = Math.sin(a) * cfg.flee * 0.5;
         c.facing = c.vx < 0 ? -1 : 1;
         c.timer = 1.6;
+        this.onSound?.('wings', c.x, c.y);
+        if (Math.random() < 0.5) this.onSound?.('crow', c.x, c.y);
       } else {
         const t = this.target(c, c.kind === 'cat' ? 3 : 6, player);
         if (t) {
           c.tx = t.x;
           c.ty = t.y;
           c.state = 'flee';
+          if (c.kind === 'rat') this.onSound?.('squeak', c.x, c.y);
         } else if (c.kind !== 'cat') this.vanish(c);
       }
     }
@@ -469,6 +474,7 @@ export class Ambience {
         c.timer = (c.room.x1 - c.room.x0 + 20) / Math.abs(c.vx);
         c.z = 30;
         c.sprite.setVisible(true).setAlpha(1);
+        if (Math.random() < 0.5) this.onSound?.('squeak', c.x, c.y);
         break;
       }
     }
@@ -492,6 +498,7 @@ export class Ambience {
     c.timer = rnd(6000, 15000);
     c.z = 0;
     c.sprite.setVisible(false).setAlpha(1);
+    if (c.kind === 'frog') this.onSound?.('plop', c.x, c.y);
     if (c.kind === 'frog') this.bubbles.push({ x: c.x, y: c.y - 2, t: 0.45, life: 0.6, c: col('stone4') }); // a ripple where it went in
   }
 

@@ -7,6 +7,14 @@ export class Sfx {
   private ctx: AudioContext | null = null;
   private noise: AudioBuffer | null = null;
 
+  get context(): BaseAudioContext | null {
+    return this.ctx;
+  }
+
+  get noiseBuffer() {
+    return this.noise;
+  }
+
   /** Browsers require a user gesture before audio can start. */
   unlock() {
     if (!this.ctx) {

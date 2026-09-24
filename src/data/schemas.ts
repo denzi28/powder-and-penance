@@ -718,6 +718,37 @@ export const AmbientArea = z.object({
 });
 export const Ambience = z.object({ decor: z.record(AmbientDecor), areas: z.record(AmbientArea) });
 export type AmbientDecor = z.infer<typeof AmbientDecor>;
+// ---- Ambient sound (data/audio/ambient.json) ----
+export const AMBIENT_SOUNDS = ['crow', 'creak', 'owl', 'bell', 'crickets', 'frog', 'bubble', 'drip', 'clank', 'steam', 'chain', 'choir', 'humming', 'crackle', 'roar', 'wings', 'squeak', 'plop'] as const;
+export type AmbientSound = (typeof AMBIENT_SOUNDS)[number];
+const Sound = z.enum(AMBIENT_SOUNDS);
+const Every = z.tuple([pos, pos]);
+export const AmbientBed = z.object({
+  /** wind: gusting noise; rumble: low noise; drone: soft chord; hum: machine buzz. */
+  type: z.enum(['wind', 'rumble', 'drone', 'hum']),
+  volume: num.min(0).max(1),
+  /** Band centre (wind), cut-off (rumble) or root pitch (drone, hum), Hz. */
+  freq: pos,
+  /** How much it swells and fades (wind, rumble), 0-1. */
+  gust: num.min(0).max(1).default(0.5),
+  /** Drone / hum partials as multiples of freq. */
+  chord: z.array(pos).optional(),
+});
+export type AmbientBed = z.infer<typeof AmbientBed>;
+export const AmbientAudioCfg = z.object({
+  volume: num.min(0).max(1),
+  areas: z.record(
+    z.object({
+      beds: z.array(AmbientBed).default([]),
+      /** One-off sounds every [min, max] seconds while `when` holds; `echo` sends it into the room's echo. */
+      events: z.array(z.object({ sound: Sound, every: Every, volume: num.min(0).max(1), when: Cond.optional(), echo: num.min(0).max(1).default(0.5) })).default([]),
+      /** Echo feedback for this area (0 = none). */
+      echo: num.min(0).max(0.8).default(0),
+    }),
+  ),
+  /** Sounds from scenery, heard within `range` px. */
+  decor: z.record(z.object({ sound: Sound, every: Every, range: pos, volume: num.min(0).max(1) })),
+});
 export type AmbientArea = z.infer<typeof AmbientArea>;
 export type ChatDef = z.infer<typeof ChatDef>;
 export const RoomData = z
