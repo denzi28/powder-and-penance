@@ -1,6 +1,6 @@
 // Boss arenas. Room entity:
 //   { "type": "arena", "id": "<arena id>", "boss": "<enemy kind>", "seals": [[x, y], ...], "at": [0, 0] }
-// When the player walks into the arena's room (past its doorways), smoke rises in every seal tile (they
+// When the player walks into the arena's room (2+ tiles past its doorways), smoke rises in every seal tile (they
 // become walls), the boss performs its entrance, and its name and health bar appear.
 //
 // A boss with `boss.next` has a second phase. When the first falls, a half-buried chest rises in the arena
@@ -18,6 +18,7 @@ import Phaser from 'phaser';
 import { DATA } from '../data/config';
 import { DEPTH } from '../render/depth';
 import { Cell, TILE } from '../world/TileGrid';
+import { arenaWakesAt } from './arenaWake';
 import type { Enemy } from '../enemies/Enemy';
 import type { RoomData } from '../data/schemas';
 import type { GameScene } from '../scenes/GameScene';
@@ -116,9 +117,7 @@ export class BossArena {
     const ty = Math.floor(p.y / TILE);
     for (const a of this.arenas) {
       if (gs.flags.has(`boss:${a.kind}`)) continue;
-      const [ox, oy] = a.room.origin;
-      const inside = tx > ox && ty > oy && tx < ox + a.room.tiles[0].length - 1 && ty < oy + a.room.tiles.length - 1;
-      if (!inside) continue;
+      if (!arenaWakesAt(a.room, a.seals, tx, ty)) continue;
       const boss = gs.enemies.find(e => e.kind === a.kind && !e.dead);
       if (!boss) continue;
       this.begin(a, boss);

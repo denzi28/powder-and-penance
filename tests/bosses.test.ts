@@ -2,7 +2,8 @@
 import { describe, expect, it } from 'vitest';
 import { DATA } from '../src/data/config';
 import { levelGrid } from './levelGrid';
-import { TILE } from '../src/world/TileGrid';
+import { Cell, TILE } from '../src/world/TileGrid';
+import { arenaWakesAt } from '../src/game/arenaWake';
 import { Enemy } from '../src/enemies/Enemy';
 import { EventBus, type GameEvents } from '../src/core/EventBus';
 import { CombatSystem } from '../src/combat/CombatSystem';
@@ -33,6 +34,25 @@ describe('bosses', () => {
       expect(DATA.enemies[next.kind].boss, next.kind).toBeDefined();
       const [x, y] = next.chest.at;
       expect(r.tiles[y]?.[x], `chest at [${x},${y}] in ${r.id}`).not.toBe('#');
+    }
+  });
+
+  it("sealing an arena never shuts the player into solid ground (wherever it can wake)", () => {
+    for (const { r, e } of arenas) {
+      const grid = levelGrid(Object.values(DATA.rooms).filter(x => x.area === r.area));
+      const seals = (e.seals as [number, number][]).map(([x, y]) => ({ tx: r.origin[0] + x, ty: r.origin[1] + y }));
+      const walkable = new Set<string>();
+      let wakeTiles = 0;
+      for (let ty = r.origin[1]; ty < r.origin[1] + r.tiles.length; ty++)
+        for (let tx = r.origin[0]; tx < r.origin[0] + r.tiles[0].length; tx++)
+          if (arenaWakesAt(r, seals, tx, ty) && !grid.isSolid(tx, ty)) walkable.add(`${tx},${ty}`);
+      for (const s of seals) grid.set(s.tx, s.ty, Cell.Wall);
+      for (const k of walkable) {
+        const [tx, ty] = k.split(',').map(Number);
+        expect(grid.isSolid(tx, ty), `${r.id}: tile ${tx},${ty} wakes the arena but is solid once sealed`).toBe(false);
+        wakeTiles++;
+      }
+      expect(wakeTiles, `${r.id} can be woken`).toBeGreaterThan(0);
     }
   });
 
