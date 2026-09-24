@@ -1,0 +1,137 @@
+{
+  "id": "vault_02_fuse_corridor",
+  "area": "vault",
+  "origin": [21, 12],
+  "legend": {
+    "#": "wall",
+    ".": "floor",
+    ",": "floor_grate",
+    "_": "floor_plank",
+    " ": "void"
+  },
+  "tiles": [
+    "##############..##############",
+    "#____________________________#",
+    "#_______#___________#________#",
+    "#____________________________#",
+    "______________________________",
+    "______________________________",
+    "#____________________________#",
+    "#_______#___________#________#",
+    "#____________________________#",
+    "##############################"
+  ],
+  "entities": [
+    {
+      "type": "decor",
+      "kind": "powder_spill",
+      "at": [5, 5]
+    },
+    {
+      "type": "decor",
+      "kind": "rail",
+      "at": [12, 5]
+    },
+    {
+      "type": "decor",
+      "kind": "rail",
+      "at": [16, 5]
+    },
+    {
+      "type": "decor",
+      "kind": "keg_stack",
+      "at": [25, 8]
+    },
+    {
+      "type": "decor",
+      "kind": "shot_pyramid",
+      "at": [3, 1]
+    },
+    {
+      "type": "prop",
+      "kind": "keg",
+      "at": [5, 1]
+    },
+    {
+      "type": "prop",
+      "kind": "keg",
+      "at": [6, 1]
+    },
+    {
+      "type": "prop",
+      "kind": "keg",
+      "at": [11, 1]
+    },
+    {
+      "type": "prop",
+      "kind": "keg",
+      "at": [17, 1]
+    },
+    {
+      "type": "prop",
+      "kind": "keg",
+      "at": [23, 1]
+    },
+    {
+      "type": "prop",
+      "kind": "keg",
+      "at": [4, 8]
+    },
+    {
+      "type": "prop",
+      "kind": "keg",
+      "at": [11, 8]
+    },
+    {
+      "type": "prop",
+      "kind": "keg",
+      "at": [12, 8]
+    },
+    {
+      "type": "prop",
+      "kind": "keg",
+      "at": [18, 8]
+    },
+    {
+      "type": "prop",
+      "kind": "keg",
+      "at": [22, 8]
+    },
+    {
+      "type": "enemy",
+      "kind": "fuse_runner",
+      "at": [14, 2],
+      "facing": "W"
+    },
+    {
+      "type": "enemy",
+      "kind": "fuse_runner",
+      "at": [24, 7],
+      "facing": "W"
+    },
+    {
+      "type": "enemy",
+      "kind": "powder_mule",
+      "at": [10, 5],
+      "facing": "W"
+    },
+    {
+      "type": "enemy",
+      "kind": "powder_mule",
+      "at": [20, 4],
+      "facing": "W"
+    },
+    {
+      "type": "enemy",
+      "kind": "powder_acolyte",
+      "at": [27, 5],
+      "facing": "W"
+    },
+    {
+      "type": "item",
+      "id": "chest_gunners_coat",
+      "item": "gear_gunners_coat",
+      "at": [27, 8]
+    }
+  ]
+}

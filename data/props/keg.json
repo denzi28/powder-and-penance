@@ -1,0 +1,23 @@
+{
+  "id": "keg",
+  "name": "Powder Keg",
+  "sprite": "prop_keg",
+  "hp": 1,
+  "radius": 6,
+  "hurtbox": {
+    "w": 12,
+    "h": 14,
+    "offsetY": -7
+  },
+  "debris": "wood2",
+  "loot": "none",
+  "sfx": "break_wood",
+  "explode": {
+    "fuseTicks": 45,
+    "radius": 34,
+    "damage": 45,
+    "poise": 60,
+    "knockback": 200,
+    "sfx": "b_keg_blast"
+  }
+}

@@ -4173,7 +4173,7 @@ function line(img: Img, x0: number, y0: number, x1: number, y1: number, c: RGBA)
 
 
 /** Head-and-shoulders portraits for the dialogue box, drawn at double detail. */
-function drawPortrait(c: Img, who: 'oskar' | 'maudlin' | 'pip' | 'tollwarden' | 'matron' | 'chandler' | 'tomas' | 'hedda' | 'bede' | 'agnes' | 'ulla' | 'jost' | 'lome' | 'wenna' | 'fennick' | 'cuthwin' | 'hobb' | 'wren') {
+function drawPortrait(c: Img, who: 'oskar' | 'maudlin' | 'pip' | 'tollwarden' | 'matron' | 'chandler' | 'tomas' | 'hedda' | 'bede' | 'agnes' | 'ulla' | 'jost' | 'lome' | 'wenna' | 'fennick' | 'cuthwin' | 'hobb' | 'wren' | 'gunner') {
   c.rect(0, 0, 32, 32, P.dark1);
   const skin = mix(P.wax1, P.wood2, 0.35);
   const oldSkin = mix(P.wax1, P.stone3, 0.3);
@@ -4185,7 +4185,22 @@ function drawPortrait(c: Img, who: 'oskar' | 'maudlin' | 'pip' | 'tollwarden' | 
     c.hline(x + w - 5, y + Math.floor(h * 0.4), 3, P.ink);
     c.rect(x + Math.floor(w / 2) - 1, y + Math.floor(h * 0.45), 2, 3, mix(col, P.wood1, 0.3));
   };
-  if (who === 'tomas') {
+  if (who === 'gunner') {
+    // the Master Gunner: a soot-black old face, a braided grey beard, fuse-bright eyes, the tricorn and red coat
+    c.rect(2, 24, 28, 8, mix(P.blood1, P.dark1, 0.2));
+    c.vline(16, 24, 8, mix(P.blood2, P.wood2, 0.3));
+    c.set(15, 27, mix(P.flame1, P.wood2, 0.35));
+    c.set(15, 30, mix(P.flame1, P.wood2, 0.35));
+    face(9, 9, 14, 14, mix(P.wax1, P.dark1, 0.45));
+    c.set(11, 14, P.flame2);
+    c.set(20, 14, P.flame2);
+    c.rect(12, 18, 8, 7, P.stone3); // beard
+    c.vline(15, 25, 3, P.stone2); // braided
+    c.vline(17, 25, 2, P.stone2);
+    c.rect(5, 6, 22, 3, P.dark1); // tricorn
+    c.rect(8, 3, 16, 4, P.dark2);
+    c.set(16, 4, mix(P.flame1, P.wood2, 0.35));
+  } else if (who === 'tomas') {
     // the lamplighter: an old face, a white beard, a cap pulled low; a spark of his flame
     c.rect(3, 24, 26, 8, mix(P.moss1, P.stone1, 0.5));
     face(9, 8, 14, 15, oldSkin);
@@ -4398,7 +4413,7 @@ function drawPortrait(c: Img, who: 'oskar' | 'maudlin' | 'pip' | 'tollwarden' | 
 
 function genNpcs() {
   genTownsfolk();
-  const who = ['oskar', 'maudlin', 'pip', 'tollwarden', 'matron', 'chandler', 'tomas', 'hedda', 'bede', 'agnes', 'ulla', 'jost', 'lome', 'wenna', 'fennick', 'cuthwin', 'hobb', 'wren'] as const;
+  const who = ['oskar', 'maudlin', 'pip', 'tollwarden', 'matron', 'chandler', 'tomas', 'hedda', 'bede', 'agnes', 'ulla', 'jost', 'lome', 'wenna', 'fennick', 'cuthwin', 'hobb', 'wren', 'gunner'] as const;
   const portraits = new Img(32 * who.length, 32);
   who.forEach((w, i) => {
     const c = new Img(32, 32);
@@ -7440,7 +7455,7 @@ function genCritters() {
 // 14 tallow lump, 15 powder pouch, 16 phial shard, 17 bitter salt, 18 cage key, 19 toll key, 20 igniter,
 // 21 ledger, 22 seal of tallow, 23 seal of the mire, 24 mending phial, 25 empty slot.
 function genIcons() {
-  const N = 52;
+  const N = 57;
   const img = new Img(16 * N, 16);
   const icon = (i: number, draw: (c: Img) => void, outline = true) => {
     const c = new Img(16, 16);
@@ -7888,6 +7903,48 @@ function genIcons() {
       c.set(4, 9, P.ink); // powder-blackened
     }),
   );
+  // ---- the Powder Vault (52-56)
+  // 52 blunderbuss: a brass bell-mouthed gun
+  icon(52, c => {
+    line(c, 2, 12, 7, 9, WOOD.c2);
+    line(c, 2, 13, 7, 10, WOOD.c1);
+    line(c, 6, 9, 11, 6, BRONZE.c2);
+    line(c, 7, 10, 12, 7, BRONZE.c1);
+    c.disc(13, 5, 2.4, BRONZE.c3);
+    c.disc(13, 5, 1, P.ink);
+  });
+  // 53 gunner's coat: long red coat with brass buttons
+  icon(53, c => {
+    for (let y = 3; y < 15; y++) c.hline(8 - Math.floor(2 + y / 3), y, Math.floor(4 + (y / 3) * 2), y < 5 ? mix(P.blood1, P.ink, 0.4) : P.blood1);
+    c.vline(8, 5, 9, mix(P.blood2, P.wood2, 0.3));
+    for (const y of [6, 9, 12]) c.set(7, y, GOLD0);
+    c.hline(4, 9, 8, P.dark2);
+  });
+  // 54 ring of the steady hand: iron band with a tiny sighting bead
+  icon(54, c =>
+    band(c, IRON, c => {
+      c.rect(7, 4, 3, 2, IRON.c3);
+      c.set(8, 3, P.white);
+    }),
+  );
+  // 55 keg charge: a small keg with a long lit fuse
+  icon(55, c => {
+    c.ellipse(8, 10, 4.5, 4, WOOD.c2);
+    c.hline(4, 8, 9, IRON.c1);
+    c.hline(4, 12, 9, IRON.c1);
+    c.vline(8, 6, 3, WOOD.c3);
+    line(c, 8, 5, 11, 2, P.wax1);
+    c.set(12, 1, P.flame2);
+  });
+  // 56 oskar's strongbox: an iron-banded box with a heavy lock
+  icon(56, c => {
+    c.rect(3, 6, 10, 8, WOOD.c1);
+    c.hline(3, 6, 10, WOOD.c3);
+    c.vline(5, 6, 8, IRON.c2);
+    c.vline(10, 6, 8, IRON.c2);
+    c.rect(7, 8, 2, 3, GOLD0);
+    c.set(7, 10, P.ink);
+  });
   sheet('icons', img, { cell: [16, 16], pivot: [0, 0], layer: 'ui' });
 
   // A throwing knife in flight (pointing right), and a note lying on the floor
@@ -7994,6 +8051,477 @@ function genFont() {
   write(path.join(FONTS, 'pixel5x7.png'), img.toBuffer());
 }
 
+// ---------------------------------------------------------------- the Powder Vault (expansion step 3)
+// Powder Mule (a porter with a keg on his back), Fuse-Runner (a soot-black boy with a linstock), the Master
+// Gunner on his cannon (64 cell) and on foot with his blunderbuss (48 cell), the keg, the vault's decor.
+const SOOT = mix(P.dark1, P.ink, 0.35);
+const POWDER = mix(P.dark2, P.stone1, 0.4);
+const COAT: Ramp = { c0: mix(P.blood1, P.ink, 0.45), c1: mix(P.blood1, P.dark1, 0.2), c2: P.blood1, c3: mix(P.blood2, P.wood2, 0.3) };
+const BRASS = mix(P.flame1, P.wood2, 0.35);
+
+/** A keg drawn at (cx, base): staves, two iron hoops, a fuse; `lit` puts a spark on it. */
+function kegAt(c: Img, cx: number, base: number, r: number, lit = false) {
+  const h = Math.round(r * 2.2);
+  for (let y = 0; y < h; y++) {
+    const bulge = r - Math.round(Math.abs(y - h / 2) / (h / 2) * 1.5);
+    for (let x = -bulge; x < bulge; x++) {
+      const t = (x + bulge) / (bulge * 2);
+      c.set(cx + x, base - y, t < 0.2 ? WOOD.c3 : t > 0.8 ? WOOD.c0 : x % 3 === 0 ? WOOD.c1 : WOOD.c2);
+    }
+  }
+  for (const y of [Math.round(h * 0.25), Math.round(h * 0.75)]) {
+    const bulge = r - Math.round(Math.abs(y - h / 2) / (h / 2) * 1.5);
+    c.hline(cx - bulge, base - y, bulge * 2, IRON.c1);
+    c.set(cx - bulge + 1, base - y, IRON.c3);
+  }
+  c.ellipse(cx, base - h + 1, r - 1.5, 1.5, WOOD.c3); // the lid
+  c.set(cx + 1, base - h - 1, P.wax1); // fuse
+  c.set(cx + 2, base - h - 2, P.wax1);
+  if (lit) {
+    c.set(cx + 3, base - h - 3, P.flame2);
+    c.set(cx + 2, base - h - 4, P.wax2);
+  }
+}
+
+// --- Powder Mule: a hunched porter, a keg lashed to his back with the fuse already trimmed short.
+function drawMule(c: Img, dir: Dir5, pose: BodyPose) {
+  const o = { bob: 0, lean: 0, hunch: 0, step: -1, flinch: false, ...pose };
+  const b = o.bob;
+  const { lx, ly, sh } = leanOffsets(dir, o.lean);
+  const back = dir === 'N' || dir === 'NE';
+  const liftL = o.step === 1 ? 2 : 0;
+  const liftR = o.step === 3 ? 2 : 0;
+  c.rect(12, 24 - liftL + b, 3, 3, P.wood1); // boots
+  c.rect(18, 24 - liftR + b, 3, 3, mix(P.wood1, P.dark1, 0.4));
+  // sack-cloth body, bent under the load
+  for (let y = 14; y <= 24; y++) shadedRow(c, 10 + sh, y + b, 12, mix(P.stone2, P.dark1, 0.5), P.stone2, mix(P.stone2, P.stone3, 0.5), P.stone3);
+  c.hline(10 + sh, 20 + b, 12, P.wood1); // rope belt
+  // the keg, over the shoulders: its top above his head from the front, in full view from behind
+  const kx = 16 + sh + (dir === 'E' ? -6 : dir === 'SE' ? -4 : 0);
+  if (!back) kegAt(c, kx, 15 + b, 6, true);
+  // head, low and forward
+  const hx = 16 + lx + (o.flinch ? -1 : 0) + (dir === 'E' ? 3 : dir === 'SE' ? 2 : 0);
+  const hy = 9 + b + o.hunch + ly + 2;
+  c.disc(hx, hy, 3.2, mix(P.wax1, P.wood1, 0.45));
+  c.hline(hx - 3, hy - 3, 7, P.wood1); // a leather cap
+  c.hline(hx - 3, hy - 2, 7, WOOD.c3);
+  if (!back) {
+    c.set(hx - 1, hy, P.ink);
+    if (dir !== 'E') c.set(hx + 1, hy, P.ink);
+    c.hline(hx - 1, hy + 2, 3, SOOT); // soot on the chin
+  }
+  if (back) kegAt(c, kx, 22 + b, 6, true);
+  // arms hanging to the knees, big hands
+  c.rect(8 + sh, 16 + b, 2, 7, P.stone2);
+  c.rect(22 + sh, 16 + b, 2, 7, mix(P.stone2, P.dark1, 0.4));
+  c.rect(7 + sh, 23 + b, 3, 2, mix(P.wax1, P.wood1, 0.45));
+  c.rect(22 + sh, 23 + b, 3, 2, mix(P.wax1, P.wood1, 0.55));
+}
+function muleDeath(c: Img, f: number) {
+  if (f < 2) return drawMule(c, 'S', { bob: 2 + f, hunch: 2 + f, flinch: true });
+  c.ellipse(16, 25, 8, 3, P.stone2);
+  c.rect(10, 23, 5, 3, P.wood1);
+  kegAt(c, 21, 26, 4, f < 4); // his keg, still fizzing, then scattered staves
+  if (f === 4) c.rect(18, 24, 6, 2, POWDER);
+}
+
+// --- Fuse-Runner: a thin soot-black boy with a smoking linstock, running barefoot.
+function drawRunner(c: Img, dir: Dir5, pose: BodyPose & { arm?: number }) {
+  const o = { bob: 0, lean: 0, hunch: 0, step: -1, flinch: false, arm: 0, ...pose };
+  const b = o.bob;
+  const { lx, ly, sh } = leanOffsets(dir, o.lean);
+  const back = dir === 'N' || dir === 'NE';
+  const [fx] = FACE_VEC[dir];
+  const liftL = o.step === 1 ? 3 : 0;
+  const liftR = o.step === 3 ? 3 : 0;
+  c.rect(14, 21 + b, 2, 5 - liftL, SOOT); // thin legs, bare feet
+  c.rect(17, 21 + b, 2, 5 - liftR, mix(SOOT, P.ink, 0.4));
+  c.rect(13, 26 - liftL, 3, 1, mix(P.wax1, SOOT, 0.6));
+  c.rect(17, 26 - liftR, 3, 1, mix(P.wax1, SOOT, 0.6));
+  for (let y = 13; y <= 21; y++) shadedRow(c, 12 + sh, y + b, 8, P.ink, SOOT, mix(SOOT, P.stone2, 0.4), mix(SOOT, P.stone3, 0.5)); // ragged shirt
+  c.set(12 + sh, 21 + b, null);
+  c.set(19 + sh, 20 + b, null);
+  c.hline(12 + sh, 17 + b, 8, P.ember); // a red rag tied round the middle
+  const hx = 16 + lx + (o.flinch ? -1 : 0);
+  const hy = 9 + b + o.hunch + ly;
+  c.disc(hx, hy, 3, mix(P.wax1, SOOT, 0.55));
+  c.hline(hx - 3, hy - 3, 7, P.dark2); // a knit cap
+  c.set(hx + 3, hy - 4, P.dark2);
+  if (!back) {
+    c.set(hx - 1, hy, P.wax2); // white eyes in a black face
+    if (dir !== 'E') c.set(hx + 1, hy, P.wax2);
+  }
+  // the linstock: a stick with a glowing slow-match, held out (arm 1 = thrown forward)
+  const ax = 16 + sh + Math.round((6 + o.arm * 3) * (fx || 0.7));
+  const ay = 16 + b - Math.round(o.arm * 4);
+  line(c, 16 + sh, 16 + b, ax, ay, SOOT);
+  line(c, ax, ay, ax + 3, ay - 6, P.wood1);
+  c.set(ax + 3, ay - 7, P.flame2);
+  c.set(ax + 4, ay - 8, P.wax2);
+}
+function runnerDeath(c: Img, f: number) {
+  if (f < 2) return drawRunner(c, 'S', { bob: 2 + f, hunch: 2 + f, flinch: true });
+  c.ellipse(16, 25, 7, 2.5, SOOT);
+  c.rect(12, 24, 4, 2, P.ember);
+  line(c, 18, 25, 24, 22, P.wood1);
+  if (f < 4) c.set(24, 21, P.flame2);
+}
+
+// --- The Master Gunner, first form (64 cell): his great cannon on its carriage, the Gunner hunched behind it.
+type CannonPose = BodyPose & { recoil?: number; smoke?: number; lift?: number; stand?: number; roll?: number };
+function drawCannon(c: Img, dir: Dir5, pose: CannonPose) {
+  const o = { bob: 0, lean: 0, hunch: 0, flinch: false, recoil: 0, smoke: 0, lift: 0, stand: 0, roll: 0, ...pose };
+  const [fx, fy] = FACE_VEC[dir];
+  const cx = 32 - Math.round(fx * o.recoil * 3);
+  const base = 56 - Math.round(fy * o.recoil * 2);
+  const back = dir === 'N' || dir === 'NE';
+  // the Gunner, behind the gun (drawn first unless we see him from behind)
+  const gx = 32 - Math.round(fx * 12) + (dir === 'S' ? 8 : 0);
+  const gy = 40 - Math.round(fy * 6) - Math.round(o.stand * 8) + o.bob;
+  const gunner = () => {
+    for (let y = 0; y < 14; y++) shadedRow(c, gx - 5, gy + y, 10, COAT.c0, COAT.c1, COAT.c2, COAT.c3);
+    c.hline(gx - 5, gy + 6, 10, P.dark2); // belt
+    c.set(gx - 1, gy + 6, BRASS);
+    c.disc(gx, gy - 4, 3.5, mix(P.wax1, SOOT, 0.35)); // face
+    c.hline(gx - 6, gy - 7, 13, P.dark1); // tricorn
+    c.hline(gx - 4, gy - 9, 9, P.dark1);
+    c.hline(gx - 4, gy - 8, 9, P.dark2);
+    c.set(gx + 4, gy - 9, BRASS);
+    if (!back) {
+      c.set(gx - 1, gy - 4, o.flinch ? P.ember : P.flame2); // eyes, lit like fuses
+      c.set(gx + 1, gy - 4, o.flinch ? P.ember : P.flame2);
+      c.hline(gx - 2, gy - 1, 5, P.stone3); // a grey beard, singed
+    }
+  };
+  if (!back) gunner();
+  // carriage: two big wheels, a timber bed
+  const wheel = (wx: number, wy: number, spin: number) => {
+    c.disc(wx, wy, 7, WOOD.c1);
+    c.disc(wx, wy, 5.5, WOOD.c0);
+    c.disc(wx, wy, 1.8, IRON.c2);
+    for (let k = 0; k < 4; k++) {
+      const a = (k * Math.PI) / 4 + spin * 0.4;
+      line(c, wx, wy, Math.round(wx + Math.cos(a) * 5), Math.round(wy + Math.sin(a) * 5), WOOD.c2);
+    }
+    c.ellipse(wx, wy, 7, 7, IRON.c1, (x, y) => Math.hypot(x + 0.5 - wx, y + 0.5 - wy) > 6);
+  };
+  const side = Math.abs(fx) > 0.5;
+  c.rect(cx - 14, base - 12, 28, 6, WOOD.c1);
+  c.hline(cx - 14, base - 12, 28, WOOD.c3);
+  if (side || dir === 'SE' || dir === 'NE') {
+    wheel(cx - 10, base - 7, o.roll);
+    wheel(cx + 8, base - 7, o.roll + 1);
+  } else {
+    wheel(cx - 13, base - 7, o.roll);
+    wheel(cx + 13, base - 7, o.roll + 1);
+  }
+  // the barrel: a fat black-iron tube pointing where he aims (foreshortened toward or away from you), lifted
+  // for a lob, with a bronze reinforcing band
+  const len = Math.round(22 * (0.45 + 0.55 * Math.abs(fx)));
+  const bx0 = cx - Math.round(fx * 4);
+  const by0 = base - 17 - o.lift * 3;
+  const bx1 = bx0 + Math.round(fx * len);
+  const by1 = by0 + Math.round(fy * len * 0.5) - o.lift * 4;
+  for (let w = -5; w <= 5; w++) {
+    const col = w < -3 ? IRON.c3 : w < 0 ? IRON.c2 : w < 3 ? IRON.c1 : IRON.c0;
+    const px = Math.round(-fy * w * 0.8);
+    const py = Math.round(fx * w * 0.8);
+    line(c, bx0 + px, by0 + py, bx1 + px, by1 + py, col);
+  }
+  c.disc(bx0 - Math.round(fx * 3), by0 - Math.round(fy * 2), 5, IRON.c1); // the breech
+  c.disc(Math.round((bx0 + bx1) / 2), Math.round((by0 + by1) / 2), 5.5, BRONZE.c1, ); // band
+  c.disc(Math.round((bx0 + bx1) / 2), Math.round((by0 + by1) / 2), 4.5, IRON.c2);
+  const toward = fy > 0.5; // the muzzle looks at you: you see down the bore
+  c.disc(bx1, by1, toward ? 6 : 5, IRON.c2); // the muzzle ring
+  c.disc(bx1, by1, toward ? 4 : 2.5, P.ink);
+  if (toward) c.set(bx1 - 2, by1 - 2, IRON.c3);
+  if (o.smoke > 0) {
+    // powder smoke rolling out of the muzzle
+    for (let k = 0; k < 5; k++) {
+      const d = 4 + k * 4 * o.smoke;
+      c.disc(bx1 + Math.round(fx * d), by1 + Math.round(fy * d * 0.6) - k, 3 + k * o.smoke, k < 2 && o.smoke > 0.5 ? P.flame2 : mix(P.stone3, P.stone4, k / 5));
+    }
+  }
+  if (back) gunner();
+}
+function cannonDeath(c: Img, f: number) {
+  drawCannon(c, 'S', { flinch: true, smoke: f * 0.3, bob: f });
+}
+
+// --- The Master Gunner on foot (48 cell): long red gunner's coat, tricorn, a brass-belled blunderbuss.
+type DuelPose = BodyPose & { aim?: number; club?: number; toss?: number; crouch?: number };
+const DUEL_HAND: Record<Dir5, [number, number]> = { S: [31, 29], SE: [31, 28], E: [29, 28], NE: [30, 26], N: [30, 26] };
+function duelHand(dir: Dir5, p: DuelPose): [number, number] {
+  const [hx, hy] = DUEL_HAND[dir];
+  const [fx, fy] = FACE_VEC[dir];
+  const { lx, ly } = leanOffsets(dir, p.lean ?? 0);
+  const aim = p.aim ?? 0;
+  const club = p.club ?? 0;
+  return [Math.round(hx + lx + fx * aim * 3 - club * 4), Math.round(hy + ly + fy * aim * 2 - club * 8 + (p.bob ?? 0) + (p.crouch ?? 0) * 2)];
+}
+function drawDuel(c: Img, dir: Dir5, pose: DuelPose) {
+  const o = { bob: 0, lean: 0, hunch: 0, step: -1, flinch: false, aim: 0, club: 0, toss: 0, crouch: 0, ...pose };
+  const b = o.bob + o.crouch * 2;
+  const { lx, ly, sh } = leanOffsets(dir, o.lean);
+  const back = dir === 'N' || dir === 'NE';
+  const liftL = o.step === 1 ? 2 : 0;
+  const liftR = o.step === 3 ? 2 : 0;
+  c.rect(19, 38 + b, 4, 6 - liftL, P.dark1); // boots
+  c.rect(26, 38 + b, 4, 6 - liftR, mix(P.dark1, P.ink, 0.4));
+  c.hline(19, 38 + b, 4, P.dark2);
+  // the long coat, to the boot-tops, split at the back
+  for (let y = 18; y <= 39; y++) {
+    const w = 12 + Math.floor((y - 18) / 3);
+    shadedRow(c, 24 - Math.floor(w / 2) + (y < 28 ? sh : 0), y + b, w, COAT.c0, COAT.c1, COAT.c2, COAT.c3);
+  }
+  if (back) c.vline(24, 30 + b, 10, COAT.c0);
+  else {
+    c.vline(24 + sh, 20 + b, 18, COAT.c3); // buttoned front
+    for (let y = 21; y < 36; y += 4) c.set(23 + sh, y + b, BRASS);
+    line(c, 18 + sh, 19 + b, 29 + sh, 29 + b, P.wood1); // bandolier
+    for (let k = 0; k < 4; k++) c.set(20 + sh + k * 2, 21 + b + k * 2, P.wax1); // cartridges
+  }
+  c.hline(18 + sh, 28 + b, 13, P.dark2); // belt
+  c.set(24 + sh, 28 + b, BRASS);
+  // arms: the gun hand out to the side, the off hand free (it tosses kegs)
+  c.rect(15 + sh, 20 + b, 3, 9 - Math.round(o.toss * 4), COAT.c1);
+  if (o.toss > 0) c.disc(15 + sh, 18 + b - o.toss * 6, 2, mix(P.wax1, SOOT, 0.3));
+  // head: soot-dark face, a braided grey beard, the tricorn with a brass badge
+  const hx = 24 + lx + (o.flinch ? -2 : 0);
+  const hy = 11 + b + o.hunch + ly;
+  c.disc(hx, hy, 4.5, mix(P.wax1, SOOT, 0.4));
+  c.rect(hx - 2, hy + 3, 5, 4, P.stone3);
+  c.set(hx, hy + 7, P.stone2);
+  c.hline(hx - 8, hy - 4, 17, P.dark1);
+  c.hline(hx - 6, hy - 6, 13, P.dark1);
+  c.hline(hx - 6, hy - 5, 13, P.dark2);
+  c.hline(hx - 4, hy - 7, 9, P.dark1);
+  c.set(hx, hy - 6, BRASS);
+  if (!back) {
+    const e = o.flinch ? P.ember : P.flame2;
+    if (dir === 'E') c.set(hx + 2, hy - 1, e);
+    else {
+      c.set(hx - 2, hy - 1, e);
+      c.set(hx + 1, hy - 1, e);
+    }
+  }
+  const [ax, ay] = duelHand(dir, o);
+  c.rect(ax - 1, ay - 1, 3, 3, mix(P.wax1, SOOT, 0.35));
+}
+function duelDeath(c: Img, f: number) {
+  if (f < 2) return drawDuel(c, 'S', { bob: 3 + f * 2, hunch: 2 + f, flinch: true });
+  c.ellipse(24, 41, 13, 4, COAT.c1);
+  c.ellipse(20, 40, 6, 2.5, COAT.c2);
+  c.hline(12, 39, 17, P.dark1); // his hat, fallen
+  c.hline(14, 38, 12, P.dark2);
+  c.set(31, 40, BRASS);
+}
+
+function genVault() {
+  const P7 = phased7();
+  // Blunderbuss (the player's and the Gunner's): a short stock, a brass barrel that flares to a bell
+  const blun = new Img(24, 11);
+  blun.rect(1, 5, 7, 3, WOOD.c2); // stock
+  blun.hline(1, 5, 7, WOOD.c3);
+  blun.rect(2, 7, 3, 2, WOOD.c1); // grip
+  blun.rect(7, 4, 11, 3, BRASS); // barrel
+  blun.hline(7, 4, 11, GOLD0);
+  for (let x = 18; x < 23; x++) {
+    const flare = Math.round((x - 17) * 0.7);
+    blun.vline(x, 4 - flare, 3 + flare * 2, x === 22 ? GOLD0 : BRASS); // the bell
+  }
+  blun.set(8, 3, IRON.c2); // the lock
+  blun.outline(P.ink);
+  sheet('blunderbuss', blun, { cell: [24, 11], pivot: [3, 6], layer: 'weapon', points: { muzzle: [22, 5] } });
+  // cannonball and spark
+  const ball = new Img(8, 8);
+  ball.disc(4, 4, 3.3, IRON.c0);
+  ball.disc(3, 3, 1.5, IRON.c2);
+  ball.outline(P.ink);
+  sheet('cannonball', ball, { cell: [8, 8], pivot: [4, 4], layer: 'fx' });
+  const spark = new Img(5, 5);
+  spark.set(2, 2, P.wax2);
+  spark.set(1, 2, P.flame2);
+  spark.set(3, 2, P.flame2);
+  spark.set(2, 1, P.flame1);
+  spark.set(2, 3, P.flame1);
+  sheet('spark', spark, { cell: [5, 5], pivot: [2, 2], layer: 'fx' });
+  // the keg prop: frame 0 whole, frame 1 blown apart
+  const keg = new Img(32, 16);
+  {
+    const a = new Img(16, 16);
+    kegAt(a, 8, 14, 5);
+    a.outline(P.ink);
+    keg.blit(a, 0, 0);
+    const r = new Img(16, 16);
+    r.ellipse(8, 13, 6, 2, SOOT);
+    r.ellipse(8, 13, 4, 1.2, POWDER);
+    line(r, 2, 11, 5, 13, WOOD.c2);
+    line(r, 12, 10, 14, 13, WOOD.c1);
+    r.hline(6, 12, 3, IRON.c1);
+    r.outline(P.ink);
+    keg.blit(r, 16, 0);
+  }
+  sheet('prop_keg', keg, { cell: [16, 16], pivot: [8, 14], layer: 'single' });
+
+  const walk4 = <T,>(draw: (c: Img, d: Dir5, p: T) => void, mk: (f: number) => T) => [0, 1, 2, 3].map(f => (c: Img, d: Dir5) => draw(c, d, mk(f)));
+  const frames = <T,>(draw: (c: Img, d: Dir5, p: T) => void, poses: T[]) => poses.map(p => (c: Img, d: Dir5) => draw(c, d, p));
+  rosterSheet(
+    'mule',
+    CELL,
+    PIVOT,
+    7,
+    [
+      { name: 'idle', frames: frames(drawMule, [{}, { bob: 1 }]), timing: idleT, loop: true },
+      { name: 'walk', frames: walk4(drawMule, f => ({ step: f, bob: f % 2 ? -1 : 0 })), timing: walkT(11), loop: true },
+      { name: 'shove', frames: frames(drawMule, [{ hunch: 1 }, { hunch: 2, lean: -1 }, { hunch: 2, lean: -2, bob: 1 }, { lean: 3 }, { lean: 3 }, { lean: 1 }, {}]), timing: P7, loop: false },
+      { name: 'stagger', frames: frames(drawMule, [{ lean: -2, flinch: true }, { lean: -1, bob: 1, flinch: true }, { bob: 1 }]), timing: staggerT, loop: false },
+    ],
+    [0, 1, 2, 3, 4].map(f => (c: Img) => muleDeath(c, f)),
+    null,
+  );
+  rosterSheet(
+    'runner',
+    CELL,
+    PIVOT,
+    7,
+    [
+      { name: 'idle', frames: frames(drawRunner, [{}, { bob: 1 }]), timing: idleT, loop: true },
+      { name: 'walk', frames: walk4(drawRunner, f => ({ step: f, bob: f % 2 ? -1 : 0, lean: 1 })), timing: walkT(5), loop: true },
+      { name: 'throw', frames: frames(drawRunner, [{ arm: -0.5 }, { arm: -1, lean: -1 }, { arm: -1, lean: -2 }, { arm: 1, lean: 2 }, { arm: 1.2, lean: 2 }, { arm: 0.5 }, {}]), timing: P7, loop: false },
+      { name: 'jab', frames: frames(drawRunner, [{ arm: 0 }, { arm: -0.5, lean: -1 }, { arm: -0.5, lean: -1 }, { arm: 1.4, lean: 3 }, { arm: 1.4, lean: 3 }, { arm: 0.5, lean: 1 }, {}]), timing: P7, loop: false },
+      { name: 'stagger', frames: frames(drawRunner, [{ lean: -2, flinch: true }, { lean: -1, bob: 1, flinch: true }, { bob: 1 }]), timing: staggerT, loop: false },
+    ],
+    [0, 1, 2, 3, 4].map(f => (c: Img) => runnerDeath(c, f)),
+    null,
+  );
+  // the cannon: fire, grapeshot, lob, ram; its entrance; the Gunner leaping clear when it's done
+  rosterSheet(
+    'gunner_cannon',
+    64,
+    [32, 58],
+    7,
+    [
+      { name: 'idle', frames: frames(drawCannon, [{}, { bob: 1 }]), timing: idleT, loop: true },
+      { name: 'walk', frames: walk4(drawCannon, f => ({ roll: f, bob: f % 2 })), timing: walkT(10), loop: true },
+      { name: 'fire', frames: frames(drawCannon, [{ hunch: 1 }, { hunch: 1, bob: 1 }, { hunch: 2, bob: 1 }, { recoil: 3, smoke: 1 }, { recoil: 2, smoke: 1.4 }, { recoil: 1, smoke: 0.8 }, { smoke: 0.3 }]), timing: P7, loop: false },
+      { name: 'lob', frames: frames(drawCannon, [{ lift: 1 }, { lift: 2 }, { lift: 3, bob: 1 }, { lift: 3, recoil: 2, smoke: 1 }, { lift: 2, recoil: 1, smoke: 1.2 }, { lift: 1, smoke: 0.5 }, {}]), timing: P7, loop: false },
+      { name: 'ram', frames: frames(drawCannon, [{ bob: 1 }, { bob: 2, roll: 1 }, { bob: 2, roll: 2 }, { roll: 3, lean: 3 }, { roll: 4, lean: 3 }, { roll: 5 }, {}]), timing: P7, loop: false },
+      { name: 'intro', frames: frames(drawCannon, [{ stand: 1 }, { stand: 1, bob: 1 }, { stand: 0.5 }, {}, { recoil: 3, smoke: 1.4 }, { smoke: 0.6 }]), timing: [{ ticks: 30 }, { ticks: 30 }, { ticks: 20 }, { ticks: 15 }, { ticks: 15 }, { ticks: 40 }], loop: false },
+      { name: 'dismount', frames: frames(drawCannon, [{ stand: 1, smoke: 1 }, { stand: 2, smoke: 1.5, bob: -2 }, { stand: 3, smoke: 2, bob: -4 }, { stand: 1, smoke: 2.4 }]), timing: [{ ticks: 12 }, { ticks: 12 }, { ticks: 12 }, { ticks: 12 }], loop: true },
+      { name: 'stagger', frames: frames(drawCannon, [{ flinch: true, recoil: 2 }, { flinch: true, bob: 1 }, { bob: 1 }]), timing: staggerT, loop: false },
+    ],
+    [0, 1, 2, 3, 4].map(f => (c: Img) => cannonDeath(c, f)),
+    null,
+  );
+  const duel = (name: string, poses: DuelPose[], timing: { ticks: number; phase?: string; events?: string[] }[], loop: boolean) => ({
+    name,
+    frames: poses.map(p => (c: Img, d: Dir5) => drawDuel(c, d, p)),
+    timing,
+    loop,
+    hand: (d: Dir5, f: number) => duelHand(d, poses[f]),
+  });
+  rosterSheet(
+    'gunner',
+    48,
+    [24, 44],
+    7,
+    [
+      duel('idle', [{}, { bob: 1 }], idleT, true),
+      duel('walk', [0, 1, 2, 3].map(f => ({ step: f, bob: f % 2 ? -1 : 0 })), walkT(8), true),
+      duel('shoot', [{ aim: 0.5 }, { aim: 1, lean: -1 }, { aim: 1, lean: -1, crouch: 1 }, { aim: 0, lean: -3 }, { aim: 0.2, lean: -2 }, { aim: 0.6, lean: -1 }, {}], P7, false),
+      duel('club', [{ club: 0.5 }, { club: 1, lean: -1 }, { club: 1.1, lean: -2 }, { club: -0.5, lean: 3, aim: 1 }, { club: -0.6, lean: 3, aim: 1 }, { lean: 1 }, {}], P7, false),
+      duel('toss', [{ toss: 0.3 }, { toss: 0.8, lean: -1 }, { toss: 1, lean: -2 }, { toss: 0, lean: 2 }, { lean: 2 }, { lean: 1 }, {}], P7, false),
+      duel('leap', [{ crouch: 1 }, { crouch: 2 }, { bob: -6, lean: -2 }, { bob: -4, lean: -3, aim: 1 }, { crouch: 1, aim: 1 }, { aim: 0.5 }, {}], P7, false),
+      duel('intro', [{ crouch: 2, hunch: 2 }, { crouch: 1, hunch: 1 }, {}, { aim: 1 }, { aim: 1, lean: -2 }, {}], [{ ticks: 20 }, { ticks: 20 }, { ticks: 20 }, { ticks: 20 }, { ticks: 20 }, { ticks: 30 }], false),
+      duel('stagger', [{ lean: -2, flinch: true }, { lean: -1, bob: 1, flinch: true }, { bob: 1 }], staggerT, false),
+    ],
+    [0, 1, 2, 3, 4].map(f => (c: Img) => duelDeath(c, f)),
+    DUEL_HAND,
+  );
+
+  // decor (64 cells, pivot at the base like the Works' decor)
+  const W = 64;
+  const B = 62;
+  const f: Img[] = [];
+  const cell = () => new Img(W, W);
+  {
+    const c = cell(); // 0 keg stack (2 wide): three kegs and one on top
+    kegAt(c, 22, B, 7);
+    kegAt(c, 38, B, 7);
+    kegAt(c, 30, B - 14, 7);
+    f.push(c);
+  }
+  {
+    const c = cell(); // 1 powder barrel, tall, a scoop hanging on it
+    kegAt(c, 32, B, 8);
+    c.ellipse(32, B - 18, 6, 1.5, POWDER);
+    line(c, 36, B - 19, 40, B - 10, IRON.c2);
+    f.push(c);
+  }
+  {
+    const c = cell(); // 2 cannonball pyramid on a board
+    c.rect(20, B - 3, 24, 3, WOOD.c1);
+    const balls: [number, number][] = [[24, 7], [31, 7], [38, 7], [27, 13], [34, 13], [31, 19]];
+    for (const [x, y] of balls) {
+      c.disc(x, B - y, 3.4, IRON.c0);
+      c.set(x - 1, B - y - 1, IRON.c2);
+    }
+    f.push(c);
+  }
+  {
+    const c = cell(); // 3 a practice target: a straw man on a post, full of holes
+    c.vline(32, B - 30, 30, WOOD.c1);
+    c.vline(33, B - 30, 30, WOOD.c0);
+    c.disc(32, B - 34, 8, mix(P.flame1, P.wood2, 0.5));
+    c.disc(32, B - 34, 5, P.wax1);
+    c.disc(32, B - 34, 2, P.blood1);
+    for (const [x, y] of [[28, 37], [35, 31], [30, 30], [36, 38]]) c.set(x, B - y, P.ink);
+    c.hline(24, B - 26, 17, mix(P.flame1, P.wood2, 0.5)); // arms of straw
+    f.push(c);
+  }
+  {
+    const c = cell(); // 4 spilled powder (flat)
+    c.ellipse(32, B - 4, 14, 4, POWDER);
+    c.ellipse(28, B - 5, 7, 2, mix(POWDER, P.stone2, 0.5));
+    for (const [x, y] of [[20, 2], [44, 4], [40, 7]]) c.set(x, B - y, POWDER);
+    f.push(c);
+  }
+  {
+    const c = cell(); // 5 collapsed rubble (flat): fallen stone and a split beam
+    for (const [x, y, r] of [[22, 5, 5], [33, 3, 4], [41, 6, 5], [28, 9, 3]] as const) {
+      c.ellipse(x, B - y, r, r * 0.6, STN.c1);
+      c.ellipse(x - 1, B - y - 1, r * 0.6, r * 0.35, STN.c3);
+    }
+    line(c, 16, B - 12, 46, B - 2, WOOD.c1);
+    line(c, 16, B - 13, 46, B - 3, WOOD.c2);
+    f.push(c);
+  }
+  {
+    const c = cell(); // 6 shot crate: an open box of cartridges
+    c.rect(22, B - 14, 20, 14, WOOD.c1);
+    c.hline(22, B - 14, 20, WOOD.c3);
+    c.rect(24, B - 13, 16, 4, P.dark1);
+    for (let x = 25; x < 39; x += 2) c.set(x, B - 12, P.wax1);
+    c.hline(22, B - 5, 20, WOOD.c0);
+    f.push(c);
+  }
+  {
+    const c = cell(); // 7 cannon rail (flat): two iron rails on sleepers
+    for (let x = 4; x < 60; x += 8) c.rect(x, B - 9, 4, 8, WOOD.c0);
+    c.hline(0, B - 7, 64, IRON.c2);
+    c.hline(0, B - 3, 64, IRON.c2);
+    c.hline(0, B - 8, 64, IRON.c3);
+    f.push(c);
+  }
+  const img = new Img(W * f.length, W);
+  f.forEach((c, i) => {
+    c.outline(P.ink);
+    img.blit(c, i * W, 0);
+  });
+  sheet('decor_vault', img, { cell: [W, W], pivot: [32, B], layer: 'single' });
+}
+
 genPlayer();
 genWeapons();
 genMisc();
@@ -8019,6 +8547,7 @@ genTollwarden();
 genWorks();
 genMire();
 genNave();
+genVault();
 genFont();
 console.log(
   ONLY

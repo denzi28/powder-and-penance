@@ -170,6 +170,17 @@ export const ShrineCfg = z.object({
 });
 
 /** Breakable scenery (data/props/*.json). Props respawn on rest; their loot drops only the first time. */
+/** A powder blast: after `fuseTicks` of hissing it bursts, hurting everyone (and every prop) within `radius`. */
+export const BlastDef = z.object({
+  fuseTicks: int.nonnegative(),
+  radius: pos,
+  damage: num.min(0),
+  poise: num.min(0),
+  knockback: num.min(0).default(160),
+  sfx: z.string().default('b_keg_blast'),
+});
+export type BlastDef = z.infer<typeof BlastDef>;
+
 export const PropDef = z.object({
   id: z.string(),
   name: z.string(),
@@ -187,6 +198,8 @@ export const PropDef = z.object({
    * broken, then the tile opens for good (world flag "wall:<room>#<index>") and never respawns.
    */
   secretWall: z.boolean().default(false),
+  /** A powder keg: broken, it lights and bursts (setting off other kegs in reach). */
+  explode: BlastDef.optional(),
 });
 
 /** One weighted outcome of a loot roll. */
@@ -268,6 +281,8 @@ export const Mods = z
     sureFooted: num.min(0).max(1).optional(),
     /** Multiplier on how long a reload takes. */
     reload: pos.optional(),
+    /** Multiplier on the spread of your guns' shots. */
+    spread: pos.optional(),
     /** Multiplier on shop prices. */
     prices: pos.optional(),
   })
@@ -514,6 +529,8 @@ export const ProjectileDef = z.object({
 });
 
 export const StrikeDef = z.object({
+  /** A thrown strike aims at a powder keg within this many px of its target, if there is one, instead. */
+  aimAtKeg: pos.optional(),
   damage: num.min(0),
   poise: num.min(0),
   stamina: num.min(0).default(0),
@@ -671,6 +688,8 @@ export const EnemyDef = z.object({
   tallow: int.nonnegative().default(0),
   /** A loot table (data/loot.json) rolled where it dies. */
   loot: z.string().optional(),
+  /** It carries powder: when it dies, it bursts after a short fuse. */
+  deathBlast: BlastDef.optional(),
   speed: num.min(0).default(0),
   strafeSpeed: num.min(0).default(0),
   accelTicks: pos.default(6),
@@ -1019,7 +1038,11 @@ export const LAYERED_SOUNDS = [
   'p_hurt', 'p_die', 'p_drink', 'p_roll_light', 'p_roll', 'p_roll_heavy', 'p_roll_flop',
   'p_unequip', 'p_draw', 'p_strap', 'p_armour_light', 'p_armour_heavy', 'p_mail_jingle',
   // the player: consumables, rings, notes
-  'p_use', 'p_belt', 'p_swap', 'p_levelup', 'p_buy', 'p_anvil', 'p_throw', 'p_throw_knife', 'p_eat', 'p_incense', 'p_cartridge', 'p_oil', 'p_smoke', 'p_drink_grog', 'p_candle', 'p_ring', 'p_paper',
+  'p_use', 'p_belt', 'p_swap', 'p_levelup', 'p_buy', 'p_anvil',
+  // the Powder Vault
+  'b_keg_blast', 'e_spark_pop', 'e_step_mule', 'e_mule_alert', 'e_mule_hurt', 'e_mule_die', 'e_mule_heave', 'e_mule_shove',
+  'e_runner_alert', 'e_runner_hurt', 'e_runner_die', 'e_linstock_jab', 'b_cannon_roll', 'b_cannon_crank', 'b_cannon_fire',
+  'b_grapeshot', 'b_cannon_ram', 'b_gunner_roar', 'b_gunner_grunt', 'b_stock_swing', 'b_blunderbuss', 'p_blunderbuss', 'p_throw', 'p_throw_knife', 'p_eat', 'p_incense', 'p_cartridge', 'p_oil', 'p_smoke', 'p_drink_grog', 'p_candle', 'p_ring', 'p_paper',
 ] as const;
 export type LayeredSound = (typeof LAYERED_SOUNDS)[number];
 export const SURFACES = ['dirt', 'grass', 'stone', 'wood', 'metal', 'mud', 'grease', 'wax', 'moss'] as const;

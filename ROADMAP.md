@@ -66,21 +66,16 @@ Each new biome is somewhere the Order's grey never reached, and each hides a pie
 - Equipment and Inventory show each weapon's +level, grades and real damage; the YOU panel shows your level and stats.
 - **Tests:** level costs and stat effects, scaling and upgrades, the stock growing, enough materials in the world for a +5 weapon; save migration (v4).
 
-## Step 3: The Powder Vault (finishes Act 1)
-*The optional area that's planned but not built. 4 rooms off the Works' hidden wall.*
-- **Rooms:**
-  - Collapsed Store, with the Vault Wick.
-  - Fuse Corridor, with explosive kegs that hurt you or them.
-  - Oskar's Cache, which completes his quest and unlocks gun upgrades.
-  - The Range.
+## Step 3: The Powder Vault (done, finishes Act 1)
+*The optional area behind the Works' cracked wall. 4 rooms.*
+- **Rooms:** the Collapsed Store (the Vault Wick), the Fuse Corridor (a hall of kegs), Oskar's Cache, and the Range (the boss, then the Range Wick).
+- **Powder kegs:** a new breakable that lights and bursts, hurting everyone (you too) and chaining to other kegs.
 - **New enemies:**
-  - **Powder Mule:** carries a keg and explodes when killed near you.
-  - **Fuse-Runner:** lights the kegs.
-- **Boss: the Master Gunner.** A cannon on a track, then a duel with a blunderbuss.
-- **Items:**
-  - Blunderbuss (new weapon).
-  - Gunner's Coat (armour).
-  - Ring of the Steady Hand: faster reloads.
+  - **Powder Mule:** a slow porter with a keg on his back; it goes up a moment after he dies.
+  - **Fuse-Runner:** quick and thin, throws sparks at the keg beside you (or at you).
+- **Boss: the Master Gunner.** His cannon (cannonball volleys, grapeshot, a ram), then, when it cracks, a duel with his blunderbuss. His last words point at **Brinewell** and the saltpetre (Step 6).
+- **Items:** the Blunderbuss (his drop; two-handed, a spread of eight), the Gunner's Coat (armour), the Ring of the Steady Hand (Oskar's reward: your shots spread half as much), and the Keg Charge (a thrown consumable Oskar stocks once his strongbox is back).
+- Music: a quiet vault theme, and "Last Salute" for the fight. New sounds for kegs, both enemies, the cannon and both guns.
 
 ## Step 4: Bloomhollow, the Apiary Orchard (colourful biome #1)
 *An early side area off the Penance Road: warm, golden, deceptively pretty.*

@@ -1,0 +1,11 @@
+{
+  "id": "gear_blunderbuss",
+  "name": "Gunner's Blunderbuss",
+  "icon": 52,
+  "description": "His last shot, and his gun.",
+  "effect": {
+    "type": "gear",
+    "kind": "weapon",
+    "id": "blunderbuss"
+  }
+}

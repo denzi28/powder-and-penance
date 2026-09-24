@@ -1,0 +1,111 @@
+{
+  "id": "blunderbuss",
+  "name": "Gunner's Blunderbuss",
+  "weight": 6,
+  "icon": 52,
+  "description": "The Master Gunner's own, bell-mouthed and loaded with whatever was to hand: nails, shot, broken glass, prayer beads. Up close it forgives bad aim. Far off it forgives nothing.",
+  "sounds": {
+    "draw": "p_draw_gun",
+    "hit": "p_hit_blunt",
+    "shotHit": "p_hit_shot",
+    "reload": [
+      [
+        0.02,
+        "p_powder_pour"
+      ],
+      [
+        0.3,
+        "p_powder_pour"
+      ],
+      [
+        0.55,
+        "p_ramrod"
+      ],
+      [
+        0.7,
+        "p_ramrod"
+      ],
+      [
+        0.93,
+        "p_cock"
+      ]
+    ]
+  },
+  "kind": "ranged",
+  "twoHanded": true,
+  "scaling": {
+    "str": "D",
+    "dex": "B"
+  },
+  "view": {
+    "sprite": "blunderbuss",
+    "restAngleOffsetDeg": 0
+  },
+  "crit": {
+    "backstab": 2.5,
+    "riposte": 2.5
+  },
+  "ranged": {
+    "clip": 1,
+    "reserveMax": 12,
+    "fire": {
+      "windup": 12,
+      "recovery": 46,
+      "stamina": 16,
+      "moveMult": 0.35,
+      "recoilDeg": 60,
+      "kick": 8,
+      "shake": 0.35,
+      "sfx": "p_blunderbuss"
+    },
+    "reload": {
+      "ticks": 170,
+      "stamina": 12,
+      "moveMult": 0.35
+    },
+    "projectile": {
+      "sprite": "ball",
+      "speed": 300,
+      "range": 130,
+      "damage": 17,
+      "poise": 12,
+      "pierce": 0,
+      "knockback": 90,
+      "hitstop": 3,
+      "shake": 0.08,
+      "radius": 3,
+      "spreadDeg": 34,
+      "count": 8
+    },
+    "casing": false,
+    "muzzle": "large"
+  },
+  "heavy": {
+    "chargeTicks": 0,
+    "chargeDamageMult": 1,
+    "chargePoiseMult": 1,
+    "strike": {
+      "damage": 16,
+      "poise": 40,
+      "stamina": 16,
+      "windup": 12,
+      "active": 4,
+      "recovery": 24,
+      "rollCancelFrom": 22,
+      "hitbox": {
+        "shape": "arc",
+        "radius": 22,
+        "halfAngle": 60
+      },
+      "sweep": {
+        "fromDeg": -60,
+        "toDeg": 40,
+        "reach": 6
+      },
+      "knockback": 180,
+      "hitstop": 5,
+      "shake": 0.15,
+      "sfx": "p_bash"
+    }
+  }
+}

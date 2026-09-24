@@ -92,6 +92,26 @@
       "price": 2500,
       "limit": 2,
       "when": "boss:mire_matron"
+    },
+    {
+      "id": "shop_keg_charge",
+      "consumable": "keg_charge",
+      "price": 600,
+      "when": "oskar_cache_returned"
+    },
+    {
+      "id": "shop_ingot_cache",
+      "consumable": "tallow_ingot",
+      "price": 600,
+      "limit": 6,
+      "when": "oskar_cache_returned"
+    },
+    {
+      "id": "shop_salt_cache",
+      "consumable": "ember_salt",
+      "price": 2000,
+      "limit": 3,
+      "when": "oskar_cache_returned"
     }
   ]
 }

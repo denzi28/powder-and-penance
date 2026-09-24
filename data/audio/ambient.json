@@ -46,6 +46,18 @@
       ],
       "echo": 0.4
     },
+    "vault": {
+      "beds": [
+        { "type": "rumble", "volume": 0.24, "freq": 90, "gust": 0.25 }
+      ],
+      "events": [
+        { "sound": "drip", "every": [3, 8], "volume": 0.4, "echo": 0.9 },
+        { "sound": "creak", "every": [8, 20], "volume": 0.35, "echo": 0.7 },
+        { "sound": "squeak", "every": [12, 30], "volume": 0.25 },
+        { "sound": "chain", "every": [18, 40], "volume": 0.3, "echo": 0.8 }
+      ],
+      "echo": 0.6
+    },
     "abbey": {
       "beds": [
         { "type": "wind", "volume": 0.08, "freq": 240, "gust": 0.6 },
@@ -90,7 +102,7 @@
       "floor_moss": "moss",
       "floor_stone": "stone"
     },
-    "floor": { "road": "dirt", "hub": "dirt", "mire": "mud", "works": "stone", "abbey": "stone", "default": "stone" }
+    "floor": { "road": "dirt", "hub": "dirt", "mire": "mud", "works": "stone", "abbey": "stone", "vault": "stone", "default": "stone" }
   },
   "harp": { "volume": 0.7, "bpm": 76, "near": 48, "range": 360 },
   "decor": {

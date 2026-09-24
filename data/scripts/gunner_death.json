@@ -1,0 +1,19 @@
+{
+  "id": "gunner_death",
+  "steps": [
+    { "camera": "enemy:master_gunner_duel", "ticks": 45 },
+    { "wait": 20 },
+    { "say": "Ha. Hit. Clean hit, too. Seventy years, and not one of the boys ever landed one on me.", "who": "gunner" },
+    { "say": "The Synod sealed us in to keep the powder from the world. Powder is a fire men made, they said. Vanity.", "who": "gunner" },
+    { "say": "Funny thing. The Drip never came down here. Not once. The boys went black, the mule went daft, but none of us went to wax.", "who": "gunner" },
+    { "say": "It's the saltpetre. Has to be. It's in the air, in the walls, in us. The thing that eats the Wick can't stomach it.", "who": "gunner" },
+    { "wait": 30 },
+    { "say": "Take the gun. Don't waste the last charge on me; I'm spent.", "who": "gunner" },
+    { "say": "And if you find where the saltpetre comes from... Brinewell, the old salt-diggers called it... go and see why it's so bitter.", "who": "gunner" },
+    { "wait": 40 },
+    { "say": "He salutes, very correctly, and his hand does not come down." },
+    { "give": "gear_blunderbuss" },
+    { "set": "gunner_last_words" },
+    { "camera": "player", "ticks": 45 }
+  ]
+}

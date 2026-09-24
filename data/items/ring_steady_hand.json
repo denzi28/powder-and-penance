@@ -1,0 +1,10 @@
+{
+  "id": "ring_steady_hand",
+  "name": "Ring of the Steady Hand",
+  "icon": 54,
+  "description": "A plain iron band with a sighting bead set in it.",
+  "effect": {
+    "type": "ring",
+    "id": "ring_steady_hand"
+  }
+}

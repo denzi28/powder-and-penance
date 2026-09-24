@@ -278,7 +278,7 @@ function shoot(p: Player) {
   const x = p.x + Math.cos(p.aimAngle) * len;
   const y = p.y + Math.sin(p.aimAngle) * len;
   for (let i = 0; i < r.projectile.count; i++) {
-    const spread = (p.ctx.rng() - 0.5) * r.projectile.spreadDeg * DEG;
+    const spread = (p.ctx.rng() - 0.5) * r.projectile.spreadDeg * DEG * p.mods.spread; // a steady hand narrows it
     p.ctx.projectiles.spawn(p, x, y, p.aimAngle + spread, r.projectile, undefined, p.weaponId);
   }
   p.recoil = 1;

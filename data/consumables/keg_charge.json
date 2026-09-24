@@ -1,0 +1,28 @@
+{
+  "id": "keg_charge",
+  "name": "Keg Charge",
+  "icon": 55,
+  "max": 3,
+  "sfx": "p_throw",
+  "description": "A quarter-keg with a fuse as long as your arm, from Oskar's cache. The powder-men used them to open walls. They work on other things too.",
+  "use": {
+    "type": "throw",
+    "projectile": {
+      "sprite": "firepot",
+      "speed": 1,
+      "range": 1,
+      "damage": 75,
+      "poise": 90,
+      "knockback": 220,
+      "hitstop": 6,
+      "shake": 0.45,
+      "radius": 4,
+      "lob": {
+        "flightTicks": 38,
+        "arcHeight": 30,
+        "blastRadius": 36,
+        "sfx": "b_keg_blast"
+      }
+    }
+  }
+}

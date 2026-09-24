@@ -172,7 +172,7 @@ Oskar's hidden powder cache under the Tallow Works: the heretics' old workshop.
 
 | # | Room | Contents |
 |---|---|---|
-| vault_01 | Collapsed Store | Entry through the breakable wall. **Vault Wick shrine**. |
-| vault_02 | Fuse Corridor | Explosive kegs: break them to hurt enemies, or yourself |
-| vault_03 | Oskar's Cache | The cache (completes Oskar's quest: gun upgrades) |
-| vault_04 | The Range | **Optional boss: Master Gunner** |
+| vault_01 | **Collapsed Store** ✅ | Up from the cracked wall in the Tallow Stores. **Vault Wick shrine**, rubble, kegs, a Mule and a Fuse-Runner, the Gunner's log. |
+| vault_02 | **Fuse Corridor** ✅ | A long hall lined with ten kegs: two Mules, two Fuse-Runners, an Acolyte. Break the kegs to hurt them, or yourself. Chest: **Gunner's Coat**. |
+| vault_03 | **Oskar's Cache** ✅ | **Oskar's strongbox** (take it to him: Ring of the Steady Hand, and his full stock), two Keg Charges, two Tallow Ingots. |
+| vault_04 | **The Range** ✅ | **Optional boss: the Master Gunner**: his cannon on its rail, then a duel with his blunderbuss. Drops the **Blunderbuss**; then the **Range Wick** appears. |

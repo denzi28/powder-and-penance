@@ -41,6 +41,11 @@
       "bubbles": ["floor_grease"],
       "drips": 0.5
     },
+    "vault": {
+      "air": [{ "fx": "dust", "count": 26 }, { "fx": "soot", "count": 10 }],
+      "critters": [{ "kind": "rat", "perRoom": [1, 2] }, { "kind": "bat", "perRoom": [0, 2] }],
+      "drips": 0.7
+    },
     "abbey": {
       "air": [{ "fx": "dust", "count": 22 }],
       "critters": [

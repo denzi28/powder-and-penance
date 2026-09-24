@@ -1,0 +1,10 @@
+{
+  "id": "oskars_strongbox",
+  "name": "Oskar's Strongbox",
+  "icon": 56,
+  "description": "Iron-banded, heavier than it looks, painted with an O. Something inside it clinks like money and something else sloshes like very good brandy.",
+  "effect": {
+    "type": "quest",
+    "note": "Oskar's hidden stock. Take it to him at Wick's Rest."
+  }
+}

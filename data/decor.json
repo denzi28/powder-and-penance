@@ -78,6 +78,14 @@
     "barrels": { "sprite": "decor_abbey", "frame": 13, "blocks": [[0, 0]], "tall": true },
     "sacks": { "sprite": "decor_abbey", "frame": 14, "blocks": [[0, 0]] },
     "candle_stand": { "sprite": "decor_abbey", "frame": 15, "blocks": [[0, 0]] },
-    "banner": { "sprite": "decor_abbey", "frame": 16 }
+    "banner": { "sprite": "decor_abbey", "frame": 16 },
+    "keg_stack": { "sprite": "decor_vault", "frame": 0, "blocks": [[-1, 0], [0, 0]], "tall": true },
+    "powder_barrel": { "sprite": "decor_vault", "frame": 1, "blocks": [[0, 0]], "tall": true },
+    "shot_pyramid": { "sprite": "decor_vault", "frame": 2, "blocks": [[0, 0]] },
+    "target": { "sprite": "decor_vault", "frame": 3, "blocks": [[0, 0]], "tall": true },
+    "powder_spill": { "sprite": "decor_vault", "frame": 4, "flat": true },
+    "rubble": { "sprite": "decor_vault", "frame": 5, "flat": true },
+    "shot_crate": { "sprite": "decor_vault", "frame": 6, "blocks": [[0, 0]] },
+    "rail": { "sprite": "decor_vault", "frame": 7, "flat": true }
   }
 }

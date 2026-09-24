@@ -1,0 +1,118 @@
+{
+  "id": "vault_01_collapsed_store",
+  "area": "vault",
+  "origin": [0, 10],
+  "legend": {
+    "#": "wall",
+    ".": "floor",
+    ",": "floor_grate",
+    "_": "floor_plank",
+    " ": "void"
+  },
+  "tiles": [
+    "######################",
+    "#____________________#",
+    "#____________________#",
+    "#__###_______________#",
+    "#__###_______________#",
+    "#____________________#",
+    "#_____________________",
+    "#_____________________",
+    "#____________________#",
+    "#____________________#",
+    "#____________________#",
+    "#____________________#",
+    "#____________________#",
+    "###..#################"
+  ],
+  "entities": [
+    {
+      "type": "spawn",
+      "id": "from_works",
+      "at": [3, 11]
+    },
+    {
+      "type": "exit",
+      "id": "vault_to_works",
+      "at": [3, 13],
+      "size": [2, 1],
+      "to": {
+        "area": "works",
+        "spawn": "from_vault"
+      }
+    },
+    {
+      "type": "shrine",
+      "id": "shrine_vault",
+      "name": "Vault Wick",
+      "at": [16, 3]
+    },
+    {
+      "type": "decor",
+      "kind": "rubble",
+      "at": [4, 6]
+    },
+    {
+      "type": "decor",
+      "kind": "rubble",
+      "at": [9, 11]
+    },
+    {
+      "type": "decor",
+      "kind": "keg_stack",
+      "at": [9, 2]
+    },
+    {
+      "type": "decor",
+      "kind": "powder_barrel",
+      "at": [19, 11]
+    },
+    {
+      "type": "decor",
+      "kind": "shot_crate",
+      "at": [12, 2]
+    },
+    {
+      "type": "decor",
+      "kind": "powder_spill",
+      "at": [14, 9]
+    },
+    {
+      "type": "prop",
+      "kind": "keg",
+      "at": [13, 6]
+    },
+    {
+      "type": "prop",
+      "kind": "keg",
+      "at": [7, 10]
+    },
+    {
+      "type": "prop",
+      "kind": "keg",
+      "at": [17, 9]
+    },
+    {
+      "type": "prop",
+      "kind": "crate",
+      "at": [2, 1]
+    },
+    {
+      "type": "enemy",
+      "kind": "powder_mule",
+      "at": [15, 8],
+      "facing": "W"
+    },
+    {
+      "type": "enemy",
+      "kind": "fuse_runner",
+      "at": [18, 5],
+      "facing": "W"
+    },
+    {
+      "type": "note",
+      "note": "note_gunners_log",
+      "at": [6, 8]
+    }
+  ]
+}

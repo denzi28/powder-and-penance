@@ -1,0 +1,11 @@
+{
+  "id": "gear_gunners_coat",
+  "name": "Gunner's Coat",
+  "icon": 53,
+  "description": "Red wool that smells of powder.",
+  "effect": {
+    "type": "gear",
+    "kind": "armour",
+    "id": "gunners_coat"
+  }
+}

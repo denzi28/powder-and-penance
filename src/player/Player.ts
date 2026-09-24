@@ -719,14 +719,14 @@ export function combineMods(list: readonly Mods[]): FullMods {
   const m: FullMods = {
     maxHp: 0, stamina: 0, poise: 0,
     staminaRegen: 1, rollCost: 1, damage: 1, rangedDamage: 1, desperate: 1, damageTaken: 1, heal: 1, notice: 1, tallowGain: 1, capacity: 1,
-    reload: 1, prices: 1,
+    reload: 1, prices: 1, spread: 1,
     keepTallow: 0, sureFooted: 0,
   };
   for (const x of list) {
     m.maxHp += x.maxHp ?? 0;
     m.stamina += x.stamina ?? 0;
     m.poise += x.poise ?? 0;
-    for (const k of ['staminaRegen', 'rollCost', 'damage', 'rangedDamage', 'desperate', 'damageTaken', 'heal', 'notice', 'tallowGain', 'capacity', 'reload', 'prices'] as const)
+    for (const k of ['staminaRegen', 'rollCost', 'damage', 'rangedDamage', 'desperate', 'damageTaken', 'heal', 'notice', 'tallowGain', 'capacity', 'reload', 'prices', 'spread'] as const)
       m[k] *= x[k] ?? 1;
     m.keepTallow = Math.max(m.keepTallow, x.keepTallow ?? 0);
     m.sureFooted = Math.max(m.sureFooted, x.sureFooted ?? 0);

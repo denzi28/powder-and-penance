@@ -1,0 +1,16 @@
+{
+  "id": "gunners_coat",
+  "name": "Gunner's Coat",
+  "slot": "body",
+  "weight": 6,
+  "absorb": 0.16,
+  "poise": 10,
+  "icon": 53,
+  "description": "Heavy red wool, singed at every hem, the pockets still full of wadding. Gunners wore it so the crews could find them through the smoke. It turns a blast better than it turns a blade.",
+  "ramp": [
+    "#3e1516",
+    "#6a2224",
+    "#8f2f2b",
+    "#b0503c"
+  ]
+}

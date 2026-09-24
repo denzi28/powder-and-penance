@@ -1,0 +1,71 @@
+{
+  "id": "vault_03_oskars_cache",
+  "area": "vault",
+  "origin": [30, 2],
+  "legend": {
+    "#": "wall",
+    ".": "floor",
+    ",": "floor_grate",
+    "_": "floor_plank",
+    " ": "void"
+  },
+  "tiles": [
+    "############",
+    "#__________#",
+    "#__________#",
+    "#__________#",
+    "#__________#",
+    "#__________#",
+    "#__________#",
+    "#__________#",
+    "#__________#",
+    "#__________#",
+    "#####..#####"
+  ],
+  "entities": [
+    {
+      "type": "item",
+      "id": "chest_oskars_strongbox",
+      "item": "oskars_strongbox",
+      "at": [5, 1]
+    },
+    {
+      "type": "item",
+      "id": "chest_keg_charges",
+      "item": "cache_keg_charges",
+      "at": [9, 3]
+    },
+    {
+      "type": "item",
+      "id": "chest_cache_ingots",
+      "item": "ingot_cache",
+      "at": [2, 3]
+    },
+    {
+      "type": "decor",
+      "kind": "keg_stack",
+      "at": [3, 6]
+    },
+    {
+      "type": "decor",
+      "kind": "shot_crate",
+      "at": [9, 7]
+    },
+    {
+      "type": "decor",
+      "kind": "powder_barrel",
+      "at": [1, 8]
+    },
+    {
+      "type": "prop",
+      "kind": "keg",
+      "at": [8, 5]
+    },
+    {
+      "type": "enemy",
+      "kind": "fuse_runner",
+      "at": [6, 4],
+      "facing": "S"
+    }
+  ]
+}

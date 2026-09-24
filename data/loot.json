@@ -46,6 +46,16 @@
       { "weight": 1, "item": "tallow_candle" },
       { "weight": 1, "item": "grey_salt" }
     ],
+    "mule": [
+      { "weight": 4 },
+      { "weight": 1, "item": "firebomb" },
+      { "weight": 0.5, "item": "tallow_ingot" }
+    ],
+    "runner": [
+      { "weight": 6 },
+      { "weight": 1, "item": "smoke_pellet" },
+      { "weight": 1, "item": "throwing_knife", "count": 2 }
+    ],
     "lantern": [
       { "weight": 4 },
       { "weight": 1, "item": "smoke_pellet" },

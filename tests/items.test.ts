@@ -72,8 +72,10 @@ describe('rings', () => {
     }
   });
 
-  it('each can be found once: in a chest, on a miniboss, or in the shop', () => {
+  it('each can be found once: in a chest, on a miniboss, in the shop, or given in a scene', () => {
+    const given = Object.values(DATA.scripts).flatMap(sc => JSON.stringify(sc.steps).match(/"give":"([a-z_]+)"/g) ?? []).map(g => g.slice(8, -1));
     const sources = [
+      ...given.flatMap(id => (DATA.items[id]?.effect.type === 'ring' ? [(DATA.items[id].effect as { id: string }).id] : [])),
       ...DATA.shop.stock.flatMap(e => (e.item && DATA.items[e.item].effect.type === 'ring' ? [(DATA.items[e.item].effect as { id: string }).id] : [])),
       ...chestItems.flatMap(it => (it.effect.type === 'ring' ? [it.effect.id] : [])),
       ...minibosses.map(m => DATA.items[m.drop].effect).flatMap(e => (e.type === 'ring' ? [e.id] : [])),

@@ -1,0 +1,162 @@
+{
+  "id": "fuse_runner",
+  "name": "Fuse-Runner",
+  "ai": "ranged",
+  "sprite": "runner",
+  "hp": 35,
+  "poise": {
+    "max": 12,
+    "resetTicks": 60
+  },
+  "tallow": 35,
+  "loot": "runner",
+  "speed": 72,
+  "strafeSpeed": 55,
+  "accelTicks": 4,
+  "turnDegPerTick": 12,
+  "collider": {
+    "w": 7,
+    "h": 4
+  },
+  "hurtbox": {
+    "w": 9,
+    "h": 16,
+    "offsetY": -9
+  },
+  "bodyRadius": 4,
+  "perception": {
+    "halfAngleDeg": 70,
+    "nearDistance": 48,
+    "farDistance": 300,
+    "detectTicksNear": 20,
+    "detectTicksFar": 140,
+    "suspicionAt": 0.3,
+    "forgetPerTick": 0.004,
+    "investigateTicks": 200,
+    "reactionTicks": [
+      12,
+      20
+    ],
+    "loseTicks": 240
+  },
+  "leash": {
+    "distance": 420,
+    "healOnReturn": true
+  },
+  "spacing": {
+    "preferred": 90,
+    "strafeTicks": [
+      30,
+      70
+    ],
+    "retreatBelow": 50
+  },
+  "attackGapTicks": [
+    40,
+    80
+  ],
+  "staggerTicks": 36,
+  "deathTicks": 45,
+  "corpseTicks": 150,
+  "blood": "blood2",
+  "steps": {
+    "sfx": "e_step_patter",
+    "volume": 0.6
+  },
+  "voice": {
+    "alert": "e_runner_alert",
+    "hurt": "e_runner_hurt",
+    "die": "e_runner_die"
+  },
+  "moves": [
+    {
+      "id": "spark",
+      "range": [
+        40,
+        200
+      ],
+      "weight": 3,
+      "cooldown": 90,
+      "strikes": [
+        {
+          "damage": 0,
+          "poise": 0,
+          "windup": 24,
+          "active": 3,
+          "recovery": 22,
+          "trackDegPerTick": 8,
+          "telegraph": {
+            "tick": 8,
+            "kind": "normal"
+          },
+          "hitbox": {
+            "shape": "circle",
+            "radius": 1
+          },
+          "sweep": {
+            "fromDeg": -120,
+            "toDeg": 40
+          },
+          "aimAtKeg": 70,
+          "windupSfx": "e_fuse",
+          "sfx": "e_lob",
+          "anim": "throw",
+          "projectile": {
+            "sprite": "spark",
+            "speed": 1,
+            "range": 1,
+            "damage": 8,
+            "poise": 8,
+            "knockback": 40,
+            "hitstop": 2,
+            "shake": 0.05,
+            "radius": 2,
+            "lob": {
+              "flightTicks": 36,
+              "arcHeight": 28,
+              "blastRadius": 12,
+              "sfx": "e_spark_pop"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "jab",
+      "range": [
+        0,
+        20
+      ],
+      "weight": 1,
+      "cooldown": 70,
+      "strikes": [
+        {
+          "damage": 10,
+          "poise": 15,
+          "windup": 12,
+          "active": 4,
+          "recovery": 16,
+          "telegraph": {
+            "tick": 4,
+            "kind": "normal"
+          },
+          "hitbox": {
+            "shape": "arc",
+            "radius": 18,
+            "halfAngle": 40
+          },
+          "sweep": {
+            "fromDeg": 0,
+            "toDeg": 0,
+            "reach": 6
+          },
+          "knockback": 60,
+          "hitstop": 3,
+          "shake": 0.08,
+          "sfx": "e_linstock_jab",
+          "anim": "jab"
+        }
+      ]
+    }
+  ]
+}

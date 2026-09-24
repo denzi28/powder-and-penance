@@ -187,6 +187,7 @@ function loadAll(src: Record<string, unknown>) {
         }
       if (e.boss) ids.push(e.boss.slamSfx, ...(e.boss.roarSfx ? [e.boss.roarSfx] : []));
       if (e.steps) ids.push(e.steps.sfx);
+      if (e.deathBlast) ids.push(e.deathBlast.sfx);
       for (const v of Object.values(e.voice ?? {})) if (v) ids.push(v);
       for (const id of ids) if (!sound(id)) errors.push(`data/enemies/${e.id}.json: unknown sound "${id}"`);
     }
@@ -213,6 +214,7 @@ function loadAll(src: Record<string, unknown>) {
       for (const l of table) if (l.item && !data.consumables[l.item]) errors.push(`data/loot.json: table "${t}" drops unknown consumable "${l.item}"`);
     for (const e of Object.values(data.enemies) as S.EnemyDef[])
       if (e.loot && !data.loot.tables[e.loot]) errors.push(`data/enemies/${e.id}.json: unknown loot table "${e.loot}"`);
+    for (const pr of Object.values(data.props)) if (pr.explode && !sound(pr.explode.sfx)) errors.push(`data/props/${pr.id}.json: unknown sound "${pr.explode.sfx}"`);
     for (const c of Object.values(data.consumables)) {
       if (!sound(c.sfx)) errors.push(`data/consumables/${c.id}.json: unknown sound "${c.sfx}"`);
       if (c.use.type === 'throw' && c.use.projectile.lob && !sound(c.use.projectile.lob.sfx))

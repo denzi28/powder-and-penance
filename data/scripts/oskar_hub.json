@@ -15,6 +15,22 @@
     {
       "menu": [
         {
+          "text": "I found your strongbox. (Give it to him)",
+          "when": [
+            "key:oskars_strongbox",
+            "!oskar_cache_returned"
+          ],
+          "do": [
+            { "say": "You found it! Under the Works! You actually went down there!", "who": "oskar" },
+            { "say": "And the Gunner? ...No. Don't tell me yet. Let me enjoy this.", "who": "oskar" },
+            { "say": "He counts it twice, sniffs the brandy, and puts on a ring from the bottom of the box." },
+            { "say": "My father's. The Ring of the Steady Hand. He'd want it on someone who can shoot. Take it.", "who": "oskar" },
+            { "give": "ring_steady_hand" },
+            { "say": "And with this lot I can finally stock the stall properly. Keg charges, real powder, the good salt. Come and look.", "who": "oskar" },
+            { "set": "oskar_cache_returned" }
+          ]
+        },
+        {
           "text": "Show me what you have. (Shop)",
           "do": [
             {

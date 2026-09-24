@@ -31,6 +31,7 @@ import { tickWarp, type WarpTarget } from '../game/Warp';
 import { Exits, findSpawn, type Exit } from '../world/Exits';
 import { LootDrops, rollLoot, type LootDrop } from '../world/LootDrops';
 import { Notes } from '../world/Notes';
+import { Explosions, nearestKeg } from '../game/Explosions';
 import { Pathfinder } from '../world/Pathfinder';
 import { Player } from '../player/Player';
 import { PlayerView } from '../player/PlayerView';
@@ -117,6 +118,8 @@ export class GameScene extends Phaser.Scene {
   pools = new WaxPools();
   levers!: Levers;
   notes!: Notes;
+  /** Lit powder: kegs and mules on a fuse. */
+  explosions = new Explosions();
   loot!: LootDrops;
   marker!: DeathMarker;
   /** Current area (rooms with this `area` are built into one world). */
@@ -206,6 +209,7 @@ export class GameScene extends Phaser.Scene {
       enemies: () => this.enemies,
       roomAt: (x, y) => this.roomAt(x, y),
       slowAt: (x, y) => this.pools.mult(x, y),
+      kegNear: (x, y, r) => nearestKeg(this, x, y, r),
     };
 
     // Load or start fresh. Flags and the last shrine must be known before the world is built.
@@ -351,6 +355,7 @@ export class GameScene extends Phaser.Scene {
     this.resolveBodies();
     this.combat.resolve(this.actors, this.bus);
     this.projectiles.tick(this.actors, this.grid, this.combat, this.bus);
+    this.explosions.tick(this);
     this.pools.tick();
     for (const e of this.enemies)
       if (e.veiled > 0 && e.veiled % 4 === 0) this.particles.burst(e.x + (this.rng() - 0.5) * 16, e.y - 6, 4, -Math.PI / 2, 1.4, 3, 18, e.veiled % 8 ? 'stone3' : 'stone2', false); // its smoke clings to it
@@ -643,6 +648,7 @@ export class GameScene extends Phaser.Scene {
     this.props.build(this.ctxObj, this.rooms, this.brokenWall); // props respawn; their loot flags don't
     this.loot.clear();
     this.projectiles.clear();
+    this.explosions.clear();
     this.pools.clear();
   }
 
@@ -717,6 +723,7 @@ export class GameScene extends Phaser.Scene {
               kid.aggro();
             }
           }
+        if (e.actor.def.deathBlast) this.explosions.arm(e.actor.x, e.actor.y - 4, e.actor.def.deathBlast, e.actor, this); // its keg goes up
         if (e.actor.summoned) return;
         const loot = e.actor.def.loot;
         if (loot) {
@@ -817,6 +824,7 @@ export class GameScene extends Phaser.Scene {
     });
     this.bus.on('propBroken', e => {
       const p = e.prop;
+      if (p.def.explode) this.explosions.arm(p.x, p.y - 4, p.def.explode, p, this); // a keg: it lights
       if (p.def.secretWall) {
         // A hidden way: the wall tile opens for good, and the world is redrawn around it.
         this.flags.add(`wall:${p.uid}`);
@@ -956,6 +964,7 @@ export class GameScene extends Phaser.Scene {
     this.resetEnemies();
     this.loot.clear();
     this.projectiles.clear();
+    this.explosions.clear();
     this.pools.clear();
     this.ground.setArea(area);
     this.marker.setArea(area);

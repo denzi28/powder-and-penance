@@ -1,0 +1,10 @@
+{
+  "id": "ring_steady_hand",
+  "name": "Ring of the Steady Hand",
+  "icon": 54,
+  "effect": "Your guns' shots spread half as much",
+  "mods": {
+    "spread": 0.5
+  },
+  "description": "Oskar's father wore it on the range, and never missed a bottle at fifty paces. Oskar missed every one. \"It's not the ring,\" he says. \"It's the hand. But the ring helps.\""
+}

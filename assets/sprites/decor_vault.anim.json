@@ -1,0 +1,12 @@
+{
+  "image": "decor_vault.png",
+  "cell": [
+    64,
+    64
+  ],
+  "pivot": [
+    32,
+    62
+  ],
+  "layer": "single"
+}

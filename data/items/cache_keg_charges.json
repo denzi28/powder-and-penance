@@ -1,0 +1,11 @@
+{
+  "id": "cache_keg_charges",
+  "name": "Keg Charge x2",
+  "icon": 55,
+  "description": "",
+  "effect": {
+    "type": "consumable",
+    "id": "keg_charge",
+    "count": 2
+  }
+}

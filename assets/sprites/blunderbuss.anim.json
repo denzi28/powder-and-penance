@@ -1,0 +1,18 @@
+{
+  "image": "blunderbuss.png",
+  "cell": [
+    24,
+    11
+  ],
+  "pivot": [
+    3,
+    6
+  ],
+  "layer": "weapon",
+  "points": {
+    "muzzle": [
+      22,
+      5
+    ]
+  }
+}

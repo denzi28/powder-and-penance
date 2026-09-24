@@ -112,6 +112,12 @@ Act 1 is being built room by room: the plan is in [WORLD.md](WORLD.md) and the s
   - When his health runs out he doesn't fall. He walks to the altar and pours himself onto the fire, and **the Last Candle** rises out of it: fast combos, a leap slam that rings out black flame, lobbed volleys, and **wax floods** that leave slowing pools across the floor.
   - His last words, the lift waking, and **END OF ACT ONE**. The lift itself stays sealed until Act 2.
   - Tuning: `data/enemies/chandler.json` and `chandler_wick.json`.
+- **The Powder Vault** (optional; smash the cracked wall in the Tallow Stores), 4 rooms:
+  - **Powder kegs** everywhere. Hit one (with anything: a blade, a shot, a blast) and it fizzes for a moment, then bursts, hurting everyone near it, you too, and setting off kegs beside it.
+  - New enemies: **Powder Mules** (slow porters with a keg on their back: kill one and get clear, it goes up a second later) and **Fuse-Runners** (quick soot-black boys who throw sparks at the kegs next to you).
+  - The Vault Wick shrine; the Master Gunner's log; **Oskar's strongbox** in his cache (take it to him: he gives you the Ring of the Steady Hand and opens his real stock, Keg Charges included); the **Gunner's Coat** in the Fuse Corridor.
+  - The boss, **the Master Gunner**, in the Range. First his cannon: lobbed cannonballs (three at once; watch the landing rings), a fan of grapeshot, an unblockable ram, a point-blank blast. When the gun cracks he leaps clear, and it's a duel: blunderbuss blasts, stock swings, a tossed keg, a leap back and a parting shot. He leaves you his **Blunderbuss** (two-handed; eight balls a shot).
+  - Tuning: `data/enemies/master_gunner.json`, `master_gunner_duel.json`, `powder_mule.json`, `fuse_runner.json`, `data/props/keg.json`.
 - **A shrine appears after every boss.**
 - **Quick travel:** rest at any shrine and choose TRAVEL to go to any other lit shrine, in any area.
 - **Items come in chests** (press E). You keep control while the lid opens. The banner explains the effect in plain numbers (e.g. "phial drinks 3 -> 4"), with the flavour text below.

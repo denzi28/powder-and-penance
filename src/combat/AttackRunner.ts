@@ -86,7 +86,13 @@ export class AttackRunner {
         // `count` shots in an even fan `spreadDeg` wide around the aim (lobs: landing points swung round the
         // thrower at the same distance), so a volley reads the same every time.
         const pr = s.projectile;
-        const t = this.target ?? { x: o.x + Math.cos(this.angle) * 80, y: o.y + Math.sin(this.angle) * 80 };
+        let t = this.target ?? { x: o.x + Math.cos(this.angle) * 80, y: o.y + Math.sin(this.angle) * 80 };
+        // a Fuse-Runner's spark goes for the keg beside you, if there is one
+        const keg = s.aimAtKeg ? o.ctx.kegNear?.(t.x, t.y, s.aimAtKeg) : null;
+        if (keg) {
+          t = keg;
+          this.angle = Math.atan2(keg.y - o.y, keg.x - o.x);
+        }
         const dist = Math.hypot(t.x - o.x, t.y - o.y);
         for (let i = 0; i < pr.count; i++) {
           const a = this.angle + (pr.count > 1 ? (i / (pr.count - 1) - 0.5) * pr.spreadDeg * DEG : 0);

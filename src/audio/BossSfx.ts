@@ -1050,6 +1050,92 @@ const RECIPES: Record<LayeredSound, Recipe> = {
     k.clang(0.32, 900, 0.2, 0.1);
   },
   p_mail_jingle: k => k.chain(0, 0.08, 0.12),
+  // the Powder Vault: kegs, the Mule, the Fuse-Runner, the Master Gunner and his guns
+  b_keg_blast: k => {
+    k.boom(0, 110, 32, 0.9, 1);
+    k.boom(0.02, 60, 28, 1.2, 0.7);
+    k.rumble(0.03, 1.4, 0.55);
+    k.fire(0, 0.9, 0.5, 1.3);
+    k.debris(0.05, 0.9, 0.5); // staves and stone
+  },
+  e_spark_pop: k => {
+    k.pop(0, 1400, 0.25);
+    k.fire(0, 0.25, 0.2, 1.6);
+  },
+  e_step_mule: k => {
+    k.boom(0, 90, 60, 0.12, 0.3);
+    k.clang(0.03, 420, 0.1, 0.05); // the keg's hoops knock
+  },
+  e_mule_alert: k => k.voice(0, 0.45, 120, 140, 'oh', 0.35, 0.8),
+  e_mule_hurt: k => k.voice(0, 0.25, 125, 100, 'uh', 0.35, 0.7),
+  e_mule_die: k => {
+    k.voice(0, 0.6, 120, 70, 'oh', 0.4, 0.7);
+    k.snuff(0.3, 0.1);
+  },
+  e_mule_heave: k => {
+    k.voice(0, 0.3, 110, 130, 'uh', 0.28, 0.9);
+    k.clang(0.1, 380, 0.15, 0.06);
+  },
+  e_mule_shove: k => {
+    k.whoosh(0, 0.2, 300, 900, 0.35);
+    k.boom(0.12, 120, 70, 0.15, 0.35);
+  },
+  e_runner_alert: k => k.voice(0, 0.3, 330, 420, 'eh', 0.25, 0.2), // a boy's giggle
+  e_runner_hurt: k => k.voice(0, 0.18, 360, 300, 'ah', 0.25, 0.2),
+  e_runner_die: k => {
+    k.voice(0, 0.4, 340, 220, 'ah', 0.25, 0.2);
+    k.snuff(0.2, 0.12); // his slow-match goes out
+  },
+  e_linstock_jab: k => {
+    k.whoosh(0, 0.12, 900, 2400, 0.3);
+    k.sizzle(0.08, 0.3, 0.12);
+  },
+  b_cannon_roll: k => {
+    k.rumble(0, 0.35, 0.3); // iron-shod wheels on stone
+    k.rattle(0.02, 0.25, 0.12);
+  },
+  b_cannon_crank: k => {
+    for (let i = 0; i < 4; i++) k.clang(i * 0.09, 700 + i * 60, 0.08, 0.1); // the elevating screw
+    k.voice(0.1, 0.4, 100, 120, 'uh', 0.2, 0.9);
+  },
+  b_cannon_fire: k => {
+    k.boom(0, 80, 28, 1.3, 1);
+    k.boom(0.01, 160, 50, 0.4, 0.6);
+    k.rumble(0.02, 1.8, 0.6);
+    k.whoosh(0.02, 0.6, 2000, 300, 0.35, 0.1); // the smoke rolling out
+    k.debris(0.2, 1.2, 0.25);
+  },
+  b_grapeshot: k => {
+    k.boom(0, 100, 40, 0.9, 0.9);
+    k.rumble(0.02, 1.2, 0.45);
+    for (let i = 0; i < 8; i++) k.slice(0.05 + i * 0.03, 0.08, 0.12); // the shot hissing out
+  },
+  b_cannon_ram: k => {
+    k.rumble(0, 0.8, 0.6);
+    k.rattle(0, 0.6, 0.3);
+    k.boom(0.5, 90, 40, 0.5, 0.7);
+    k.clang(0.52, 260, 0.6, 0.35);
+  },
+  b_gunner_roar: k => {
+    k.voice(0, 1.1, 130, 150, 'ah', 0.5, 0.7, 2);
+    k.boom(0.6, 80, 30, 0.9, 0.5); // a salute from the gun
+  },
+  b_gunner_grunt: k => k.voice(0, 0.25, 140, 120, 'uh', 0.3, 0.6),
+  b_stock_swing: k => {
+    k.whoosh(0, 0.25, 250, 900, 0.45);
+    k.clang(0.18, 900, 0.2, 0.12);
+  },
+  b_blunderbuss: k => {
+    k.boom(0, 150, 50, 0.6, 0.85);
+    k.debris(0.01, 0.35, 0.4); // the shot scattering
+    k.whoosh(0, 0.3, 3000, 600, 0.3, 0.1);
+    k.rumble(0.02, 0.6, 0.3);
+  },
+  p_blunderbuss: k => {
+    k.boom(0, 170, 55, 0.5, 0.8);
+    k.debris(0.01, 0.3, 0.35);
+    k.whoosh(0, 0.25, 3000, 700, 0.25, 0.1);
+  },
   // consumables, rings, notes
   p_use: k => k.whoosh(0, 0.2, 500, 1200, 0.2),
   p_belt: k => {

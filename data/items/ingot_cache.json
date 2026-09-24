@@ -1,0 +1,11 @@
+{
+  "id": "ingot_cache",
+  "name": "Tallow Ingot x2",
+  "icon": 48,
+  "description": "",
+  "effect": {
+    "type": "consumable",
+    "id": "tallow_ingot",
+    "count": 2
+  }
+}

@@ -1,0 +1,303 @@
+{
+  "id": "master_gunner_duel",
+  "name": "The Master Gunner",
+  "ai": "boss",
+  "boss": {
+    "title": "The Master Gunner, Last Shot",
+    "introAnim": "intro",
+    "introTicks": 130,
+    "slams": [
+      95
+    ],
+    "slamShake": 0.35,
+    "slamSfx": "b_blunderbuss",
+    "introLine": "\"Seventy years on the guns. Let's see what you've learned in seventy seconds.\"",
+    "roarSfx": "b_gunner_roar",
+    "deathScript": "gunner_death"
+  },
+  "sprite": "gunner",
+  "weaponSprite": "blunderbuss",
+  "weaponRestDeg": 40,
+  "hp": 700,
+  "poise": {
+    "max": 160,
+    "resetTicks": 220
+  },
+  "tallow": 3500,
+  "loot": "boss_salt",
+  "speed": 64,
+  "strafeSpeed": 44,
+  "accelTicks": 6,
+  "turnDegPerTick": 8,
+  "collider": {
+    "w": 12,
+    "h": 6
+  },
+  "hurtbox": {
+    "w": 16,
+    "h": 36,
+    "offsetY": -18
+  },
+  "bodyRadius": 8,
+  "knockbackResist": 0.8,
+  "spacing": {
+    "preferred": 70,
+    "strafeTicks": [
+      24,
+      60
+    ]
+  },
+  "attackGapTicks": [
+    10,
+    28
+  ],
+  "staggerTicks": 36,
+  "parriedTicks": 80,
+  "deathTicks": 110,
+  "corpseTicks": 999999,
+  "blood": "blood1",
+  "steps": {
+    "sfx": "b_step_armor",
+    "volume": 0.45
+  },
+  "moves": [
+    {
+      "id": "blast",
+      "range": [
+        0,
+        110
+      ],
+      "weight": 3,
+      "cooldown": 70,
+      "strikes": [
+        {
+          "damage": 0,
+          "poise": 0,
+          "windup": 22,
+          "active": 3,
+          "recovery": 30,
+          "trackDegPerTick": 5,
+          "telegraph": {
+            "tick": 8,
+            "kind": "normal"
+          },
+          "hitbox": {
+            "shape": "circle",
+            "radius": 1
+          },
+          "sweep": {
+            "fromDeg": 0,
+            "toDeg": 0
+          },
+          "sfx": "b_blunderbuss",
+          "anim": "shoot",
+          "projectile": {
+            "sprite": "ball",
+            "speed": 280,
+            "range": 130,
+            "damage": 14,
+            "poise": 12,
+            "knockback": 70,
+            "hitstop": 2,
+            "shake": 0.12,
+            "radius": 3,
+            "count": 7,
+            "spreadDeg": 34
+          }
+        }
+      ]
+    },
+    {
+      "id": "stock_club",
+      "range": [
+        0,
+        40
+      ],
+      "weight": 3,
+      "cooldown": 50,
+      "strikes": [
+        {
+          "damage": 26,
+          "poise": 35,
+          "windup": 16,
+          "active": 6,
+          "recovery": 8,
+          "trackDegPerTick": 6,
+          "hyperArmor": 30,
+          "telegraph": {
+            "tick": 6,
+            "kind": "normal"
+          },
+          "hitbox": {
+            "shape": "arc",
+            "radius": 36,
+            "halfAngle": 80
+          },
+          "originY": -12,
+          "sweep": {
+            "fromDeg": -100,
+            "toDeg": 80
+          },
+          "knockback": 120,
+          "hitstop": 5,
+          "shake": 0.2,
+          "windupSfx": "b_gunner_grunt",
+          "sfx": "b_stock_swing",
+          "anim": "club"
+        },
+        {
+          "damage": 0,
+          "poise": 0,
+          "windup": 10,
+          "active": 3,
+          "recovery": 34,
+          "trackDegPerTick": 6,
+          "hitbox": {
+            "shape": "circle",
+            "radius": 1
+          },
+          "sweep": {
+            "fromDeg": 0,
+            "toDeg": 0
+          },
+          "sfx": "b_blunderbuss",
+          "anim": "shoot",
+          "projectile": {
+            "sprite": "ball",
+            "speed": 280,
+            "range": 110,
+            "damage": 14,
+            "poise": 12,
+            "knockback": 70,
+            "hitstop": 2,
+            "shake": 0.12,
+            "radius": 3,
+            "count": 7,
+            "spreadDeg": 34
+          }
+        }
+      ]
+    },
+    {
+      "id": "keg_toss",
+      "range": [
+        50,
+        220
+      ],
+      "weight": 2,
+      "cooldown": 130,
+      "strikes": [
+        {
+          "damage": 0,
+          "poise": 0,
+          "windup": 26,
+          "active": 3,
+          "recovery": 30,
+          "trackDegPerTick": 6,
+          "telegraph": {
+            "tick": 8,
+            "kind": "danger"
+          },
+          "hitbox": {
+            "shape": "circle",
+            "radius": 1
+          },
+          "sweep": {
+            "fromDeg": -120,
+            "toDeg": 40
+          },
+          "windupSfx": "e_fuse",
+          "sfx": "e_lob",
+          "anim": "toss",
+          "projectile": {
+            "sprite": "firepot",
+            "speed": 1,
+            "range": 1,
+            "damage": 40,
+            "poise": 60,
+            "knockback": 200,
+            "hitstop": 5,
+            "shake": 0.4,
+            "radius": 4,
+            "lob": {
+              "flightTicks": 50,
+              "arcHeight": 46,
+              "blastRadius": 30,
+              "sfx": "b_keg_blast"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "leap_shot",
+      "range": [
+        0,
+        60
+      ],
+      "weight": 2,
+      "cooldown": 110,
+      "strikes": [
+        {
+          "damage": 0,
+          "poise": 0,
+          "windup": 8,
+          "active": 10,
+          "recovery": 2,
+          "trackDegPerTick": 4,
+          "hitbox": {
+            "shape": "circle",
+            "radius": 1
+          },
+          "sweep": {
+            "fromDeg": 0,
+            "toDeg": 0
+          },
+          "lunge": {
+            "distance": -60,
+            "startTick": 6,
+            "ticks": 12
+          },
+          "windupSfx": "b_gunner_grunt",
+          "sfx": "b_bone_leap",
+          "anim": "leap"
+        },
+        {
+          "damage": 0,
+          "poise": 0,
+          "windup": 14,
+          "active": 3,
+          "recovery": 30,
+          "trackDegPerTick": 8,
+          "telegraph": {
+            "tick": 2,
+            "kind": "normal"
+          },
+          "hitbox": {
+            "shape": "circle",
+            "radius": 1
+          },
+          "sweep": {
+            "fromDeg": 0,
+            "toDeg": 0
+          },
+          "sfx": "b_blunderbuss",
+          "anim": "shoot",
+          "projectile": {
+            "sprite": "ball",
+            "speed": 300,
+            "range": 150,
+            "damage": 16,
+            "poise": 14,
+            "knockback": 80,
+            "hitstop": 2,
+            "shake": 0.15,
+            "radius": 3,
+            "count": 9,
+            "spreadDeg": 40
+          }
+        }
+      ]
+    }
+  ]
+}

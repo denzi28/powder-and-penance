@@ -1,0 +1,125 @@
+{
+  "id": "powder_mule",
+  "name": "Powder Mule",
+  "ai": "melee",
+  "sprite": "mule",
+  "hp": 110,
+  "poise": {
+    "max": 45,
+    "resetTicks": 120
+  },
+  "tallow": 70,
+  "loot": "mule",
+  "speed": 30,
+  "strafeSpeed": 18,
+  "accelTicks": 10,
+  "turnDegPerTick": 5,
+  "collider": {
+    "w": 10,
+    "h": 6
+  },
+  "hurtbox": {
+    "w": 14,
+    "h": 20,
+    "offsetY": -11
+  },
+  "bodyRadius": 7,
+  "knockbackResist": 0.5,
+  "perception": {
+    "halfAngleDeg": 70,
+    "nearDistance": 48,
+    "farDistance": 300,
+    "detectTicksNear": 20,
+    "detectTicksFar": 140,
+    "suspicionAt": 0.3,
+    "forgetPerTick": 0.004,
+    "investigateTicks": 200,
+    "reactionTicks": [
+      12,
+      20
+    ],
+    "loseTicks": 240
+  },
+  "leash": {
+    "distance": 380,
+    "healOnReturn": true
+  },
+  "spacing": {
+    "preferred": 22,
+    "strafeTicks": [
+      40,
+      90
+    ]
+  },
+  "attackGapTicks": [
+    40,
+    90
+  ],
+  "staggerTicks": 40,
+  "deathTicks": 60,
+  "corpseTicks": 300,
+  "blood": "blood2",
+  "steps": {
+    "sfx": "e_step_mule",
+    "volume": 0.7
+  },
+  "voice": {
+    "alert": "e_mule_alert",
+    "hurt": "e_mule_hurt",
+    "die": "e_mule_die"
+  },
+  "deathBlast": {
+    "fuseTicks": 75,
+    "radius": 38,
+    "damage": 45,
+    "poise": 70,
+    "knockback": 220,
+    "sfx": "b_keg_blast"
+  },
+  "moves": [
+    {
+      "id": "shoulder",
+      "range": [
+        0,
+        26
+      ],
+      "weight": 2,
+      "cooldown": 80,
+      "strikes": [
+        {
+          "damage": 22,
+          "poise": 40,
+          "windup": 26,
+          "active": 5,
+          "recovery": 30,
+          "trackDegPerTick": 4,
+          "telegraph": {
+            "tick": 10,
+            "kind": "normal"
+          },
+          "hitbox": {
+            "shape": "circle",
+            "radius": 14,
+            "offset": 10
+          },
+          "sweep": {
+            "fromDeg": 0,
+            "toDeg": 0,
+            "reach": 6
+          },
+          "lunge": {
+            "distance": 14,
+            "startTick": 22,
+            "ticks": 6
+          },
+          "knockback": 200,
+          "hitstop": 5,
+          "shake": 0.2,
+          "windupSfx": "e_mule_heave",
+          "sfx": "e_mule_shove",
+          "anim": "shove"
+        }
+      ]
+    }
+  ]
+}

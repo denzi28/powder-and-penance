@@ -1,0 +1,134 @@
+{
+  "id": "vault_04_the_range",
+  "area": "vault",
+  "origin": [50, 8],
+  "legend": {
+    "#": "wall",
+    ".": "floor",
+    ",": "floor_grate",
+    "_": "floor_plank",
+    " ": "void"
+  },
+  "tiles": [
+    "##########################",
+    "#________________________#",
+    "#________________________#",
+    "#________________________#",
+    "#________________________#",
+    "#________________________#",
+    "#________________________#",
+    "#________________________#",
+    "_________________________#",
+    "_________________________#",
+    "#________________________#",
+    "#________________________#",
+    "#________________________#",
+    "#________________________#",
+    "#________________________#",
+    "#________________________#",
+    "#________________________#",
+    "##########################"
+  ],
+  "entities": [
+    {
+      "type": "arena",
+      "id": "the_range",
+      "boss": "master_gunner",
+      "seals": [[0, 8], [0, 9]],
+      "at": [0, 0]
+    },
+    {
+      "type": "enemy",
+      "kind": "master_gunner",
+      "at": [20, 9],
+      "facing": "W"
+    },
+    {
+      "type": "shrine",
+      "id": "shrine_range",
+      "name": "Range Wick",
+      "at": [4, 3],
+      "when": "boss:master_gunner"
+    },
+    {
+      "type": "decor",
+      "kind": "rail",
+      "at": [4, 12]
+    },
+    {
+      "type": "decor",
+      "kind": "rail",
+      "at": [8, 12]
+    },
+    {
+      "type": "decor",
+      "kind": "rail",
+      "at": [12, 12]
+    },
+    {
+      "type": "decor",
+      "kind": "rail",
+      "at": [16, 12]
+    },
+    {
+      "type": "decor",
+      "kind": "rail",
+      "at": [20, 12]
+    },
+    {
+      "type": "decor",
+      "kind": "target",
+      "at": [24, 3]
+    },
+    {
+      "type": "decor",
+      "kind": "target",
+      "at": [24, 7]
+    },
+    {
+      "type": "decor",
+      "kind": "target",
+      "at": [24, 11]
+    },
+    {
+      "type": "decor",
+      "kind": "target",
+      "at": [24, 15]
+    },
+    {
+      "type": "decor",
+      "kind": "shot_pyramid",
+      "at": [22, 2]
+    },
+    {
+      "type": "decor",
+      "kind": "shot_pyramid",
+      "at": [22, 15]
+    },
+    {
+      "type": "decor",
+      "kind": "powder_spill",
+      "at": [10, 6]
+    },
+    {
+      "type": "prop",
+      "kind": "keg",
+      "at": [6, 3]
+    },
+    {
+      "type": "prop",
+      "kind": "keg",
+      "at": [6, 14]
+    },
+    {
+      "type": "prop",
+      "kind": "keg",
+      "at": [16, 3]
+    },
+    {
+      "type": "prop",
+      "kind": "keg",
+      "at": [16, 14]
+    }
+  ]
+}

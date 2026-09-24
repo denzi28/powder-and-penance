@@ -1,0 +1,151 @@
+{
+  "image": "mule.png",
+  "cell": [
+    32,
+    32
+  ],
+  "pivot": [
+    16,
+    28
+  ],
+  "layer": "single",
+  "animations": {
+    "idle": {
+      "row": 0,
+      "dirs": [
+        "S",
+        "SE",
+        "E",
+        "NE",
+        "N"
+      ],
+      "loop": true,
+      "frames": [
+        {
+          "ticks": 16
+        },
+        {
+          "ticks": 16
+        }
+      ]
+    },
+    "walk": {
+      "row": 5,
+      "dirs": [
+        "S",
+        "SE",
+        "E",
+        "NE",
+        "N"
+      ],
+      "loop": true,
+      "frames": [
+        {
+          "ticks": 11
+        },
+        {
+          "ticks": 11,
+          "events": [
+            "footstep"
+          ]
+        },
+        {
+          "ticks": 11
+        },
+        {
+          "ticks": 11,
+          "events": [
+            "footstep"
+          ]
+        }
+      ]
+    },
+    "shove": {
+      "row": 10,
+      "dirs": [
+        "S",
+        "SE",
+        "E",
+        "NE",
+        "N"
+      ],
+      "loop": false,
+      "frames": [
+        {
+          "ticks": 1,
+          "phase": "windup"
+        },
+        {
+          "ticks": 2,
+          "phase": "windup"
+        },
+        {
+          "ticks": 2,
+          "phase": "windup"
+        },
+        {
+          "ticks": 1,
+          "phase": "active"
+        },
+        {
+          "ticks": 1,
+          "phase": "active"
+        },
+        {
+          "ticks": 2,
+          "phase": "recovery"
+        },
+        {
+          "ticks": 1,
+          "phase": "recovery"
+        }
+      ]
+    },
+    "stagger": {
+      "row": 15,
+      "dirs": [
+        "S",
+        "SE",
+        "E",
+        "NE",
+        "N"
+      ],
+      "loop": false,
+      "frames": [
+        {
+          "ticks": 6
+        },
+        {
+          "ticks": 10
+        },
+        {
+          "ticks": 30
+        }
+      ]
+    },
+    "death": {
+      "row": 20,
+      "dirs": [
+        "S"
+      ],
+      "loop": false,
+      "frames": [
+        {
+          "ticks": 8
+        },
+        {
+          "ticks": 10
+        },
+        {
+          "ticks": 12
+        },
+        {
+          "ticks": 30
+        },
+        {
+          "ticks": 60
+        }
+      ]
+    }
+  }
+}
