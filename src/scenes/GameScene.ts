@@ -21,6 +21,7 @@ import { Props } from '../world/Props';
 import { Decor } from '../world/Decor';
 import { markObstacles } from '../world/Obstacles';
 import { Npcs } from '../story/Npcs';
+import { Chatter } from '../story/Chatter';
 import { Story } from '../story/Story';
 import { BossArena } from '../game/BossArena';
 import { Levers } from '../world/Levers';
@@ -93,6 +94,7 @@ export class GameScene extends Phaser.Scene {
   props!: Props;
   decor!: Decor;
   npcs!: Npcs;
+  chatter!: Chatter;
   /** Dialogue and cutscenes (data/scripts): pauses the world while a script runs. */
   story = new Story(this);
   /** Boss arenas of the current area; `arena.active` drives the boss bar. */
@@ -208,6 +210,11 @@ export class GameScene extends Phaser.Scene {
     this.props = new Props(this.lib);
     this.decor = new Decor(this.lib);
     this.npcs = new Npcs(this.lib);
+    this.chatter = new Chatter(this, this.npcs, this.bus);
+    this.npcs.onWorkStroke = n => {
+      const sfx = DATA.npcs.npcs[n.npc].workSfx;
+      if (sfx) this.bus.emit('sfx', { id: sfx, volume: 0.35, pitch: 0.9 + Math.random() * 0.2 });
+    };
     this.story = new Story(this);
     this.arena = new BossArena(this);
     this.levers = new Levers(this.lib);
@@ -732,7 +739,9 @@ export class GameScene extends Phaser.Scene {
     this.loot.render();
     this.projectileView.render(this.projectiles.list, alpha);
     this.pools.draw(this);
-    this.npcs.update(delta, this.player.x);
+    const still = !!(this.menu || this.mapOpen || this.story.active || this.warp);
+    this.npcs.update(delta, this.player, still);
+    this.chatter.update(delta, this.player, this.flags, still);
     this.arena.update(delta);
     // A script can point the camera elsewhere (cutscenes); otherwise it follows the player.
     const focus = this.story.cameraPoint;
@@ -905,6 +914,7 @@ export class GameScene extends Phaser.Scene {
     this.props.build(this.ctxObj, this.rooms, this.brokenWall);
     this.exits.build(this.rooms);
     this.npcs.build(this.rooms, this.flags);
+    this.chatter.reset();
     this.arena.build(this.rooms);
     this.levers.build(this.rooms, this.leverPulled);
     this.placeWeapons();

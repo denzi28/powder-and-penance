@@ -33,6 +33,10 @@ The map is in [WORLD.md](WORLD.md).
 | **Oskar Fennick** | Wreck → hub | A fellow convict: loud, funny, a smuggler of powder. Free him from the cage (after you find the key on the road) and he runs the hub stall: ammo and powder. Quest: his hidden cache in the Powder Vault unlocks gun upgrades. If you never free him, you find his cage empty and a new Wickling on the road. |
 | **Brother Aldous** | Abbey Scriptorium | A Warden deserter turning to wax. Give him Bitter Salt to slow it and he fights beside you against the Chandler. Otherwise you meet him later in the Nave Approach as a Wickling that still carries his shield. |
 | **Pip** | Waxmire | A pilgrim child, quiet, collects candle stubs. Escort them to the hub, where they sit by Maudlin's fire. Small lore lines. Pays off in Act 2. |
+| **Tomas** | Hub | The lamplighter. Walks the yard lighting the lamps; ask him the way and he tells you where to go next. |
+| **Hedda** | Hub | The water-carrier: well to fire and back. Wells are for talking at, so she hears everything: she points you at secrets you haven't found. |
+| **Bede** | Hub | The woodcutter. Splits logs at his block and carries them to the fire. Gives you what he found in the woodpile. |
+| **Old Agnes** | Hub | A pilgrim who kneels at the shrine all day. Remembers when the Wick burned bright. |
 | **The Tollwarden** | Abbey Gatehouse | Speaks before the fight: "Toll is paid in tallow, pilgrim. And tallow is paid in you." |
 | **Mother Tallow** | Works | Wordless. Hums a work song. |
 | **Mire Matron** | Waxmire | Sings; asks if you've come to be born again |
@@ -78,6 +82,33 @@ Everything is data; the game hot-reloads it and checks every reference when it l
 ```
 - The character appears only while `when` holds.
 - Press E nearby to run the `talk` script.
+
+**Giving a character a life (routines):** townsfolk walk from stop to stop and do their job at each one.
+```json
+{ "type": "npc", "id": "hedda", "npc": "hedda", "at": [10, 16], "talk": "hedda",
+  "routine": [
+    { "at": [10, 16], "do": "work", "ticks": 220, "face": -1 },
+    { "via": [[11, 14], [16, 14]], "at": [20, 16], "do": "work", "ticks": 150, "face": 1 },
+    { "at": [21, 18], "do": "idle", "ticks": 280 }
+  ] }
+```
+- Each stop: walk there in straight lines through the `via` points (room tiles), then `do` it for `ticks`: `idle`, `work` (their job: lighting lamps, drawing water, chopping), `sit` or `kneel`. `face` turns them left (-1) or right (1). The routine loops.
+- Without a routine, `"pose": "sit"` / `"kneel"` / `"work"` keeps them at it where they stand.
+- Walks must stay on open floor, clear of solid scenery: `tests/npcs.test.ts` checks every route.
+- They stop and give way if you stand in their path, stand still while any script runs, and face you when you come close.
+- `workSfx` in `data/npcs.json` plays on each stroke of the work pose when you're near (Bede's axe).
+- Walking and working need the 12-frame townsfolk sheets (`genTownsfolk` in tools/gen-art.ts): 0-1 idle, 2-3 talk, 4-7 walk, 8-9 work, 10 sit, 11 kneel.
+
+**Chatter between characters (`data/chatter.json`):** now and then, people standing near each other trade a few lines in speech bubbles, if you're close enough to see.
+```json
+{ "id": "anselm", "who": ["tomas", "maudlin"], "when": "boss:tollwarden",
+  "lines": [["tomas", "They say the Tollwarden fell. Old Anselm."], ["maudlin", "He kept a count of every one he sent down."]] }
+```
+- `who` are placement ids; they must all be present and within `range` px (default 80) of the first.
+- `when` ties the talk to the story. A chat isn't repeated until the others have been heard.
+- They pause what they're doing and face each other while they talk. Talking to one of them yourself interrupts it.
+- Lines are short (90 characters at most): they sit in a bubble over the speaker's head.
+- `tests/npcs.test.ts` checks that every chat pairs people whose routines bring them within range.
 
 **Cutscene trigger:**
 ```json

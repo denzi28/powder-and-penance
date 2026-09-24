@@ -1,0 +1,46 @@
+{
+  "id": "hedda",
+  "steps": [
+    {
+      "if": "!hedda_met",
+      "then": [
+        { "say": "Out of the way of the buckets, love. Hedda. I carry the water, so I hear everything. Wells are for talking at.", "who": "hedda" },
+        { "set": "hedda_met" }
+      ]
+    },
+    {
+      "menu": [
+        {
+          "text": "Heard anything?",
+          "do": [
+            {
+              "if": "!wall:works_03_stores#35",
+              "then": [{ "say": "A carter swears one wall in the Tallow Stores breathes warm air. Says there's something behind it. Put your shoulder to it, if you're ever down there.", "who": "hedda" }],
+              "else": [
+                {
+                  "if": "!lever:works_lift",
+                  "then": [{ "say": "The old lift by the fire runs down into the Works. Its lever's at the bottom. Pull it and you'd come and go as you please.", "who": "hedda" }],
+                  "else": [
+                    {
+                      "if": "!lever:mire_sluice",
+                      "then": [{ "say": "There's a sluice deep in the Waxmire. Open it and it drains a way into the Abbey's Undercroft. The monks used it to carry out the dead.", "who": "hedda" }],
+                      "else": [{ "say": "Pilgrims hide shards of their phials in chests on the road. The glass remembers what it held. Bring the shards to the shrine.", "who": "hedda" }]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "text": "About the notice board...",
+          "do": [
+            { "say": "The poster? Order's looking for a hooded convict. Can't think who they mean.", "who": "hedda" },
+            { "say": "Nobody here reads, love. Nobody here tells.", "who": "hedda" }
+          ]
+        },
+        { "text": "Leave", "end": true, "do": [{ "say": "Don't drink the mire water. I mean it.", "who": "hedda" }] }
+      ]
+    }
+  ]
+}

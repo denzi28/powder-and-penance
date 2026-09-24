@@ -62,6 +62,7 @@ function loadAll(src: Record<string, unknown>) {
     areas: one(S.Areas, 'areas'),
     decor: one(S.DecorTable, 'decor'),
     npcs: one(S.Npcs, 'npcs'),
+    chatter: one(S.Chatter, 'chatter'),
     terrain: one(S.Terrain, 'terrain'),
     scripts: dir(S.ScriptDef, 'scripts'),
   };
@@ -152,6 +153,7 @@ export type GameData = Extract<ReturnType<typeof loadAll>, { ok: true }>['data']
 function checkStory(data: {
   rooms: Record<string, S.RoomData>;
   npcs: { npcs: Record<string, S.NpcDef>; narration: S.Voice };
+  chatter: { chats: S.ChatDef[] };
   scripts: Record<string, S.ScriptDef>;
   items: Record<string, unknown>;
   enemies: Record<string, unknown>;
@@ -168,6 +170,17 @@ function checkStory(data: {
         if (!data.npcs.npcs[String(en.npc)]) errors.push(`data/rooms/${r.id}.json: npc "${en.id}" has unknown character "${String(en.npc)}"`);
         if (en.talk !== undefined && !data.scripts[String(en.talk)])
           errors.push(`data/rooms/${r.id}.json: npc "${en.id}" talks with unknown script "${String(en.talk)}"`);
+        if (en.routine !== undefined) {
+          const rt = z.array(S.NpcStop).min(1).safeParse(en.routine);
+          if (!rt.success) errors.push(`data/rooms/${r.id}.json: npc "${en.id}" routine:\n${S.formatZod(rt.error)}`);
+          else
+            for (const stop of rt.data)
+              for (const [tx, ty] of [...(stop.via ?? []), stop.at])
+                if (r.legend[r.tiles[ty]?.[tx] ?? ' '] === undefined || ['wall', 'void'].includes(r.legend[r.tiles[ty][tx]]))
+                  errors.push(`data/rooms/${r.id}.json: npc "${en.id}" routine goes through [${tx}, ${ty}], which is not floor`);
+        }
+        if (en.pose !== undefined && !['idle', 'work', 'sit', 'kneel'].includes(String(en.pose)))
+          errors.push(`data/rooms/${r.id}.json: npc "${en.id}" has unknown pose "${String(en.pose)}"`);
       }
       if (en.type === 'lever' && en.script !== undefined && !data.scripts[String(en.script)])
         errors.push(`data/rooms/${r.id}.json: lever "${en.id}" runs unknown script "${String(en.script)}"`);
@@ -191,8 +204,14 @@ function checkStory(data: {
     }
   };
   for (const sc of Object.values(data.scripts)) walk(`data/scripts/${sc.id}.json`, sc.steps);
+  for (const c of data.chatter.chats) {
+    for (const w of c.who) if (!npcPlacements.has(w)) errors.push(`data/chatter.json: chat "${c.id}": no npc placement "${w}"`);
+    for (const [w] of c.lines) if (!c.who.includes(w)) errors.push(`data/chatter.json: chat "${c.id}": "${w}" speaks but is not in "who"`);
+  }
   for (const [id, n] of Object.entries(data.npcs.npcs))
     if (!data.sfx.presets[n.voice.sfx]) errors.push(`data/npcs.json: "${id}" has unknown voice sound "${n.voice.sfx}"`);
+  for (const [id, n] of Object.entries(data.npcs.npcs))
+    if (n.workSfx && !data.sfx.presets[n.workSfx]) errors.push(`data/npcs.json: "${id}" has unknown work sound "${n.workSfx}"`);
   if (!data.sfx.presets[data.npcs.narration.sfx]) errors.push(`data/npcs.json: unknown narration voice sound "${data.npcs.narration.sfx}"`);
   return errors;
 }

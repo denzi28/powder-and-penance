@@ -64,6 +64,21 @@
       "at": [9, 6]
     },
     {
+      "type": "decor",
+      "kind": "candle_stand",
+      "at": [2, 3]
+    },
+    {
+      "type": "decor",
+      "kind": "candle_stand",
+      "at": [9, 3]
+    },
+    {
+      "type": "decor",
+      "kind": "scroll_pile",
+      "at": [7, 6]
+    },
+    {
       "type": "npc",
       "id": "maudlin_chapel",
       "npc": "maudlin",

@@ -27,6 +27,12 @@
     "bookshelf": { "sprite": "decor_hub", "frame": 10, "blocks": [[-1, 0], [0, 0]], "tall": true },
     "ruin_wall": { "sprite": "decor_hub", "frame": 11, "blocks": [[-1, 0], [0, 0], [1, 0]], "tall": true },
     "notice_board": { "sprite": "decor_hub", "frame": 12, "blocks": [[0, 0]] },
+    "log_seat": { "sprite": "decor_hub", "frame": 13, "blocks": [[-1, 0], [0, 0]] },
+    "woodpile": { "sprite": "decor_hub", "frame": 14, "blocks": [[-1, 0], [0, 0]], "tall": true },
+    "chopping_block": { "sprite": "decor_hub", "frame": 15, "blocks": [[0, 0]] },
+    "laundry_line": { "sprite": "decor_hub", "frame": 16, "blocks": [[-1, 0], [1, 0]] },
+    "trestle_table": { "sprite": "decor_hub", "frame": 17, "blocks": [[-1, 0], [0, 0]] },
+    "water_barrel": { "sprite": "decor_hub", "frame": 18, "blocks": [[0, 0]] },
 
     "vat": { "sprite": "decor_works", "frame": 0, "blocks": [[-1, 0], [0, 0], [1, 0], [-1, -1], [0, -1], [1, -1]], "tall": true },
     "hook_chain": { "sprite": "decor_works", "frame": 1 },

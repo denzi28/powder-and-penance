@@ -1,0 +1,35 @@
+{
+  "id": "agnes",
+  "steps": [
+    { "say": "Hush... I'm nearly done. There.", "who": "agnes" },
+    {
+      "menu": [
+        {
+          "text": "What are you praying for?",
+          "do": [
+            { "say": "When I was a girl, the Wick burned so bright you could read by it at the foot of this hill.", "who": "agnes" },
+            { "say": "Now look at it. I pray for it to burn a little longer. Just until I'm gone. That's selfish, isn't it?", "who": "agnes" }
+          ]
+        },
+        {
+          "text": "The Drip?",
+          "do": [
+            { "say": "It started with the candles. They sweated, even cold. Then the pilgrims did.", "who": "agnes" },
+            { "say": "The Order says it's penance. The Order says a lot of things, from very high up.", "who": "agnes" }
+          ]
+        },
+        {
+          "text": "Leave",
+          "end": true,
+          "do": [
+            {
+              "if": "boss:chandler",
+              "then": [{ "say": "Something changed up there. The shrine is warmer. Bless you, whoever you are.", "who": "agnes" }],
+              "else": [{ "say": "I'll pray for you too. It's no trouble. I'm here anyway.", "who": "agnes" }]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -283,7 +283,14 @@ export const Voice = z.object({
 });
 export type Voice = z.infer<typeof Voice>;
 /** data/npcs.json: characters. `portrait` is a frame of the `portraits` sheet. */
-export const NpcDef = z.object({ name: z.string(), sprite: z.string(), portrait: int.nonnegative(), voice: Voice.default({ sfx: 'voice', pitch: 1, every: 2, volume: 1 }) });
+export const NpcDef = z.object({
+  name: z.string(),
+  sprite: z.string(),
+  portrait: int.nonnegative(),
+  voice: Voice.default({ sfx: 'voice', pitch: 1, every: 2, volume: 1 }),
+  /** Sound on each stroke of its work pose (chopping, drawing water...), heard when you're near. */
+  workSfx: z.string().optional(),
+});
 /** `narration`: the voice of lines with no speaker. */
 export const Npcs = z.object({ npcs: z.record(z.string(), NpcDef), narration: Voice.default({ sfx: 'voice_soft', pitch: 0.75, every: 3, volume: 0.55 }) });
 
@@ -656,6 +663,27 @@ export const DecorTable = z.object({ decor: z.record(z.string(), DecorDef) });
 /** data/terrain.json: floor variants that change how things move (e.g. wax pools slow you down). */
 export const Terrain = z.object({ floors: z.record(z.string(), z.object({ speedMult: num.min(0.05).max(2) })) });
 export const RoomEntity = z.object({ type: z.string(), id: z.string().optional(), at: Vec2 }).passthrough();
+/** One stop of an NPC's routine (room tiles): walk there (through `via`), then `do` something for `ticks`. */
+export const NpcStop = z.object({
+  at: Vec2,
+  via: z.array(Vec2).optional(),
+  do: z.enum(['idle', 'work', 'sit', 'kneel']).default('idle'),
+  ticks: int.positive().default(120),
+  face: z.union([z.literal(-1), z.literal(1)]).optional(),
+});
+export type NpcStop = z.infer<typeof NpcStop>;
+/** Ambient chatter: short exchanges in speech bubbles between NPC placements standing near each other. */
+export const ChatDef = z.object({
+  id: z.string(),
+  /** Placement ids that must all be present and within `range` px of the first. */
+  who: z.array(z.string()).min(1),
+  when: Cond.optional(),
+  range: pos.default(80),
+  /** [placement id, line] in order. Lines are short: they sit in a bubble over the speaker's head. */
+  lines: z.array(z.tuple([z.string(), z.string().max(90)])).min(1),
+});
+export const Chatter = z.object({ chats: z.array(ChatDef) });
+export type ChatDef = z.infer<typeof ChatDef>;
 export const RoomData = z
   .object({
     id: z.string(),

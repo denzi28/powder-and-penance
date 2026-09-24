@@ -1,0 +1,151 @@
+{
+  "chats": [
+    {
+      "id": "lamps_lit",
+      "who": ["tomas", "maudlin"],
+      "lines": [
+        ["tomas", "Evening, Sister. The lamps are lit."],
+        ["maudlin", "Bless you, Tomas. Go easy on the oil. It's the last cask."],
+        ["tomas", "It's always the last cask."]
+      ]
+    },
+    {
+      "id": "flints",
+      "who": ["oskar_stall", "tomas"],
+      "lines": [
+        ["oskar_stall", "Oi, lamp-man! Sell you a flint? Best in the valley."],
+        ["tomas", "Forty years I've lit these lamps without your flints."],
+        ["oskar_stall", "And look how well that's gone."]
+      ]
+    },
+    {
+      "id": "stall_stock",
+      "who": ["oskar_stall", "tomas"],
+      "lines": [
+        ["tomas", "What are you selling today?"],
+        ["oskar_stall", "Optimism. Two coppers a scoop."],
+        ["tomas", "I'll take a scoop."]
+      ]
+    },
+    {
+      "id": "wet_wood",
+      "who": ["hedda", "bede"],
+      "range": 100,
+      "lines": [
+        ["bede", "Wood's wet again."],
+        ["hedda", "Everything's wet. Even the bread sweats."],
+        ["bede", "The bread's always sweated. You bake it."]
+      ]
+    },
+    {
+      "id": "broth",
+      "who": ["hedda", "pip"],
+      "lines": [
+        ["hedda", "Closer to the fire, little one. You're shivering."],
+        ["pip", "The lady in the water used to hum like the kettle does."],
+        ["hedda", "Hush now. Eat your broth."]
+      ]
+    },
+    {
+      "id": "prayer",
+      "who": ["agnes", "maudlin"],
+      "lines": [
+        ["agnes", "Every day I pray, Sister. Still the candle burns low."],
+        ["maudlin", "Then pray tomorrow, Agnes. That's all any of us can do."]
+      ]
+    },
+    {
+      "id": "knees",
+      "who": ["agnes", "tomas"],
+      "lines": [
+        ["tomas", "Up off those stones, Agnes. Your knees will set like wax."],
+        ["agnes", "The saint can't hear me standing up."],
+        ["tomas", "Then shout."]
+      ]
+    },
+    {
+      "id": "axe",
+      "who": ["bede", "pip"],
+      "lines": [
+        ["bede", "Want to swing the axe, runt?"],
+        ["pip", "It's bigger than me."],
+        ["bede", "Everything's bigger than you."]
+      ]
+    },
+    {
+      "id": "crooked",
+      "who": ["tomas", "pip"],
+      "range": 90,
+      "lines": [
+        ["pip", "Why do you light them when it's already dark?"],
+        ["tomas", "Because it's dark, child. That's when they're for."]
+      ]
+    },
+    {
+      "id": "gate_shut",
+      "who": ["tomas", "maudlin"],
+      "when": "!boss:tollwarden",
+      "lines": [
+        ["tomas", "No carts again today. The Gatehouse still shut?"],
+        ["maudlin", "The Tollwarden lets nothing through that hasn't paid."]
+      ]
+    },
+    {
+      "id": "anselm",
+      "who": ["tomas", "maudlin"],
+      "when": "boss:tollwarden",
+      "lines": [
+        ["tomas", "They say the Tollwarden fell. Old Anselm."],
+        ["maudlin", "He kept a count of every one he sent down. Did you know that?"],
+        ["tomas", "I didn't. I wish I didn't."]
+      ]
+    },
+    {
+      "id": "carts",
+      "who": ["hedda", "bede"],
+      "range": 100,
+      "when": "works_reveal",
+      "lines": [
+        ["hedda", "Those carts from the Works. The robes on them..."],
+        ["bede", "Don't. Not near the fire."],
+        ["hedda", "We ate by that smoke, Bede. For years."]
+      ]
+    },
+    {
+      "id": "lift",
+      "who": ["hedda", "pip"],
+      "when": "lever:works_lift",
+      "lines": [
+        ["pip", "The iron box by the fire groaned last night!"],
+        ["hedda", "That's the lift, love. Someone's woken it."]
+      ]
+    },
+    {
+      "id": "singing_stopped",
+      "who": ["hedda", "pip"],
+      "when": "boss:mire_matron",
+      "lines": [
+        ["pip", "She's stopped singing. I can't hear her at all now."],
+        ["hedda", "Then she's resting. Let her."]
+      ]
+    },
+    {
+      "id": "bell_quiet",
+      "who": ["tomas", "maudlin"],
+      "when": "boss:chandler",
+      "lines": [
+        ["tomas", "The bell's quiet up there. First time in my life."],
+        ["maudlin", "The Chandler rang it every dusk for forty years."],
+        ["tomas", "Then who rings it now?"]
+      ]
+    },
+    {
+      "id": "poster",
+      "who": ["hedda", "pip"],
+      "lines": [
+        ["pip", "Who's the hooded man on the board?"],
+        ["hedda", "Nobody, love. Nobody we've seen."]
+      ]
+    }
+  ]
+}

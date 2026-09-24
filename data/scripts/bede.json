@@ -1,0 +1,21 @@
+{
+  "id": "bede",
+  "steps": [
+    {
+      "if": "!bede_gift",
+      "then": [
+        { "say": "Hm. You're the one from the wagon. Bede. I split the wood.", "who": "bede" },
+        { "say": "Found this in the woodpile. Somebody hid it and died, I expect. You'll use it better than me.", "who": "bede" },
+        { "give": "tallow_lump" },
+        { "set": "bede_gift" }
+      ],
+      "else": [
+        {
+          "if": "boss:mother_tallow",
+          "then": [{ "say": "The carts from the Works stopped coming. Good. I never liked what the smoke smelled of.", "who": "bede" }],
+          "else": [{ "say": "Wood's wet. Everything's wet. The Drip gets into the grain of it. Burns with a hiss, like it's sorry.", "who": "bede" }]
+        }
+      ]
+    }
+  ]
+}

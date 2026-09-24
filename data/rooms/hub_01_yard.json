@@ -169,7 +169,7 @@
     {
       "type": "prop",
       "kind": "crate",
-      "at": [24, 9]
+      "at": [27, 9]
     },
     {
       "type": "prop",
@@ -259,19 +259,116 @@
       }
     },
     {
+      "type": "decor",
+      "kind": "prayer_bench",
+      "at": [13, 7]
+    },
+    {
+      "type": "decor",
+      "kind": "candle_cairn",
+      "at": [16, 8]
+    },
+    {
+      "type": "decor",
+      "kind": "candle_cairn",
+      "at": [11, 8]
+    },
+    {
+      "type": "decor",
+      "kind": "rubble",
+      "at": [8, 4]
+    },
+    {
+      "type": "decor",
+      "kind": "grass_tuft",
+      "at": [3, 8]
+    },
+    {
+      "type": "decor",
+      "kind": "barrels",
+      "at": [25, 6]
+    },
+    {
+      "type": "decor",
+      "kind": "sacks",
+      "at": [26, 7]
+    },
+    {
+      "type": "decor",
+      "kind": "water_barrel",
+      "at": [8, 15]
+    },
+    {
+      "type": "decor",
+      "kind": "laundry_line",
+      "at": [8, 18]
+    },
+    {
+      "type": "decor",
+      "kind": "woodpile",
+      "at": [5, 20]
+    },
+    {
+      "type": "decor",
+      "kind": "chopping_block",
+      "at": [7, 21]
+    },
+    {
+      "type": "decor",
+      "kind": "log_seat",
+      "at": [24, 15]
+    },
+    {
+      "type": "decor",
+      "kind": "trestle_table",
+      "at": [22, 20]
+    },
+    {
+      "type": "decor",
+      "kind": "lantern_post",
+      "at": [3, 13]
+    },
+    {
       "type": "npc",
       "id": "maudlin",
       "npc": "maudlin",
       "at": [12, 10],
-      "talk": "maudlin"
+      "talk": "maudlin",
+      "routine": [
+        {
+          "at": [12, 10],
+          "do": "idle",
+          "ticks": 420
+        },
+        {
+          "at": [13, 9],
+          "do": "work",
+          "ticks": 240,
+          "face": 1
+        }
+      ]
     },
     {
       "type": "npc",
       "id": "oskar_stall",
       "npc": "oskar",
-      "at": [22, 6],
+      "at": [24, 7],
       "talk": "oskar_hub",
-      "when": "oskar_freed"
+      "when": "oskar_freed",
+      "routine": [
+        {
+          "at": [24, 7],
+          "do": "idle",
+          "ticks": 300,
+          "face": -1
+        },
+        {
+          "at": [24, 7],
+          "do": "work",
+          "ticks": 200,
+          "face": -1
+        }
+      ]
     },
     {
       "type": "npc",
@@ -279,7 +376,126 @@
       "npc": "pip",
       "at": [22, 16],
       "talk": "pip_hub",
-      "when": "pip_rescued"
+      "when": "pip_rescued",
+      "pose": "sit",
+      "face": -1
+    },
+    {
+      "type": "npc",
+      "id": "tomas",
+      "npc": "tomas",
+      "at": [26, 8],
+      "talk": "tomas",
+      "routine": [
+        {
+          "at": [26, 8],
+          "do": "work",
+          "ticks": 170,
+          "face": -1
+        },
+        {
+          "via": [[25, 10], [19, 10]],
+          "at": [19, 13],
+          "do": "work",
+          "ticks": 170,
+          "face": 1
+        },
+        {
+          "via": [[17, 12]],
+          "at": [16, 13],
+          "do": "work",
+          "ticks": 170,
+          "face": -1
+        },
+        {
+          "via": [[15, 12], [5, 12]],
+          "at": [4, 13],
+          "do": "work",
+          "ticks": 170,
+          "face": -1
+        },
+        {
+          "via": [[5, 12]],
+          "at": [13, 11],
+          "do": "idle",
+          "ticks": 320
+        },
+        {
+          "via": [[18, 11], [18, 10]],
+          "at": [25, 10],
+          "do": "idle",
+          "ticks": 60
+        }
+      ]
+    },
+    {
+      "type": "npc",
+      "id": "hedda",
+      "npc": "hedda",
+      "at": [10, 16],
+      "talk": "hedda",
+      "routine": [
+        {
+          "at": [10, 16],
+          "do": "work",
+          "ticks": 220,
+          "face": -1
+        },
+        {
+          "via": [[11, 14], [16, 14], [19, 15]],
+          "at": [20, 16],
+          "do": "work",
+          "ticks": 150,
+          "face": 1
+        },
+        {
+          "at": [21, 18],
+          "do": "idle",
+          "ticks": 280
+        },
+        {
+          "via": [[16, 18], [11, 17]],
+          "at": [10, 17],
+          "do": "idle",
+          "ticks": 40
+        }
+      ]
+    },
+    {
+      "type": "npc",
+      "id": "bede",
+      "npc": "bede",
+      "at": [8, 21],
+      "talk": "bede",
+      "routine": [
+        {
+          "at": [8, 21],
+          "do": "work",
+          "ticks": 600,
+          "face": -1
+        },
+        {
+          "via": [[16, 21], [19, 19]],
+          "at": [20, 18],
+          "do": "idle",
+          "ticks": 150
+        },
+        {
+          "via": [[16, 21]],
+          "at": [9, 21],
+          "do": "idle",
+          "ticks": 40
+        }
+      ]
+    },
+    {
+      "type": "npc",
+      "id": "agnes",
+      "npc": "agnes",
+      "at": [15, 8],
+      "talk": "agnes",
+      "pose": "kneel",
+      "face": -1
     },
     {
       "type": "cutscene",

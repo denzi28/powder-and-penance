@@ -1,0 +1,54 @@
+{
+  "id": "tomas",
+  "steps": [
+    {
+      "if": "!tomas_met",
+      "then": [
+        { "say": "Mind the pole. Forty years I've lit the lamps of Wick's Rest, and I've only set two pilgrims on fire.", "who": "tomas" },
+        { "say": "Tomas. Lamplighter. If you need the way somewhere, ask me. I've walked every road off this hill.", "who": "tomas" },
+        { "set": "tomas_met" }
+      ]
+    },
+    {
+      "menu": [
+        {
+          "text": "Where should I go?",
+          "do": [
+            {
+              "if": "boss:chandler",
+              "then": [{ "say": "Nowhere, tonight. The bell's quiet up there for the first time in my life. Rest.", "who": "tomas" }],
+              "else": [
+                {
+                  "if": ["key:seal_of_tallow", "key:seal_of_the_mire"],
+                  "then": [{ "say": "Both Seals? Then the great door in the Nave Approach will open for you. Up the Hill Stair, through the Abbey. The Chandler waits past it.", "who": "tomas" }],
+                  "else": [
+                    {
+                      "if": "!key:toll_key",
+                      "then": [
+                        { "say": "Up the Hill Stair, north, to the Abbey. Through the Porch and on to the Gatehouse.", "who": "tomas" },
+                        { "say": "The Tollwarden keeps it. He has the key to our Toll Gate, east of here. Every cart for the Works goes through him.", "who": "tomas" }
+                      ],
+                      "else": [
+                        { "say": "The great door of the Nave wants two Seals.", "who": "tomas" },
+                        {
+                          "if": "!key:seal_of_tallow",
+                          "then": [{ "say": "One is in the Tallow Works: east, through the Toll Gate you opened. Follow the carts.", "who": "tomas" }]
+                        },
+                        {
+                          "if": "!key:seal_of_the_mire",
+                          "then": [{ "say": "One is down in the Waxmire: west, past the tents. It's the harder road. Keep to the reeds and out of the lanterns' light.", "who": "tomas" }]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        { "text": "Why light the lamps?", "do": [{ "say": "So the carts can find the road. So the pilgrims can find us. So the dark knows somebody's still here.", "who": "tomas" }] },
+        { "text": "Leave", "end": true, "do": [{ "say": "Walk in the light, child.", "who": "tomas" }] }
+      ]
+    }
+  ]
+}
