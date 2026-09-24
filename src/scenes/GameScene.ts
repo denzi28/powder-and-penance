@@ -48,7 +48,7 @@ import { LightCones } from '../render/LightCones';
 import { Ambience } from '../world/Ambience';
 import { Sfx } from '../audio/Sfx';
 import { AmbientAudio } from '../audio/Ambient';
-import { BossMusic } from '../audio/Music';
+import { BossMusic, ExploreMusic } from '../audio/Music';
 import { SaveSystem, type SaveData } from '../save/SaveSystem';
 import { MenuNav, type Menu } from '../ui/Menu';
 import { DebugOverlay } from '../debug/DebugOverlay';
@@ -86,6 +86,7 @@ export class GameScene extends Phaser.Scene {
   sfx = new Sfx();
   ambientAudio = new AmbientAudio(this.sfx);
   bossMusic = new BossMusic(this.sfx);
+  exploreMusic = new ExploreMusic(this.sfx);
   saves = new SaveSystem();
 
   // Actors and world objects
@@ -264,6 +265,7 @@ export class GameScene extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.ambientAudio.stop();
       this.bossMusic.stop();
+      this.exploreMusic.stop();
       offReload();
       offKeys();
       window.removeEventListener('keydown', unlock);
@@ -761,6 +763,7 @@ export class GameScene extends Phaser.Scene {
     const fight = this.arena.musicState();
     this.bossMusic.update(fight, arena => this.flags.has(`boss:${arena}`));
     this.ambientAudio.duck(fight ? 0.35 : 1); // the world quietens under the music
+    this.exploreMusic.update(Math.min(delta, 100) / 1000, this.area, !!fight || this.bossMusic.playing, 1 - 0.9 * this.ambientAudio.harpNear);
     this.arena.update(delta);
     // A script can point the camera elsewhere (cutscenes); otherwise it follows the player.
     const focus = this.story.cameraPoint;

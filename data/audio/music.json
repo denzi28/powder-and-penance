@@ -1,6 +1,8 @@
 {
   "volume": 0.11,
   "bosses": {"tollwarden": "toll", "mire_matron": "lullaby", "mother_tallow": "work_song", "mother_bones": "unrendered", "chandler": "chorale", "chandler_wick": "last_candle"},
+  "areas": {"road": "road", "hub": "rest", "mire": "mire", "works": "works", "abbey": "abbey"},
+  "explore": {"volume": 0.07, "resumeAfter": 8},
   "themes": {
     "toll": {
       "bpm": 156, "steps": 16, "root": 50, "scale": "minor",
@@ -218,6 +220,101 @@
         {"inst": "horn", "tag": "lead", "level": 1, "oct": -1, "vol": 0.8, "melody": ["5:6 5:2 8:8", "8:4 7:4 6:8", "5:4 6:4 5:4 3:4", "4:12 2:4", "8:6 8:2 10:8", "10:4 9:4 8:8", "8:4 6:4 4:8", "5:8 7+:4 5:4"]},
         {"inst": "organ", "tag": "color", "pattern": "xxxxxxxxxxxxxxxx", "notes": "1 3 5 8", "oct": 1, "len": 1, "hold": true, "vol": 0.45},
         {"inst": "celesta", "tag": "lead2", "level": 2, "pattern": "x.x.x.x.x.x.x.x.", "notes": "1 3 5 8", "oct": 2, "vol": 0.4}
+      ]
+    },
+    "road": {
+      "bpm": 80, "steps": 12, "root": 50, "scale": "minor",
+      "chords": [0, 5, 2, 6, 0, 3, "4M", 0],
+      "form": [
+        {"bars": 2, "play": ["pad"]},
+        {"bars": 8, "play": ["pad", "harp", "lead", "timp"]},
+        {"bars": 4, "play": []},
+        {"bars": 8, "play": ["pad", "harp", "lead2", "timp", "choir"]},
+        {"bars": 6, "play": []}
+      ],
+      "layers": [
+        {"inst": "strings", "tag": "pad", "pattern": "x...........", "notes": "1, 5, 1 5", "chord": true, "len": 12, "vol": 0.7},
+        {"inst": "harp", "tag": "harp", "pattern": "x.x.x.x.x.x.", "notes": "1, 5, 1 3 5 3", "oct": 0, "vol": 0.8},
+        {"inst": "timpani", "tag": "timp", "pattern": "x...........", "every": 2, "notes": "1", "oct": -1, "vol": 0.35},
+        {"inst": "horn", "tag": "lead", "oct": 0, "vol": 1.0, "rev": 0.8, "melody": ["1:4 3:4 5:4", "6:8 5:4", "8:6 7:2 5:4", "7:12", "5:4 4:4 3:4", "4:6 6:2 4:4", "5:4 7+:4 5:4", "1:12"]},
+        {"inst": "strings", "tag": "lead2", "oct": 1, "vol": 0.8, "melody": ["1:4 3:4 5:4", "6:8 5:4", "8:6 7:2 5:4", "7:12", "5:4 4:4 3:4", "4:6 6:2 4:4", "5:4 7+:4 5:4", "1:12"]},
+        {"inst": "choir", "tag": "choir", "pattern": "x...........", "notes": "3 5 8", "chord": true, "len": 12, "oct": 0, "vol": 0.45}
+      ]
+    },
+    "rest": {
+      "bpm": 70, "steps": 16, "root": 53, "scale": "major",
+      "chords": [0, 4, 5, 3, 0, 2, 3, 4],
+      "form": [
+        {"bars": 8, "play": ["pad", "lead", "choir"]},
+        {"bars": 4, "play": []},
+        {"bars": 8, "play": ["pad", "lead2", "choir", "harp"]},
+        {"bars": 6, "play": []}
+      ],
+      "layers": [
+        {"inst": "strings", "tag": "pad", "pattern": "x...............", "notes": "1, 5, 1 3", "chord": true, "len": 16, "vol": 0.65},
+        {"inst": "choir", "tag": "choir", "pattern": "x...............", "notes": "5 8 3'", "chord": true, "len": 16, "oct": 0, "vol": 0.35},
+        {"inst": "celesta", "tag": "lead", "oct": 1, "vol": 0.9, "melody": ["5:8 6:4 5:4", "5:8 7:4 5:4", "6:8 5:4 3:4", "4:12 r:4", "3:8 5:8", "5:8 3:4 7:4", "6:8 4:8", "5:16"]},
+        {"inst": "strings", "tag": "lead2", "oct": 1, "vol": 0.7, "melody": ["5:8 6:4 5:4", "5:8 7:4 5:4", "6:8 5:4 3:4", "4:12 r:4", "3:8 5:8", "5:8 3:4 7:4", "6:8 4:8", "5:16"]},
+        {"inst": "harp", "tag": "harp", "pattern": "x...x...x...x...", "notes": "1 5 8 3'", "oct": 0, "vol": 0.6}
+      ]
+    },
+    "mire": {
+      "bpm": 60, "steps": 12, "root": 57, "scale": "minor",
+      "chords": [0, 5, 3, "4M", 0, 5, 6, "4M"],
+      "form": [
+        {"bars": 4, "play": ["drone", "choir"]},
+        {"bars": 8, "play": ["drone", "choir", "lead", "harp"]},
+        {"bars": 4, "play": []},
+        {"bars": 8, "play": ["drone", "choir2", "lead", "bell"]},
+        {"bars": 4, "play": []}
+      ],
+      "layers": [
+        {"inst": "strings", "tag": "drone", "pattern": "x...........", "notes": "1, 5,", "chord": true, "len": 12, "vol": 0.55},
+        {"inst": "choir", "tag": "choir", "pattern": "x...........", "notes": "3 5 8", "chord": true, "len": 12, "oct": -1, "vol": 0.45},
+        {"inst": "choir", "tag": "choir2", "pattern": "x...........", "notes": "5 8 3'", "chord": true, "len": 12, "oct": 0, "vol": 0.45},
+        {"inst": "musicbox", "tag": "lead", "oct": 1, "vol": 1.0, "melody": ["5:6 3:2 4:2 5:2", "6:8 5:2 4:2", "4:4 6:4 8:4", "7+:6 5:6", "5:4 8:4 7:4", "6:6 4:2 5:2 6:2", "7:6 5:4 4:2", "7+:12"]},
+        {"inst": "harp", "tag": "harp", "pattern": "x.....x.....", "notes": "1 5", "oct": 0, "vol": 0.5},
+        {"inst": "bell", "tag": "bell", "pattern": "x...........", "every": 4, "notes": "5", "oct": 0, "len": 12, "vol": 0.3}
+      ]
+    },
+    "works": {
+      "bpm": 84, "steps": 16, "root": 48, "scale": "phrygian",
+      "chords": [0, 1, 0, 6, 0, 1, 5, 0],
+      "form": [
+        {"bars": 4, "play": ["ost", "pad", "anvil"]},
+        {"bars": 8, "play": ["ost", "pad", "anvil", "lead", "timp"]},
+        {"bars": 4, "play": ["pad"]},
+        {"bars": 8, "play": ["ost", "pad", "anvil", "lead2", "timp", "choir"]},
+        {"bars": 4, "play": []}
+      ],
+      "layers": [
+        {"inst": "spiccato", "tag": "ost", "pattern": "x.x.x.x.x.x.x.x.", "notes": "1 1 5 1", "oct": -1, "vol": 0.6},
+        {"inst": "strings", "tag": "pad", "pattern": "x...............", "notes": "1, 5, 1", "chord": true, "len": 16, "vol": 0.6},
+        {"inst": "anvil", "tag": "anvil", "pattern": "x.......x.......", "every": 2, "notes": "1", "oct": 0, "vol": 0.35, "rev": 0.9},
+        {"inst": "timpani", "tag": "timp", "pattern": "x.......x.......", "notes": "1 5,", "oct": -1, "vol": 0.35},
+        {"inst": "horn", "tag": "lead", "oct": 0, "vol": 0.9, "rev": 0.7, "melody": ["5:12 4:4", "4:8 2:8", "3:12 r:4", "4:8 2:8", "5:8 6:4 5:4", "6:8 4:8", "3:8 1:8", "1:16"]},
+        {"inst": "strings", "tag": "lead2", "oct": 1, "vol": 0.7, "melody": ["5:12 4:4", "4:8 2:8", "3:12 r:4", "4:8 2:8", "5:8 6:4 5:4", "6:8 4:8", "3:8 1:8", "1:16"]},
+        {"inst": "choir", "tag": "choir", "pattern": "x...............", "notes": "1 5 8", "chord": true, "len": 16, "oct": -1, "vol": 0.35}
+      ]
+    },
+    "abbey": {
+      "bpm": 56, "steps": 16, "root": 52, "scale": "minor",
+      "chords": [0, 5, 2, 6, 0, 3, "4M", 0],
+      "form": [
+        {"bars": 4, "play": ["organ"]},
+        {"bars": 8, "play": ["organ", "choirpad", "lead", "bell", "celesta"]},
+        {"bars": 4, "play": []},
+        {"bars": 8, "play": ["organ", "lead2", "choirpad", "bell", "strings"]},
+        {"bars": 6, "play": []}
+      ],
+      "layers": [
+        {"inst": "organ", "tag": "organ", "pattern": "x...............", "notes": "1, 5, 1 5", "chord": true, "len": 16, "vol": 0.55},
+        {"inst": "choir", "tag": "choirpad", "pattern": "x...............", "notes": "3 5 8", "chord": true, "len": 16, "oct": 1, "vol": 0.4},
+        {"inst": "choir", "tag": "lead", "oct": 1, "vol": 0.8, "melody": ["5:8 3:8", "3:8 1:4 3:4", "7:8 5:8", "4:12 2:4", "1:8 5:8", "6:8 4:8", "2:8 7+:8", "1:16"]},
+        {"inst": "strings", "tag": "lead2", "oct": 1, "vol": 0.7, "melody": ["5:8 3:8", "3:8 1:4 3:4", "7:8 5:8", "4:12 2:4", "1:8 5:8", "6:8 4:8", "2:8 7+:8", "1:16"]},
+        {"inst": "strings", "tag": "strings", "pattern": "x...............", "notes": "1, 5, 1", "chord": true, "len": 16, "vol": 0.5},
+        {"inst": "bell", "tag": "bell", "pattern": "x...............", "every": 4, "notes": "1", "oct": 0, "len": 16, "vol": 0.35},
+        {"inst": "celesta", "tag": "celesta", "pattern": "x.......x.......", "notes": "5 8 3' 8", "oct": 1, "vol": 0.35}
       ]
     }
   }

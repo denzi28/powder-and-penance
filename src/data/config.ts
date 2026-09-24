@@ -147,6 +147,10 @@ function loadAll(src: Record<string, unknown>) {
       if (!data.enemies[boss]) errors.push(`data/audio/music.json: unknown boss "${boss}"`);
       if (!data.music.themes[theme]) errors.push(`data/audio/music.json: boss "${boss}" has unknown theme "${theme}"`);
     }
+    for (const [area, theme] of Object.entries(data.music.areas)) {
+      if (!data.areas.areas[area]) errors.push(`data/audio/music.json: unknown area "${area}"`);
+      if (!data.music.themes[theme]) errors.push(`data/audio/music.json: area "${area}" has unknown theme "${theme}"`);
+    }
     for (const [id, th] of Object.entries(data.music.themes))
       th.layers.forEach((l, i) =>
         (l.melody ?? []).forEach((line, b) => {

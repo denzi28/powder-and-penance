@@ -404,6 +404,12 @@ Why not Tiled?
   - Mire Matron, "Lullaby" (172 bpm, 3/4): her lullaby on celesta in the verses, then sung by a soprano choir over harp and pounding drums in the drops.
   - Mother Tallow, "Work Song" (168 bpm, 6/8): she hums it over anvil hammers in the verses, and horns and strings take it up in the drops. "Unrendered", her second phase (188 bpm), is the same song as a brass-led charge.
   - The Chandler, "Chorale" (138 bpm): a cathedral piece of organ, choir melody and bells over driving strings. "Last Candle", his second phase (172 bpm), is the finale: brass and horns over racing organ and strings.
+- Exploration music (`areas` and `explore` in `data/audio/music.json`, played by `ExploreMusic`) is quieter, with long rests in each theme's form so the ambience carries the place between phrases. It crossfades when the area changes, fades out for a boss fight and returns 8 s after, and ducks under Wren's harp in the hub. Themes:
+  - Penance Road: a lonely pilgrims' air in D minor, a far-off horn over harp and strings.
+  - Wick's Rest: warm and safe, F major, celesta over strings and a soft choir.
+  - The Waxmire: the Matron's lullaby remembered on a music box over a low choir.
+  - The Tallow Works: phrygian, low strings grinding, distant anvils, a horn in the smoke.
+  - The Guttering Abbey: vast and sacred, organ and a high choir, a bell far above.
 - Real audio files can replace any preset later: if `public/assets/audio/<id>.ogg` exists, it wins.
 - Minimal cues exist from Milestone 2, because telegraphs need audio. The full pass is in Milestone 7.
 

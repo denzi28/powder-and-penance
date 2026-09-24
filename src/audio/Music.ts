@@ -64,93 +64,92 @@ const REVERB: Record<MusicLayer['inst'], number> = {
   roll: 0.35,
 };
 
-export class BossMusic {
-  private ctx: BaseAudioContext | null = null;
-  private bus: GainNode | null = null;
-  private dry: GainNode | null = null;
-  private wet: GainNode | null = null;
-  private theme: MusicTheme | null = null;
-  private themeId: string | null = null;
-  private last: MusicState | null = null;
-  private next = 0;
+/** Shared by all music on an audio context: the hall reverb and the compressor at the end. */
+interface Hall {
+  out: AudioNode;
+  wet: AudioNode;
+}
+const halls = new WeakMap<BaseAudioContext, Hall>();
+function hall(ctx: BaseAudioContext): Hall {
+  let h = halls.get(ctx);
+  if (!h) {
+    const comp = ctx.createDynamicsCompressor();
+    comp.threshold.value = -16;
+    comp.ratio.value = 3;
+    comp.attack.value = 0.01;
+    comp.release.value = 0.25;
+    comp.connect(ctx.destination);
+    const wet = ctx.createGain();
+    const verb = ctx.createConvolver();
+    verb.buffer = hallImpulse(ctx, 3.6);
+    const tone = ctx.createBiquadFilter(); // stone eats the highs
+    tone.type = 'lowpass';
+    tone.frequency.value = 5200;
+    const ret = ctx.createGain();
+    ret.gain.value = 0.9;
+    wet.connect(verb).connect(tone).connect(ret).connect(comp);
+    h = { out: comp, wet };
+    halls.set(ctx, h);
+  }
+  return h;
+}
+
+/** A music context, once the player has pressed something (or an offline one, for previews). */
+function musicContext(sfx: Sfx): BaseAudioContext | null {
+  const ctx = sfx.context;
+  return ctx && (ctx.state === 'running' || ctx instanceof OfflineAudioContext) ? ctx : null;
+}
+
+/**
+ * Plays one theme from the top: schedules its steps a little ahead into its own fader (dry and reverb send,
+ * so a fade takes the echo with it). Throw it away after fading it out; start a new one for the next theme.
+ */
+class Sequencer {
+  readonly bus: GainNode;
+  private send: GainNode;
+  private next: number;
   private step = 0;
   private bar = 0;
-  private barLevel = 0;
+  private barLevel: number;
   /** Per-layer counters for arpeggios. */
-  private arpI: number[] = [];
+  private arpI: number[];
+  level: number;
 
-  constructor(private sfx: Sfx) {}
-
-  private ready(): BaseAudioContext | null {
-    const ctx = this.sfx.context;
-    if (!ctx || (ctx.state !== 'running' && !(ctx instanceof OfflineAudioContext))) return null;
-    if (this.ctx !== ctx) {
-      this.ctx = ctx;
-      // notes -> dry + reverb send -> bus (fades) -> compressor -> out
-      this.bus = ctx.createGain();
-      this.bus.gain.value = 0;
-      const comp = ctx.createDynamicsCompressor();
-      comp.threshold.value = -16;
-      comp.ratio.value = 3;
-      comp.attack.value = 0.01;
-      comp.release.value = 0.25;
-      this.bus.connect(comp).connect(ctx.destination);
-      this.dry = ctx.createGain();
-      this.dry.connect(this.bus);
-      this.wet = ctx.createGain();
-      const verb = ctx.createConvolver();
-      verb.buffer = hallImpulse(ctx, 3.6);
-      const tone = ctx.createBiquadFilter(); // stone eats the highs
-      tone.type = 'lowpass';
-      tone.frequency.value = 5200;
-      const ret = ctx.createGain();
-      ret.gain.value = 0.9;
-      this.wet.connect(verb).connect(tone).connect(ret).connect(this.bus);
-    }
-    return ctx;
+  constructor(
+    private ctx: BaseAudioContext,
+    readonly theme: MusicTheme,
+    level: number,
+    startIn = 0.1,
+  ) {
+    const h = hall(ctx);
+    this.bus = ctx.createGain();
+    this.bus.gain.value = 0;
+    this.bus.connect(h.out);
+    this.send = ctx.createGain();
+    this.send.gain.value = 0;
+    this.send.connect(h.wet);
+    this.next = ctx.currentTime + startIn;
+    this.level = this.barLevel = level;
+    this.arpI = theme.layers.map(() => 0);
   }
 
-  /** Call every frame with the arena's state (null: no fight). */
-  update(state: MusicState | null, won: (arena: string) => boolean) {
-    const ctx = this.ready();
-    if (!ctx || !this.bus) return;
-    const now = ctx.currentTime;
-    const vol = DATA.music.volume * DATA.audio.master;
-    if (!state) {
-      if (this.last) {
-        // the fight is over: won, a closing chord; lost, a quick fade
-        const win = won(this.last.arena) && !!this.theme;
-        if (win) this.stinger(ctx, now + 0.05);
-        this.bus.gain.cancelScheduledValues(now);
-        this.bus.gain.setTargetAtTime(0, now + (win ? 5 : 0), win ? 1.5 : 0.35);
-        this.theme = null;
-        this.themeId = null;
-      }
-      this.last = null;
-      return;
+  /** Fade to a volume with time constant `tau` (seconds), starting after `delay`. */
+  fade(to: number, tau: number, delay = 0) {
+    const now = this.ctx.currentTime;
+    for (const g of [this.bus.gain, this.send.gain]) {
+      g.cancelScheduledValues(now);
+      g.setValueAtTime(g.value, now);
+      g.setTargetAtTime(to, now + delay, tau);
     }
-    const themeId = DATA.music.bosses[state.boss];
-    if (!themeId) return;
-    if (!this.last) {
-      this.bus.gain.cancelScheduledValues(now);
-      this.bus.gain.setTargetAtTime(vol, now, 0.4);
-    }
-    if (themeId !== this.themeId) {
-      // a new fight or the next phase: start the theme from the top
-      this.themeId = themeId;
-      this.theme = DATA.music.themes[themeId];
-      this.next = now + 0.1;
-      this.step = 0;
-      this.bar = 0;
-      this.barLevel = state.level;
-      this.arpI = this.theme.layers.map(() => 0);
-    }
-    this.last = state;
-    const th = this.theme!;
+  }
+
+  /** Schedule what falls in the next moment. */
+  tick() {
+    const th = this.theme;
     const stepDur = 60 / th.bpm / 4;
-    while (this.next < now + 0.25) {
-      if (this.step === 0) this.barLevel = state.level; // layers come and go on the bar
-      this.playStep(ctx, th, this.next, stepDur);
+    while (this.next < this.ctx.currentTime + 0.25) {
+      if (this.step === 0) this.barLevel = this.level; // layers come and go on the bar
+      this.playStep(this.next, stepDur);
       this.next += stepDur;
       if (++this.step >= th.steps) {
         this.step = 0;
@@ -159,15 +158,9 @@ export class BossMusic {
     }
   }
 
-  stop() {
-    if (this.bus && this.ctx) this.bus.gain.setTargetAtTime(0, this.ctx.currentTime, 0.2);
-    this.theme = null;
-    this.themeId = null;
-    this.last = null;
-  }
-
   /** The chord for a bar: its root (MIDI) and its tones as semitones above the root. */
-  private chord(th: MusicTheme, bar: number): { root: number; tones: Record<string, number> } {
+  private chord(bar: number): { root: number; tones: Record<string, number> } {
+    const th = this.theme;
     const scale = SCALES[th.scale];
     const c = th.chords[bar % th.chords.length];
     const deg = typeof c === 'number' ? c : parseInt(c, 10);
@@ -182,7 +175,8 @@ export class BossMusic {
   }
 
   /** Scale degree (1-based, may run past 7; "+" raises it a semitone, "-" lowers it) to MIDI in the key. */
-  private degree(th: MusicTheme, d: string): number {
+  private degree(d: string): number {
+    const th = this.theme;
     const scale = SCALES[th.scale];
     const n = parseInt(d, 10) - 1;
     const acc = d.endsWith('+') ? 1 : d.endsWith('-') ? -1 : 0;
@@ -190,21 +184,23 @@ export class BossMusic {
   }
 
   /** Where a bar falls in the theme's form: its section, and whether it's that section's first or last bar. */
-  private section(th: MusicTheme, bar: number) {
-    if (!th.form) return null;
-    const total = th.form.reduce((a, f) => a + f.bars, 0);
+  private section(bar: number) {
+    const form = this.theme.form;
+    if (!form) return null;
+    const total = form.reduce((a, f) => a + f.bars, 0);
     let b = bar % total;
-    for (const f of th.form) {
+    for (const f of form) {
       if (b < f.bars) return { f, first: b === 0, last: b === f.bars - 1 };
       b -= f.bars;
     }
     return null;
   }
 
-  private playStep(ctx: BaseAudioContext, th: MusicTheme, t: number, stepDur: number) {
-    const ch = this.chord(th, this.bar);
+  private playStep(t: number, stepDur: number) {
+    const th = this.theme;
+    const ch = this.chord(this.bar);
     const barInLoop = this.bar % th.chords.length;
-    const sec = this.section(th, this.bar);
+    const sec = this.section(this.bar);
     // the gap before a drop: everything stops dead for the last steps of the build
     const gapAt = sec?.last && sec.f.gap ? th.steps - sec.f.gap : th.steps;
     if (this.step >= gapAt) return;
@@ -224,7 +220,7 @@ export class BossMusic {
         let at = 0;
         for (const w of line.split(' ')) {
           const [d, len] = w.split(':');
-          if (at === this.step && d !== 'r') this.note(ctx, L, t, this.degree(th, d) + 12 * (L.oct ?? 1), clip(+len * stepDur), 1);
+          if (at === this.step && d !== 'r') this.note(L, t, this.degree(d) + 12 * (L.oct ?? 1), clip(+len * stepDur), 1);
           at += +len;
         }
         return;
@@ -236,12 +232,13 @@ export class BossMusic {
       const tones = parseTones(L.notes ?? '1');
       const midi = (w: { tone: string; oct: number }) => ch.root + 12 * ((L.oct ?? 0) + w.oct) + ch.tones[w.tone];
       const len = clip((L.len ?? 1) * stepDur);
-      if (L.chord) for (const w of tones) this.note(ctx, L, t, midi(w), len, accent);
-      else this.note(ctx, L, t, midi(tones[this.arpI[li]++ % tones.length]), len, accent);
+      if (L.chord) for (const w of tones) this.note(L, t, midi(w), len, accent);
+      else this.note(L, t, midi(tones[this.arpI[li]++ % tones.length]), len, accent);
     });
   }
 
-  private note(ctx: BaseAudioContext, L: MusicLayer, t: number, midi: number, len: number, accent: number) {
+  private note(L: MusicLayer, t: number, midi: number, len: number, accent: number) {
+    const ctx = this.ctx;
     const g = ctx.createGain();
     g.gain.value = (L.vol ?? 1) * accent * rnd(0.9, 1.05);
     let out: AudioNode = g;
@@ -251,22 +248,22 @@ export class BossMusic {
       g.connect(p);
       out = p;
     }
-    out.connect(this.dry!);
+    out.connect(this.bus);
     const send = ctx.createGain();
     send.gain.value = L.rev ?? REVERB[L.inst];
-    out.connect(send).connect(this.wet!);
+    out.connect(send).connect(this.send);
     INSTRUMENTS[L.inst](ctx, g, t + rnd(0, 0.008), midi, len);
   }
 
   /** The closing chord: the key's major chord across the whole orchestra, a cymbal and a timpani roll under it. */
-  private stinger(ctx: BaseAudioContext, t: number) {
-    const th = this.theme!;
+  stinger(t: number) {
+    const ctx = this.ctx;
     const out = ctx.createGain();
-    out.connect(this.dry!);
+    out.connect(this.bus);
     const send = ctx.createGain();
     send.gain.value = 0.7;
-    out.connect(send).connect(this.wet!);
-    const r = th.root;
+    out.connect(send).connect(this.send);
+    const r = this.theme.root;
     for (const iv of [-12, 0, 7, 12, 16]) INSTRUMENTS.strings(ctx, out, t, r + iv, 4.5);
     for (const iv of [12, 16, 19, 24]) INSTRUMENTS.choir(ctx, out, t + 0.05, r + iv, 4.5);
     for (const iv of [0, 4, 7]) INSTRUMENTS.horn(ctx, out, t, r + iv, 3.5);
@@ -275,6 +272,117 @@ export class BossMusic {
     for (let i = 0; i < 10; i++) INSTRUMENTS.timpani(ctx, out, t - 0.9 + i * 0.09, r - 12, 0); // roll into it
     INSTRUMENTS.timpani(ctx, out, t, r - 12, 0);
     for (const iv of [0, 7, 12, 16, 19, 24]) harp(ctx, out, t + 0.1 + iv * 0.012, r + 12 + iv, 0.15);
+  }
+}
+
+/** The boss fight's music: a theme per phase, building with the boss's wounds. */
+export class BossMusic {
+  private seq: Sequencer | null = null;
+  private themeId: string | null = null;
+  private last: MusicState | null = null;
+
+  constructor(private sfx: Sfx) {}
+
+  get playing() {
+    return !!this.last;
+  }
+
+  /** Call every frame with the arena's state (null: no fight). */
+  update(state: MusicState | null, won: (arena: string) => boolean) {
+    const ctx = musicContext(this.sfx);
+    if (!ctx) return;
+    const vol = DATA.music.volume * DATA.audio.master;
+    if (!state) {
+      if (this.last && this.seq) {
+        // the fight is over: won, a closing chord; lost, a quick fade
+        const win = won(this.last.arena);
+        if (win) this.seq.stinger(ctx.currentTime + 0.05);
+        this.seq.fade(0, win ? 1.5 : 0.35, win ? 5 : 0);
+      }
+      this.seq = null;
+      this.themeId = null;
+      this.last = null;
+      return;
+    }
+    const themeId = DATA.music.bosses[state.boss];
+    if (!themeId) return;
+    if (themeId !== this.themeId) {
+      // a new fight or the next phase: its theme from the top (the last one cuts off)
+      this.seq?.fade(0, 0.08);
+      this.seq = new Sequencer(ctx, DATA.music.themes[themeId], state.level);
+      this.seq.fade(vol, 0.3);
+      this.themeId = themeId;
+    }
+    this.last = state;
+    this.seq!.level = state.level;
+    this.seq!.tick();
+  }
+
+  stop() {
+    this.seq?.fade(0, 0.2);
+    this.seq = null;
+    this.themeId = null;
+    this.last = null;
+  }
+}
+
+/**
+ * Music while exploring: each area has a quiet theme (data/audio/music.json `areas`) with long rests in its
+ * form, so the ambience still carries the place. It crossfades between areas, gives way to a boss fight
+ * (and comes back a little after), and can be ducked (under Wren's harp).
+ */
+export class ExploreMusic {
+  private seq: Sequencer | null = null;
+  private area: string | null = null;
+  private away = 0;
+  private duckK = 1;
+
+  constructor(private sfx: Sfx) {}
+
+  /**
+   * @param fighting a boss fight is on: fade out, and come back `resumeAfter` seconds after it ends
+   * @param duck 0..1 multiplier on the volume
+   */
+  update(dt: number, area: string, fighting: boolean, duck = 1) {
+    const ctx = musicContext(this.sfx);
+    if (!ctx) return;
+    const cfg = DATA.music.explore;
+    const vol = cfg.volume * DATA.audio.master;
+    if (fighting) {
+      if (this.seq) this.seq.fade(0, 0.6);
+      this.seq = null;
+      this.away = cfg.resumeAfter;
+      this.area = area;
+      return;
+    }
+    if (this.away > 0) {
+      this.away -= dt;
+      return;
+    }
+    if (area !== this.area || !this.seq) {
+      // a new area (or back from a fight): crossfade into its theme
+      this.seq?.fade(0, 1.2);
+      this.seq = null;
+      this.area = area;
+      const id = DATA.music.areas[area];
+      if (id) {
+        this.seq = new Sequencer(ctx, DATA.music.themes[id], 1, 0.5);
+        this.duckK = duck;
+        this.seq.fade(vol * duck, 2.5);
+      }
+    }
+    if (!this.seq) return;
+    if (Math.abs(duck - this.duckK) > 0.05) {
+      this.duckK = duck;
+      this.seq.fade(vol * duck, 0.5);
+    }
+    this.seq.tick();
+  }
+
+  stop() {
+    this.seq?.fade(0, 0.3);
+    this.seq = null;
+    this.area = null;
   }
 }
 

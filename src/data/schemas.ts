@@ -793,6 +793,10 @@ export const MusicCfg = z.object({
   volume: num.min(0).max(1),
   /** Boss (enemy kind) -> theme. */
   bosses: z.record(z.string()),
+  /** Area -> exploration theme. */
+  areas: z.record(z.string()).default({}),
+  /** Exploration music: its volume, and how long after a boss fight it comes back (seconds). */
+  explore: z.object({ volume: num.min(0).max(1), resumeAfter: num.min(0) }).default({ volume: 0.06, resumeAfter: 8 }),
   themes: z.record(MusicTheme),
 });
 export const AmbientAudioCfg = z.object({

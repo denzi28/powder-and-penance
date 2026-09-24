@@ -50,6 +50,8 @@ export class AmbientAudio {
   private music: GainNode | null = null;
   private musicPan: StereoPannerNode | null = null;
   private tune = { next: 0, bar: 0, loops: 0, playing: false };
+  /** How loud the harp is where the listener stands, 0..1 (other music ducks under it). */
+  harpNear = 0;
 
   constructor(private sfx: Sfx) {}
 
@@ -192,10 +194,12 @@ export class AmbientAudio {
       const d = Math.hypot(at.x - listener.x, at.y - listener.y);
       const k = Math.max(0, Math.min(1, 1 - (d - cfg.near) / (cfg.range - cfg.near)));
       level = cfg.volume * k * k;
+      this.harpNear = k * k;
       this.musicPan!.pan.setTargetAtTime(Math.max(-0.7, Math.min(0.7, (at.x - listener.x) / 200)), now, 0.2);
     }
     music.gain.setTargetAtTime(level, now, 0.3);
     if (!at) {
+      this.harpNear = 0;
       this.tune.playing = false;
       return;
     }
