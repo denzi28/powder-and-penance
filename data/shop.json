@@ -1,0 +1,97 @@
+{
+  "stock": [
+    {
+      "id": "shop_knife",
+      "consumable": "throwing_knife",
+      "price": 40
+    },
+    {
+      "id": "shop_firebomb",
+      "consumable": "firebomb",
+      "price": 150
+    },
+    {
+      "id": "shop_cartridge",
+      "consumable": "paper_cartridge",
+      "price": 90
+    },
+    {
+      "id": "shop_powder",
+      "item": "ammo_pouch",
+      "price": 200
+    },
+    {
+      "id": "shop_candle",
+      "consumable": "tallow_candle",
+      "price": 75
+    },
+    {
+      "id": "shop_vault_map",
+      "note": "note_vault_rumour",
+      "price": 100
+    },
+    {
+      "id": "shop_hawkers_ring",
+      "item": "hawkers_ring",
+      "price": 1500,
+      "limit": 1
+    },
+    {
+      "id": "shop_honey",
+      "consumable": "honeycomb",
+      "price": 220,
+      "when": "boss:tollwarden"
+    },
+    {
+      "id": "shop_ingot",
+      "consumable": "tallow_ingot",
+      "price": 800,
+      "limit": 4,
+      "when": "boss:tollwarden"
+    },
+    {
+      "id": "shop_pamphlet",
+      "note": "note_bloom_pamphlet",
+      "price": 100,
+      "when": "boss:tollwarden"
+    },
+    {
+      "id": "shop_salt",
+      "consumable": "grey_salt",
+      "price": 180,
+      "when": "boss:mother_tallow"
+    },
+    {
+      "id": "shop_smoke",
+      "consumable": "smoke_pellet",
+      "price": 250,
+      "when": "boss:mother_tallow"
+    },
+    {
+      "id": "shop_gunners_band",
+      "item": "gunners_band",
+      "price": 2000,
+      "limit": 1,
+      "when": "boss:mother_tallow"
+    },
+    {
+      "id": "shop_incense",
+      "consumable": "warding_incense",
+      "price": 350,
+      "when": "boss:mire_matron"
+    },
+    {
+      "id": "shop_oil",
+      "consumable": "chandlers_oil",
+      "price": 400,
+      "when": "boss:mire_matron"
+    },
+    {
+      "id": "shop_ember_salt",
+      "consumable": "ember_salt",
+      "price": 2500,
+      "limit": 2,
+      "when": "boss:mire_matron"
+    }
+  ]
+}

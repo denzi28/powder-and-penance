@@ -7,6 +7,7 @@
   "sounds": { "draw": "p_draw_heavy", "hit": "p_hit_blunt", "shotHit": "p_hit_bolt", "reload": [[0.02, "p_crank"], [0.2, "p_crank"], [0.38, "p_crank"], [0.56, "p_crank"], [0.78, "p_bolt_seat"], [0.94, "p_latch"]] },
   "kind": "ranged",
   "twoHanded": true,
+  "scaling": { "str": "C", "dex": "C" },
   "view": { "sprite": "crossbow", "restAngleOffsetDeg": 0 },
   "crit": { "backstab": 2.5, "riposte": 2.5 },
   "ranged": {

@@ -1,6 +1,6 @@
 // Game state <-> SaveData. Loading always puts the player at their last shrine, rested.
 import { DATA } from '../data/config';
-import { FISTS } from '../player/Player';
+import { FISTS, STATS } from '../player/Player';
 import type { SaveData } from '../save/SaveSystem';
 import type { GameScene } from '../scenes/GameScene';
 
@@ -8,12 +8,14 @@ export function snapshot(gs: GameScene): SaveData {
   const p = gs.player;
   const m = gs.marker.data;
   return {
-    version: 3,
+    version: 4,
     savedAt: Date.now(),
     lastShrine: gs.lastShrine,
     tallow: p.tallow,
     phials: { ...p.phials },
-    stats: { level: 1 },
+    stats: { level: p.level, ...p.stats },
+    upgrades: { ...p.upgrades },
+    bought: { ...p.bought },
     loadout: { slots: [...p.slots], slot: p.slot, shield: p.shieldId },
     ammo: Object.fromEntries(p.ammo),
     gear: { weapons: [...p.inv.weapons], shields: [...p.inv.shields], armour: [...p.inv.armour], head: p.worn.head, body: p.worn.body },
@@ -47,10 +49,13 @@ export function applySave(gs: GameScene, s: SaveData) {
   // consumables (at most what can be carried), the belt, rings
   p.pack.clear();
   for (const [id, n] of Object.entries(s.items.pack)) if (DATA.consumables[id] && n > 0) p.pack.set(id, Math.min(n, DATA.consumables[id].max));
-  p.belt = s.items.belt && p.pack.has(s.items.belt) ? s.items.belt : (p.carried[0] ?? null);
+  p.belt = s.items.belt && p.pack.has(s.items.belt) ? s.items.belt : (p.beltable[0] ?? null);
   p.inv.rings = s.items.rings.filter(id => DATA.rings[id]);
   p.rings[0] = s.items.worn[0] && p.inv.rings.includes(s.items.worn[0]) ? s.items.worn[0] : null;
   p.rings[1] = s.items.worn[1] && p.inv.rings.includes(s.items.worn[1]) && s.items.worn[1] !== p.rings[0] ? s.items.worn[1] : null;
+  for (const k of STATS) p.stats[k] = Math.min(DATA.levels.max, Math.max(DATA.levels.start, s.stats[k]));
+  p.upgrades = Object.fromEntries(Object.entries(s.upgrades).filter(([id]) => DATA.weapons[id]).map(([id, n]) => [id, Math.min(n, DATA.smith.levels.length)]));
+  p.bought = { ...s.bought };
   p.hp = p.maxHp;
   for (const [id, a] of Object.entries(s.ammo)) p.ammo.set(id, { ...a });
   for (const g of s.world.groundItems) if (DATA.weapons[g.weapon]) gs.ground.add(g.weapon, g.x, g.y, g.area ?? gs.area);

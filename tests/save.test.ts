@@ -15,12 +15,14 @@ class MemStore implements KeyValueStore {
 }
 
 const sample: SaveData = {
-  version: 3,
+  version: 4,
   savedAt: 1,
   lastShrine: 'shrine_test',
   tallow: 120,
   phials: { charges: 2, max: 4, level: 1 },
-  stats: { level: 1 },
+  stats: { level: 4, vitality: 12, endurance: 11, strength: 10, dexterity: 10 },
+  upgrades: { greataxe: 2 },
+  bought: { shop_knife: 3 },
   loadout: { slots: ['greataxe', 'revolver'], slot: 0, shield: 'buckler' },
   ammo: { revolver: { clip: 3, reserve: 12 } },
   world: { flags: ['shrine:shrine_test', 'item:test_shard'], groundItems: [{ weapon: 'dagger', x: 10, y: 20 }] },
@@ -53,21 +55,23 @@ describe('SaveSystem', () => {
 
   it('migrates a version-1 save: what was in hand becomes the inventory', () => {
     const store = new MemStore();
-    const { gear: _gear, items: _items, ...v1 } = sample;
-    store.setItem(SAVE_KEY, JSON.stringify({ ...v1, version: 1, loadout: { slots: ['straight_sword', 'fists'], slot: 0, shield: 'buckler' } }));
+    const { gear: _gear, items: _items, upgrades: _u, bought: _b, ...v1 } = sample;
+    store.setItem(SAVE_KEY, JSON.stringify({ ...v1, stats: { level: 1 }, version: 1, loadout: { slots: ['straight_sword', 'fists'], slot: 0, shield: 'buckler' } }));
     const r = new SaveSystem(store).load();
     expect(r.ok).toBe(true);
-    expect(r.ok && r.save.version).toBe(3);
+    expect(r.ok && r.save.version).toBe(4);
+    expect(r.ok && r.save.stats).toEqual({ level: 1, vitality: 10, endurance: 10, strength: 10, dexterity: 10 });
     expect(r.ok && r.save.gear).toEqual({ weapons: ['straight_sword'], shields: ['buckler'], armour: [], head: null, body: null });
     expect(r.ok && r.save.items).toEqual({ pack: {}, belt: null, rings: [], worn: [null, null] });
   });
 
   it('migrates a version-2 save: nothing carried or worn yet, everything else kept', () => {
     const store = new MemStore();
-    const { items: _items, ...v2 } = sample;
-    store.setItem(SAVE_KEY, JSON.stringify({ ...v2, version: 2 }));
+    const { items: _items, upgrades: _u, bought: _b, ...v2 } = sample;
+    store.setItem(SAVE_KEY, JSON.stringify({ ...v2, stats: { level: 1 }, version: 2 }));
     const r = new SaveSystem(store).load();
-    expect(r.ok && r.save.version).toBe(3);
+    expect(r.ok && r.save.version).toBe(4);
+    expect(r.ok && r.save.upgrades).toEqual({});
     expect(r.ok && r.save.gear).toEqual(sample.gear);
     expect(r.ok && r.save.items).toEqual({ pack: {}, belt: null, rings: [], worn: [null, null] });
   });

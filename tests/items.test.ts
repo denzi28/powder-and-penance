@@ -23,7 +23,8 @@ describe('consumables', () => {
     expect(all.length).toBeGreaterThanOrEqual(10);
     expect(new Set(all.map(c => c.icon)).size).toBe(all.length);
     expect(new Set(all.map(c => c.description)).size).toBe(all.length);
-    expect(new Set(all.map(c => JSON.stringify(c.use))).size).toBe(all.length);
+    const usable = all.filter(c => c.use.type !== 'material'); // materials are all just "for the smith"
+    expect(new Set(usable.map(c => JSON.stringify(c.use))).size).toBe(usable.length);
     for (const c of all) {
       expect(c.icon, c.id).toBeLessThan(iconCount);
       expect(c.description.length, c.id).toBeGreaterThan(40);
@@ -31,8 +32,11 @@ describe('consumables', () => {
     }
   });
 
-  it('each can be found: in a chest, or dropped by an enemy', () => {
-    const inChests = new Set(chestItems.flatMap(it => (it.effect.type === 'consumable' ? [it.effect.id] : [])));
+  it('each can be found: in a chest, dropped by an enemy, or bought', () => {
+    const inChests = new Set([
+      ...chestItems.flatMap(it => (it.effect.type === 'consumable' ? [it.effect.id] : [])),
+      ...DATA.shop.stock.flatMap(e => (e.consumable ? [e.consumable] : [])),
+    ]);
     const dropped = new Set(
       Object.values(DATA.enemies)
         .flatMap(e => (e.loot ? DATA.loot.tables[e.loot] : []))
@@ -68,8 +72,9 @@ describe('rings', () => {
     }
   });
 
-  it('each can be found once: in a chest or on a miniboss', () => {
+  it('each can be found once: in a chest, on a miniboss, or in the shop', () => {
     const sources = [
+      ...DATA.shop.stock.flatMap(e => (e.item && DATA.items[e.item].effect.type === 'ring' ? [(DATA.items[e.item].effect as { id: string }).id] : [])),
       ...chestItems.flatMap(it => (it.effect.type === 'ring' ? [it.effect.id] : [])),
       ...minibosses.map(m => DATA.items[m.drop].effect).flatMap(e => (e.type === 'ring' ? [e.id] : [])),
     ];
@@ -78,8 +83,8 @@ describe('rings', () => {
 });
 
 describe('notes', () => {
-  it('each lies somewhere exactly once', () => {
-    const placed = entities.filter(e => e.en.type === 'note').map(e => String(e.en.note));
+  it('each lies somewhere, or is sold, exactly once', () => {
+    const placed = [...entities.filter(e => e.en.type === 'note').map(e => String(e.en.note)), ...DATA.shop.stock.flatMap(e => (e.note ? [e.note] : []))];
     for (const id of Object.keys(DATA.notes)) expect(placed.filter(n => n === id).length, id).toBe(1);
     expect(placed.length).toBeGreaterThanOrEqual(8);
   });

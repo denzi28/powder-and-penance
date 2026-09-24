@@ -150,6 +150,12 @@
       "id": "mire_pouch",
       "item": "ammo_pouch",
       "at": [25, 2]
+    },
+    {
+      "type": "item",
+      "id": "ingot_lanterns",
+      "item": "ingot_lanterns",
+      "at": [14, 1]
     }
   ]
 }

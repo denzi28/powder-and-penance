@@ -91,6 +91,12 @@
       "id": "abbey_03_cloister_warden_hauberk",
       "item": "gear_warden_hauberk",
       "at": [12, 5]
+    },
+    {
+      "type": "item",
+      "id": "ingot_cloister",
+      "item": "ingot_cloister",
+      "at": [12, 14]
     }
   ]
 }

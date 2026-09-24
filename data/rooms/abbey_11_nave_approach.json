@@ -27,7 +27,10 @@
       "type": "door",
       "id": "abbey_door_nave",
       "at": [10, 0],
-      "requires": ["seal_of_tallow", "seal_of_the_mire"]
+      "requires": [
+        "seal_of_tallow",
+        "seal_of_the_mire"
+      ]
     },
     {
       "type": "decor",
@@ -96,6 +99,12 @@
       "type": "decor",
       "kind": "rubble",
       "at": [10, 10]
+    },
+    {
+      "type": "item",
+      "id": "salt_nave",
+      "item": "salt_nave",
+      "at": [14, 5]
     }
   ]
 }

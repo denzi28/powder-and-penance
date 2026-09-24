@@ -59,6 +59,12 @@
       "type": "note",
       "note": "note_miners_prayer",
       "at": [8, 9]
+    },
+    {
+      "type": "item",
+      "id": "salt_flue",
+      "item": "salt_flue",
+      "at": [10, 11]
     }
   ]
 }

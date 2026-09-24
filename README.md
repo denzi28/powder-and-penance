@@ -38,6 +38,8 @@ npm run gen:art    # regenerate missing placeholder art (--force to overwrite al
 
 **Consumables, rings and notes.** Chests, enemies and breakable pots give consumables: firebombs, throwing knives, honeycomb, grey salt, incense, cartridges, oil, wafers, smoke, grog and tallow candles. Each does something different (Inventory > Items says exactly what, with numbers, then its lore). Whatever is on your belt shows bottom-left, and timed effects show as small icons under the phials. Two **rings** can be worn (Equipment > Ring I/II); each changes one thing while worn. **Notes** lie on the floor in eight rooms; read one with E and it's kept under Inventory > Notes. **Minibosses** (the Belfry Brute in the ossuary, Hesk in the mire roots) have a name bar at the bottom, more health, stay dead once killed, and drop a ring.
 
+**Levelling, shopping, smithing.** Tallow is spent in the hub: **Maudlin** levels you up (Vitality, Endurance, Strength, Dexterity), **Oskar** sells from his stall (more stock after each boss), and **Bede** upgrades weapons +1 to +5 with Tallow Ingots and Ember Salt found in chests and dropped by bosses. Talk to them and pick the option in brackets.
+
 **Two hands.** The right hand holds a weapon (left click). The left hand holds a shield, a one-handed weapon, or nothing (right click): sword and buckler, sword and flintlock, dagger and revolver. **Two-handed weapons** (greataxe, heavy crossbow) take both hands: equipping one empties the left hand, and putting a shield or weapon in the left hand takes the two-hander off. Change hands from Esc > EQUIPMENT; the HUD boxes bottom-right show each hand with its button.
 
 ## Debug keys

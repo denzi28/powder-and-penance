@@ -1,6 +1,6 @@
 // Player simulation state. No Phaser here: PlayerView renders it, interpolating prev -> current position.
 import { DATA } from '../data/config';
-import type { LoadCfg, Mods } from '../data/schemas';
+import type { LoadCfg, Mods, StatName } from '../data/schemas';
 import { AnimPlayer } from '../anim/AnimPlayer';
 import { SPRITES } from '../data/assets';
 import { Actor } from '../actors/Actor';
@@ -36,12 +36,19 @@ export class Player extends Actor {
   regen: { id: string; left: number; total: number; perTick: number; acc: number } | null = null;
   /** The consumable being used (useItem state). */
   using: string | null = null;
+  /** Stats raised at Maudlin (each starts at DATA.levels.start). */
+  stats: Record<StatName, number> = startStats();
+  /** Bede's upgrades: weapon id -> +level. */
+  upgrades: Record<string, number> = {};
+  /** Oskar's shop: entry id -> how many bought. */
+  bought: Record<string, number> = {};
 
   readonly poise = new Poise(() => ({ ...DATA.player.poise, max: DATA.player.poise.max + this.armourPoise + this.mods.poise }));
   readonly stamina = new Stamina(
     () => {
       const m = this.mods;
-      return { ...DATA.stamina, max: DATA.stamina.max + m.stamina, regenPerSec: DATA.stamina.regenPerSec * m.staminaRegen };
+      const fromEnd = (this.stats.endurance - DATA.levels.start) * DATA.levels.endurance.staminaPerPoint;
+      return { ...DATA.stamina, max: DATA.stamina.max + fromEnd + m.stamina, regenPerSec: DATA.stamina.regenPerSec * m.staminaRegen };
     },
     () => DATA.game.tickRate,
   );
@@ -127,7 +134,11 @@ export class Player extends Actor {
     return this.ctx.input;
   }
   get maxHp() {
-    return DATA.player.maxHp + this.mods.maxHp;
+    return Math.round(DATA.player.maxHp + vitalityHp(this.stats.vitality) + this.mods.maxHp);
+  }
+  /** Level: 1 plus every point spent at Maudlin. */
+  get level() {
+    return levelOf(this.stats);
   }
   get collider() {
     return DATA.player.collider;
@@ -192,9 +203,13 @@ export class Player extends Actor {
     return combineMods(list);
   }
 
-  override damageDealtMult(kind: 'melee' | 'projectile' | 'critical') {
+  /** Rings and effects, and for a weapon's own hits its upgrade and your Strength/Dexterity (a thrown
+   *  consumable is a projectile without a weapon). */
+  override damageDealtMult(kind: 'melee' | 'projectile' | 'critical', weapon?: string) {
     const m = this.mods;
-    return m.damage * (kind === 'projectile' ? m.rangedDamage : 1) * (this.hp <= this.maxHp * 0.3 ? m.desperate : 1);
+    const w = weapon ?? (kind === 'projectile' ? null : this.weaponId);
+    const own = w ? weaponMult(w, this.stats, this.upgrades[w] ?? 0) : 1;
+    return own * m.damage * (kind === 'projectile' ? m.rangedDamage : 1) * (this.hp <= this.maxHp * 0.3 ? m.desperate : 1);
   }
 
   /** Wax, mud and spilled pools slow you less when sure-footed. */
@@ -209,7 +224,8 @@ export class Player extends Actor {
   }
   /** Equip load capacity (rings can raise it). */
   get capacity() {
-    return Math.round(DATA.load.capacity * this.mods.capacity * 10) / 10;
+    const fromEnd = (this.stats.endurance - DATA.levels.start) * DATA.levels.endurance.capacityPerPoint;
+    return Math.round((DATA.load.capacity + fromEnd) * this.mods.capacity * 10) / 10;
   }
   get loadTier() {
     return loadTier(this.equipLoad, this.capacity);
@@ -232,18 +248,31 @@ export class Player extends Actor {
     if (!c) return 0;
     const took = Math.max(0, Math.min(n, c.max - this.count(id)));
     if (took) this.pack.set(id, this.count(id) + took);
-    if (!this.belt || !this.count(this.belt)) this.belt = id;
+    if (c.use.type !== 'material' && (!this.belt || !this.count(this.belt))) this.belt = id;
     return took;
   }
 
-  /** The consumables you carry, in data order (the belt cycles through these). */
+  /** Spend consumables or materials (e.g. at the smith). Returns false (and spends nothing) if short. */
+  spendItem(id: string, n: number): boolean {
+    if (this.count(id) < n) return false;
+    if (this.count(id) === n) this.pack.delete(id);
+    else this.pack.set(id, this.count(id) - n);
+    if (this.belt && !this.count(this.belt)) this.cycleBelt();
+    return true;
+  }
+
+  /** Everything in the pack, in data order (the inventory lists these). */
   get carried(): string[] {
     return Object.keys(DATA.consumables).filter(id => this.count(id) > 0);
   }
+  /** What can go on the belt: carried, and usable (not a smith's material). */
+  get beltable(): string[] {
+    return this.carried.filter(id => DATA.consumables[id].use.type !== 'material');
+  }
 
-  /** Next (or previous) carried consumable onto the belt. */
+  /** Next (or previous) usable consumable onto the belt. */
   cycleBelt(dir = 1) {
-    const list = this.carried;
+    const list = this.beltable;
     if (!list.length) {
       this.belt = null;
       return;
@@ -265,7 +294,7 @@ export class Player extends Actor {
    */
   applyConsumable(id: string): boolean {
     const c = DATA.consumables[id];
-    if (!c || this.count(id) <= 0) return false;
+    if (!c || this.count(id) <= 0 || c.use.type === 'material') return false;
     const n = this.count(id) - 1;
     if (n) this.pack.set(id, n);
     else {
@@ -423,7 +452,7 @@ export class Player extends Actor {
 
     this.stamina.tick();
     this.tickEffects();
-    if (this.input.consume('cycleItem') && this.carried.length) {
+    if (this.input.consume('cycleItem') && this.beltable.length) {
       this.cycleBelt();
       this.ctx.bus.emit('sfx', { id: 'p_belt' });
     }
@@ -688,16 +717,61 @@ export function combineMods(list: readonly Mods[]): FullMods {
   const m: FullMods = {
     maxHp: 0, stamina: 0, poise: 0,
     staminaRegen: 1, rollCost: 1, damage: 1, rangedDamage: 1, desperate: 1, damageTaken: 1, heal: 1, notice: 1, tallowGain: 1, capacity: 1,
+    reload: 1, prices: 1,
     keepTallow: 0, sureFooted: 0,
   };
   for (const x of list) {
     m.maxHp += x.maxHp ?? 0;
     m.stamina += x.stamina ?? 0;
     m.poise += x.poise ?? 0;
-    for (const k of ['staminaRegen', 'rollCost', 'damage', 'rangedDamage', 'desperate', 'damageTaken', 'heal', 'notice', 'tallowGain', 'capacity'] as const)
+    for (const k of ['staminaRegen', 'rollCost', 'damage', 'rangedDamage', 'desperate', 'damageTaken', 'heal', 'notice', 'tallowGain', 'capacity', 'reload', 'prices'] as const)
       m[k] *= x[k] ?? 1;
     m.keepTallow = Math.max(m.keepTallow, x.keepTallow ?? 0);
     m.sureFooted = Math.max(m.sureFooted, x.sureFooted ?? 0);
   }
   return m;
+}
+
+// ------------------------------------------------------------------ levels, scaling, upgrades (pure)
+export const STATS: readonly StatName[] = ['vitality', 'endurance', 'strength', 'dexterity'];
+
+export function startStats(): Record<StatName, number> {
+  const v = DATA.levels.start;
+  return { vitality: v, endurance: v, strength: v, dexterity: v };
+}
+
+/** 1 plus every point spent. */
+export function levelOf(stats: Record<StatName, number>): number {
+  return 1 + STATS.reduce((a, k) => a + stats[k] - DATA.levels.start, 0);
+}
+
+/** Tallow to go from `level` to the next. */
+export function levelCost(level: number): number {
+  const c = DATA.levels.cost;
+  const n = level - 1;
+  return Math.round(c.base + c.linear * n + c.quad * n * n);
+}
+
+/** HP that Vitality adds over the start. */
+export function vitalityHp(vitality: number): number {
+  const v = DATA.levels.vitality;
+  const pts = vitality - DATA.levels.start;
+  const first = Math.min(pts, v.softCap - DATA.levels.start);
+  return first * v.hpPerPoint + Math.max(0, pts - first) * v.hpAfterCap;
+}
+
+/** How much a stat adds to a weapon with this grade: the grade's weight times progress to `full`. */
+export function scalingBonus(grade: string | undefined, stat: number): number {
+  if (!grade) return 0;
+  const sc = DATA.levels.scaling;
+  const k = Math.max(0, Math.min(1, (stat - DATA.levels.start) / (sc.full - DATA.levels.start)));
+  return (sc.grades[grade as keyof typeof sc.grades] ?? 0) * k;
+}
+
+/** A weapon's damage multiplier from your stats and its upgrade level. */
+export function weaponMult(weaponId: string, stats: Record<StatName, number>, upgrade: number): number {
+  const w = DATA.weapons[weaponId];
+  if (!w) return 1;
+  const fromStats = scalingBonus(w.scaling.str, stats.strength) + scalingBonus(w.scaling.dex, stats.dexterity);
+  return (1 + fromStats) * (1 + upgrade * DATA.smith.damagePerLevel);
 }

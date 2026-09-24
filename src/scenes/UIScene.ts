@@ -277,7 +277,7 @@ export class UIScene extends Phaser.Scene {
     const x = 8;
     const y = H - 8 - size;
     const id = p.belt && p.count(p.belt) > 0 ? p.belt : null;
-    const carried = this.gs.gear || this.gs.menu ? 0 : p.carried.length; // hidden under the menus
+    const carried = this.gs.gear || this.gs.menu ? 0 : p.beltable.length; // hidden under the menus
     this.beltIcon.setVisible(!!id);
     this.beltText.setVisible(!!id);
     this.beltKey.setVisible(carried > 0);

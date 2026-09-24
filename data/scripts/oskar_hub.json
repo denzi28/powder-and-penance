@@ -8,13 +8,50 @@
         { "say": "I owe you. When I've got stock worth selling, you get first pick. Powder, shot, the good stuff.", "who": "oskar" },
         { "set": "oskar_thanked" }
       ],
-      "else": [{ "say": "My favourite customer. My only customer, but still.", "who": "oskar" }]
+      "else": [
+        { "say": "My favourite customer. My only customer, but still.", "who": "oskar" }
+      ]
     },
     {
       "menu": [
-        { "text": "What do you sell?", "do": [{ "say": "Nothing yet. My real stock is hidden where the Order will never look. When I can reach it, you'll be the first to know.", "who": "oskar" }] },
-        { "text": "How did you end up on that wagon?", "do": [{ "say": "Sold powder to the wrong priest. Or the right priest, and he got caught. Either way the Order needed a penitent, and I was handy.", "who": "oskar" }] },
-        { "text": "Leave", "end": true, "do": [{ "say": "Mind the Hill Stair. Things come down it after dark.", "who": "oskar" }] }
+        {
+          "text": "Show me what you have. (Shop)",
+          "do": [
+            {
+              "if": "!oskar_shop_open",
+              "then": [
+                { "say": "Not much yet! A few things I scrounged on the road, and whatever the carters leave behind.", "who": "oskar" },
+                { "say": "Clear the way to the Works and the Mire and more comes through. Trade follows the brave, and I follow the trade.", "who": "oskar" },
+                { "set": "oskar_shop_open" }
+              ],
+              "else": [
+                { "say": "Take your time. Touch nothing you won't buy.", "who": "oskar" }
+              ]
+            },
+            { "open": "shop" }
+          ],
+          "end": true
+        },
+        {
+          "text": "Where does your stock come from?",
+          "do": [
+            { "say": "Some from the road. The good stuff was hidden in the old powder stores under the Works, before the Order sealed them.", "who": "oskar" },
+            { "say": "I drew a map, if you've the Tallow. Friends' rates.", "who": "oskar" }
+          ]
+        },
+        {
+          "text": "How did you end up on that wagon?",
+          "do": [
+            { "say": "Sold powder to the wrong priest. Or the right priest, and he got caught. Either way the Order needed a penitent, and I was handy.", "who": "oskar" }
+          ]
+        },
+        {
+          "text": "Leave",
+          "end": true,
+          "do": [
+            { "say": "Mind the Hill Stair. Things come down it after dark.", "who": "oskar" }
+          ]
+        }
       ]
     }
   ]

@@ -11,10 +11,31 @@
         { "say": "Warm. The Drip hasn't touched you at all. Hm.", "who": "maudlin" },
         { "set": "maudlin_met" }
       ],
-      "else": [{ "say": "Still warm? Good. Keep it that way.", "who": "maudlin" }]
+      "else": [
+        { "say": "Still warm? Good. Keep it that way.", "who": "maudlin" }
+      ]
     },
     {
       "menu": [
+        {
+          "text": "I want to grow stronger. (Level up)",
+          "do": [
+            {
+              "if": "!maudlin_levels",
+              "then": [
+                { "say": "Stronger. Everyone asks for that, sooner or later. There's a way. It isn't a kind one.", "who": "maudlin" },
+                { "say": "The Tallow you carry was people once. Hold it to the flame and it gives back a little of what they had: breath, grip, blood.", "who": "maudlin" },
+                { "say": "I'll do it. Someone should be watching when it's done.", "who": "maudlin" },
+                { "set": "maudlin_levels" }
+              ],
+              "else": [
+                { "say": "Hold it to the flame, then.", "who": "maudlin" }
+              ]
+            },
+            { "open": "levelup" }
+          ],
+          "end": true
+        },
         {
           "text": "What is the Drip?",
           "do": [
@@ -31,7 +52,10 @@
         },
         {
           "text": "The Tollwarden is dead.",
-          "when": ["tollwarden_last_words", "!maudlin_heard_anselm"],
+          "when": [
+            "tollwarden_last_words",
+            "!maudlin_heard_anselm"
+          ],
           "do": [
             { "say": "Dead? ...", "who": "maudlin" },
             { "say": "You tell her his last words: that Anselm kept the count." },
@@ -43,7 +67,10 @@
         },
         {
           "text": "Show her the Chandler's Ledger.",
-          "when": ["key:chandler_ledger", "!maudlin_saw_ledger"],
+          "when": [
+            "key:chandler_ledger",
+            "!maudlin_saw_ledger"
+          ],
           "do": [
             { "say": "She reads the first page. Then the second. Her hands stop shaking somewhere around the tenth." },
             { "say": "Names and weights. He wrote down the weights.", "who": "maudlin" },
@@ -61,9 +88,17 @@
         },
         {
           "text": "Why are my hands warm?",
-          "do": [{ "say": "I don't know. And I'd rather not guess out loud. Keep your gloves on around the Order.", "who": "maudlin" }]
+          "do": [
+            { "say": "I don't know. And I'd rather not guess out loud. Keep your gloves on around the Order.", "who": "maudlin" }
+          ]
         },
-        { "text": "Leave", "end": true, "do": [{ "say": "The flame keep you.", "who": "maudlin" }] }
+        {
+          "text": "Leave",
+          "end": true,
+          "do": [
+            { "say": "The flame keep you.", "who": "maudlin" }
+          ]
+        }
       ]
     }
   ]

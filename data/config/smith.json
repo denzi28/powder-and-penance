@@ -1,0 +1,35 @@
+{
+  "damagePerLevel": 0.1,
+  "levels": [
+    {
+      "tallow": 300,
+      "materials": {
+        "tallow_ingot": 1
+      }
+    },
+    {
+      "tallow": 600,
+      "materials": {
+        "tallow_ingot": 2
+      }
+    },
+    {
+      "tallow": 1000,
+      "materials": {
+        "tallow_ingot": 3
+      }
+    },
+    {
+      "tallow": 1600,
+      "materials": {
+        "ember_salt": 1
+      }
+    },
+    {
+      "tallow": 2400,
+      "materials": {
+        "ember_salt": 2
+      }
+    }
+  ]
+}

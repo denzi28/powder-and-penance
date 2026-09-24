@@ -56,6 +56,9 @@ function loadAll(src: Record<string, unknown>) {
     shields: dir(S.ShieldDef, 'shields'),
     armour: dir(S.ArmourDef, 'armour'),
     load: one(S.LoadCfg, 'config/load'),
+    levels: one(S.LevelsCfg, 'config/levels'),
+    smith: one(S.SmithCfg, 'config/smith'),
+    shop: one(S.ShopCfg, 'shop'),
     items: dir(S.ItemDef, 'items'),
     consumables: dir(S.ConsumableDef, 'consumables'),
     rings: dir(S.RingDef, 'rings'),
@@ -195,6 +198,17 @@ function loadAll(src: Record<string, unknown>) {
       const table = e.kind === 'weapon' ? data.weapons : e.kind === 'shield' ? data.shields : data.armour;
       if (!table[e.id]) errors.push(`data/items/${it.id}.json: gear "${e.id}" is not a ${e.kind}`);
     }
+    for (const e of data.shop.stock) {
+      const where = `data/shop.json: "${e.id}"`;
+      if (e.consumable && !data.consumables[e.consumable]) errors.push(`${where} sells unknown consumable "${e.consumable}"`);
+      if (e.note && !data.notes[e.note]) errors.push(`${where} sells unknown note "${e.note}"`);
+      if (e.item && !data.items[e.item]) errors.push(`${where} sells unknown item "${e.item}"`);
+      if (e.item && data.items[e.item]?.effect.type === 'ring' && e.limit !== 1) errors.push(`${where}: a ring is sold once ("limit": 1)`);
+    }
+    if (new Set(data.shop.stock.map(e => e.id)).size !== data.shop.stock.length) errors.push('data/shop.json: duplicate entry ids');
+    for (const lv of data.smith.levels)
+      for (const m of Object.keys(lv.materials))
+        if (data.consumables[m]?.use.type !== 'material') errors.push(`data/config/smith.json: "${m}" is not a material (data/consumables, use "material")`);
     for (const [t, table] of Object.entries(data.loot.tables))
       for (const l of table) if (l.item && !data.consumables[l.item]) errors.push(`data/loot.json: table "${t}" drops unknown consumable "${l.item}"`);
     for (const e of Object.values(data.enemies) as S.EnemyDef[])

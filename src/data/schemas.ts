@@ -226,6 +226,10 @@ export const ItemDef = z.object({
   icon: int.nonnegative().default(0),
 });
 
+/** A scaling grade (data/config/levels.json gives each its weight). */
+export const Grade = z.enum(['S', 'A', 'B', 'C', 'D', 'E']);
+export type Grade = z.infer<typeof Grade>;
+
 /**
  * Modifiers from worn rings and from consumables' timed effects. Additions add up, multipliers multiply,
  * `keepTallow` and `sureFooted` take the largest.
@@ -262,6 +266,10 @@ export const Mods = z
     keepTallow: num.min(0).max(1).optional(),
     /** Fraction of the slowdown of wax, mud and spilled pools that you ignore. */
     sureFooted: num.min(0).max(1).optional(),
+    /** Multiplier on how long a reload takes. */
+    reload: pos.optional(),
+    /** Multiplier on shop prices. */
+    prices: pos.optional(),
   })
   .strict();
 export type Mods = z.infer<typeof Mods>;
@@ -288,6 +296,8 @@ export const ConsumableDef = z.object({
     z.object({ type: z.literal('reload'), reserve: num.min(0).max(1) }),
     /** Turned into Tallow. */
     z.object({ type: z.literal('tallow'), amount: int.positive() }),
+    /** Not used from the belt: a smith's material (Bede takes it for upgrades). */
+    z.object({ type: z.literal('material') }),
   ]),
 });
 export type ConsumableDef = z.infer<typeof ConsumableDef>;
@@ -326,6 +336,35 @@ export const MinibossPlacement = z.object({
 });
 export type MinibossPlacement = z.infer<typeof MinibossPlacement>;
 
+const StatName = z.enum(['vitality', 'endurance', 'strength', 'dexterity']);
+export type StatName = z.infer<typeof StatName>;
+/**
+ * Levelling at Maudlin (data/config/levels.json). Each stat starts at `start`; your level is 1 plus the points
+ * spent. The next level costs base + linear*(L-1) + quad*(L-1)^2 Tallow at level L.
+ */
+export const LevelsCfg = z.object({
+  start: int.positive(),
+  max: int.positive(),
+  cost: z.object({ base: pos, linear: num.min(0), quad: num.min(0) }),
+  /** HP per Vitality point up to `softCap`, then `hpAfterCap` per point. */
+  vitality: z.object({ hpPerPoint: pos, softCap: int.positive(), hpAfterCap: num.min(0) }),
+  endurance: z.object({ staminaPerPoint: pos, capacityPerPoint: pos }),
+  /** Damage bonus: grade weight x (stat - start) / (full - start), capped at 1. */
+  scaling: z.object({ grades: z.record(Grade, num.min(0)), full: int.positive() }),
+  /** One line per stat for the level-up screen. */
+  notes: z.record(StatName, z.string()),
+});
+export type LevelsCfg = z.infer<typeof LevelsCfg>;
+
+/** Bede's upgrades (data/config/smith.json): what each level costs, and the damage it adds per level. */
+export const SmithCfg = z.object({
+  damagePerLevel: pos,
+  levels: z.array(z.object({ tallow: int.positive(), materials: z.record(z.string(), int.positive()) })).min(1),
+});
+export type SmithCfg = z.infer<typeof SmithCfg>;
+
+
+
 // ---- Story: characters, dialogue and cutscene scripts (see STORY.md) ----
 /**
  * A condition on world flags: "name" (set) or "!name" (not set); a list means all of them. Bare names are
@@ -333,6 +372,30 @@ export type MinibossPlacement = z.infer<typeof MinibossPlacement>;
  */
 export const Cond = z.union([z.string(), z.array(z.string())]);
 export type Cond = z.infer<typeof Cond>;
+
+/**
+ * Oskar's stock (data/shop.json). Each entry sells a consumable, an item (data/items: a ring, a powder pouch)
+ * or a note, for `price` Tallow, up to `limit` times in all (none = as many as you like). It is on sale once
+ * `when` holds, so the stock grows as you explore.
+ */
+export const ShopCfg = z.object({
+  stock: z
+    .array(
+      z
+        .object({
+          id: z.string(),
+          consumable: z.string().optional(),
+          item: z.string().optional(),
+          note: z.string().optional(),
+          price: int.positive(),
+          limit: int.positive().optional(),
+          when: Cond.optional(),
+        })
+        .refine(e => [e.consumable, e.item, e.note].filter(Boolean).length === 1, 'sell exactly one of consumable, item, note'),
+    )
+    .min(1),
+});
+export type ShopEntry = z.infer<typeof ShopCfg>['stock'][number];
 /** A camera target: "player", "npc:<placement id>", "point:<point id>" or "enemy:<enemy kind>" (e.g. a boss). */
 const Target = z
   .string()
@@ -351,7 +414,8 @@ export type Step =
   | { shake: number }
   | { give: string }
   | { toast: [string, string] }
-  | { card: string; sub?: string; ticks?: number };
+  | { card: string; sub?: string; ticks?: number }
+  | { open: 'levelup' | 'shop' | 'smith' };
 export const Step: z.ZodType<Step> = z.lazy(() =>
   z.union([
     /** A line of dialogue. `who`: a character id (data/npcs.json); omitted = narration. */
@@ -378,6 +442,8 @@ export const Step: z.ZodType<Step> = z.lazy(() =>
     z.object({ toast: z.tuple([z.string(), z.string()]) }).strict(),
     /** A title card in the middle of the screen (over a fade, it reads like a chapter's end), for `ticks`. */
     z.object({ card: z.string(), sub: z.string().optional(), ticks: int.positive().optional() }).strict(),
+    /** Open a townsperson's screen (level up, shop, smith) once the conversation ends. */
+    z.object({ open: z.enum(['levelup', 'shop', 'smith']) }).strict(),
   ]),
 );
 /** data/scripts/*.json: a dialogue or cutscene. `skippable`: Esc jumps to the end (flags are still set). */
@@ -710,6 +776,10 @@ export const WeaponDef = z
     name: z.string(),
     kind: z.enum(['melee', 'ranged']),
     twoHanded: z.boolean(),
+    /** How much Strength and Dexterity add to its damage, graded S (most) to E (least); missing = none. */
+    scaling: z.object({ str: Grade.optional(), dex: Grade.optional() }).default({}),
+    /** Can Bede upgrade it (+1 to +5)? */
+    upgradable: z.boolean().default(true),
     /** hidden: no weapon sprite is drawn (bare hands). */
     view: z.object({ sprite: z.string(), restAngleOffsetDeg: num, hidden: z.boolean().default(false) }),
     light: z.array(StrikeDef).default([]),
@@ -945,7 +1015,7 @@ export const LAYERED_SOUNDS = [
   'p_hurt', 'p_die', 'p_drink', 'p_roll_light', 'p_roll', 'p_roll_heavy', 'p_roll_flop',
   'p_unequip', 'p_draw', 'p_strap', 'p_armour_light', 'p_armour_heavy', 'p_mail_jingle',
   // the player: consumables, rings, notes
-  'p_use', 'p_belt', 'p_swap', 'p_throw', 'p_throw_knife', 'p_eat', 'p_incense', 'p_cartridge', 'p_oil', 'p_smoke', 'p_drink_grog', 'p_candle', 'p_ring', 'p_paper',
+  'p_use', 'p_belt', 'p_swap', 'p_levelup', 'p_buy', 'p_anvil', 'p_throw', 'p_throw_knife', 'p_eat', 'p_incense', 'p_cartridge', 'p_oil', 'p_smoke', 'p_drink_grog', 'p_candle', 'p_ring', 'p_paper',
 ] as const;
 export type LayeredSound = (typeof LAYERED_SOUNDS)[number];
 export const SURFACES = ['dirt', 'grass', 'stone', 'wood', 'metal', 'mud', 'grease', 'wax', 'moss'] as const;

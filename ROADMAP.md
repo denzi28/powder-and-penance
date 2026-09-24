@@ -58,14 +58,13 @@ Each new biome is somewhere the Order's grey never reached, and each hides a pie
 - **Loot.** Enemies have loot tables, so consumables drop where they fall. Chests in 18 rooms hold rings and consumables.
 - **Tests:** every consumable, ring and note is unique and can be found; modifiers; save migration (v3).
 
-## Step 2: The economy
+## Step 2: The economy (done)
 *Tallow finally buys things, so the bigger world has something to spend it on.*
-- **Level up at Maudlin**, using Vitality, Endurance, Strength and Dexterity:
-  - The cost curve is in data.
-  - Endurance raises stamina and equip-load capacity.
-  - Strength and Dexterity scale weapon damage (the scaling letters show on the Equipment screen).
-- **Oskar's shop** at his stall: ammo, consumables, a few rings, lore trinkets. The stock grows as you explore.
-- **Smith (Bede at the chopping block):** weapon upgrades +1 to +5 using Tallow Ingots and Ember Salt, which get placed in the world.
+- **Level up at Maudlin** ("I want to grow stronger"): Vitality (HP, slower past 30), Endurance (stamina and carrying capacity), Strength and Dexterity (weapon damage by each weapon's STR/DEX grade, S to E). Add points one at a time and watch HP, stamina, capacity and both hands' damage change, then confirm to pay. Costs rise each level (`data/config/levels.json`).
+- **Oskar's stall** ("Show me what you have"): 16 things to buy. At first: knives, firebombs, cartridges, powder, candles, his map to the old powder stores, and the Hawker's Ring (15% off). More appears as the Tollwarden, Mother Tallow and the Matron fall: honeycomb, Tallow Ingots, a Bloomhollow pamphlet, salt, smoke, the Gunner's Band (faster reloads), incense, oil, Ember Salt (`data/shop.json`).
+- **Bede's block** ("Can you work steel?"): weapons +1 to +5, each level +10% damage. +1 to +3 take Tallow Ingots, +4 and +5 Ember Salt, plus Tallow (`data/config/smith.json`). Ingots lie in 7 chests (9 in all) and the Tollwarden drops 2; Ember Salt in 3 chests, and each of the last three bosses drops one.
+- Equipment and Inventory show each weapon's +level, grades and real damage; the YOU panel shows your level and stats.
+- **Tests:** level costs and stat effects, scaling and upgrades, the stock growing, enough materials in the world for a +5 weapon; save migration (v4).
 
 ## Step 3: The Powder Vault (finishes Act 1)
 *The optional area that's planned but not built. 4 rooms off the Works' hidden wall.*

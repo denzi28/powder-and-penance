@@ -4,10 +4,22 @@ import { DATA } from '../data/config';
 import type { GameScene } from '../scenes/GameScene';
 
 export function grantItem(gs: GameScene, id: string, itemId: string, x: number, y: number) {
-  const p = gs.player;
   const item = DATA.items[itemId];
   const e = item.effect;
   gs.flags.add(`item:${id}`);
+  const what = applyItem(gs, itemId);
+  const lore = e.type === 'consumable' ? DATA.consumables[e.id].description : e.type === 'ring' ? DATA.rings[e.id].description : item.description;
+  gs.showToast(item.name.toUpperCase(), what, lore);
+  gs.particles.burst(x, y, 10, -Math.PI / 2, 1.6, 12, 60, 'flame2', false); // sparks from the open chest
+  gs.bus.emit('sfx', { id: 'item' });
+  gs.save();
+}
+
+/** Apply an item's effect to the player (from a chest, a script, the shop). Returns what changed, in plain words. */
+export function applyItem(gs: GameScene, itemId: string): string {
+  const p = gs.player;
+  const item = DATA.items[itemId];
+  const e = item.effect;
   let what: string;
   switch (e.type) {
     case 'phialMax': {
@@ -85,7 +97,7 @@ export function grantItem(gs: GameScene, id: string, itemId: string, x: number, 
       const has = p.count(e.id);
       what =
         took > 0
-          ? `${took > 1 ? `${took} x ` : ''}${c.name}: ${useLine(e.id)} You carry ${has} of ${c.max}. ${p.belt === e.id ? 'It is on your belt: C (or R3) uses it, X cycles.' : 'X cycles your belt to it; C uses it.'}`
+          ? `${took > 1 ? `${took} x ` : ''}${c.name}: ${useLine(e.id)} You carry ${has}${c.use.type === 'material' ? '' : ` of ${c.max}. ${p.belt === e.id ? 'It is on your belt: C (or R3) uses it, X cycles.' : 'X cycles your belt to it; C uses it.'}`}`
           : `You can't carry more ${c.name} (${c.max}).`;
       break;
     }
@@ -103,11 +115,7 @@ export function grantItem(gs: GameScene, id: string, itemId: string, x: number, 
       what = `${e.note} Kept for good, even if you die.`;
       break;
   }
-  const lore = e.type === 'consumable' ? DATA.consumables[e.id].description : e.type === 'ring' ? DATA.rings[e.id].description : item.description;
-  gs.showToast(item.name.toUpperCase(), what, lore);
-  gs.particles.burst(x, y, 10, -Math.PI / 2, 1.6, 12, 60, 'flame2', false); // sparks from the open chest
-  gs.bus.emit('sfx', { id: 'item' });
-  gs.save();
+  return what;
 }
 
 /** What a consumable does, in one plain sentence with real numbers. */
@@ -127,6 +135,8 @@ export function useLine(id: string): string {
       return `Loads every gun you carry at once, and adds ${Math.round(u.reserve * 100)}% of its spare shots.`;
     case 'tallow':
       return `Turn it into ${u.amount} Tallow.`;
+    case 'material':
+      return 'A smith\'s material: Bede takes it to upgrade weapons.';
   }
 }
 

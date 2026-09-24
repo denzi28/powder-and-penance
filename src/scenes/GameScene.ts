@@ -51,6 +51,7 @@ import { Sfx } from '../audio/Sfx';
 import { AmbientAudio } from '../audio/Ambient';
 import { BossSfx } from '../audio/BossSfx';
 import { GearScreen } from '../ui/GearScreen';
+import { LevelUpScreen, ShopScreen, SmithScreen, type AnyServiceScreen } from '../ui/ServiceScreens';
 import { BossMusic, ExploreMusic } from '../audio/Music';
 import { SaveSystem, type SaveData } from '../save/SaveSystem';
 import { MenuNav, type Menu } from '../ui/Menu';
@@ -153,7 +154,9 @@ export class GameScene extends Phaser.Scene {
   /** Large map open (M): the world is paused. */
   mapOpen = false;
   /** Equipment / inventory screen (from the pause menu): the world is paused. */
-  gear: GearScreen | null = null;
+  gear: GearScreen | AnyServiceScreen | null = null;
+  /** A townsperson's screen to open when the conversation ends (script step "open"). */
+  pendingScreen: 'levelup' | 'shop' | 'smith' | null = null;
   /** Quick travel between shrines in progress (game/Warp): the world is paused. */
   warp: { to: WarpTarget; t: number } | null = null;
 
@@ -312,6 +315,10 @@ export class GameScene extends Phaser.Scene {
       this.mapOpen = true;
       return;
     }
+    if (this.pendingScreen) {
+      this.openService(this.pendingScreen);
+      this.pendingScreen = null;
+    }
     if (this.gear) {
       this.gear.update(this.controls);
       return;
@@ -387,7 +394,8 @@ export class GameScene extends Phaser.Scene {
     if (this.flags.has(`found:${id}`)) return;
     this.flags.add(`found:${id}`);
     const c = DATA.consumables[id];
-    this.showToast(c.name.toUpperCase(), `${useLine(id)} It goes on your belt: X cycles, C (or R3) uses.`, c.description);
+    const how = c.use.type === 'material' ? '' : ' It goes on your belt: X cycles, C (or R3) uses.';
+    this.showToast(c.name.toUpperCase(), `${useLine(id)}${how}`, c.description);
   }
 
   private tryRecoverMarker() {
@@ -476,6 +484,18 @@ export class GameScene extends Phaser.Scene {
       id => this.bus.emit('sfx', { id }),
     );
     if (note) this.gear.focus('NOTES', note);
+  }
+
+  /** Open Maudlin's, Oskar's or Bede's screen; closing it returns to the game. */
+  openService(kind: 'levelup' | 'shop' | 'smith') {
+    this.menu = null;
+    this.controls.clearBuffer();
+    const close = () => {
+      this.gear = null;
+      this.markDirty();
+      this.controls.clearBuffer();
+    };
+    this.gear = kind === 'levelup' ? new LevelUpScreen(this, close) : kind === 'shop' ? new ShopScreen(this, close) : new SmithScreen(this, close);
   }
 
   closeMenu() {

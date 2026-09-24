@@ -116,6 +116,12 @@
       "id": "mire_09_choir_drowned_veil",
       "item": "gear_drowned_veil",
       "at": [11, 1]
+    },
+    {
+      "type": "item",
+      "id": "salt_choir",
+      "item": "salt_choir",
+      "at": [14, 1]
     }
   ]
 }

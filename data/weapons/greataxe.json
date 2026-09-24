@@ -7,6 +7,7 @@
   "sounds": { "draw": "p_draw_heavy", "hit": "p_hit_axe" },
   "kind": "melee",
   "twoHanded": true,
+  "scaling": { "str": "A", "dex": "E" },
   "view": { "sprite": "greataxe", "restAngleOffsetDeg": 60 },
   "crit": { "backstab": 2.2, "riposte": 2.5 },
   "light": [

@@ -12,8 +12,41 @@
       "else": [
         {
           "if": "boss:mother_tallow",
-          "then": [{ "say": "The carts from the Works stopped coming. Good. I never liked what the smoke smelled of.", "who": "bede" }],
-          "else": [{ "say": "Wood's wet. Everything's wet. The Drip gets into the grain of it. Burns with a hiss, like it's sorry.", "who": "bede" }]
+          "then": [
+            { "say": "The carts from the Works stopped coming. Good. I never liked what the smoke smelled of.", "who": "bede" }
+          ],
+          "else": [
+            { "say": "Wood's wet. Everything's wet. The Drip gets into the grain of it. Burns with a hiss, like it's sorry.", "who": "bede" }
+          ]
+        }
+      ]
+    },
+    {
+      "menu": [
+        {
+          "text": "Can you work steel? (Upgrade weapons)",
+          "do": [
+            {
+              "if": "!bede_smith",
+              "then": [
+                { "say": "Before I split wood I shod horses. Before that I made blades for the Order, until I saw what they used them for.", "who": "bede" },
+                { "say": "Bring me Tallow Ingots and I'll fold them into the steel. Ember Salt for the last of it. And Tallow for my time. Wood doesn't pay.", "who": "bede" },
+                { "set": "bede_smith" }
+              ],
+              "else": [
+                { "say": "Put it on the block.", "who": "bede" }
+              ]
+            },
+            { "open": "smith" }
+          ],
+          "end": true
+        },
+        {
+          "text": "Leave",
+          "end": true,
+          "do": [
+            { "say": "Mind your edges.", "who": "bede" }
+          ]
         }
       ]
     }

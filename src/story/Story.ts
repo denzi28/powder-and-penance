@@ -197,6 +197,8 @@ export class Story {
       grantItem(gs, `script_${s.give}`, s.give, gs.player.x, gs.player.y);
     } else if ('toast' in s) {
       gs.showToast(s.toast[0], s.toast[1]);
+    } else if ('open' in s) {
+      gs.pendingScreen = s.open;
     } else if ('card' in s) {
       const ticks = s.ticks ?? DEFAULT_CARD_TICKS;
       this.card = { title: s.card, sub: s.sub ?? null, t: 0, ticks };

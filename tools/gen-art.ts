@@ -7440,7 +7440,7 @@ function genCritters() {
 // 14 tallow lump, 15 powder pouch, 16 phial shard, 17 bitter salt, 18 cage key, 19 toll key, 20 igniter,
 // 21 ledger, 22 seal of tallow, 23 seal of the mire, 24 mending phial, 25 empty slot.
 function genIcons() {
-  const N = 48;
+  const N = 52;
   const img = new Img(16 * N, 16);
   const icon = (i: number, draw: (c: Img) => void, outline = true) => {
     const c = new Img(16, 16);
@@ -7854,6 +7854,40 @@ function genIcons() {
     for (const y of [5, 7, 9, 11]) c.hline(5, y, y === 11 ? 3 : 6, P.stone1);
     c.set(11, 3, mix(P.wax1, P.wood2, 0.5)); // a torn corner
   });
+  // ---- smith's materials and shop rings (48-51)
+  // 48 tallow ingot: a pale bar with a stamped mark
+  icon(48, c => {
+    for (let y = 6; y < 12; y++) c.hline(3 + (11 - y) / 2, y, 10 - (11 - y) / 2 + (y > 8 ? 1 : 0), y < 8 ? P.wax2 : P.wax1);
+    c.hline(3, 11, 11, mix(P.wax1, P.wood2, 0.4));
+    c.set(7, 8, mix(P.wax1, P.wood2, 0.6)); // the stamp
+    c.set(8, 8, mix(P.wax1, P.wood2, 0.6));
+    c.set(6, 6, P.white);
+  });
+  // 49 ember salt: red crystals with a warm core
+  icon(49, c => {
+    line(c, 5, 12, 7, 4, P.blood2);
+    line(c, 6, 12, 8, 4, P.ember);
+    line(c, 9, 12, 11, 6, P.blood2);
+    line(c, 10, 12, 12, 6, P.flame1);
+    c.rect(4, 12, 9, 2, P.blood1);
+    c.set(7, 5, P.flame2);
+    c.set(11, 7, P.flame2);
+  });
+  // 50 hawker's ring: brass, thumb-worn, with a tiny coin stamp
+  icon(50, c =>
+    band(c, BRONZE, c => {
+      c.rect(7, 4, 3, 3, BRONZE.c3);
+      c.set(8, 5, BRONZE.c1);
+    }),
+  );
+  // 51 gunner's band: spent cartridge brass, a dark primer
+  icon(51, c =>
+    band(c, BRONZE, c => {
+      c.disc(8, 4.5, 2.2, GOLD0);
+      c.disc(8, 4.5, 1, P.dark2);
+      c.set(4, 9, P.ink); // powder-blackened
+    }),
+  );
   sheet('icons', img, { cell: [16, 16], pivot: [0, 0], layer: 'ui' });
 
   // A throwing knife in flight (pointing right), and a note lying on the floor

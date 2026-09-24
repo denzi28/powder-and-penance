@@ -7,6 +7,7 @@
   "sounds": { "draw": "p_draw_gun", "hit": "p_hit_blunt", "shotHit": "p_hit_shot", "reload": [[0.02, "p_powder_pour"], [0.35, "p_ramrod"], [0.5, "p_ramrod"], [0.65, "p_ramrod"], [0.93, "p_cock"]] },
   "kind": "ranged",
   "twoHanded": false,
+  "scaling": { "dex": "B" },
   "view": { "sprite": "flintlock", "restAngleOffsetDeg": 0 },
   "crit": { "backstab": 3.0, "riposte": 3.0 },
   "ranged": {

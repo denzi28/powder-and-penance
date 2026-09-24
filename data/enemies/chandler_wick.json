@@ -20,6 +20,7 @@
   "hp": 850,
   "poise": { "max": 240, "resetTicks": 240 },
   "tallow": 6000,
+  "loot": "boss_salt",
   "speed": 60,
   "strafeSpeed": 38,
   "accelTicks": 6,

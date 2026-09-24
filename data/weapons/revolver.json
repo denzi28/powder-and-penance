@@ -7,6 +7,7 @@
   "sounds": { "draw": "p_draw_gun", "hit": "p_hit_blunt", "shotHit": "p_hit_shot", "reload": [[0, "p_cyl_open"], [0.12, "p_shell_out"], [0.32, "p_round_in"], [0.44, "p_round_in"], [0.56, "p_round_in"], [0.68, "p_round_in"], [0.9, "p_cyl_close"]] },
   "kind": "ranged",
   "twoHanded": false,
+  "scaling": { "dex": "A" },
   "view": { "sprite": "revolver", "restAngleOffsetDeg": 0 },
   "crit": { "backstab": 3.0, "riposte": 3.0 },
   "ranged": {

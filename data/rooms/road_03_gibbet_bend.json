@@ -148,6 +148,12 @@
       "id": "road_03_gibbet_bend_pilgrims_hood",
       "item": "gear_pilgrims_hood",
       "at": [17, 8]
+    },
+    {
+      "type": "item",
+      "id": "ingot_gibbet",
+      "item": "ingot_gibbet",
+      "at": [19, 8]
     }
   ]
 }

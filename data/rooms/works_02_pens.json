@@ -99,6 +99,12 @@
       "type": "note",
       "note": "note_carters_tally",
       "at": [10, 8]
+    },
+    {
+      "type": "item",
+      "id": "ingot_pens",
+      "item": "ingot_pens",
+      "at": [10, 1]
     }
   ]
 }

@@ -1,0 +1,35 @@
+{
+  "start": 10,
+  "max": 50,
+  "cost": {
+    "base": 180,
+    "linear": 55,
+    "quad": 5
+  },
+  "vitality": {
+    "hpPerPoint": 6,
+    "softCap": 30,
+    "hpAfterCap": 3
+  },
+  "endurance": {
+    "staminaPerPoint": 3,
+    "capacityPerPoint": 1.2
+  },
+  "scaling": {
+    "grades": {
+      "S": 1.0,
+      "A": 0.8,
+      "B": 0.6,
+      "C": 0.45,
+      "D": 0.3,
+      "E": 0.15
+    },
+    "full": 50
+  },
+  "notes": {
+    "vitality": "More HP. Slower past 30.",
+    "endurance": "More stamina and carry capacity.",
+    "strength": "Heavy weapons hit harder (STR).",
+    "dexterity": "Daggers and guns hit harder (DEX)."
+  }
+}

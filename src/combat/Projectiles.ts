@@ -26,6 +26,8 @@ export interface Projectile {
   /** Current draw height above the ground (px). */
   height: number;
   prevHeight: number;
+  /** The weapon that fired it (its upgrade and scaling count); none for thrown consumables. */
+  weapon?: string;
   /** Lobbed flight: start, landing point and elapsed ticks. */
   lob?: { sx: number; sy: number; tx: number; ty: number; t: number };
 }
@@ -33,10 +35,10 @@ export interface Projectile {
 export class Projectiles {
   list: Projectile[] = [];
 
-  spawn(owner: Actor, x: number, y: number, angle: number, def: ProjectileDef, target?: { x: number; y: number }) {
+  spawn(owner: Actor, x: number, y: number, angle: number, def: ProjectileDef, target?: { x: number; y: number }, weapon?: string) {
     const p: Projectile = {
       owner, def, x, y, prevX: x, prevY: y, angle, traveled: 0, pierceLeft: def.pierce,
-      hitSet: new Set(), alive: true, height: PROJECTILE_HEIGHT, prevHeight: PROJECTILE_HEIGHT,
+      hitSet: new Set(), alive: true, height: PROJECTILE_HEIGHT, prevHeight: PROJECTILE_HEIGHT, weapon,
     };
     if (def.lob && target) p.lob = { sx: x, sy: y, tx: target.x, ty: target.y, t: 0 };
     this.list.push(p);
@@ -104,6 +106,7 @@ export class Projectiles {
           hitstop: p.def.hitstop,
           shake: p.def.shake,
           angle: Math.atan2(a.y - l.ty, a.x - l.tx),
+          weapon: p.weapon,
           unblockable: true, // it's an explosion: shields don't help, rolling does
           unparryable: true,
         },
@@ -128,6 +131,7 @@ export class Projectiles {
         hitstop: p.def.hitstop,
         shake: p.def.shake,
         angle: p.angle,
+        weapon: p.weapon,
         unblockable: false,
         unparryable: true,
       };

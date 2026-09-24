@@ -1,0 +1,10 @@
+{
+  "id": "gunners_band",
+  "name": "Gunner's Band",
+  "icon": 51,
+  "description": "A ring of spent cartridge brass, worn by the Order's own musketeers until the Order decided muskets were a sin. Your hands learn its rhythm.",
+  "effect": {
+    "type": "ring",
+    "id": "gunners_band"
+  }
+}

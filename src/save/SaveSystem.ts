@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { formatZod } from '../data/schemas';
 
 export const SAVE_KEY = 'powder-and-penance.save';
-export const SAVE_VERSION = 3;
+export const SAVE_VERSION = 4;
 
 const Ammo = z.object({ clip: z.number().int().min(0), reserve: z.number().int().min(0) });
 
@@ -52,7 +52,16 @@ export const SaveV3 = SaveV2.extend({
     worn: z.tuple([z.string().nullable(), z.string().nullable()]),
   }),
 });
-export type SaveData = z.infer<typeof SaveV3>;
+
+const Stat = z.number().int().min(1);
+/** Version 4: stats raised at Maudlin, Bede's upgrades, and what's been bought from Oskar. */
+export const SaveV4 = SaveV3.extend({
+  version: z.literal(4),
+  stats: z.object({ level: z.number().int().min(1), vitality: Stat, endurance: Stat, strength: Stat, dexterity: Stat }),
+  upgrades: z.record(z.string(), z.number().int().min(0)),
+  bought: z.record(z.string(), z.number().int().min(0)),
+});
+export type SaveData = z.infer<typeof SaveV4>;
 
 /** Upgrade older save shapes: MIGRATIONS[n] turns a version-n save into version n+1. */
 const MIGRATIONS: Record<number, (s: Record<string, unknown>) => Record<string, unknown>> = {
@@ -73,6 +82,8 @@ const MIGRATIONS: Record<number, (s: Record<string, unknown>) => Record<string, 
   },
   // v2 -> v3: nothing carried or worn yet
   2: s => ({ ...s, version: 3, items: { pack: {}, belt: null, rings: [], worn: [null, null] } }),
+  // v3 -> v4: every stat where it starts (10), nothing upgraded or bought
+  3: s => ({ ...s, version: 4, stats: { level: 1, vitality: 10, endurance: 10, strength: 10, dexterity: 10 }, upgrades: {}, bought: {} }),
 };
 
 export interface KeyValueStore {
@@ -97,7 +108,7 @@ export class SaveSystem {
       let data = JSON.parse(raw) as Record<string, unknown>;
       let v = Number(data.version);
       while (v < SAVE_VERSION && MIGRATIONS[v]) data = MIGRATIONS[v++](data);
-      const r = SaveV3.safeParse(data);
+      const r = SaveV4.safeParse(data);
       if (r.success) return { ok: true, save: r.data };
       return this.corrupt(raw, formatZod(r.error));
     } catch (e) {

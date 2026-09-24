@@ -1,0 +1,11 @@
+{
+  "id": "ember_salt",
+  "name": "Ember Salt",
+  "icon": 49,
+  "max": 99,
+  "sfx": "p_use",
+  "description": "Red crystals that grow where a great fire burned out. Warm to hold, forever. Worked into steel, it remembers the fire for it.",
+  "use": {
+    "type": "material"
+  }
+}

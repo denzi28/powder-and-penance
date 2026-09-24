@@ -1,0 +1,10 @@
+{
+  "id": "hawkers_ring",
+  "name": "Hawker's Ring",
+  "icon": 50,
+  "effect": "Shop prices 15% lower",
+  "mods": {
+    "prices": 0.85
+  },
+  "description": "Brass, rubbed smooth by a thumb that never stopped haggling. Oskar swears it was his mother's. Oskar swears a lot of things."
+}

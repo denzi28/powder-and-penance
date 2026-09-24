@@ -1108,6 +1108,24 @@ const RECIPES: Record<LayeredSound, Recipe> = {
     k.boom(0.2, 170, 120, 0.06, 0.3); // it settles against you
     k.clang(0.27, 1900, 0.08, 0.14); // the clasp
   },
+  // the townsfolk: a level gained, a purchase, a blade on the anvil
+  p_levelup: k => {
+    k.swell(0, 1.4, 392, 0.12);
+    k.swell(0.15, 1.3, 587, 0.1);
+    k.bell(0.3, 1175, 1.6, 0.08);
+    k.fire(0, 0.8, 0.06, 1.4); // the shrine's flame leans toward you
+  },
+  p_buy: k => {
+    for (let i = 0; i < 3; i++) k.clang(i * 0.07, 2400 + i * 300, 0.12, 0.08); // tallow coins counted out
+    k.whoosh(0.22, 0.15, 900, 2000, 0.12); // into the pouch
+  },
+  p_anvil: k => {
+    k.clang(0, 950, 0.5, 0.35);
+    k.clang(0.32, 1050, 0.45, 0.3);
+    k.clang(0.6, 900, 0.6, 0.35);
+    k.sizzle(0.9, 0.7, 0.25); // quenched
+    k.breath(1.0, 0.8, 0.05, false); // steam
+  },
   p_ring: k => {
     k.clang(0, 2800, 0.35, 0.1);
     k.bell(0.02, 1760, 0.6, 0.04);

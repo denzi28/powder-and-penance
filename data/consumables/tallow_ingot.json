@@ -1,0 +1,11 @@
+{
+  "id": "tallow_ingot",
+  "name": "Tallow Ingot",
+  "icon": 48,
+  "max": 99,
+  "sfx": "p_use",
+  "description": "Tallow pressed hard enough to ring when struck. Smiths quench blades in it: the steel drinks the fat and keeps an edge the Drip can't soften.",
+  "use": {
+    "type": "material"
+  }
+}

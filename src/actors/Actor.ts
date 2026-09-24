@@ -68,7 +68,7 @@ export abstract class Actor {
   }
 
   /** Multiplier on the damage this actor's hits deal (rings and oils for the player). */
-  damageDealtMult(_kind: 'melee' | 'projectile' | 'critical') {
+  damageDealtMult(_kind: 'melee' | 'projectile' | 'critical', _weapon?: string) {
     return 1;
   }
 

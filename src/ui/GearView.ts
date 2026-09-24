@@ -6,8 +6,10 @@ import Phaser from 'phaser';
 import { DATA } from '../data/config';
 import { hexToInt } from './colors';
 import { wrap } from './MenuRenderer';
-import { SLOTS, TABS, type Entry, type GearScreen } from './GearScreen';
+import { SLOTS, TABS, gradeText, type Entry, type GearScreen } from './GearScreen';
 import type { Player } from '../player/Player';
+import { STATS, levelCost } from '../player/Player';
+import { weaponDamage, type AnyServiceScreen, type LevelUpScreen, type ShopScreen, type SmithScreen } from './ServiceScreens';
 
 const TIER_COLOUR: Record<string, string> = { light: 'moss2', medium: 'flame2', heavy: 'ember', over: 'blood2' };
 
@@ -50,7 +52,7 @@ export class GearView {
     return hexToInt(DATA.palette[name]);
   }
 
-  draw(screen: GearScreen | null, p: Player) {
+  draw(screen: GearScreen | AnyServiceScreen | null, p: Player) {
     this.g.clear();
     this.nText = 0;
     this.nIcon = 0;
@@ -62,7 +64,10 @@ export class GearView {
       g.fillStyle(this.col('flame1'), 1);
       g.fillRect(8, 8, W - 16, 1).fillRect(8, H - 9, W - 16, 1).fillRect(8, 8, 1, H - 16).fillRect(W - 9, 8, 1, H - 16);
       if (screen.kind === 'equip') this.drawEquip(screen, p);
-      else this.drawInventory(screen);
+      else if (screen.kind === 'inventory') this.drawInventory(screen);
+      else if (screen.kind === 'levelup') this.drawLevelUp(screen, p);
+      else if (screen.kind === 'shop') this.drawShop(screen, p);
+      else this.drawSmith(screen as SmithScreen, p);
     }
     for (let i = this.nText; i < this.texts.length; i++) this.texts[i].setVisible(false);
     for (let i = this.nIcon; i < this.icons.length; i++) this.icons[i].setVisible(false);
@@ -133,13 +138,14 @@ export class GearView {
       this.text(rx, 42, 'YOU', 'stone3');
       const absorb = Math.round(p.armourAbsorb * 100);
       const lines = [
+        `LEVEL ${p.level}  VIT ${p.stats.vitality} END ${p.stats.endurance} STR ${p.stats.strength} DEX ${p.stats.dexterity}`,
         `HP ${p.hp}/${p.maxHp}   STAMINA ${p.stamina.max}`,
         `ARMOUR TAKES ${absorb}% OFF DAMAGE`,
         `POISE ${p.poise.max}`,
         `ROLL: ${p.loadTier.note.toUpperCase()}`,
         p.loadTier.sprint ? '' : 'CANNOT RUN',
       ].filter(Boolean);
-      lines.forEach((l, i) => this.text(rx, 54 + i * 11, l, i === 3 ? TIER_COLOUR[p.loadTier.id] : 'stone4'));
+      lines.forEach((l, i) => this.text(rx, 54 + i * 11, l, i === 4 ? TIER_COLOUR[p.loadTier.id] : 'stone4'));
       // what the rings and any timed effects are doing
       const on = p.rings.filter((r): r is string => !!r && !!DATA.rings[r]).map(r => DATA.rings[r].effect.toUpperCase());
       for (const b of p.buffs) {
@@ -153,6 +159,147 @@ export class GearView {
     this.details(22, 182, 44, s.selected(), 5);
     this.loadBox(300, 182, W - 322, s);
     this.text(22, DATA.game.height - 18, s.choosing ? 'UP/DOWN CHOOSE   E/ENTER EQUIP   ESC BACK' : 'UP/DOWN SELECT   E/ENTER CHANGE   ESC BACK', 'stone2');
+  }
+
+  // ------------------------------------------------------------------ the townsfolk's screens
+  /** Title, and the Tallow you carry top-right. */
+  private serviceHeader(title: string, p: Player) {
+    const W = DATA.game.width;
+    this.text(20, 16, title, 'flame2', 2);
+    const t = `${p.tallow}`;
+    this.text(W - 22 - t.length * 6, 20, t, 'wax2');
+    this.icon(W - 22 - t.length * 6 - 18, 15, DATA.items.tallow_lump?.icon ?? 14);
+  }
+
+  /** The last action's result, and the key hints, along the bottom. */
+  private serviceFooter(s: { message: { text: string; good: boolean } | null }, hints: string) {
+    const H = DATA.game.height;
+    if (s.message) this.text(22, H - 32, wrap(s.message.text.toUpperCase(), 72).split('\n')[0], s.message.good ? 'moss2' : 'blood2');
+    this.text(22, H - 18, hints, 'stone2');
+  }
+
+  private drawLevelUp(s: LevelUpScreen, p: Player) {
+    this.serviceHeader('LEVEL UP', p);
+    const W = DATA.game.width;
+    const { now, after } = s.preview();
+    STATS.forEach((k, i) => {
+      const y = 48 + i * 30;
+      const sel = s.index === i;
+      if (sel) {
+        this.g.fillStyle(this.col('dark2'), 1).fillRect(19, y - 3, 212, 27);
+        this.g.fillStyle(this.col('flame1'), 1).fillRect(19, y - 3, 1, 27);
+      }
+      const v = p.stats[k];
+      const add = s.pending[k];
+      this.text(26, y, k.toUpperCase(), sel ? 'wax2' : 'stone4');
+      const val = add ? `${v} -> ${v + add}` : `${v}`;
+      this.text(226 - val.length * 6, y, val, add ? 'moss2' : 'stone4');
+      if (sel) this.text(226 - val.length * 6 - 16, y, '<', add ? 'stone4' : 'stone1');
+      if (sel) this.text(230, y, '>', 'stone4');
+      this.text(26, y + 11, (DATA.levels.notes[k] ?? '').toUpperCase(), 'stone3');
+    });
+    // right: what it comes to
+    const rx = 252;
+    const line = (i: number, label: string, a: number | string, b: number | string, fmt = (x: number | string) => String(x)) => {
+      const changed = a !== b;
+      this.text(rx, 48 + i * 12, label, 'stone3');
+      this.text(rx + 84, 48 + i * 12, changed ? `${fmt(a)} -> ${fmt(b)}` : fmt(a), changed ? 'moss2' : 'stone4');
+    };
+    line(0, 'LEVEL', now.level, after.level);
+    const short = s.cost > p.tallow;
+    this.text(rx, 48 + 1 * 12, 'COST', 'stone3');
+    this.text(rx + 84, 48 + 1 * 12, s.added ? `${s.cost}` : '-', short ? 'blood2' : 'stone4');
+    this.text(rx, 48 + 2 * 12, 'NEXT POINT', 'stone3');
+    this.text(rx + 84, 48 + 2 * 12, `${levelCost(p.level + s.added)}`, s.cost + levelCost(p.level + s.added) > p.tallow ? 'blood2' : 'stone4');
+    line(4, 'HP', now.hp, after.hp);
+    line(5, 'STAMINA', now.stamina, after.stamina);
+    line(6, 'CAPACITY', now.capacity, after.capacity, x => Number(x).toFixed(1));
+    const hand = (i: number, label: string, a: { weapon: string; damage: number } | null, b: { weapon: string; damage: number } | null) => {
+      if (!a || !b) return;
+      const w = DATA.weapons[a.weapon];
+      this.text(rx, 48 + i * 12, label, 'stone3');
+      this.text(rx + 84, 48 + i * 12, a.damage !== b.damage ? `${a.damage} -> ${b.damage}` : `${a.damage}`, a.damage !== b.damage ? 'moss2' : 'stone4');
+      this.text(rx, 48 + i * 12 + 10, `${w.name.toUpperCase()}  ${gradeText(a.weapon)}`.slice(0, Math.floor((W - 26 - rx) / 6)), 'stone2');
+    };
+    hand(8, 'RIGHT HAND', now.right, after.right);
+    hand(11, 'LEFT HAND', now.left, after.left);
+    this.serviceFooter(s, s.added ? 'LEFT/RIGHT REMOVE/ADD   E/ENTER CONFIRM   ESC UNDO' : 'UP/DOWN STAT   RIGHT ADD A POINT   ESC LEAVE');
+  }
+
+  private drawShop(s: ShopScreen, p: Player) {
+    this.serviceHeader("OSKAR'S STALL", p);
+    const list = s.list();
+    const max = 8;
+    const first = Math.max(0, Math.min(s.index - 3, list.length - max));
+    list.slice(first, first + max).forEach((r, i) => {
+      const e = { id: r.entry.id, name: r.name, icon: r.icon, weight: null, stats: [], description: '' };
+      this.row(22, 46 + i * 21, 208, e, first + i === s.index, undefined, r.soldOut ? 'SOLD' : String(r.price));
+    });
+    if (first > 0) this.text(236, 46, '^', 'stone3');
+    if (first + max < list.length) this.text(236, 46 + (max - 1) * 21 + 8, 'v', 'stone3');
+    const r = list[s.index];
+    if (r) {
+      this.g.fillStyle(this.col('dark1'), 1).fillRect(250, 46, 34, 34);
+      this.icon(251, 47, r.icon, 2);
+      this.text(292, 50, wrap(r.name.toUpperCase(), 26), 'flame2');
+      this.text(292, 70, r.soldOut ? 'SOLD OUT' : `${r.price} TALLOW`, r.soldOut ? 'stone3' : r.price > p.tallow ? 'blood2' : 'wax2');
+      this.details(250, 88, 34, { id: r.entry.id, name: r.name, icon: r.icon, weight: null, stats: r.stats, description: r.description }, 12, false);
+    }
+    this.serviceFooter(s, 'UP/DOWN CHOOSE   E/ENTER BUY   ESC LEAVE');
+  }
+
+  private drawSmith(s: SmithScreen, p: Player) {
+    this.serviceHeader("BEDE'S BLOCK", p);
+    const W = DATA.game.width;
+    // the materials you carry, next to the Tallow
+    let mx = W - 150;
+    for (const id of ['tallow_ingot', 'ember_salt']) {
+      const c = DATA.consumables[id];
+      if (!c) continue;
+      this.icon(mx, 15, c.icon);
+      this.text(mx + 18, 20, String(p.count(id)), 'wax2');
+      mx += 40;
+    }
+    const list = s.weapons();
+    if (!list.length) this.text(22, 50, 'YOU CARRY NOTHING BEDE CAN WORK.', 'stone3');
+    const max = 8;
+    const first = Math.max(0, Math.min(s.index - 3, list.length - max));
+    list.slice(first, first + max).forEach((id, i) => {
+      const w = DATA.weapons[id];
+      const lvl = p.upgrades[id] ?? 0;
+      const e = { id, name: w.name, icon: w.icon, weight: null, stats: [], description: '' };
+      this.row(22, 46 + i * 21, 208, e, first + i === s.index, undefined, `+${lvl}`);
+    });
+    const id = list[s.index];
+    if (!id) return this.serviceFooter(s, 'ESC LEAVE');
+    const w = DATA.weapons[id];
+    const lvl = p.upgrades[id] ?? 0;
+    const rx = 250;
+    this.g.fillStyle(this.col('dark1'), 1).fillRect(rx, 46, 34, 34);
+    this.icon(rx + 1, 47, w.icon, 2);
+    this.text(292, 50, wrap(`${w.name.toUpperCase()} +${lvl}`, 26), 'flame2');
+    this.text(292, 70, gradeText(id), 'stone3');
+    const n = s.next(id);
+    if (!n) {
+      this.text(rx, 92, `FULLY UPGRADED (+${DATA.smith.levels.length})`, 'moss2');
+      this.text(rx, 104, `DAMAGE ${weaponDamage(p, id, lvl)}`, 'stone4');
+    } else {
+      this.text(rx, 92, `NEXT: +${n.level}`, 'wax2');
+      const a = weaponDamage(p, id, lvl);
+      const b = weaponDamage(p, id, n.level);
+      this.text(rx, 106, 'DAMAGE', 'stone3');
+      this.text(rx + 72, 106, `${a} -> ${b}`, 'moss2');
+      this.text(rx, 120, 'TALLOW', 'stone3');
+      this.text(rx + 72, 120, `${n.tallow}`, p.tallow >= n.tallow ? 'stone4' : 'blood2');
+      n.materials.forEach((m, i) => {
+        const c = DATA.consumables[m.id];
+        this.icon(rx, 131 + i * 17, c.icon);
+        this.text(rx + 20, 136 + i * 17, c.name.toUpperCase(), 'stone3');
+        this.text(rx + 120, 136 + i * 17, `NEED ${m.need} (HAVE ${m.have})`, m.have >= m.need ? 'stone4' : 'blood2');
+      });
+      this.text(rx, 170, wrap(`EACH LEVEL ADDS ${Math.round(DATA.smith.damagePerLevel * 100)}% DAMAGE. YOUR STATS ADD MORE THROUGH ITS GRADES.`, 34), 'stone2');
+    }
+    this.serviceFooter(s, 'UP/DOWN CHOOSE   E/ENTER UPGRADE   ESC LEAVE');
   }
 
   private loadBox(x: number, y: number, w: number, s: GearScreen) {
@@ -220,7 +367,7 @@ export class GearView {
       else if (e.qty) this.text(292, 80, e.qty, 'stone3');
       this.details(250, 98, 34, e, 14, false);
     }
-    const onItems = TABS[s.tab] === 'ITEMS' && e?.id && DATA.consumables[e.id];
+    const onItems = TABS[s.tab] === 'ITEMS' && e?.id && DATA.consumables[e.id] && DATA.consumables[e.id].use.type !== 'material';
     this.text(22, DATA.game.height - 18, onItems ? 'UP/DOWN SELECT   E/ENTER PUT ON BELT   LEFT/RIGHT TAB   ESC BACK' : 'UP/DOWN SELECT   LEFT/RIGHT TAB   ESC BACK', 'stone2');
   }
 }

@@ -7,6 +7,8 @@
   "sounds": { "draw": "p_draw_fists", "hit": "p_hit_blunt" },
   "kind": "melee",
   "twoHanded": false,
+  "scaling": { "str": "D", "dex": "D" },
+  "upgradable": false,
   "view": { "sprite": "fist", "restAngleOffsetDeg": 0, "hidden": true },
   "crit": { "backstab": 2.0, "riposte": 2.0 },
   "light": [

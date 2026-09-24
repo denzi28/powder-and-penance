@@ -23,6 +23,8 @@ export interface ActiveHitbox {
 export interface HitSource {
   owner: Actor;
   kind: 'melee' | 'projectile' | 'critical';
+  /** The weapon a projectile came from (melee and criticals use the attacker's weapon in hand). */
+  weapon?: string;
   damage: number;
   poise: number;
   knockback: number;
@@ -139,7 +141,7 @@ export class CombatSystem {
       }
     }
 
-    const dealt = src.damage * (attacker.damageDealtMult?.(src.kind) ?? 1);
+    const dealt = src.damage * (attacker.damageDealtMult?.(src.kind, src.weapon) ?? 1);
     const damage = dealt > 0 ? Math.max(1, Math.round(dealt * (target.damageTakenMult ?? 1))) : 0; // armour
     target.hp = Math.max(0, target.hp - damage);
     const killed = target.hp <= 0;
@@ -170,7 +172,7 @@ export class CombatSystem {
   private applyBlocked(src: HitSource, target: Actor, guard: Guard, bus: EventBus<GameEvents>): HitInfo {
     const cost = src.damage * (1 - guard.stability) * DATA.combat.blockStaminaMult;
     const guardBroken = target.spendGuardStamina(cost);
-    const chip = Math.round(src.damage * (src.owner.damageDealtMult?.(src.kind) ?? 1) * (1 - guard.absorption) * (target.damageTakenMult ?? 1));
+    const chip = Math.round(src.damage * (src.owner.damageDealtMult?.(src.kind, src.weapon) ?? 1) * (1 - guard.absorption) * (target.damageTakenMult ?? 1));
     target.hp = Math.max(0, target.hp - chip);
     const angle = this.knockAngle(src, target);
     target.knock(angle, src.knockback * 0.5 * (1 - target.knockbackResist));

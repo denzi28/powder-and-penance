@@ -269,7 +269,7 @@ function shoot(p: Player) {
   const y = p.y + Math.sin(p.aimAngle) * len;
   for (let i = 0; i < r.projectile.count; i++) {
     const spread = (p.ctx.rng() - 0.5) * r.projectile.spreadDeg * DEG;
-    p.ctx.projectiles.spawn(p, x, y, p.aimAngle + spread, r.projectile);
+    p.ctx.projectiles.spawn(p, x, y, p.aimAngle + spread, r.projectile, undefined, p.weaponId);
   }
   p.recoil = 1;
   p.ctx.bus.emit('shot', { actor: p, weapon: w, x, y, angle: p.aimAngle });
@@ -291,9 +291,9 @@ const fire: State<Player> = {
   },
 };
 
-/** Reload length; Dexterity scaling hooks in here in M7. */
+/** Reload length (a Gunner's Band shortens it). */
 function reloadTicks(p: Player) {
-  return p.weapon.ranged!.reload.ticks;
+  return Math.max(1, Math.round(p.weapon.ranged!.reload.ticks * p.mods.reload));
 }
 
 // Committed: no cancel. Getting staggered interrupts it and the rounds are not loaded.

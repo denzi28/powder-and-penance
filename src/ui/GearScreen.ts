@@ -2,7 +2,7 @@
 // from your pack, with the equip load it adds up to) and INVENTORY (everything you carry, by kind). The world
 // is paused while they're open. Drawn by GearView in the UI scene; this is the state and the navigation.
 import { DATA } from '../data/config';
-import { FISTS, equipHand, loadOf, loadTier, type Gear } from '../player/Player';
+import { FISTS, equipHand, loadOf, loadTier, weaponMult, type Gear } from '../player/Player';
 import { useLine } from '../game/Items';
 import type { Player } from '../player/Player';
 import type { Input } from '../input/Input';
@@ -38,20 +38,30 @@ const ICON_EMPTY = 25;
 const ICON_PHIAL = 24;
 
 // ------------------------------------------------------------------ entries
-export function weaponEntry(id: string): Entry {
+/** "STR C  DEX B": a weapon's scaling grades. */
+export function gradeText(id: string): string {
+  const sc = DATA.weapons[id]?.scaling ?? {};
+  return [sc.str ? `STR ${sc.str}` : '', sc.dex ? `DEX ${sc.dex}` : ''].filter(Boolean).join('  ') || 'NO SCALING';
+}
+
+/** A weapon; with a player, its damage as their stats and its upgrade make it, and its +level in the name. */
+export function weaponEntry(id: string, p?: Player): Entry {
   const w = DATA.weapons[id];
+  const up = p?.upgrades[id] ?? 0;
+  const k = p ? weaponMult(id, p.stats, up) : 1;
+  const d = (x: number) => Math.round(x * k);
   const stats: string[] = [];
   if (w.kind === 'melee') {
     const l = w.light[0];
-    stats.push(`LIGHT ${l.damage} DMG  ${l.stamina} STAMINA${w.light.length > 1 ? `  x${w.light.length} COMBO` : ''}`);
-    if (w.heavy) stats.push(`HEAVY ${w.heavy.strike.damage}-${Math.round(w.heavy.strike.damage * w.heavy.chargeDamageMult)} DMG  ${w.heavy.strike.poise} POISE`);
+    stats.push(`LIGHT ${d(l.damage)} DMG  ${l.stamina} STAMINA${w.light.length > 1 ? `  x${w.light.length} COMBO` : ''}`);
+    if (w.heavy) stats.push(`HEAVY ${d(w.heavy.strike.damage)}-${d(w.heavy.strike.damage * w.heavy.chargeDamageMult)} DMG  ${w.heavy.strike.poise} POISE`);
   } else if (w.ranged) {
     const r = w.ranged;
-    stats.push(`SHOT ${r.projectile.damage} DMG  ${r.projectile.poise} POISE`);
-    stats.push(`CLIP ${r.clip}  SPARE ${r.reserveMax}  RELOAD ${(r.reload.ticks / 60).toFixed(1)}S`);
+    stats.push(`SHOT ${d(r.projectile.damage)} DMG  ${r.projectile.poise} POISE`);
+    stats.push(`CLIP ${r.clip}  SPARE ${r.reserveMax}  RELOAD ${((r.reload.ticks * (p?.mods.reload ?? 1)) / 60).toFixed(1)}S`);
   }
-  stats.push(w.twoHanded ? 'TWO-HANDED (NO SHIELD)' : 'ONE-HANDED');
-  return { id, name: w.name, icon: w.icon, weight: w.weight, stats, description: w.description };
+  stats.push(`${w.twoHanded ? 'TWO-HANDED' : 'ONE-HANDED'}  ${gradeText(id)}`);
+  return { id, name: up ? `${w.name} +${up}` : w.name, icon: w.icon, weight: w.weight, stats, description: w.description };
 }
 
 export function shieldEntry(id: string): Entry {
@@ -90,7 +100,7 @@ export function consumableEntry(p: Player, id: string): Entry {
     name: c.name,
     icon: c.icon,
     weight: null,
-    qty: `${p.count(id)}/${c.max}`,
+    qty: c.use.type === 'material' ? String(p.count(id)) : `${p.count(id)}/${c.max}`,
     stats: [useLine(id).toUpperCase()],
     description: c.description,
     on: p.belt === id,
@@ -103,7 +113,7 @@ export function slotEntry(p: Player, key: SlotKey): Entry {
   switch (key) {
     case 'hand0': {
       const id = p.slots[0];
-      return id === FISTS ? { ...weaponEntry(FISTS), id: null } : weaponEntry(id);
+      return id === FISTS ? { ...weaponEntry(FISTS, p), id: null } : weaponEntry(id, p);
     }
     case 'hand1': {
       if (p.twoHanding) {
@@ -111,7 +121,7 @@ export function slotEntry(p: Player, key: SlotKey): Entry {
         return { id: null, name: 'Held in both hands', icon: w.icon, weight: 0, stats: [`${w.name.toUpperCase()} IS TWO-HANDED`], description: 'Put a shield or a one-handed weapon here and the two-handed weapon comes off.' };
       }
       if (p.shieldId) return shieldEntry(p.shieldId);
-      if (p.leftWeapon) return weaponEntry(p.leftWeapon);
+      if (p.leftWeapon) return weaponEntry(p.leftWeapon, p);
       return none('EMPTY', 'Nothing in the left hand. A shield here blocks with right click; a one-handed weapon here strikes or fires with it.');
     }
     case 'ring0':
@@ -139,12 +149,12 @@ export function slotOptions(p: Player, key: SlotKey): Entry[] {
   };
   switch (key) {
     case 'hand0':
-      return [{ ...weaponEntry(FISTS), id: FISTS }, ...p.inv.weapons.map(id => bumps(weaponEntry(id), 'right'))];
+      return [{ ...weaponEntry(FISTS, p), id: FISTS }, ...p.inv.weapons.map(id => bumps(weaponEntry(id, p), 'right'))];
     case 'hand1':
       return [
         none('EMPTY', 'Leave the left hand free.'),
         ...p.inv.shields.map(id => bumps(shieldEntry(id), 'left')),
-        ...p.inv.weapons.filter(id => !DATA.weapons[id].twoHanded).map(id => bumps(weaponEntry(id), 'left')),
+        ...p.inv.weapons.filter(id => !DATA.weapons[id].twoHanded).map(id => bumps(weaponEntry(id, p), 'left')),
       ];
     case 'ring0':
     case 'ring1':
@@ -170,7 +180,7 @@ export function tabEntries(p: Player, flags: ReadonlySet<string>, tab: number): 
   const eq = new Set<string>([...p.slots, p.shieldId ?? '', p.worn.head ?? '', p.worn.body ?? '']);
   switch (TABS[tab]) {
     case 'WEAPONS':
-      return p.inv.weapons.map(id => ({ ...weaponEntry(id), on: eq.has(id) }));
+      return p.inv.weapons.map(id => ({ ...weaponEntry(id, p), on: eq.has(id) }));
     case 'SHIELDS':
       return p.inv.shields.map(id => ({ ...shieldEntry(id), on: eq.has(id) }));
     case 'ARMOUR':
@@ -314,7 +324,7 @@ export class GearScreen {
       }
       // on ITEMS, confirm puts the highlighted consumable on the belt
       const sel = this.selected();
-      if (TABS[this.tab] === 'ITEMS' && sel?.id && DATA.consumables[sel.id] && input.pressed('confirm')) {
+      if (TABS[this.tab] === 'ITEMS' && sel?.id && DATA.consumables[sel.id] && DATA.consumables[sel.id].use.type !== 'material' && input.pressed('confirm')) {
         this.p.belt = sel.id;
         this.sfx('p_belt');
       }

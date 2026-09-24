@@ -78,6 +78,12 @@
       "type": "decor",
       "kind": "gravestone",
       "at": [10, 20]
+    },
+    {
+      "type": "item",
+      "id": "ingot_falls",
+      "item": "ingot_falls",
+      "at": [10, 13]
     }
   ]
 }

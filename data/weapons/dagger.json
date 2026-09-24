@@ -7,6 +7,7 @@
   "sounds": { "draw": "p_draw_blade_small", "hit": "p_hit_stab" },
   "kind": "melee",
   "twoHanded": false,
+  "scaling": { "str": "E", "dex": "B" },
   "view": { "sprite": "dagger", "restAngleOffsetDeg": 20 },
   "crit": { "backstab": 5.0, "riposte": 3.5 },
   "light": [
