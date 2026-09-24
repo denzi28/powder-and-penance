@@ -102,6 +102,8 @@ export interface TileSet {
   wall_cap: number[];
   /** Solid rock filling the void outside rooms (falls back to a closed wall cap). */
   rock?: number[];
+  /** Optional soft wall shadows drawn over the floor: 8 tiles by which sides are closed (N=1, E=2, W=4). */
+  shade?: number[];
   [variant: string]: number[] | undefined;
 }
 export interface PlacedTile {
@@ -116,8 +118,9 @@ export interface PlacedTile {
  * returned as `overhang` so they can be depth-sorted above actors standing "behind" the wall.
  * Cap tiles are picked by a 4-bit mask of which sides border open floor (N=1, E=2, S=4, W=8).
  * Void (outside every room) is filled with solid rock, which walls merge into seamlessly.
+ * With a `shade` set, floor cells next to walls also get a shadow tile (returned as `shade`, drawn over the floor).
  */
-export function autotile(g: TileGrid, ts: TileSet): { statics: PlacedTile[]; overhang: PlacedTile[] } {
+export function autotile(g: TileGrid, ts: TileSet): { statics: PlacedTile[]; overhang: PlacedTile[]; shade: PlacedTile[] } {
   const wall = (x: number, y: number) => g.get(x, y) === Cell.Wall;
   const floor = (x: number, y: number) => g.isGround(x, y);
   const front = (x: number, y: number) => wall(x, y) && floor(x, y + 1);
@@ -130,11 +133,16 @@ export function autotile(g: TileGrid, ts: TileSet): { statics: PlacedTile[]; ove
 
   const statics: PlacedTile[] = [];
   const overhang: PlacedTile[] = [];
+  const shade: PlacedTile[] = [];
   for (let y = g.oy; y < g.oy + g.h; y++) {
     for (let x = g.ox; x < g.ox + g.w; x++) {
       if (floor(x, y)) {
         statics.push({ tx: x, ty: y, index: pick(ts[g.variant(x, y)] ?? ts.floor, x, y) });
         if (front(x, y + 1)) overhang.push({ tx: x, ty: y, index: ts.wall_cap[mask(x, y)] });
+        else if (ts.shade) {
+          const m = (closed(x, y - 1) ? 1 : 0) | (closed(x + 1, y) ? 2 : 0) | (closed(x - 1, y) ? 4 : 0);
+          if (m) shade.push({ tx: x, ty: y, index: ts.shade[m] });
+        }
       } else if (front(x, y)) {
         statics.push({ tx: x, ty: y, index: pick(ts.wall_front, x, y) });
       } else if (cap(x, y)) {
@@ -144,5 +152,5 @@ export function autotile(g: TileGrid, ts: TileSet): { statics: PlacedTile[]; ove
       }
     }
   }
-  return { statics, overhang };
+  return { statics, overhang, shade };
 }

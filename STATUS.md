@@ -71,13 +71,17 @@ Stack: Phaser 3 + TypeScript + Vite. Zod-validated data files, Vitest tests.
     - The Act 1 ending
 
 ## Most recent work
+- **Pixel-art pass started** (`tools/gen-art.ts`; regenerate single sheets with `npm run gen:art -- --only=tiles,player_body`):
+  - The player: a tall pointed penitent's hood, a shoulder mantle over the cloak, a bandolier with brass powder charges, a lit lantern, folds and a ragged hem, and a stitched flame on the back. Shaded with light from the top left.
+  - The Abbey tileset: calmer, darker flagstones (plain slabs mostly; cracks, wax spills and grave slabs are rare), moss that grows out of the joints, ashlar walls with a lit lip (plus broken blocks, candle niches and wax runs), wall tops with a pale coping stone.
+  - Engine: optional `shade` tiles (a soft shadow on the floor along walls) and `glow` tiles (candle niches cast a flickering warm light, `light_glow`). See ASSETS.md § tiles.
 - Dialogue voice blips per speaker.
 - The Chandler finale, as above.
 - Fixed: enemy thrown attacks ignored `count`/`spreadDeg` (always threw 1). Mother Tallow now really spits 3 globs and her bones 5 embers, so those fights got harder.
 - Fixed: the player got stuck in the Nave doorway. The arena sealed while the player stood on the tile next to the seal, which then became solid. Arenas now wake only 2+ tiles away from every seal (`src/game/arenaWake.ts`); a test covers all arenas.
 
 ## Remaining for Act 1
-- **Pixel-art beauty pass** ← the agreed NEXT STEP. All art is procedural placeholder (player, enemies, bosses, tilesets, decor, portraits). The Chandler, the Last Candle and the Nave decor were just added and are rough.
+- **Pixel-art beauty pass** ← in progress. Done: the player and the Abbey tileset. Still procedural placeholder: enemies, bosses, the other tilesets (road, works, mire), decor, portraits. The Chandler, the Last Candle and the Nave decor are the roughest.
 - **Brother Aldous** (Abbey Scriptorium): give him Bitter Salt and he fights beside you against the Chandler (needs an ally AI). Otherwise you meet him later as a Wickling in the Nave Approach.
 - **Sister Maudlin's forgive/condemn choice** (after the Chandler's ledger). Forgive: she stays and helps in Act 2. Condemn: she leaves and her shrine goes cold.
 - **Progression:** level up at Maudlin with Tallow (Vit/End/Str/Dex, cost curve, stat scaling).

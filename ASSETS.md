@@ -248,7 +248,7 @@ Spilled wax (`strike.pools`) is drawn at runtime, not from a sheet.
 Frames: 0 closed; 1–3 opening (lid rising, light spilling out); 4 open and empty. The game picks the frame from the opening tick (`OPEN_TICKS` in `src/world/Pickups.ts`). The item pops out at `POP_TICK`. Closed chests show an occasional `item_glint` twinkle on the lid.
 
 ### Area tilesets
-Each area picks its tileset in `data/areas.json`. Every tileset uses the same index layout as `tiles` (§ tiles below), so autotiling works unchanged. Floor variants are extra keys in the manifest's `tiles` block, used by room legends as `floor_<name>`; a variant a tileset lacks falls back to `floor`.
+Each area picks its tileset in `data/areas.json`. Autotiling only reads the manifest's `tiles` block (§ tiles below), so each sheet can lay its tiles out however it likes. Floor variants are extra keys in the manifest's `tiles` block, used by room legends as `floor_<name>`; a variant a tileset lacks falls back to `floor`.
 
 | Sheet | Area | Floor variants |
 |---|---|---|
@@ -309,15 +309,19 @@ Animations: `puff` (roll start, 4 frames) and `step` (small, 3 frames using `col
 ### `crosshair` (ui, 13×13, pivot 6,6)
 
 ### `tiles` (16×16, 8 columns)
-The manifest's `tiles` block maps tile kinds to sheet indices (index = row × 8 + column). **Repeating an index weights it**: floor `[0,0,0,0,0,0,1,1,2,3]` makes plain slabs most common.
+The manifest's `tiles` block maps tile kinds to sheet indices (index = row × 8 + column). **Repeating an index weights it**: the abbey floor lists its plain slabs many times so that cracks, wax spills and grave slabs stay rare finds.
 
-| Kind | Indices | Used for |
+| Kind | Abbey indices | Used for |
 |---|---|---|
-| `floor` | 0–3 | Walkable floor (variants picked by a stable per-cell hash) |
-| `floor_moss` | 4–5 | `,` in room files |
-| `rock` | 6–7 | Solid dark mass filling everything outside rooms, so no black void is ever on screen |
-| `wall_front` | 8–9 | Brick face of a wall with floor directly south of it |
+| `floor` | 0–7, 40–41 | Walkable floor (variants picked by a stable per-cell hash): plain slabs, split slabs, cobbles, a crack, a wax spill, a grave slab |
+| `floor_moss` | 8–9, 42–44 | `,` in room files. Moss grows out of the joints in short runs, never along a whole edge, so the tile grid doesn't show. |
+| `rock` | 10–11 | Solid dark mass filling everything outside rooms, so no black void is ever on screen |
+| `wall_front` | 12–15 | Brick face of a wall with floor directly south of it: plain ashlar, a broken block, a **candle niche**, wax runs |
 | `wall_cap` | 16–31 | Top of a wall. **Index = 16 + edge mask**, where the mask bits say which sides are open: N=1, E=2, S=4, W=8. Draw a rim on the open sides. |
+| `shade` (optional) | 32–39 | Soft wall shadow drawn over the floor. **Index = 32 + mask** of the floor cell's closed sides: N=1, E=2, W=4 (32 itself is never drawn). Semi-transparent black. |
+| `glow` (optional) | 14 | Tiles that give off light: each gets a flickering `light_glow` added on top (the candle niche). |
+
+**Lighting:** light comes from the top left. Edges facing up or left catch a highlight; edges facing down or right fall into shadow. `light_glow` (fx, 56×56, pivot at its centre) is stepped rings of warm colour with a thin dithered band between steps, drawn with additive blending.
 
 **How walls are drawn (3/4 view):** level authors only place `#`. A wall with floor directly south gets a **front face** on its own cell and a **cap on the cell above**. If that cap lands on a floor cell (for example above a free-standing pillar or a thin wall), that cell becomes **solid**, so a wall blocks everything it visibly covers. The cap is still depth-sorted, so tall sprites standing further north (big enemies, bosses) are correctly hidden behind it.
 

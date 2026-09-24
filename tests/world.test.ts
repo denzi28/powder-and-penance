@@ -50,6 +50,15 @@ describe('autotile', () => {
   it('places caps above the north wall in the padding row', () => {
     expect(at(1, -1)).toBeGreaterThanOrEqual(100);
   });
+  it('shades floor along walls only when the tileset has shade tiles', () => {
+    expect(autotile(g, ts).shade).toEqual([]);
+    const { shade } = autotile(g, { ...ts, shade: Array.from({ length: 8 }, (_, i) => 200 + i) });
+    const shadeAt = (x: number, y: number) => shade.find(t => t.tx === x && t.ty === y)?.index;
+    expect(shadeAt(1, 1)).toBe(200 + 1 + 2 + 4); // north wall above, pillar cap to the east, west wall
+    expect(shadeAt(3, 3)).toBe(200 + 2); // east wall beside
+    expect(shadeAt(2, 3)).toBe(200 + 1); // below the pillar's face
+    expect(shadeAt(2, 1)).toBeUndefined(); // under the pillar's cap: the overhang covers it
+  });
 });
 
 describe('moveBox', () => {
