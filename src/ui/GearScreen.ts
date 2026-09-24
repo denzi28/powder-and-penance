@@ -2,16 +2,15 @@
 // from your pack, with the equip load it adds up to) and INVENTORY (everything you carry, by kind). The world
 // is paused while they're open. Drawn by GearView in the UI scene; this is the state and the navigation.
 import { DATA } from '../data/config';
-import { FISTS, loadOf, loadTier, type Gear } from '../player/Player';
+import { FISTS, equipHand, loadOf, loadTier, type Gear } from '../player/Player';
 import { useLine } from '../game/Items';
 import type { Player } from '../player/Player';
 import type { Input } from '../input/Input';
 
-export type SlotKey = 'hand0' | 'hand1' | 'shield' | 'head' | 'body' | 'ring0' | 'ring1';
+export type SlotKey = 'hand0' | 'hand1' | 'head' | 'body' | 'ring0' | 'ring1';
 export const SLOTS: { key: SlotKey; label: string }[] = [
-  { key: 'hand0', label: 'RIGHT HAND I' },
-  { key: 'hand1', label: 'RIGHT HAND II' },
-  { key: 'shield', label: 'LEFT HAND' },
+  { key: 'hand0', label: 'RIGHT HAND (LEFT CLICK)' },
+  { key: 'hand1', label: 'LEFT HAND (RIGHT CLICK)' },
   { key: 'head', label: 'HEAD' },
   { key: 'body', label: 'BODY' },
   { key: 'ring0', label: 'RING I' },
@@ -102,13 +101,19 @@ const none = (what: string, description: string): Entry => ({ id: null, name: wh
 
 export function slotEntry(p: Player, key: SlotKey): Entry {
   switch (key) {
-    case 'hand0':
-    case 'hand1': {
-      const id = p.slots[key === 'hand0' ? 0 : 1];
+    case 'hand0': {
+      const id = p.slots[0];
       return id === FISTS ? { ...weaponEntry(FISTS), id: null } : weaponEntry(id);
     }
-    case 'shield':
-      return p.shieldId ? shieldEntry(p.shieldId) : none('NO SHIELD', 'Nothing in the left hand. You can still roll.');
+    case 'hand1': {
+      if (p.twoHanding) {
+        const w = DATA.weapons[p.slots[0]];
+        return { id: null, name: 'Held in both hands', icon: w.icon, weight: 0, stats: [`${w.name.toUpperCase()} IS TWO-HANDED`], description: 'Put a shield or a one-handed weapon here and the two-handed weapon comes off.' };
+      }
+      if (p.shieldId) return shieldEntry(p.shieldId);
+      if (p.leftWeapon) return weaponEntry(p.leftWeapon);
+      return none('EMPTY', 'Nothing in the left hand. A shield here blocks with right click; a one-handed weapon here strikes or fires with it.');
+    }
     case 'ring0':
     case 'ring1': {
       const id = p.rings[key === 'ring0' ? 0 : 1];
@@ -121,14 +126,26 @@ export function slotEntry(p: Player, key: SlotKey): Entry {
   }
 }
 
-/** What can go in a slot: nothing, then everything owned that fits. */
+/** What can go in a slot: nothing, then everything owned that fits. Choices that would take something else
+ *  off (a two-hander and the left hand) say so. */
 export function slotOptions(p: Player, key: SlotKey): Entry[] {
+  const bumps = (e: Entry, hand: 'right' | 'left'): Entry => {
+    const after = equipHand(p.hands, hand, e.id);
+    const off = [p.slots[0], p.slots[1], p.shieldId].filter(
+      (id): id is string => !!id && id !== FISTS && id !== e.id && ![after.right, after.left, after.shield].includes(id),
+    );
+    const names = off.map(id => (DATA.weapons[id] ?? DATA.shields[id]).name.toUpperCase());
+    return names.length ? { ...e, stats: [...e.stats, `TAKES OFF: ${names.join(', ')}`] } : e;
+  };
   switch (key) {
     case 'hand0':
+      return [{ ...weaponEntry(FISTS), id: FISTS }, ...p.inv.weapons.map(id => bumps(weaponEntry(id), 'right'))];
     case 'hand1':
-      return [{ ...weaponEntry(FISTS), id: FISTS }, ...p.inv.weapons.map(weaponEntry)];
-    case 'shield':
-      return [none('NO SHIELD', 'Leave the left hand free.'), ...p.inv.shields.map(shieldEntry)];
+      return [
+        none('EMPTY', 'Leave the left hand free.'),
+        ...p.inv.shields.map(id => bumps(shieldEntry(id), 'left')),
+        ...p.inv.weapons.filter(id => !DATA.weapons[id].twoHanded).map(id => bumps(weaponEntry(id), 'left')),
+      ];
     case 'ring0':
     case 'ring1':
       return [none('NO RING', 'Take it off.'), ...p.inv.rings.map(id => ({ ...ringEntry(id), on: p.rings.includes(id) }))];
@@ -141,14 +158,10 @@ export function slotOptions(p: Player, key: SlotKey): Entry[] {
 export function gearWith(p: Player, key: SlotKey, id: string | null): Gear {
   const g: Gear = { slots: [...p.slots], shield: p.shieldId, head: p.worn.head, body: p.worn.body };
   if (key === 'hand0' || key === 'hand1') {
-    const i = key === 'hand0' ? 0 : 1;
-    const slots = [...p.slots];
-    const w = id ?? FISTS;
-    if (w !== FISTS && slots[1 - i] === w) slots[1 - i] = FISTS;
-    slots[i] = w;
-    g.slots = slots;
-  } else if (key === 'shield') g.shield = id;
-  else if (key === 'head' || key === 'body') g[key] = id;
+    const h = equipHand(p.hands, key === 'hand0' ? 'right' : 'left', id);
+    g.slots = [h.right, h.left];
+    g.shield = h.shield;
+  } else if (key === 'head' || key === 'body') g[key] = id;
   return g;
 }
 
@@ -339,9 +352,11 @@ export class GearScreen {
 
   private apply(key: SlotKey, id: string | null) {
     const p = this.p;
-    if (key === 'hand0' || key === 'hand1') p.setSlot(key === 'hand0' ? 0 : 1, id ?? FISTS);
-    else if (key === 'shield') p.setShield(id);
-    else if (key === 'ring0' || key === 'ring1') p.setRing(key === 'ring0' ? 0 : 1, id);
+    if (key === 'hand0') p.setSlot(0, id ?? FISTS);
+    else if (key === 'hand1') {
+      if (id && DATA.shields[id]) p.setShield(id);
+      else p.setSlot(1, id ?? FISTS);
+    } else if (key === 'ring0' || key === 'ring1') p.setRing(key === 'ring0' ? 0 : 1, id);
     else p.setArmour(key, id);
     this.sfx(id ? equipSound(key, id) : 'p_unequip');
   }
@@ -349,8 +364,8 @@ export class GearScreen {
 
 /** The sound of putting something on: a blade drawn, a gun checked, a buckler strapped, armour buckled. */
 function equipSound(key: SlotKey, id: string): string {
+  if (DATA.shields[id]) return 'p_strap';
   if (key === 'hand0' || key === 'hand1') return DATA.weapons[id]?.sounds.draw ?? 'p_draw';
-  if (key === 'shield') return 'p_strap';
   if (key === 'ring0' || key === 'ring1') return 'p_ring';
   return (DATA.armour[id]?.weight ?? 0) >= 5 ? 'p_armour_heavy' : 'p_armour_light';
 }

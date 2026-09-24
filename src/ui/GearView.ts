@@ -153,8 +153,6 @@ export class GearView {
     this.details(22, 182, 44, s.selected(), 5);
     this.loadBox(300, 182, W - 322, s);
     this.text(22, DATA.game.height - 18, s.choosing ? 'UP/DOWN CHOOSE   E/ENTER EQUIP   ESC BACK' : 'UP/DOWN SELECT   E/ENTER CHANGE   ESC BACK', 'stone2');
-    // a shield can't be used with a two-handed weapon in hand (it still weighs what it weighs)
-    if (p.shieldId && p.lockedSlot !== null) this.text(22 + 23 + 'LEFT HAND'.length * 6 + 6, SLOT_Y + 2 * SLOT_STEP, 'UNUSED (TWO-HANDED)', 'blood2');
   }
 
   private loadBox(x: number, y: number, w: number, s: GearScreen) {
@@ -228,7 +226,7 @@ export class GearView {
 }
 
 const SLOT_Y = 38;
-const SLOT_STEP = 19;
+const SLOT_STEP = 22;
 
 /** Wrap text that has its own line breaks (paragraphs, verses): each line wrapped on its own. */
 function wrapParagraphs(text: string, cols: number): string[] {

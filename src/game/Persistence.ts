@@ -43,7 +43,7 @@ export function applySave(gs: GameScene, s: SaveData) {
   p.slot = s.loadout.slot;
   p.shieldId = s.loadout.shield && DATA.shields[s.loadout.shield] ? s.loadout.shield : null;
   if (p.shieldId && !p.inv.shields.includes(p.shieldId)) p.inv.shields.push(p.shieldId);
-  p.enforceTwoHanded();
+  p.normalizeHands();
   // consumables (at most what can be carried), the belt, rings
   p.pack.clear();
   for (const [id, n] of Object.entries(s.items.pack)) if (DATA.consumables[id] && n > 0) p.pack.set(id, Math.min(n, DATA.consumables[id].max));

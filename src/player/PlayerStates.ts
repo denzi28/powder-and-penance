@@ -78,29 +78,63 @@ function tryStartAction(p: Player): string | undefined {
     }
     p.ctx.bus.emit('sfx', { id: 'phial_empty' });
   }
-  const w = p.weapon;
+  // Left click uses the right hand; right click the left hand's weapon (a shield blocks instead: locomotion).
   if (inp.peek('light')) {
     const crit = findCritical(p);
     if (crit) {
       inp.consume('light');
+      p.slot = 0;
       p.crit = crit;
       return 'critical';
     }
   }
-  if (w.kind === 'ranged') {
-    const a = p.ammoFor(p.weaponId);
-    const r = w.ranged!;
-    if (inp.consume('light')) {
-      if (a.clip > 0) return p.stamina.canAct() ? 'fire' : undefined;
-      if (a.reserve > 0) return 'reload';
-      p.ctx.bus.emit('sfx', { id: 'dry_fire' });
+  const right = useHand(p, 0);
+  if (right) return right;
+  if (p.leftWeapon) {
+    const left = useHand(p, 1);
+    if (left) return left;
+  }
+  if (inp.consume('reload')) {
+    // the gun in use first, then the one in the other hand
+    for (const i of [p.slot, 1 - p.slot]) {
+      const r = DATA.weapons[p.slots[i]]?.ranged;
+      const a = r && p.ammoFor(p.slots[i]);
+      if (r && a && a.clip < r.clip && a.reserve > 0) {
+        p.slot = i;
+        return 'reload';
+      }
     }
-    if (inp.consume('reload') && a.clip < r.clip && a.reserve > 0) return 'reload';
-  } else if (p.stamina.canAct() && w.light.length && inp.consume('light')) {
+  }
+  const rw = DATA.weapons[p.slots[0]];
+  if (rw.heavy && p.stamina.canAct() && inp.consume('heavy')) {
+    p.slot = 0; // the heavy attack is the right hand's
+    return 'heavy';
+  }
+}
+
+/** The button that uses a hand: left click for the right hand, right click for the left. */
+const handButton = (i: number) => (i === 0 ? 'light' : 'block');
+
+/** Swing or fire the weapon in hand i if its button was pressed (it becomes the hand in use). */
+function useHand(p: Player, i: 0 | 1): string | undefined {
+  const inp = p.input;
+  const button = handButton(i);
+  const id = p.slots[i];
+  const w = DATA.weapons[id];
+  if (w.kind === 'ranged') {
+    if (!inp.consume(button)) return;
+    p.slot = i;
+    const a = p.ammoFor(id);
+    if (a.clip > 0) return p.stamina.canAct() ? 'fire' : undefined;
+    if (a.reserve > 0) return 'reload';
+    p.ctx.bus.emit('sfx', { id: 'dry_fire' });
+    return;
+  }
+  if (p.stamina.canAct() && w.light.length && inp.consume(button)) {
+    p.slot = i;
     p.comboIndex = 0;
     return 'attack';
   }
-  if (w.heavy && p.stamina.canAct() && inp.consume('heavy')) return 'heavy';
 }
 
 /** Shared by idle / move / sprint. */
@@ -108,10 +142,6 @@ function locomotion(p: Player): string {
   const action = tryStartAction(p);
   if (action) return action;
   const inp = p.input;
-  if (inp.consume('swap')) {
-    if (p.lockedSlot === null) return 'swap';
-    p.ctx.bus.emit('sfx', { id: 'dry_fire' }); // two-handed: the other slot is disabled
-  }
   if (inp.consume('drop')) {
     const id = p.dropActive();
     if (id) p.ctx.bus.emit('weaponDropped', { id, x: p.x, y: p.y });
@@ -167,12 +197,25 @@ const attack: State<Player> = {
     const s = r.strike;
     r.tick(p.aimAngle);
     if (s.comboFrom !== undefined && r.t >= s.comboFrom && p.stamina.canAct()) {
-      if (p.input.consume('light')) {
+      // the same hand's button carries the combo on; the other hand can cut in
+      if (p.input.consume(handButton(p.slot))) {
         p.comboIndex = (p.comboIndex + 1) % p.weapon.light.length;
         p.sm.change('attack', true);
         return;
       }
-      if (p.weapon.heavy && p.input.consume('heavy')) return 'heavy';
+      const other = (1 - p.slot) as 0 | 1;
+      if (other === 0 || p.leftWeapon) {
+        const next = useHand(p, other);
+        if (next) {
+          p.sm.change(next, true);
+          return;
+        }
+      }
+      if (DATA.weapons[p.slots[0]].heavy && p.input.consume('heavy')) {
+        p.slot = 0;
+        p.sm.change('heavy', true);
+        return;
+      }
     }
     if (rollCancel(p, s, r.t)) return 'roll';
     if (r.phase === 'done') return 'idle';
@@ -280,28 +323,6 @@ const reload: State<Player> = {
   exit(p) {
     p.reloadProgress = -1;
     p.weaponLowered = false;
-  },
-};
-
-// ------------------------------------------------------------------ swap
-const swap: State<Player> = {
-  enter(p) {
-    p.weaponLowered = true;
-    p.ctx.bus.emit('sfx', { id: 'swap' });
-  },
-  tick(p, t) {
-    const total = DATA.player.swapTicks;
-    moveFree(p, 0.7);
-    if (t === Math.floor(total / 2)) {
-      p.swapWeapon();
-      p.ctx.bus.emit('sfx', { id: p.weapon.sounds.draw ?? 'p_draw' }); // the other weapon comes to hand
-    }
-    p.weaponVisible = t >= Math.floor(total / 2) - 3;
-    if (t >= total) return 'idle';
-  },
-  exit(p) {
-    p.weaponLowered = false;
-    p.weaponVisible = true;
   },
 };
 
@@ -602,7 +623,6 @@ export const PLAYER_STATES: Record<string, State<Player>> = {
   heavy,
   fire,
   reload,
-  swap,
   block,
   heal,
   useItem,

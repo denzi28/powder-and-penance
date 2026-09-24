@@ -17,15 +17,14 @@ npm run gen:art    # regenerate missing placeholder art (--force to overwrite al
 |---|---|---|
 | Move | WASD / arrows | Left stick |
 | Aim | Mouse | Right stick |
-| Light attack / fire (tap again to combo) | Left mouse | RT |
-| Heavy attack (hold to charge) / gun bash | F / Mouse 4 | RB |
-| Block (hold); the first few ticks parry | Right mouse | LT |
+| Right hand: attack / fire (tap again to combo) | Left mouse | RT |
+| Left hand: block with a shield (hold; the first few ticks parry), or attack / fire with a one-handed weapon | Right mouse | LT |
+| Heavy attack with the right hand (hold to charge) / gun bash | F / Mouse 4 | RB |
 | Riposte / backstab | Light attack near a parried enemy, or behind an unaware or staggered one | |
-| Reload (auto when firing empty) | R | Y / △ |
+| Reload the gun in use, else the one in the other hand (auto when firing empty) | R | Y / △ |
 | Roll | Space | B / ○ |
 | Sprint (hold) | Shift | L3 or LB |
-| Swap weapon slot (disabled while holding a two-handed weapon) | Tab / wheel | D-pad ← → |
-| Drop the weapon in hand on the ground (it leaves your inventory) | G | D-pad ↓ |
+| Drop the weapon in use on the ground (it leaves your inventory) | G | D-pad ↓ |
 | Drink a Mending Phial (about 1 s; a hit before it lands wastes the charge) | Q | X / □ |
 | Use the item on your belt (a throw, or a short eat/drink; a hit before it lands keeps the item) | C | R3 |
 | Cycle the belt to the next consumable you carry | X | D-pad ↑ |
@@ -39,7 +38,7 @@ npm run gen:art    # regenerate missing placeholder art (--force to overwrite al
 
 **Consumables, rings and notes.** Chests, enemies and breakable pots give consumables: firebombs, throwing knives, honeycomb, grey salt, incense, cartridges, oil, wafers, smoke, grog and tallow candles. Each does something different (Inventory > Items says exactly what, with numbers, then its lore). Whatever is on your belt shows bottom-left, and timed effects show as small icons under the phials. Two **rings** can be worn (Equipment > Ring I/II); each changes one thing while worn. **Notes** lie on the floor in eight rooms; read one with E and it's kept under Inventory > Notes. **Minibosses** (the Belfry Brute in the ossuary, Hesk in the mire roots) have a name bar at the bottom, more health, stay dead once killed, and drop a ring.
 
-**Two-handed weapons** (greataxe, heavy crossbow) take both hands. The other slot and the shield are disabled until you drop the two-hander or replace it.
+**Two hands.** The right hand holds a weapon (left click). The left hand holds a shield, a one-handed weapon, or nothing (right click): sword and buckler, sword and flintlock, dagger and revolver. **Two-handed weapons** (greataxe, heavy crossbow) take both hands: equipping one empties the left hand, and putting a shield or weapon in the left hand takes the two-hander off. Change hands from Esc > EQUIPMENT; the HUD boxes bottom-right show each hand with its button.
 
 ## Debug keys
 | Key | Effect |

@@ -73,8 +73,10 @@ export class Player extends Actor {
   /** Freeze the body animation (heavy charge hold). */
   animHold = false;
 
-  // Loadout
+  // Loadout: two hands. slots[0] is the right hand's weapon, slots[1] the left hand's (fists when it's empty
+  // or holds the shield). A two-handed weapon is always in the right hand and leaves the left empty.
   slots: [string, string];
+  /** The hand in use (0 right, 1 left): the one last swung or fired with, and drawn. */
   slot = 0;
   shieldId: string | null;
   /** Armour worn (data/armour ids). */
@@ -114,7 +116,7 @@ export class Player extends Actor {
     this.shieldId = DATA.player.loadout.shield;
     for (const id of this.slots) if (id !== FISTS && !this.inv.weapons.includes(id)) this.inv.weapons.push(id);
     if (this.shieldId) this.inv.shields.push(this.shieldId);
-    this.enforceTwoHanded();
+    this.normalizeHands();
     this.body.play('idle');
     this.legs.play('idle');
     this.sm = new StateMachine<Player>(this, PLAYER_STATES, 'idle');
@@ -151,10 +153,18 @@ export class Player extends Actor {
   get weapon() {
     return DATA.weapons[this.weaponId];
   }
-  /** The usable shield: none while a two-handed weapon is held. */
+  /** The shield on the left arm (never there with a two-handed weapon). */
   get shield() {
-    if (!this.shieldId || this.weapon.twoHanded) return null;
+    if (!this.shieldId || DATA.weapons[this.slots[0]]?.twoHanded) return null;
     return DATA.shields[this.shieldId] ?? null;
+  }
+  /** A two-handed weapon is in hand (it takes both hands). */
+  get twoHanding() {
+    return !!DATA.weapons[this.slots[0]]?.twoHanded;
+  }
+  /** The left hand's weapon, if it holds one (not a shield, not empty). */
+  get leftWeapon(): string | null {
+    return this.slots[1] !== FISTS ? this.slots[1] : null;
   }
 
   // ------------------------------------------------------------------ gear and equip load
@@ -342,7 +352,7 @@ export class Player extends Actor {
     if (kind === 'weapon') {
       this.inv.weapons = this.inv.weapons.filter(w => w !== id);
       this.slots = this.slots.map(w => (w === id ? FISTS : w)) as [string, string];
-      this.enforceTwoHanded();
+      this.normalizeHands();
     } else if (kind === 'shield') {
       this.inv.shields = this.inv.shields.filter(w => w !== id);
       if (this.shieldId === id) this.shieldId = null;
@@ -353,19 +363,33 @@ export class Player extends Actor {
     }
   }
 
-  /** Put an owned weapon (or fists) in hand slot i; if it's in the other hand it moves over. */
-  setSlot(i: 0 | 1, id: string) {
-    if (id !== FISTS && !this.inv.weapons.includes(id)) return;
-    if (id !== FISTS && this.slots[1 - i] === id) this.slots[1 - i] = FISTS;
-    this.slots[i] = id;
-    this.ammoFor(id);
-    const l = this.lockedSlot;
-    this.slot = l ?? (this.slots[this.slot] === FISTS && this.slots[1 - this.slot] !== FISTS ? 1 - this.slot : this.slot);
+  get hands(): Hands {
+    return { right: this.slots[0], left: this.slots[1], shield: this.shieldId };
+  }
+  private setHands(h: Hands) {
+    this.slots = [h.right, h.left];
+    this.shieldId = h.shield;
+    for (const id of this.slots) this.ammoFor(id);
+    // stay on the hand in use if it still holds something; otherwise whichever hand does
+    if (this.slots[this.slot] === FISTS && this.slots[1 - this.slot] !== FISTS) this.slot = 1 - this.slot;
+    if (this.twoHanding || (this.slot === 1 && this.slots[1] === FISTS)) this.slot = 0;
   }
 
+  /** Put an owned weapon (or fists) in a hand: 0 right, 1 left (see equipHand for the rules). */
+  setSlot(i: 0 | 1, id: string) {
+    if (id !== FISTS && !this.inv.weapons.includes(id)) return;
+    this.setHands(equipHand(this.hands, i === 0 ? 'right' : 'left', id));
+  }
+
+  /** Strap a shield on the left arm (it replaces a left-hand weapon, and a two-handed weapon), or take it off. */
   setShield(id: string | null) {
     if (id && !this.inv.shields.includes(id)) return;
-    this.shieldId = id;
+    this.setHands(id ? equipHand(this.hands, 'left', id) : { ...this.hands, shield: null });
+  }
+
+  /** Make the hands obey the rules (after loading a save, or losing a weapon). */
+  normalizeHands() {
+    this.setHands(normalizeHands(this.hands));
   }
 
   setArmour(slot: 'head' | 'body', id: string | null) {
@@ -450,21 +474,6 @@ export class Player extends Actor {
     else this.squash.set(DATA.juice.squash.hit);
   }
 
-  /** A two-handed weapon takes both hands: its slot is forced active and the other slot is disabled. */
-  get lockedSlot(): number | null {
-    const i = this.slots.findIndex(id => DATA.weapons[id]?.twoHanded);
-    return i >= 0 ? i : null;
-  }
-
-  isSlotDisabled(i: number) {
-    const l = this.lockedSlot;
-    return l !== null && l !== i;
-  }
-
-  enforceTwoHanded() {
-    const l = this.lockedSlot;
-    if (l !== null) this.slot = l;
-  }
 
   onGrabbed(by: Actor, grab: { holdTicks: number; damage: number; throwKnockback: number }) {
     if (this.dead || this.sm.name === 'grabbed') return;
@@ -472,44 +481,38 @@ export class Player extends Actor {
     this.sm.change('grabbed');
   }
 
-  swapWeapon() {
-    if (this.lockedSlot !== null) return;
-    this.slot = (this.slot + 1) % this.slots.length;
-  }
-
-  /** Empty the active slot; the other weapon (if any) comes to hand. Returns the dropped weapon id. */
+  /** Drop the weapon in the hand in use on the ground (it leaves the inventory). Returns its id. */
   dropActive(): string | null {
     const id = this.weaponId;
     if (id === FISTS) return null;
     this.inv.weapons = this.inv.weapons.filter(w => w !== id);
-    this.slots[this.slot] = FISTS;
-    const other = 1 - this.slot;
-    if (this.slots[other] !== FISTS) this.slot = other;
-    this.enforceTwoHanded();
+    const h = this.hands;
+    this.setHands(this.slot === 0 ? { ...h, right: FISTS } : { ...h, left: FISTS });
     return id;
   }
 
   /**
-   * A weapon picked up: it goes into the inventory, and into an empty hand if there is one (the active one
-   * first). With both hands full it just goes in the pack. Returns true if it came to hand.
+   * A weapon picked up: it goes into the inventory, and into a free hand if there is one: the right hand first,
+   * then (one-handed weapons) an empty left hand. A two-handed weapon only comes to hand if both are free.
+   * Otherwise it goes in the pack. Returns true if it came to hand.
    */
   pickUpWeapon(id: string): boolean {
     this.give('weapon', id);
     if (this.slots.includes(id)) return true;
-    if (this.slots[this.slot] === FISTS) this.slots[this.slot] = id;
-    else if (this.slots[1 - this.slot] === FISTS) {
-      this.slot = 1 - this.slot;
-      this.slots[this.slot] = id;
-    } else return false;
-    this.enforceTwoHanded();
+    const h = this.hands;
+    const leftFree = h.left === FISTS && !h.shield;
+    const twoH = !!DATA.weapons[id]?.twoHanded;
+    if (h.right === FISTS && (!twoH || leftFree)) this.setSlot(0, id);
+    else if (!twoH && leftFree && !this.twoHanding) this.setSlot(1, id);
+    else return false;
     return true;
   }
 
-  /** Take a weapon from a rack straight into the active hand (the one it replaces stays in the pack). */
+  /** Take a weapon from a rack straight into the right hand (the one it replaces stays in the pack). */
   equip(id: string) {
     this.give('weapon', id);
-    this.setSlot(this.slot as 0 | 1, id);
-    this.enforceTwoHanded();
+    this.setSlot(0, id);
+    this.slot = 0;
   }
 
   /** Shrine rest / respawn: full HP, stamina, phials and ammo. */
@@ -568,6 +571,64 @@ export class Player extends Actor {
         this.ctx.bus.emit('dust', { x: this.x, y: this.y, kind: 'step' });
     }
   }
+}
+
+// ------------------------------------------------------------------ hands (pure, shared with the menus)
+/** What the two hands hold: the right hand's weapon, the left hand's weapon (fists if none), the left arm's shield. */
+export interface Hands {
+  right: string;
+  left: string;
+  shield: string | null;
+}
+
+const isTwoHanded = (id: string) => !!DATA.weapons[id]?.twoHanded;
+
+/**
+ * Put something in a hand. The right hand holds a weapon (fists when empty). The left hand holds a shield, a
+ * one-handed weapon, or nothing (null). A two-handed weapon takes both hands: it goes in the right hand and
+ * empties the left, and putting a shield or weapon in the left hand takes it off. The same weapon can't be in
+ * both hands: it moves over.
+ */
+export function equipHand(h: Hands, hand: 'right' | 'left', id: string | null): Hands {
+  const out = { ...h };
+  if (hand === 'right' || (id && isTwoHanded(id))) {
+    const w = id ?? FISTS;
+    if (w !== FISTS && out.left === w) out.left = FISTS;
+    out.right = w;
+    if (isTwoHanded(w)) {
+      out.left = FISTS;
+      out.shield = null;
+    }
+    return out;
+  }
+  if (id === null || id === FISTS) return { ...out, left: FISTS, shield: null };
+  if (DATA.shields[id]) {
+    out.shield = id;
+    out.left = FISTS;
+  } else {
+    if (out.right === id) out.right = FISTS;
+    out.left = id;
+    out.shield = null;
+  }
+  if (isTwoHanded(out.right)) out.right = FISTS;
+  return out;
+}
+
+/** Fix hands that break the rules (an old save): a two-hander goes to the right hand alone; a shield beats a
+ *  left-hand weapon. */
+export function normalizeHands(h: Hands): Hands {
+  const out = { ...h };
+  if (isTwoHanded(out.left)) {
+    if (out.right === FISTS) out.right = out.left;
+    out.left = FISTS;
+  }
+  if (isTwoHanded(out.right)) {
+    out.left = FISTS;
+    out.shield = null;
+  }
+  if (out.shield && out.left !== FISTS) out.left = FISTS;
+  if (out.left === out.right) out.left = FISTS;
+  return out;
 }
 
 // ------------------------------------------------------------------ equip load (pure, shared with the menus)

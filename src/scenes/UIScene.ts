@@ -21,7 +21,8 @@ export class UIScene extends Phaser.Scene {
   private veil!: Phaser.GameObjects.Rectangle;
   private deathText!: Phaser.GameObjects.BitmapText;
   private slotIcons: Phaser.GameObjects.Sprite[] = [];
-  private ammoText!: Phaser.GameObjects.BitmapText;
+  private ammoTexts: Phaser.GameObjects.BitmapText[] = [];
+  private handKeys: Phaser.GameObjects.BitmapText[] = [];
   private shieldIcon!: Phaser.GameObjects.Sprite;
   private beltIcon!: Phaser.GameObjects.Image;
   private beltText!: Phaser.GameObjects.BitmapText;
@@ -73,7 +74,10 @@ export class UIScene extends Phaser.Scene {
     this.beltIcon = this.add.image(0, 0, 'icons', 0).setOrigin(0, 0).setDepth(2);
     this.beltText = this.add.bitmapText(0, 0, 'pixel', '').setTint(hexToInt(DATA.palette.wax2)).setDepth(3);
     this.beltKey = this.add.bitmapText(0, 0, 'pixel', '').setTint(hexToInt(DATA.palette.stone3)).setDepth(3);
-    this.ammoText = this.add.bitmapText(0, 0, 'pixel', '').setDepth(2);
+    for (let i = 0; i < 2; i++) {
+      this.ammoTexts.push(this.add.bitmapText(0, 0, 'pixel', '').setDepth(2));
+      this.handKeys.push(this.add.bitmapText(0, 0, 'pixel', '').setTint(hexToInt(DATA.palette.stone3)).setDepth(2));
+    }
     this.prompt = this.add.bitmapText(0, 0, 'pixel', '').setTint(hexToInt(DATA.palette.wax2)).setDepth(2);
     this.tallowIcon = this.add.sprite(0, 0, 'tallow_icon', 0).setOrigin(0, 0).setDepth(2);
     this.tallowText = this.add.bitmapText(0, 0, 'pixel', '0').setTint(hexToInt(DATA.palette.wax2)).setDepth(2);
@@ -342,6 +346,10 @@ export class UIScene extends Phaser.Scene {
   }
 
   /** Bottom-right: two weapon slots (active highlighted), ammo, reload bar, shield icon. */
+  /**
+   * Bottom-right: the right hand (left click) and the left hand (right click), each with the button that uses
+   * it above. The hand in use is outlined; a gun shows its loaded/spare rounds. A two-handed weapon fills both.
+   */
   private drawLoadout() {
     const p = this.gs.player;
     const pal = DATA.palette;
@@ -351,48 +359,44 @@ export class UIScene extends Phaser.Scene {
     const bw = 32;
     const bh = 18;
     const y = H - 8 - bh;
-    const xs = [W - 8 - bw * 2 - 3, W - 8 - bw];
-    p.slots.forEach((id, i) => {
+    const xs = [W - 8 - bw * 2 - 3, W - 8 - bw]; // right hand, left hand (in mouse-button order)
+    const pad = this.gs.controls.device === 'pad';
+    const two = p.twoHanding;
+    for (let i = 0; i < 2; i++) {
       const x = xs[i];
-      const active = i === p.slot;
-      const disabled = p.isSlotDisabled(i); // a two-handed weapon occupies both hands
+      const inUse = i === p.slot && !(i === 1 && !p.leftWeapon);
       g.fillStyle(hexToInt(pal.ink), 0.75).fillRect(x, y, bw, bh);
-      g.fillStyle(hexToInt(active ? pal.wax2 : pal.stone2), disabled ? 0.4 : 1);
+      g.fillStyle(hexToInt(inUse ? pal.wax2 : pal.stone2), 1);
       g.fillRect(x, y, bw, 1).fillRect(x, y + bh - 1, bw, 1).fillRect(x, y, 1, bh).fillRect(x + bw - 1, y, 1, bh);
+      this.handKeys[i].setText(pad ? (i === 0 ? 'RT' : 'LT') : i === 0 ? 'LMB' : 'RMB').setPosition(x, y - 9);
       const icon = this.slotIcons[i];
-      const def = DATA.weapons[id];
-      icon.setVisible(!def.view.hidden); // bare hands = empty slot
-      if (icon.texture.key !== def.view.sprite) icon.setTexture(def.view.sprite, 0);
-      icon.setPosition(x + bw / 2, y + bh / 2).setAlpha(active ? 1 : disabled ? 0.2 : 0.5);
-      if (disabled) {
-        g.lineStyle(1, hexToInt(pal.ember), 0.9);
-        g.lineBetween(x + 3, y + bh - 3, x + bw - 3, y + 3);
-      }
-    });
-
-    const w = p.weapon;
-    const ax = xs[p.slot];
-    if (w.ranged) {
-      const a = p.ammoFor(p.weaponId);
-      this.ammoText
-        .setText(`${a.clip}/${a.reserve}`)
-        .setTint(hexToInt(a.clip === 0 ? pal.ember : pal.wax2))
-        .setVisible(true);
-      this.ammoText.setPosition(ax + bw - this.ammoText.width, y - 9);
-    } else this.ammoText.setVisible(false);
+      // what the hand holds: a weapon, the shield, or (two-handing) the same weapon's other end
+      const id = i === 0 || two ? p.slots[0] : p.leftWeapon;
+      const sh = i === 1 && !two && p.shieldId ? DATA.shields[p.shieldId] : null;
+      const sprite = sh ? sh.sprite : id && !DATA.weapons[id].view.hidden ? DATA.weapons[id].view.sprite : null;
+      icon.setVisible(!!sprite);
+      if (sprite && icon.texture.key !== sprite) icon.setTexture(sprite, 0);
+      icon.setPosition(x + bw / 2, y + bh / 2).setAlpha(i === 1 && two ? 0.25 : 1);
+      if (i === 1 && two) g.fillStyle(hexToInt(pal.stone2), 1).fillRect(xs[0] + bw, y + bh / 2, xs[1] - xs[0] - bw, 1); // one weapon, both hands
+      const r = id && !(i === 1 && two) ? DATA.weapons[id].ranged : null;
+      const text = this.ammoTexts[i];
+      if (r) {
+        const a = p.ammoFor(id!);
+        text.setText(`${a.clip}/${a.reserve}`).setTint(hexToInt(a.clip === 0 ? pal.ember : pal.wax2)).setVisible(true);
+        text.setPosition(x + bw - text.width, y - 9);
+      } else text.setVisible(false);
+      // the button hint sits beside the rounds when there's room, else above them
+      const key = this.handKeys[i];
+      if (r && key.width + text.width + 3 > bw) key.setY(y - 18);
+    }
+    this.shieldIcon.setVisible(false);
     if (p.reloadProgress >= 0) {
+      const ax = xs[p.slot];
       g.fillStyle(hexToInt(pal.dark2), 1).fillRect(ax + 2, y + bh - 3, bw - 4, 1);
       g.fillStyle(hexToInt(pal.flame2), 1).fillRect(ax + 2, y + bh - 3, Math.round((bw - 4) * Math.min(1, p.reloadProgress)), 1);
     }
-
-    const sh = p.shieldId ? DATA.shields[p.shieldId] : null;
-    this.shieldIcon.setVisible(!!sh);
-    if (sh) {
-      if (this.shieldIcon.texture.key !== sh.sprite) this.shieldIcon.setTexture(sh.sprite, 0);
-      // Dimmed while a two-handed weapon is out (shield stowed).
-      this.shieldIcon.setPosition(xs[0] - 9, y + bh / 2).setAlpha(p.shield ? 1 : 0.3);
-    }
   }
+
 
   private drawPrompt() {
     const gs = this.gs;

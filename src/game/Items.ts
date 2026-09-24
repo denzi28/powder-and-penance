@@ -64,7 +64,7 @@ export function grantItem(gs: GameScene, id: string, itemId: string, x: number, 
       // wear it straight away if the slot it goes in is empty
       let on = false;
       if (e.kind === 'weapon') on = p.pickUpWeapon(e.id);
-      else if (e.kind === 'shield' && !p.shieldId) {
+      else if (e.kind === 'shield' && !p.shieldId && !p.leftWeapon && !p.twoHanding) {
         p.setShield(e.id);
         on = true;
       } else if (e.kind === 'armour') {
