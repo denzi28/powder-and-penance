@@ -59,6 +59,9 @@ const REVERB: Record<MusicLayer['inst'], number> = {
   celesta: 0.65,
   pluck: 0.3,
   harp: 0.55,
+  hit: 0.5,
+  riser: 0.4,
+  roll: 0.35,
 };
 
 export class BossMusic {
@@ -186,19 +189,42 @@ export class BossMusic {
     return th.root + scale[((n % 7) + 7) % 7] + 12 * Math.floor(n / 7) + acc;
   }
 
+  /** Where a bar falls in the theme's form: its section, and whether it's that section's first or last bar. */
+  private section(th: MusicTheme, bar: number) {
+    if (!th.form) return null;
+    const total = th.form.reduce((a, f) => a + f.bars, 0);
+    let b = bar % total;
+    for (const f of th.form) {
+      if (b < f.bars) return { f, first: b === 0, last: b === f.bars - 1 };
+      b -= f.bars;
+    }
+    return null;
+  }
+
   private playStep(ctx: BaseAudioContext, th: MusicTheme, t: number, stepDur: number) {
     const ch = this.chord(th, this.bar);
     const barInLoop = this.bar % th.chords.length;
+    const sec = this.section(th, this.bar);
+    // the gap before a drop: everything stops dead for the last steps of the build
+    const gapAt = sec?.last && sec.f.gap ? th.steps - sec.f.gap : th.steps;
+    if (this.step >= gapAt) return;
+    const clip = (len: number) => Math.min(len, (gapAt - this.step) * stepDur);
     th.layers.forEach((L, li) => {
       if (this.barLevel < 0 ? !L.hold : this.barLevel < L.level) return;
       if (this.bar % L.every !== 0) return;
+      if (sec && this.barLevel >= 0) {
+        // the form picks which parts play in this section (between phases, the held parts go on regardless)
+        if (L.tag && !sec.f.play.includes(L.tag)) return;
+        if (L.at === 'first' && !sec.first) return;
+        if (L.at === 'last' && !sec.last) return;
+      }
       if (L.melody) {
         // a melody: this bar's line, "degree:steps" words
         const line = L.melody[barInLoop % L.melody.length];
         let at = 0;
         for (const w of line.split(' ')) {
           const [d, len] = w.split(':');
-          if (at === this.step && d !== 'r') this.note(ctx, L, t, this.degree(th, d) + 12 * (L.oct ?? 1), +len * stepDur, 1);
+          if (at === this.step && d !== 'r') this.note(ctx, L, t, this.degree(th, d) + 12 * (L.oct ?? 1), clip(+len * stepDur), 1);
           at += +len;
         }
         return;
@@ -209,7 +235,7 @@ export class BossMusic {
       const accent = c === 'X' ? 1.35 : 1;
       const tones = parseTones(L.notes ?? '1');
       const midi = (w: { tone: string; oct: number }) => ch.root + 12 * ((L.oct ?? 0) + w.oct) + ch.tones[w.tone];
-      const len = (L.len ?? 1) * stepDur;
+      const len = clip((L.len ?? 1) * stepDur);
       if (L.chord) for (const w of tones) this.note(ctx, L, t, midi(w), len, accent);
       else this.note(ctx, L, t, midi(tones[this.arpI[li]++ % tones.length]), len, accent);
     });
@@ -336,14 +362,17 @@ function vibrato(ctx: BaseAudioContext, oscs: OscillatorNode[], t: number, end: 
 }
 
 let noiseBuf: AudioBuffer | null = null;
-function noise(ctx: BaseAudioContext, t: number, end: number, out: AudioNode, type: BiquadFilterType, f: number, rate = 1) {
+function noiseBuffer(ctx: BaseAudioContext) {
   if (!noiseBuf || noiseBuf.sampleRate !== ctx.sampleRate) {
     noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
     const d = noiseBuf.getChannelData(0);
     for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
   }
+  return noiseBuf;
+}
+function noise(ctx: BaseAudioContext, t: number, end: number, out: AudioNode, type: BiquadFilterType, f: number, rate = 1) {
   const n = ctx.createBufferSource();
-  n.buffer = noiseBuf;
+  n.buffer = noiseBuffer(ctx);
   n.loop = true;
   n.playbackRate.value = rate;
   n.connect(filter(ctx, type, f, out));
@@ -463,8 +492,8 @@ const INSTRUMENTS: Record<MusicLayer['inst'], Inst> = {
   },
   // the choir: "aah" voices through vowel formants, each with its own vibrato, spread wide
   choir: (ctx, out, t, m, len) => {
-    const attack = Math.min(0.5, Math.max(0.12, len * 0.3));
-    const e = env(ctx, out, t, attack, Math.max(0, len - attack), 0.9, 0.5);
+    const attack = Math.min(0.5, Math.max(0.025, len * 0.25)); // short notes: a chanted stab
+    const e = env(ctx, out, t, attack, Math.max(0, len - attack), len < 0.4 ? 0.35 : 0.9, 0.5);
     const lp = filter(ctx, 'lowpass', 3800, e.g);
     const f1 = filter(ctx, 'bandpass', 780, lp, 5, 1);
     const f2 = filter(ctx, 'bandpass', 1150, lp, 6, 0.55);
@@ -558,4 +587,50 @@ const INSTRUMENTS: Record<MusicLayer['inst'], Inst> = {
     osc(ctx, 'sawtooth', hz(m), t, e.end, l);
   },
   harp: (ctx, out, t, m) => harp(ctx, out, t, m, 0.22),
+  // an orchestral hit: brass and strings together, short and heavy, with a low thump under it
+  hit: (ctx, out, t, m) => {
+    const e = env(ctx, out, t, 0.006, 0.08, 0.35, 0.11);
+    const l = ctx.createBiquadFilter();
+    l.type = 'lowpass';
+    l.Q.value = 1.2;
+    l.frequency.setValueAtTime(3500, t);
+    l.frequency.exponentialRampToValueAtTime(900, t + 0.4);
+    l.connect(e.g);
+    section(ctx, hz(m), t, e.end, l, 4, 12, 0.7);
+    const b = env(ctx, out, t, 0.002, 0, 0.25, 0.25);
+    osc(ctx, 'sine', hz(m) / 2, t, b.end, b.g);
+  },
+  // a riser: noise and a tone sweeping up over `len`, cut dead at the end
+  riser: (ctx, out, t, m, len) => {
+    const e = ctx.createGain();
+    e.gain.setValueAtTime(0.0001, t);
+    e.gain.exponentialRampToValueAtTime(0.3, t + len);
+    e.gain.setValueAtTime(0.0001, t + len + 0.01);
+    e.connect(out);
+    const n = ctx.createBufferSource();
+    n.buffer = noiseBuffer(ctx);
+    n.loop = true;
+    const bp = ctx.createBiquadFilter();
+    bp.type = 'bandpass';
+    bp.Q.value = 1.5;
+    bp.frequency.setValueAtTime(300, t);
+    bp.frequency.exponentialRampToValueAtTime(7000, t + len);
+    n.connect(bp).connect(e);
+    n.start(t);
+    n.stop(t + len + 0.02);
+    const o = osc(ctx, 'sawtooth', hz(m), t, t + len + 0.02, filter(ctx, 'lowpass', 2000, e, 0.7, 0.25));
+    o.frequency.exponentialRampToValueAtTime(hz(m + 12), t + len);
+  },
+  // a snare roll: hits getting faster and louder over `len`
+  roll: (ctx, out, t, _m, len) => {
+    let at = 0;
+    let gap = 0.12;
+    while (at < len) {
+      const k = at / len;
+      const s = env(ctx, out, t + at, 0.001, 0, 0.09, 0.08 + 0.3 * k * k);
+      noise(ctx, t + at, s.end, s.g, 'bandpass', 2400);
+      at += gap;
+      gap = Math.max(0.03, gap * 0.9);
+    }
+  },
 };

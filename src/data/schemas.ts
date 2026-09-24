@@ -740,7 +740,7 @@ export const AmbientBed = z.object({
 });
 export type AmbientBed = z.infer<typeof AmbientBed>;
 // ---- Boss music (data/audio/music.json) ----
-export const MUSIC_INSTRUMENTS = ['drum', 'timpani', 'snare', 'hat', 'cymbal', 'anvil', 'bell', 'bass', 'pad', 'strings', 'spiccato', 'choir', 'organ', 'lead', 'brass', 'horn', 'hum', 'musicbox', 'celesta', 'pluck', 'harp'] as const;
+export const MUSIC_INSTRUMENTS = ['drum', 'timpani', 'snare', 'hat', 'cymbal', 'anvil', 'bell', 'bass', 'pad', 'strings', 'spiccato', 'choir', 'organ', 'lead', 'brass', 'horn', 'hum', 'musicbox', 'celesta', 'pluck', 'harp', 'hit', 'riser', 'roll'] as const;
 export const MusicLayer = z
   .object({
     inst: z.enum(MUSIC_INSTRUMENTS),
@@ -762,6 +762,10 @@ export const MusicLayer = z
     pan: num.min(-1).max(1).optional(),
     /** Reverb send (else the instrument's own). */
     rev: num.min(0).max(1.5).optional(),
+    /** The part it plays in the theme's `form` (a section plays only the tags it lists). */
+    tag: z.string().optional(),
+    /** Only in the first bar of a section (the hits of a drop) or its last (a build's riser). */
+    at: z.enum(['first', 'last']).optional(),
     chord: z.boolean().default(false),
     /** Note length in steps. */
     len: pos.optional(),
@@ -780,6 +784,9 @@ export const MusicTheme = z.object({
   /** One chord per bar: a scale degree from 0 (its triad in the scale), or "4M" / "3m" to force major / minor. */
   chords: z.array(z.union([int.min(0), z.string().regex(/^\d+[Mm]$/)])).min(1),
   layers: z.array(MusicLayer).min(1),
+  /** The song's structure, looped: sections of bars, each playing the layers with the listed tags (untagged
+   *  layers always play). `gap` silences everything for the last steps of a section: the breath before a drop. */
+  form: z.array(z.object({ bars: int.min(1), play: z.array(z.string()), gap: int.min(0).optional() })).optional(),
 });
 export type MusicTheme = z.infer<typeof MusicTheme>;
 export const MusicCfg = z.object({
