@@ -740,7 +740,7 @@ export const AmbientBed = z.object({
 });
 export type AmbientBed = z.infer<typeof AmbientBed>;
 // ---- Boss music (data/audio/music.json) ----
-export const MUSIC_INSTRUMENTS = ['drum', 'snare', 'hat', 'anvil', 'bell', 'bass', 'pad', 'choir', 'organ', 'lead', 'brass', 'hum', 'musicbox', 'pluck', 'harp'] as const;
+export const MUSIC_INSTRUMENTS = ['drum', 'timpani', 'snare', 'hat', 'cymbal', 'anvil', 'bell', 'bass', 'pad', 'strings', 'spiccato', 'choir', 'organ', 'lead', 'brass', 'horn', 'hum', 'musicbox', 'celesta', 'pluck', 'harp'] as const;
 export const MusicLayer = z
   .object({
     inst: z.enum(MUSIC_INSTRUMENTS),
@@ -753,8 +753,15 @@ export const MusicLayer = z
     oct: int.min(-3).max(3).optional(),
     /** One character per step: "x" plays, "X" plays louder, "." rests. */
     pattern: z.string().regex(/^[xX.]+$/).optional(),
-    /** Chord tones to play ("1", "3", "5", "7", "8"), cycled one per hit (or all at once with `chord`). */
-    notes: z.string().regex(/^[13578]+$/).optional(),
+    /** Chord tones to play ("1", "3", "5", "7", "8"; ' raises one an octave, , lowers it; space-separated when
+     *  marked, e.g. "1 5 8 3'"), cycled one per hit (or all at once with `chord`). */
+    notes: z.string().regex(/^([13578]+|[13578][',]*( [13578][',]*)*)$/).optional(),
+    /** Only on every n-th bar (a cymbal every 4 bars). */
+    every: int.min(1).default(1),
+    /** Stereo position, -1 left .. 1 right. */
+    pan: num.min(-1).max(1).optional(),
+    /** Reverb send (else the instrument's own). */
+    rev: num.min(0).max(1.5).optional(),
     chord: z.boolean().default(false),
     /** Note length in steps. */
     len: pos.optional(),
