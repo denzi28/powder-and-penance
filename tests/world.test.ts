@@ -59,6 +59,12 @@ describe('autotile', () => {
     expect(shadeAt(2, 3)).toBe(200 + 1); // below the pillar's face
     expect(shadeAt(2, 1)).toBeUndefined(); // under the pillar's cap: the overhang covers it
   });
+  it('gives wall faces with moss near their foot the mossy faces, if the tileset has them', () => {
+    const { statics } = autotile(g, { ...ts, wall_front_floor_moss: [300] });
+    const idx = (x: number, y: number) => statics.find(t => t.tx === x && t.ty === y)?.index;
+    expect(idx(2, 2)).toBe(300); // the pillar: moss diagonally below it at (3, 3)
+    expect(idx(1, 0)).toBe(2); // the north wall: no moss near
+  });
   it('spreads fringes only over the layers listed after them', () => {
     const pond = RoomData.parse({
       id: 'p',

@@ -55,6 +55,36 @@
       "type": "prop",
       "kind": "crate",
       "at": [23, 2]
+    },
+    {
+      "type": "decor",
+      "kind": "banner",
+      "at": [6, 1]
+    },
+    {
+      "type": "decor",
+      "kind": "banner",
+      "at": [14, 1]
+    },
+    {
+      "type": "decor",
+      "kind": "banner",
+      "at": [21, 1]
+    },
+    {
+      "type": "decor",
+      "kind": "stone_bench",
+      "at": [7, 16]
+    },
+    {
+      "type": "decor",
+      "kind": "stone_bench",
+      "at": [19, 16]
+    },
+    {
+      "type": "decor",
+      "kind": "rubble",
+      "at": [12, 11]
     }
   ]
 }

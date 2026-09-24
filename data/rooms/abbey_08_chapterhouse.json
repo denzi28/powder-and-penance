@@ -53,6 +53,21 @@
       "type": "prop",
       "kind": "candles",
       "at": [9, 9]
+    },
+    {
+      "type": "decor",
+      "kind": "stone_bench",
+      "at": [6, 1]
+    },
+    {
+      "type": "decor",
+      "kind": "lectern",
+      "at": [6, 9]
+    },
+    {
+      "type": "decor",
+      "kind": "banner",
+      "at": [10, 1]
     }
   ]
 }

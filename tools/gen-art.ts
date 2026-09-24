@@ -1133,26 +1133,48 @@ function genShrine() {
   const img = new Img(W * 4, H);
   for (let f = 0; f < 4; f++) {
     const c = new Img(W, H);
-    c.rect(5, 38, 14, 4, P.dark1); // base
-    c.hline(5, 38, 14, P.stone3);
-    c.rect(11, 18, 2, 20, P.steel1); // stem
-    c.vline(11, 18, 20, P.stone3);
-    c.rect(9, 26, 6, 2, P.steel1); // knob
-    c.rect(6, 16, 12, 2, P.steel1); // dish
-    c.hline(6, 16, 12, P.steel2);
-    c.rect(9, 7, 6, 9, P.wax1); // candle
-    c.vline(9, 7, 9, P.wax2);
-    c.set(14, 12, P.wax2); // drips
-    c.set(8, 15, P.wax1);
-    c.set(15, 14, P.wax1);
-    c.set(12, 6, P.ink); // wick
+    // A stone plinth with the Abbey's flame carved in it; offerings left at its foot
+    box(c, 4, 36, 16, 6, STN);
+    c.set(12, 38, STN.c0);
+    c.hline(11, 39, 3, STN.c0);
+    c.set(12, 40, STN.c0);
+    // an iron stem with two knops, a wide dish
+    c.vline(11, 18, 18, IRON.c2);
+    c.vline(12, 18, 18, IRON.c0);
+    c.set(11, 20, IRON.c3);
+    box(c, 9, 25, 6, 2, IRON);
+    box(c, 10, 31, 4, 2, IRON);
+    box(c, 5, 16, 14, 2, IRON); // dish
+    c.hline(5, 16, 14, IRON.c3);
+    // the shrine candle: thick, wax cascading over the dish
+    c.rect(9, 6, 6, 10, P.wax1);
+    c.vline(9, 6, 10, P.wax2);
+    c.vline(10, 6, 10, mix(P.wax1, P.wax2, 0.5));
+    c.vline(14, 6, 10, mix(P.wax1, P.wood2, 0.3));
+    c.hline(9, 6, 6, P.wax2);
+    for (const [x, y, l] of [[6, 17, 3], [8, 17, 5], [16, 17, 4], [18, 17, 2], [15, 12, 3]] as const) {
+      c.vline(x, y, l, P.wax2);
+      c.set(x, y + l, P.wax1);
+    }
+    c.set(12, 5, P.ink); // wick
+    // stubs and a coin left by pilgrims
+    for (const x of [5, 17]) {
+      c.vline(x, 33, 3, P.wax2);
+      if (f > 0) c.set(x, 32, f % 2 ? P.flame2 : P.flame1);
+    }
+    c.set(8, 35, P.flame1);
     if (f > 0) {
       const sway = f === 2 ? 1 : 0;
-      c.ellipse(12 + sway, 3.5, 2, 3 + (f === 3 ? 0.5 : 0), P.flame1);
-      c.ellipse(12 + sway, 4, 1, 1.8, P.flame2);
-      c.set(12 + sway, 4, P.wax2);
+      c.ellipse(12 + sway, 2.5, 2.2, 3 + (f === 3 ? 0.5 : 0), P.ember);
+      c.ellipse(12 + sway, 3, 1.8, 2.4, P.flame1);
+      c.ellipse(12 + sway, 3.5, 1, 1.6, P.flame2);
+      c.set(12 + sway, 4, P.white);
+    } else {
+      c.set(12, 3, withAlpha(P.stone4, 170)); // unlit: a thread of smoke
+      c.set(13, 1, withAlpha(P.stone4, 120));
     }
     c.outline(P.ink);
+    finish(c, 12, 42, 9, 1.8);
     img.blit(c, f * W, 0);
   }
   sheet('shrine', img, {
@@ -2592,153 +2614,6 @@ function genWorks() {
     },
   });
 
-  // ---- decor (64x64, pivot 32,62)
-  const W = 64;
-  const H = 64;
-  const B = 62;
-  const frames: Img[] = [];
-  const cell = () => new Img(W, H);
-  // 0: rendering vat (three tiles wide, tall): an iron cauldron full of glowing wax
-  {
-    const c = cell();
-    c.ellipse(32, B - 10, 23, 10, P.dark1);
-    c.rect(9, B - 30, 46, 22, P.steel1);
-    c.vline(9, B - 30, 22, P.steel2);
-    c.vline(54, B - 30, 22, P.stone1);
-    for (const y of [B - 26, B - 16]) c.hline(9, y, 46, P.stone1);
-    c.ellipse(32, B - 31, 23, 6, P.stone1); // rim
-    c.ellipse(32, B - 31, 20, 4.5, P.wax1); // molten tallow
-    c.ellipse(26, B - 32, 7, 2, P.wax2);
-    c.set(40, B - 31, P.flame2);
-    c.rect(28, B - 8, 8, 5, P.ember); // fire under it
-    c.rect(30, B - 7, 4, 3, P.flame2);
-    c.outline(P.ink);
-    frames.push(c);
-  }
-  // 1: hook on a chain, hanging from above (no footprint)
-  {
-    const c = cell();
-    for (let y = 0; y < 44; y += 3) c.rect(31, y, 2, 2, P.steel1);
-    c.rect(30, 44, 4, 3, P.steel2);
-    line(c, 33, 47, 35, 52, P.steel2);
-    line(c, 35, 52, 31, 54, P.steel2);
-    c.set(30, 52, P.steel2);
-    c.ellipse(32, B - 1, 3, 1, withAlpha(P.ink, 120)); // shadow on the floor
-    frames.push(c);
-  }
-  // 2: empty pilgrim cage (two tiles: anchor and west)
-  {
-    const c = cell();
-    c.rect(9, B - 26, 30, 26, P.dark1);
-    for (let x = 9; x <= 38; x += 4) c.vline(x, B - 26, 26, P.steel1);
-    c.hline(9, B - 26, 30, P.steel2);
-    c.hline(9, B - 1, 30, P.steel2);
-    c.rect(20, B - 6, 6, 3, P.stone3); // a dropped robe
-    c.outline(P.ink);
-    frames.push(c);
-  }
-  // 3: tallow blocks stacked on a pallet
-  {
-    const c = cell();
-    c.rect(22, B - 3, 20, 3, P.wood1);
-    for (const [x, y] of [[23, 11], [32, 11], [27, 19]]) {
-      c.rect(x, B - y, 9, 8, P.wax1);
-      c.hline(x, B - y, 9, P.wax2);
-      c.rect(x + 3, B - y + 3, 3, 2, P.stone3); // a stamped mark
-    }
-    c.outline(P.ink);
-    frames.push(c);
-  }
-  // 4: furnace (two tiles: anchor and west), tall, fire in its mouth
-  {
-    const c = cell();
-    c.rect(9, B - 36, 30, 36, P.wood1);
-    for (const y of [B - 30, B - 22, B - 14]) c.hline(9, y, 30, P.dark2);
-    c.rect(15, B - 14, 18, 12, P.ink);
-    c.rect(17, B - 11, 14, 9, P.ember);
-    c.rect(20, B - 9, 8, 6, P.flame2);
-    c.rect(20, B - 44, 8, 8, P.dark1); // flue
-    c.outline(P.ink);
-    frames.push(c);
-  }
-  // 5: iron pipe rising into the dark
-  {
-    const c = cell();
-    c.rect(28, B - 46, 8, 46, P.steel1);
-    c.vline(28, B - 46, 46, P.steel2);
-    for (const y of [B - 34, B - 12]) c.rect(26, y, 12, 3, P.stone1);
-    c.set(33, B - 20, P.ember);
-    c.outline(P.ink);
-    frames.push(c);
-  }
-  // 6: rack of pilgrim robes with name tags (two tiles: anchor and west)
-  {
-    const c = cell();
-    c.rect(9, B - 32, 30, 2, P.wood1);
-    c.rect(9, B - 32, 2, 32, P.wood1);
-    c.rect(37, B - 32, 2, 32, P.wood1);
-    for (let i = 0; i < 5; i++) {
-      const x = 12 + i * 5;
-      c.rect(x, B - 30, 4, 18, [P.stone3, P.teal2, P.stone2, P.wood2, P.stone3][i]);
-      c.rect(x + 1, B - 12, 2, 2, P.wax2); // tag
-    }
-    c.outline(P.ink);
-    frames.push(c);
-  }
-  // 7: the foreman's desk with a ledger (two tiles: anchor and west)
-  {
-    const c = cell();
-    c.rect(9, B - 14, 30, 5, P.wood2);
-    c.rect(10, B - 9, 3, 9, P.wood1);
-    c.rect(35, B - 9, 3, 9, P.wood1);
-    c.rect(16, B - 17, 10, 3, P.wax2); // open ledger
-    c.vline(21, B - 17, 3, P.stone3);
-    c.rect(30, B - 20, 2, 6, P.wax1); // candle
-    c.set(30, B - 21, P.flame2);
-    c.outline(P.ink);
-    frames.push(c);
-  }
-  // 8: lift cage platform (flat, two tiles: anchor and east) with its chains
-  {
-    const c = cell();
-    c.rect(24, B - 6, 32, 6, P.wood2);
-    for (let x = 26; x < 56; x += 5) c.vline(x, B - 6, 6, P.wood1);
-    c.hline(24, B - 6, 32, P.steel1);
-    c.hline(24, B - 1, 32, P.steel1);
-    for (const x of [25, 54]) for (let y = 0; y < B - 6; y += 3) c.rect(x, y, 1, 2, P.steel1);
-    frames.push(c);
-  }
-  // 9: heap of chain (flat)
-  {
-    const c = cell();
-    for (let i = 0; i < 9; i++) c.ellipse(24 + (i % 3) * 5 + (i > 5 ? 3 : 0), B - 2 - Math.floor(i / 3) * 2, 2.5, 1.5, P.steel1);
-    frames.push(c);
-  }
-  // 10: tallow cart (two tiles: anchor and west)
-  {
-    const c = cell();
-    c.rect(10, B - 14, 28, 9, P.wood1);
-    c.hline(10, B - 14, 28, P.wood2);
-    c.disc(16, B - 4, 4, P.dark2);
-    c.disc(32, B - 4, 4, P.dark2);
-    c.rect(12, B - 19, 24, 5, P.wax1); // heaped tallow
-    c.ellipse(20, B - 19, 5, 2, P.wax2);
-    c.outline(P.ink);
-    frames.push(c);
-  }
-  // 11: carters' toll booth (tall)
-  {
-    const c = cell();
-    c.rect(22, B - 30, 20, 30, P.wood1);
-    c.rect(20, B - 34, 24, 5, P.dark2); // roof
-    c.rect(26, B - 24, 12, 8, P.ink); // window
-    c.rect(28, B - 21, 2, 2, P.flame2);
-    c.outline(P.ink);
-    frames.push(c);
-  }
-  const deco = new Img(W * frames.length, H);
-  frames.forEach((f, i) => deco.blit(f, i * W, 0));
-  sheet('decor_works', deco, { cell: [W, H], pivot: [32, B], layer: 'single' });
 
   // ---- lever (16x24, pivot 8,23): frame 0 up (unpulled), 1 down
   const lever = new Img(32, 24);
@@ -3464,111 +3339,6 @@ function genMire() {
     },
   });
 
-  // ---- decor (64x64, pivot 32,62)
-  const W = 64;
-  const H = 64;
-  const B = 62;
-  const frames: Img[] = [];
-  const cell = () => new Img(W, H);
-  // 0: gravestone, leaning
-  {
-    const c = cell();
-    for (let y = 0; y < 16; y++) c.hline(26 + Math.floor(y / 6), B - 16 + y, 11, y < 3 ? P.stone3 : P.stone2);
-    c.ellipse(31.5, B - 16, 5.5, 3, P.stone3);
-    c.hline(29, B - 10, 5, P.stone1);
-    c.hline(29, B - 7, 4, P.stone1);
-    c.ellipse(32, B - 1, 7, 1.5, P.wax1); // wax pooled at its foot
-    c.outline(P.ink);
-    frames.push(c);
-  }
-  // 1: grave cross
-  {
-    const c = cell();
-    c.rect(31, B - 20, 3, 20, P.wood1);
-    c.rect(26, B - 16, 13, 3, P.wood1);
-    c.set(30, B - 22, P.wax1);
-    c.vline(33, B - 13, 4, P.wax1); // wax drips
-    c.outline(P.ink);
-    frames.push(c);
-  }
-  // 2: reeds (tall enough to hide in; see decor.json)
-  {
-    const c = cell();
-    const r = rng(5100);
-    for (let i = 0; i < 14; i++) {
-      const x = 24 + Math.floor(r() * 16);
-      const h = 14 + Math.floor(r() * 12);
-      line(c, x, B, x + (r() < 0.5 ? -2 : 2), B - h, i % 3 ? P.moss1 : P.moss2);
-      if (i % 4 === 0) c.rect(x + (r() < 0.5 ? -2 : 2) - 1, B - h - 3, 2, 4, P.wood1); // bulrush heads
-    }
-    frames.push(c);
-  }
-  // 3: root tangle (two tiles: anchor and west), tall
-  {
-    const c = cell();
-    const r = rng(5200);
-    for (let i = 0; i < 9; i++) {
-      const x0 = 10 + Math.floor(r() * 28);
-      line(c, x0, B, x0 + Math.floor(r() * 12) - 6, B - 18 - Math.floor(r() * 14), P.wood1);
-      line(c, x0 + 1, B, x0 + Math.floor(r() * 10) - 4, B - 12 - Math.floor(r() * 10), P.wax1);
-    }
-    c.ellipse(24, B - 2, 13, 3, P.wood1);
-    c.outline(P.ink);
-    frames.push(c);
-  }
-  // 4: weeping stone angel, tall
-  {
-    const c = cell();
-    c.rect(26, B - 6, 12, 6, P.stone1); // plinth
-    c.rect(28, B - 26, 8, 20, P.stone3); // robed body
-    c.ellipse(32, B - 29, 3.5, 4, P.stone3); // head bowed
-    c.rect(29, B - 27, 6, 2, P.stone4); // hands to the face
-    for (const s of [-1, 1]) for (let i = 0; i < 12; i++) c.hline(32 + s * (4 + Math.floor(i / 2)), B - 30 + i, 3, P.stone2); // wings folded
-    c.vline(31, B - 24, 5, P.wax1); // wax tears
-    c.outline(P.ink);
-    frames.push(c);
-  }
-  // 5: coffin, half sunk (flat)
-  {
-    const c = cell();
-    for (let y = 0; y < 6; y++) c.hline(20 + (y < 3 ? 3 - y : y - 3), B - 7 + y, 24 - 2 * Math.abs(y - 3), P.wood1);
-    c.hline(21, B - 5, 22, P.wood2);
-    c.ellipse(32, B - 1, 14, 2, P.wax1);
-    c.outline(P.ink);
-    frames.push(c);
-  }
-  // 6: drowned candles (floating stubs, flat)
-  {
-    const c = cell();
-    for (const [x, y] of [[24, 4], [30, 2], [36, 5], [40, 1]]) {
-      c.ellipse(x, B - y, 2, 1, P.wax1);
-      c.rect(x - 1, B - y - 3, 2, 3, P.wax2);
-      c.set(x - 1, B - y - 4, P.flame2);
-    }
-    frames.push(c);
-  }
-  // 7: dead willow, drooping (tall)
-  {
-    const c = cell();
-    c.rect(30, B - 26, 4, 26, P.wood1);
-    line(c, 32, B - 26, 18, B - 36, P.wood1);
-    line(c, 32, B - 24, 46, B - 34, P.wood1);
-    for (const x of [18, 22, 27, 38, 42, 46]) c.vline(x, B - 35 + (x % 3), 12 + (x % 5), P.moss1); // hanging moss
-    c.outline(P.ink);
-    frames.push(c);
-  }
-  // 8: sunken bell, rim above the wax (low)
-  {
-    const c = cell();
-    c.ellipse(32, B - 5, 11, 6, P.flame1);
-    c.ellipse(32, B - 7, 9, 3, P.ember);
-    c.ellipse(32, B - 1, 14, 2.5, P.wax1);
-    c.outline(P.ink);
-    frames.push(c);
-  }
-  const deco = new Img(W * frames.length, H);
-  frames.forEach((f, i) => deco.blit(f, i * W, 0));
-  sheet('decor_mire', deco, { cell: [W, H], pivot: [32, B], layer: 'single' });
 
   // ---- creatures
   const P7 = phased7();
@@ -3860,46 +3630,56 @@ function genWorldBits() {
   prop(
     'prop_crate',
     c => {
-      c.rect(2, 4, 12, 10, P.wood1);
-      c.rect(2, 3, 12, 3, P.wood2);
-      for (const y of [8, 11]) c.hline(3, y, 10, P.dark2);
-      c.vline(2, 4, 10, P.wood2);
-      c.set(12, 9, P.steel1);
+      boards(c, 2, 5, 12, 9, WOOD, false, 3, 7);
+      box(c, 2, 3, 12, 3, WOOD); // lid
+      c.vline(2, 3, 11, WOOD.c3); // corner posts
+      c.vline(13, 3, 11, WOOD.c0);
+      line(c, 3, 13, 12, 6, WOOD.c2); // cross brace
+      c.set(12, 9, IRON.c3); // nail heads
+      c.set(3, 9, IRON.c2);
+      c.set(7, 4, P.dark2); // a stencilled mark
+      c.set(8, 4, P.dark2);
     },
     c => {
-      c.rect(2, 12, 5, 2, P.wood1);
-      c.rect(8, 11, 6, 2, P.wood2);
+      c.rect(2, 12, 5, 2, WOOD.c1);
+      c.hline(2, 12, 5, WOOD.c3);
+      c.rect(8, 11, 6, 2, WOOD.c2);
+      line(c, 4, 10, 7, 12, WOOD.c2); // splinters
       c.rect(5, 13, 4, 1, P.dark2);
+      c.set(12, 10, IRON.c2);
     },
   );
   prop(
     'prop_pot',
     c => {
-      c.ellipse(8, 9.5, 5, 4.5, P.wood2);
-      c.ellipse(6.5, 8, 2, 2, P.flame1);
-      c.rect(6, 3, 4, 2, P.wood2);
-      c.hline(5, 3, 6, P.wood1);
-      c.hline(4, 11, 8, P.wood1);
+      blob(c, 8, 9.5, 5, 4.5, WOOD);
+      c.hline(4, 9, 9, P.flame1); // glazed band
+      c.set(5, 9, P.flame2);
+      c.rect(6, 3, 4, 2, WOOD.c2); // neck
+      c.hline(5, 3, 6, WOOD.c3);
+      c.hline(6, 4, 4, WOOD.c0);
+      c.hline(4, 13, 8, WOOD.c0);
+      c.set(10, 7, P.ink); // a chip
     },
     c => {
-      c.rect(3, 12, 3, 2, P.wood2);
-      c.rect(9, 11, 4, 2, P.wood2);
-      c.set(7, 13, P.wood1);
+      blob(c, 5, 12, 2.5, 1.5, WOOD);
+      blob(c, 11, 12, 3, 1.5, WOOD);
+      c.set(8, 13, P.flame1);
+      c.set(7, 13, WOOD.c0);
     },
   );
   prop(
     'prop_candles',
     c => {
       c.ellipse(8, 13, 6, 2, P.wax1);
-      for (const [x, h] of [[4, 5], [7, 8], [11, 6]] as const) {
-        c.rect(x, 13 - h, 2, h, P.wax2);
-        c.set(x, 12 - h, P.flame2);
-        c.set(x + 1, 11 - h, P.flame1);
-      }
+      c.ellipse(7, 12.5, 4.5, 1.2, P.wax2);
+      for (const [x, h] of [[4, 5], [7, 8], [11, 6]] as const) candleAt(c, x, 13, h);
     },
     c => {
       c.ellipse(8, 13, 6, 2, P.wax1);
       c.rect(5, 11, 5, 2, P.wax2);
+      c.hline(5, 12, 5, P.wax1);
+      c.set(11, 12, P.wax2); // a snapped stub
     },
   );
 
@@ -3909,22 +3689,31 @@ function genWorldBits() {
   {
     const c = new Img(16, 32);
     c.rect(0, 0, 16, 16, P.dark1); // cap above
-    c.hline(0, 0, 16, P.stone3);
-    c.rect(0, 16, 16, 16, P.stone3); // stone frame
-    c.rect(2, 17, 12, 13, P.wood1); // planks
-    for (const x of [5, 8, 11]) c.vline(x, 17, 13, P.wood2);
-    for (const y of [20, 26]) c.hline(2, y, 12, P.dark2);
-    c.set(11, 23, P.flame1); // ring handle
+    c.hline(0, 0, 16, P.stone4);
+    c.hline(0, 1, 16, P.stone3);
+    box(c, 0, 16, 16, 16, STN); // stone frame
+    c.hline(1, 16, 14, P.stone4); // arch keystone line
+    boards(c, 2, 18, 12, 12, DWOOD, true, 3, 17); // planks
+    c.rect(2, 17, 12, 1, P.ink);
+    for (const y of [20, 26]) {
+      c.hline(2, y, 12, IRON.c1); // iron bands
+      c.set(2, y, IRON.c3);
+      c.set(13, y, IRON.c3);
+    }
+    c.disc(11, 23, 1.2, BRONZE.c1); // ring handle
+    c.set(11, 23, P.ink);
     c.rect(0, 30, 16, 2, P.dark2);
     door.blit(c, 0, 0);
   }
   {
     const c = new Img(16, 32);
     c.rect(0, 16, 16, 16, P.dark1);
-    c.rect(4, 16, 8, 16, P.wood1);
-    c.vline(4, 16, 16, P.wood2);
-    for (const y of [19, 28]) c.hline(4, y, 8, P.dark2);
-    c.set(10, 24, P.flame1);
+    box(c, 4, 16, 8, 16, DWOOD);
+    for (const y of [19, 28]) {
+      c.hline(4, y, 8, IRON.c1);
+      c.set(4, y, IRON.c3);
+    }
+    c.set(10, 24, BRONZE.c2);
     door.blit(c, 16, 0);
   }
   sheet('door', door, { cell: [16, 32], pivot: [8, 32], layer: 'single' });
@@ -4051,7 +3840,7 @@ const STONE = {
 
 function genTiles() {
   const T = 16;
-  const img = new Img(T * 8, T * 6);
+  const img = new Img(T * 8, T * 7);
   const at = (idx: number) => [(idx % 8) * T, Math.floor(idx / 8) * T] as const;
 
   /** One flagstone occupying [x, y, w, h] of a tile, its mortar joint on its top and left edges. */
@@ -4255,6 +4044,24 @@ function genTiles() {
   front(14, 2);
   front(15, 3);
 
+  // 48-51: the same wall where it's damp: ivy hanging down from the wall top, moss grown up its foot
+  const ivyFront = (idx: number, v: number, vines: [number, number][], seed: number) => {
+    front(idx, v);
+    const [ox, oy] = at(idx);
+    const r = rng(seed);
+    for (let x = 0; x < T; x++) {
+      if (r() < 0.55) img.set(ox + x, oy, r() < 0.5 ? P.moss2 : P.moss1); // leaves spilling over the lip
+      if (r() < 0.3) img.set(ox + x, oy + 1, P.moss1);
+      if (r() < 0.45) img.set(ox + x, oy + 13, r() < 0.5 ? P.moss1 : STONE.mossDark); // moss at the foot
+      if (r() < 0.3) img.set(ox + x, oy + 12, P.moss1);
+    }
+    for (const [x, len] of vines) ivy(img, ox + x, oy + 1, len, seed + x);
+  };
+  ivyFront(48, 0, [[3, 10], [11, 7]], 4801);
+  ivyFront(49, 0, [[1, 12], [4, 8], [6, 13], [13, 9]], 4901);
+  ivyFront(50, 1, [[12, 11], [14, 6]], 5001);
+  ivyFront(51, 0, [[8, 13]], 5101);
+
   // Wall tops (16 masks: which sides border open floor, N=1 E=2 S=4 W=8). A dark flagged walkway,
   // with a pale coping stone wherever the wall edge meets the room.
   for (let mask = 0; mask < 16; mask++) {
@@ -4306,7 +4113,9 @@ function genTiles() {
       // mostly plain slabs; split slabs now and then; cracks, wax and grave slabs are rare finds
       floor: [...Array(9).fill(0), ...Array(7).fill(1), ...Array(7).fill(2), 3, 3, 4, 4, 5, 41, 41, 6, 7, 40],
       floor_moss: [8, 9, 42, 43, 43, 44],
-      wall_front: [12, 12, 12, 12, 12, 13, 12, 12, 14, 15],
+      wall_front: [12, 12, 12, 12, 12, 13, 12, 12, 14, 15, 12, 51],
+      // walls with moss at their foot grow ivy (see TileGrid: wall faces by nearby floor)
+      wall_front_floor_moss: [48, 49, 50, 49, 51],
       wall_cap: Array.from({ length: 16 }, (_, i) => 16 + i),
       rock: [10, 10, 11],
       shade: Array.from({ length: 8 }, (_, i) => 32 + i),
@@ -4355,172 +4164,6 @@ function line(img: Img, x0: number, y0: number, x1: number, y1: number, c: RGBA)
 
 // ---------------------------------------------------------------- Wick's Rest decor (64x64 cells, pivot 32,62)
 // Multi-tile pieces are drawn so they cover exactly their blocking tiles (see data/decor.json).
-function genHubDecor() {
-  const W = 64;
-  const H = 64;
-  const B = 62;
-  const frames: Img[] = [];
-  const cell = () => new Img(W, H);
-
-  // 0: merchant stall: counter three tiles wide under a striped awning
-  {
-    const c = cell();
-    c.rect(10, B - 30, 2, 30, P.wood1);
-    c.rect(52, B - 30, 2, 30, P.wood1);
-    c.rect(9, B - 12, 46, 12, P.wood2); // counter
-    c.hline(9, B - 12, 46, P.wax1);
-    for (let x = 12; x < 54; x += 8) c.vline(x, B - 11, 11, P.wood1);
-    for (let i = 0; i < 6; i++) c.rect(7 + i * 8, B - 38, 8, 7, i % 2 ? P.wax1 : P.ember); // awning
-    for (let i = 0; i < 6; i++) c.set(10 + i * 8, B - 31, i % 2 ? P.wax1 : P.ember);
-    c.rect(16, B - 16, 5, 4, P.stone3); // wares: a jar, a pouch, powder horn
-    c.disc(30, B - 14, 2.5, P.wood1);
-    c.rect(40, B - 15, 7, 3, P.wax2);
-    c.outline(P.ink);
-    frames.push(c);
-  }
-  // 1: campfire: stone ring, logs, flame
-  {
-    const c = cell();
-    c.ellipse(32, B - 3, 9, 4, P.stone2);
-    c.ellipse(32, B - 3, 6, 2.5, P.dark1);
-    line(c, 26, B - 2, 38, B - 6, P.wood1);
-    line(c, 26, B - 6, 38, B - 2, P.wood1);
-    c.ellipse(32, B - 8, 4, 6, P.flame1);
-    c.ellipse(32, B - 7, 2.5, 4, P.flame2);
-    c.set(32, B - 15, P.flame1);
-    c.outline(P.ink);
-    frames.push(c);
-  }
-  // 2: well with a little roof
-  {
-    const c = cell();
-    c.ellipse(32, B - 6, 10, 6, P.stone2);
-    c.ellipse(32, B - 8, 7, 3.5, P.dark1);
-    c.rect(22, B - 28, 2, 20, P.wood1);
-    c.rect(40, B - 28, 2, 20, P.wood1);
-    c.rect(18, B - 34, 28, 6, P.wood2); // roof
-    c.hline(18, B - 34, 28, P.wax1);
-    c.hline(24, B - 22, 16, P.wood1); // winch
-    c.vline(32, B - 21, 8, P.stone3); // rope
-    c.rect(30, B - 14, 4, 4, P.wood1); // bucket
-    c.outline(P.ink);
-    frames.push(c);
-  }
-  // 3: pilgrim tent (two tiles: the anchor and the one west)
-  {
-    const c = cell();
-    for (let y = 0; y < 22; y++) c.hline(24 - Math.round(y * 0.7) - 8, B - 22 + y, Math.round(y * 1.4) + 2 + 14, y % 5 === 0 ? P.wax2 : P.wax1);
-    c.rect(20, B - 12, 8, 12, P.dark1); // opening
-    c.vline(24, B - 26, 5, P.wood1);
-    c.outline(P.ink);
-    frames.push(c);
-  }
-  // 4: fence segment
-  {
-    const c = cell();
-    c.rect(24, B - 12, 2, 12, P.wood1);
-    c.rect(38, B - 12, 2, 12, P.wood1);
-    c.rect(24, B - 10, 16, 2, P.wood2);
-    c.rect(24, B - 5, 16, 2, P.wood2);
-    c.outline(P.ink);
-    frames.push(c);
-  }
-  // 5: lantern post
-  {
-    const c = cell();
-    c.rect(31, B - 30, 2, 30, P.wood1);
-    c.rect(31, B - 30, 8, 2, P.wood1);
-    c.rect(35, B - 27, 5, 6, P.dark1);
-    c.rect(36, B - 26, 3, 4, P.flame2);
-    c.ellipse(32, B - 1, 3, 1, P.dark2);
-    c.outline(P.ink);
-    frames.push(c);
-  }
-  // 6: hand cart (two tiles: anchor and west)
-  {
-    const c = cell();
-    c.rect(10, B - 14, 28, 9, P.wood2);
-    c.hline(10, B - 14, 28, P.wax1);
-    for (const x of [16, 24, 32]) c.vline(x, B - 13, 8, P.wood1);
-    c.disc(16, B - 4, 4, P.wood1);
-    c.disc(16, B - 4, 1.5, P.steel1);
-    line(c, 38, B - 10, 44, B - 4, P.wood1); // handle
-    c.rect(14, B - 18, 8, 4, P.wax1); // sacks
-    c.rect(24, B - 17, 6, 3, P.wood1);
-    c.outline(P.ink);
-    frames.push(c);
-  }
-  // 7: chapel altar with candles (two tiles: anchor and west)
-  {
-    const c = cell();
-    c.rect(10, B - 14, 28, 14, P.stone2);
-    c.rect(10, B - 14, 28, 3, P.stone3);
-    c.rect(18, B - 10, 12, 6, P.blood1); // altar cloth
-    for (const [x, h] of [[13, 6], [17, 9], [30, 7], [34, 5]]) {
-      c.rect(x, B - 14 - h, 2, h, P.wax2);
-      c.set(x, B - 15 - h, P.flame2);
-    }
-    c.outline(P.ink);
-    frames.push(c);
-  }
-  // 8: prayer bench (two tiles: anchor and west)
-  {
-    const c = cell();
-    c.rect(11, B - 9, 26, 3, P.wood2);
-    c.rect(11, B - 16, 26, 3, P.wood1); // backrest
-    for (const x of [12, 34]) c.rect(x, B - 16, 2, 16, P.wood1);
-    c.outline(P.ink);
-    frames.push(c);
-  }
-  // 9: bedroll (flat)
-  {
-    const c = cell();
-    c.rect(22, B - 8, 20, 7, P.teal2);
-    c.rect(22, B - 8, 6, 7, P.wax1); // pillow end
-    c.hline(28, B - 5, 14, P.teal1);
-    c.outline(P.ink);
-    frames.push(c);
-  }
-  // 10: bookshelf against a wall (two tiles: anchor and west)
-  {
-    const c = cell();
-    c.rect(10, B - 34, 28, 34, P.wood1);
-    for (const y of [B - 26, B - 17, B - 8]) c.hline(11, y, 26, P.dark1);
-    const r = rng(9090);
-    for (const y0 of [B - 33, B - 25, B - 16]) for (let x = 12; x < 36; x += 3) c.rect(x, y0 + Math.floor(r() * 2), 2, 7, [P.blood1, P.teal2, P.wax1, P.wood2][Math.floor(r() * 4)]);
-    c.outline(P.ink);
-    frames.push(c);
-  }
-  // 11: ruined timber wall (three tiles)
-  {
-    const c = cell();
-    c.rect(8, B - 8, 48, 8, P.stone2); // stone footing
-    c.hline(8, B - 8, 48, P.stone3);
-    for (const x of [9, 30, 51]) c.rect(x, B - 44 + (x === 51 ? 16 : 0), 4, 36 - (x === 51 ? 16 : 0), P.wood1); // posts, one broken
-    c.rect(13, B - 38, 17, 30, P.wax1); // plaster panel
-    line(c, 13, B - 38, 29, B - 9, P.wood1); // brace
-    c.rect(34, B - 26, 17, 18, P.wax1); // lower panel, the top gone
-    c.rect(38, B - 22, 6, 6, P.dark1); // hole
-    c.rect(9, B - 44, 24, 3, P.wood2); // top beam, snapped
-    c.outline(P.ink);
-    frames.push(c);
-  }
-  // 12: notice board
-  {
-    const c = cell();
-    c.rect(25, B - 24, 2, 24, P.wood1);
-    c.rect(37, B - 24, 2, 24, P.wood1);
-    c.rect(23, B - 26, 18, 12, P.wood2);
-    c.rect(26, B - 24, 5, 6, P.wax2);
-    c.rect(33, B - 23, 5, 7, P.wax1);
-    c.outline(P.ink);
-    frames.push(c);
-  }
-
-  const img = new Img(W * frames.length, H);
-  frames.forEach((f, i) => img.blit(f, i * W, 0));
-  sheet('decor_hub', img, { cell: [W, H], pivot: [32, B], layer: 'single' });
-}
 
 // ---------------------------------------------------------------- NPCs (32x32, pivot 16,28) and portraits (32x32)
 // NPC frames: 0-1 idle (breathing), 2-3 talking (mouth open / closed). Skin is pale wax: everyone here is
@@ -4715,34 +4358,44 @@ function genChest() {
   const W = 20;
   const H = 18;
   const body = (c: Img) => {
-    c.rect(2, 9, 16, 7, P.wood1);
-    c.hline(2, 12, 16, P.wood2);
-    c.vline(5, 9, 7, P.steel1);
-    c.vline(14, 9, 7, P.steel1);
-    c.hline(2, 15, 16, P.dark2);
+    boards(c, 2, 9, 16, 7, WOOD, false, 3, 5);
+    for (const x of [5, 14]) {
+      c.vline(x, 9, 7, IRON.c2); // iron straps
+      c.set(x, 10, IRON.c3);
+    }
+    c.vline(2, 9, 7, WOOD.c3);
+    c.vline(17, 9, 7, WOOD.c0);
+    c.hline(2, 15, 16, WOOD.c0);
   };
   const frames: Img[] = [];
   for (let f = 0; f < 5; f++) {
     const c = new Img(W, H);
     body(c);
     if (f === 0) {
-      c.rect(2, 5, 16, 4, P.wood2); // lid
-      c.hline(3, 4, 14, P.wood2);
-      c.vline(5, 4, 5, P.steel1);
-      c.vline(14, 4, 5, P.steel1);
-      c.rect(9, 8, 2, 3, P.flame2); // lock
+      box(c, 2, 5, 16, 4, WOOD); // lid, rounded
+      c.hline(3, 4, 14, WOOD.c3);
+      for (const x of [5, 14]) {
+        c.vline(x, 4, 5, IRON.c2);
+        c.set(x, 4, IRON.c3);
+      }
+      box(c, 9, 8, 2, 3, BRONZE); // lock
+      c.set(9, 9, P.ink);
     } else {
       const lift = [0, 2, 4, 5, 5][f];
       const inside = f === 4 ? P.dark1 : f === 1 ? P.flame1 : P.flame2;
       c.rect(3, 9, 14, 2, inside); // the open mouth of the chest
-      c.rect(2, 8 - lift, 16, Math.max(1, 5 - lift), P.wood1); // lid tipping back: seen from below, shorter
-      c.hline(3, 7 - lift, 14, P.wood2);
+      c.rect(2, 8 - lift, 16, Math.max(1, 5 - lift), WOOD.c1); // lid tipping back: seen from below, shorter
+      c.hline(3, 7 - lift, 14, WOOD.c3);
+      c.hline(2, 8 - lift + Math.max(1, 5 - lift) - 1, 16, WOOD.c0);
       if (f >= 2 && f <= 3) {
         c.rect(5, 6 - lift, 10, lift + 2, withAlpha(P.wax2, 150)); // light spilling up
         c.set(10, 1, P.wax2);
+        c.set(7, 2, P.flame2);
+        c.set(13, 3, P.flame2);
       }
     }
     c.outline(P.ink);
+    finish(c, 10, 16, 9, 1.5);
     frames.push(c);
   }
   // Frames 5-9: the same five, half-buried: sunk 4 px, with a mound of broken floor over the bottom.
@@ -5032,182 +4685,6 @@ function genRoadTiles() {
   });
 }
 
-// ---------------------------------------------------------------- Penance Road decor (64x48 cells, pivot = ground centre)
-function genRoadDecor() {
-  const W = 64;
-  const H = 48;
-  const frames: Img[] = [];
-  const cell = () => new Img(W, H);
-  const B = 46; // ground line
-
-  // 0: the prison wagon, overturned on its side. Floor planks face us; the barred side faces up.
-  {
-    const c = cell();
-    c.rect(6, B - 20, 52, 20, P.wood1); // floor boards (now vertical)
-    for (let x = 8; x < 58; x += 6) c.vline(x, B - 20, 20, P.dark2);
-    c.hline(6, B - 20, 52, P.wood2);
-    c.hline(6, B - 11, 52, P.wood2);
-    c.rect(6, B - 32, 52, 12, P.dark1); // the cage side seen from above, dark inside
-    for (let x = 9; x < 57; x += 5) c.vline(x, B - 32, 12, P.steel1); // bars
-    c.hline(6, B - 32, 52, P.wood2);
-    c.rect(40, B - 32, 10, 12, P.dark1); // broken bars: the way you crawled out
-    line(c, 40, B - 31, 44, B - 24, P.steel1);
-    for (const [cx, cy] of [[16, B - 8], [48, B - 8]]) {
-      c.disc(cx, cy, 7, P.wood2); // wheels, axle side toward us
-      c.disc(cx, cy, 5, P.wood1);
-      line(c, cx - 5, cy, cx + 5, cy, P.wood2);
-      line(c, cx, cy - 5, cx, cy + 5, P.wood2);
-      c.disc(cx, cy, 1.5, P.steel1);
-    }
-    c.outline(P.ink);
-    frames.push(c);
-  }
-  // 1: dead horse
-  {
-    const c = cell();
-    c.ellipse(32, B - 6, 15, 6, P.wood2);
-    c.ellipse(15, B - 5, 6, 4, P.wood2); // head
-    c.hline(14, B - 9, 10, P.dark2); // mane
-    for (const x of [38, 42, 46]) line(c, x, B - 3, x + 4, B + 1, P.wood1);
-    c.set(12, B - 6, P.ink);
-    c.outline(P.ink);
-    frames.push(c);
-  }
-  // 2: dead guard (flat) with blood
-  {
-    const c = cell();
-    c.ellipse(34, B - 4, 11, 3, P.blood1);
-    c.rect(24, B - 7, 12, 5, P.steel1); // breastplate
-    c.disc(40, B - 5, 3, P.steel2); // helmet
-    c.rect(18, B - 6, 6, 3, P.dark2); // legs
-    c.outline(P.ink);
-    frames.push(c);
-  }
-  // 3: boulder
-  {
-    const c = cell();
-    c.ellipse(32, B - 8, 11, 9, P.stone2);
-    c.ellipse(29, B - 11, 6, 4, P.stone3);
-    c.set(26, B - 13, P.stone4);
-    c.hline(24, B - 1, 16, P.stone1);
-    c.outline(P.ink);
-    frames.push(c);
-  }
-  // 4: dead tree
-  {
-    const c = cell();
-    c.rect(30, B - 30, 5, 30, P.wood1);
-    c.vline(31, B - 28, 26, P.dark2);
-    line(c, 32, B - 22, 20, B - 36, P.wood1);
-    line(c, 33, B - 26, 46, B - 42, P.wood1);
-    line(c, 20, B - 36, 16, B - 38, P.wood1);
-    line(c, 38, B - 33, 44, B - 30, P.wood1);
-    line(c, 32, B - 30, 30, B - 44, P.wood1);
-    c.outline(P.ink);
-    frames.push(c);
-  }
-  // 5: loose wheel and planks (flat)
-  {
-    const c = cell();
-    c.ellipse(26, B - 4, 7, 3, P.wood2);
-    c.ellipse(26, B - 4, 5, 2, P.wood1);
-    c.rect(36, B - 5, 12, 2, P.wood2);
-    c.rect(38, B - 2, 9, 2, P.wood1);
-    c.outline(P.ink);
-    frames.push(c);
-  }
-  // 6: signpost pointing the way to the Abbey
-  {
-    const c = cell();
-    c.rect(31, B - 26, 2, 26, P.wood1);
-    c.rect(24, B - 26, 18, 6, P.wood2);
-    c.set(42, B - 24, P.wood2);
-    c.set(42, B - 23, P.wood2);
-    c.hline(26, B - 23, 12, P.wood1);
-    c.outline(P.ink);
-    frames.push(c);
-  }
-  // 7: roadside candle shrine (a small cairn with wax stubs)
-  {
-    const c = cell();
-    c.ellipse(32, B - 5, 8, 5, P.stone2);
-    c.ellipse(32, B - 9, 5, 3, P.stone3);
-    for (const [x, h] of [[29, 5], [32, 7], [35, 4]]) {
-      c.rect(x, B - 11 - h, 2, h, P.wax1);
-      c.set(x, B - 12 - h, P.flame2);
-    }
-    c.outline(P.ink);
-    frames.push(c);
-  }
-  // 8: gibbet: a post with an arm and a hanging iron cage
-  {
-    const c = cell();
-    c.rect(24, B - 40, 3, 40, P.wood1);
-    c.rect(24, B - 40, 18, 3, P.wood1);
-    c.vline(38, B - 37, 5, P.steel1); // chain
-    c.rect(34, B - 32, 9, 13, P.dark1);
-    for (let x = 34; x <= 42; x += 2) c.vline(x, B - 32, 13, P.steel1);
-    c.hline(34, B - 32, 9, P.steel1);
-    c.hline(34, B - 20, 9, P.steel1);
-    c.rect(37, B - 27, 3, 4, P.wax1); // something waxy inside
-    c.outline(P.ink);
-    frames.push(c);
-  }
-  // 9: large rock (two tiles wide, tall enough to hide behind)
-  {
-    const c = cell();
-    // Drawn 8 px left of the pivot so it covers exactly its two blocking tiles (the anchor and the one west).
-    c.ellipse(18, B - 11, 11, 11, P.stone2);
-    c.ellipse(31, B - 8, 9, 8, P.stone2);
-    c.ellipse(15, B - 15, 7, 5, P.stone3);
-    c.ellipse(30, B - 11, 5, 3, P.stone3);
-    c.set(12, B - 18, P.stone4);
-    c.set(28, B - 13, P.stone4);
-    c.hline(9, B - 1, 30, P.stone1);
-    c.ellipse(22, B - 3, 3, 2, P.moss1);
-    c.outline(P.ink);
-    frames.push(c);
-  }
-  // 10: ruined gate pillar
-  {
-    const c = cell();
-    c.rect(26, B - 36, 12, 36, P.stone2);
-    for (const y of [B - 30, B - 22, B - 14, B - 6]) c.hline(26, y, 12, P.stone1);
-    c.vline(31, B - 30, 8, P.stone1);
-    c.vline(34, B - 14, 8, P.stone1);
-    c.rect(26, B - 36, 12, 2, P.stone3);
-    for (const [x, y] of [[26, B - 37], [30, B - 38], [35, B - 37]]) c.rect(x, y, 3, 2, P.stone3); // broken top
-    c.vline(26, B - 34, 34, P.stone3);
-    c.ellipse(30, B - 2, 5, 2, P.moss1);
-    c.outline(P.ink);
-    frames.push(c);
-  }
-  // 11: fallen lintel: the gate's beam lying across the road (low cover, three tiles)
-  {
-    const c = cell();
-    c.rect(9, B - 10, 46, 10, P.stone2);
-    c.rect(9, B - 10, 46, 3, P.stone3);
-    for (const x of [21, 36, 47]) c.vline(x, B - 7, 7, P.stone1);
-    c.rect(18, B - 9, 12, 2, P.wax1); // carved letters, half worn away
-    c.outline(P.ink);
-    frames.push(c);
-  }
-  // 12: tall grass tuft (decoration only)
-  {
-    const c = cell();
-    const r = rng(4242);
-    for (let i = 0; i < 9; i++) {
-      const x = 26 + Math.floor(r() * 12);
-      const h = 4 + Math.floor(r() * 6);
-      line(c, x, B - 1, x + (r() < 0.5 ? -1 : 1), B - h, i % 3 ? P.moss1 : P.moss2);
-    }
-    frames.push(c);
-  }
-
-  const img = new Img(W * frames.length, H);
-  frames.forEach((f, i) => img.blit(f, i * W, 0));
-  sheet('decor_road', img, { cell: [W, H], pivot: [32, B], layer: 'single' });
-}
 
 // =============================================================== THE NAVE: THE CHANDLER
 // --- The Chandler (64x64): head of the Abbey. Tall and gaunt in heavy cream-and-red vestments with gold
@@ -5698,59 +5175,1137 @@ function genNave() {
   bf.outline(P.ink);
   sheet('black_flame', bf, { cell: [8, 10], pivot: [4, 6], layer: 'fx' });
 
-  // ---- Nave decor (64x64, pivot 32,62)
+}
+
+// =============================================================== SCENERY (decor sheets)
+// Every decor sheet is drawn here with one toolkit: shaded blocks and blobs lit from the top left, planks,
+// flames, candles, moss and ivy, and a soft contact shadow under each object so it sits on the ground.
+type Ramp = { c0: RGBA; c1: RGBA; c2: RGBA; c3: RGBA };
+const WOOD: Ramp = { c0: hex('#2e1d17'), c1: P.wood1, c2: P.wood2, c3: hex('#a47a52') };
+const DWOOD: Ramp = { c0: hex('#1f1512'), c1: mix(P.wood1, P.dark2, 0.4), c2: P.wood1, c3: P.wood2 };
+const STN: Ramp = { c0: P.stone1, c1: P.stone2, c2: P.stone3, c3: P.stone4 };
+const IRON: Ramp = { c0: hex('#3c4350'), c1: hex('#5d6776'), c2: P.steel1, c3: P.steel2 };
+const BRONZE: Ramp = { c0: mix(P.ember, P.wood1, 0.5), c1: P.ember, c2: P.flame1, c3: P.flame2 };
+const CLOTH_RED: Ramp = { c0: hex('#3a0d14'), c1: P.blood1, c2: P.blood2, c3: hex('#cf5058') };
+const CANVAS: Ramp = { c0: mix(P.wax1, P.wood1, 0.55), c1: mix(P.wax1, P.wood2, 0.3), c2: P.wax1, c3: P.wax2 };
+const BONE_R: Ramp = { c0: mix(P.stone3, P.wood1, 0.3), c1: mix(P.wax1, P.stone3, 0.4), c2: P.wax1, c3: P.wax2 };
+const GOLD0 = mix(P.flame1, P.wood1, 0.45);
+
+/** A block lit from the top left: fill, lit top and left edges, dark right and bottom edges. */
+function box(c: Img, x: number, y: number, w: number, h: number, r: Ramp) {
+  c.rect(x, y, w, h, r.c1);
+  c.hline(x, y, w, r.c3);
+  c.vline(x, y + 1, h - 1, r.c2);
+  c.vline(x + w - 1, y + 1, h - 1, r.c0);
+  c.hline(x + 1, y + h - 1, w - 1, r.c0);
+}
+/** A rounded mass lit from the top left. */
+function blob(c: Img, cx: number, cy: number, rx: number, ry: number, r: Ramp) {
+  c.ellipse(cx, cy, rx, ry, r.c0);
+  c.ellipse(cx - rx * 0.12, cy - ry * 0.12, rx * 0.88, ry * 0.86, r.c1);
+  c.ellipse(cx - rx * 0.3, cy - ry * 0.32, rx * 0.55, ry * 0.5, r.c2);
+  c.ellipse(cx - rx * 0.45, cy - ry * 0.5, Math.max(0.8, rx * 0.18), Math.max(0.8, ry * 0.16), r.c3);
+}
+/** Boards: horizontal (default) or vertical, with gaps, grain and the odd nail. */
+function boards(c: Img, x: number, y: number, w: number, h: number, r: Ramp, vertical = false, size = 4, seed = 1) {
+  const rr = rng(seed);
+  c.rect(x, y, w, h, r.c1);
+  const n = Math.ceil((vertical ? w : h) / size);
+  for (let i = 0; i < n; i++) {
+    const t = [0, 0.25, -0.2, 0.1][(i + seed) % 4];
+    const col = t >= 0 ? mix(r.c1, r.c2, t + 0.3) : mix(r.c1, r.c0, -t);
+    if (vertical) {
+      const bx = x + i * size;
+      const bw = Math.min(size, x + w - bx);
+      c.rect(bx, y, bw, h, col);
+      c.vline(bx, y, h, mix(col, r.c3, 0.4));
+      c.vline(bx + bw - 1, y, h, r.c0);
+      for (let k = 0; k < 2; k++) c.vline(bx + 1 + Math.floor(rr() * Math.max(1, bw - 2)), y + 1 + rr() * (h - 4), 2 + rr() * 3, mix(col, r.c0, 0.5));
+    } else {
+      const by = y + i * size;
+      const bh = Math.min(size, y + h - by);
+      c.rect(x, by, w, bh, col);
+      c.hline(x, by, w, mix(col, r.c3, 0.4));
+      c.hline(x, by + bh - 1, w, r.c0);
+      for (let k = 0; k < 2; k++) c.hline(x + 1 + rr() * (w - 5), by + 1 + Math.floor(rr() * Math.max(1, bh - 2)), 2 + rr() * 4, mix(col, r.c0, 0.5));
+    }
+  }
+}
+/** A small lit flame; size 1..3. */
+function flameAt(c: Img, x: number, y: number, size = 1) {
+  if (size >= 2) {
+    c.vline(x, y - 3, 3, P.flame1);
+    c.set(x - 1, y - 1, P.flame1);
+    c.set(x + 1, y - 1, P.ember);
+    c.vline(x, y - 2, 2, P.flame2);
+    c.set(x, y - 4, mix(P.flame1, P.ember, 0.5));
+    if (size >= 3) {
+      c.set(x - 1, y - 2, P.flame2);
+      c.set(x + 1, y - 3, P.flame1);
+      c.set(x, y - 5, P.ember);
+    }
+  } else {
+    c.set(x, y - 1, P.flame2);
+    c.set(x, y - 2, P.flame1);
+  }
+}
+/** A candle standing on `base`, h tall, lit. */
+function candleAt(c: Img, x: number, base: number, h: number, lit = true) {
+  c.vline(x, base - h, h, P.wax2);
+  c.vline(x + 1, base - h, h, P.wax1);
+  c.set(x - 1, base - 1, P.wax1); // wax pooled at the foot
+  c.set(x + 2, base - 1, P.wax1);
+  if (h > 3) c.set(x + 1, base - h + 1, P.wax2); // a run of wax
+  c.set(x, base - h - 1, P.ink);
+  if (lit) flameAt(c, x, base - h - 1);
+}
+/** Moss creeping along the top of something, from x to x+w at height y. */
+function mossTop(c: Img, x: number, y: number, w: number, seed: number) {
+  const r = rng(seed);
+  for (let i = 0; i < w; i++) {
+    if (r() < 0.25) continue;
+    c.set(x + i, y, r() < 0.5 ? P.moss1 : P.moss2);
+    if (r() < 0.4) c.set(x + i, y + 1, P.moss1);
+    if (r() < 0.15) c.set(x + i, y - 1, mix(P.moss2, P.wax1, 0.3));
+  }
+}
+/** Ivy: a vine hanging from (x, y) down `len` px, heart-shaped leaves either side, lit on their upper edge. */
+function ivy(c: Img, x: number, y: number, len: number, seed: number) {
+  const r = rng(seed);
+  const dark = mix(P.moss1, P.ink, 0.3);
+  const lit = mix(P.moss2, P.wax1, 0.3);
+  let vx = x;
+  for (let i = 0; i < len; i++) {
+    c.set(vx, y + i, dark);
+    if (i % 2 === 1 && r() < 0.85) {
+      const side = (i >> 1) % 2 ? -1 : 1;
+      c.set(vx + side, y + i, P.moss2);
+      c.set(vx + side * 2, y + i, P.moss1);
+      c.set(vx + side, y + i + 1, P.moss1);
+      c.set(vx + side, y + i - 1, lit);
+    }
+    if (r() < 0.18) vx += r() < 0.5 ? -1 : 1;
+  }
+  c.set(vx, y + len, P.moss2); // the growing tip
+}
+/** Lay a soft contact shadow on the ground under an (already outlined) object, only where nothing is drawn. */
+function finish(c: Img, cx: number, gy: number, rx: number, ry = 2.5) {
+  for (let y = Math.floor(gy - ry); y <= Math.ceil(gy + ry); y++)
+    for (let x = Math.floor(cx - rx); x <= Math.ceil(cx + rx); x++) {
+      const dx = (x + 0.5 - cx) / rx;
+      const dy = (y + 0.5 - gy) / ry;
+      const d = dx * dx + dy * dy;
+      if (d > 1 || c.alpha(x, y)) continue;
+      c.set(x, y, withAlpha(P.ink, d < 0.45 ? 90 : 55));
+    }
+}
+function packSheet(name: string, frames: Img[], W: number, H: number, B: number) {
+  const img = new Img(W * frames.length, H);
+  frames.forEach((f, i) => img.blit(f, i * W, 0));
+  sheet(name, img, { cell: [W, H], pivot: [32, B], layer: 'single' });
+}
+
+// ---------------------------------------------------------------- Penance Road (64x48, ground line 46)
+function genRoadDecor() {
+  const W = 64;
+  const H = 48;
+  const B = 46;
+  const f: Img[] = [];
+  const cell = () => new Img(W, H);
+
+  // 0: the prison wagon, overturned on its side. Floor boards face us, the barred side faces up; straw spilled out.
+  {
+    const c = cell();
+    boards(c, 6, B - 20, 52, 20, WOOD, true, 6, 3);
+    c.hline(6, B - 11, 52, WOOD.c0); // iron-shod rail
+    c.hline(6, B - 12, 52, IRON.c1);
+    c.rect(6, B - 32, 52, 12, P.dark1); // the cage side seen from above, dark inside
+    c.rect(7, B - 31, 50, 10, mix(P.dark1, P.ink, 0.5));
+    for (let x = 9; x < 57; x += 5) {
+      c.vline(x, B - 32, 12, IRON.c2);
+      c.set(x, B - 32, IRON.c3);
+    }
+    c.hline(6, B - 32, 52, WOOD.c3);
+    c.hline(6, B - 33, 52, WOOD.c2);
+    c.rect(40, B - 31, 10, 10, P.ink); // broken bars: the way you crawled out
+    line(c, 41, B - 31, 45, B - 24, IRON.c2);
+    line(c, 46, B - 31, 48, B - 27, IRON.c1);
+    for (const [cx, cy] of [[16, B - 8], [48, B - 8]]) {
+      c.disc(cx, cy, 7, WOOD.c2); // wheels, axle side toward us
+      c.disc(cx, cy, 5.2, WOOD.c0);
+      for (let a = 0; a < 6; a++) line(c, cx, cy, cx + Math.cos(a) * 5, cy + Math.sin(a) * 5, WOOD.c1);
+      c.disc(cx, cy, 1.6, IRON.c2);
+      c.set(cx - 1, cy - 1, IRON.c3);
+      c.set(cx - 5, cy - 5, WOOD.c3);
+    }
+    for (const [x, y] of [[4, B - 1], [8, B], [58, B - 2], [60, B]]) line(c, x, y, x + 3, y - 1, P.wax1); // straw
+    c.outline(P.ink);
+    finish(c, 32, B, 28, 3);
+    f.push(c);
+  }
+  // 1: dead horse: a crossbow bolt still in its flank (the ambush that wrecked the wagon)
+  {
+    const c = cell();
+    blob(c, 33, B - 6, 15, 6, WOOD);
+    c.ellipse(34, B - 3, 13, 2.5, WOOD.c0); // belly in shadow
+    blob(c, 15, B - 5, 6, 4, WOOD); // head
+    c.set(11, B - 5, P.ink); // eye
+    c.hline(13, B - 9, 12, P.dark1); // mane
+    c.hline(14, B - 10, 9, P.dark2);
+    c.rect(26, B - 11, 12, 4, P.blood1); // saddle blanket
+    c.hline(26, B - 11, 12, P.blood2);
+    c.hline(26, B - 8, 12, GOLD0);
+    for (const x of [38, 42, 46]) {
+      line(c, x, B - 3, x + 5, B + 1, WOOD.c1); // legs
+      c.set(x + 5, B + 1, P.dark1); // hooves
+    }
+    line(c, 40, B - 12, 45, B - 16, WOOD.c2); // the bolt
+    c.set(46, B - 17, P.wax2); // fletching
+    c.set(45, B - 17, P.wax1);
+    c.set(40, B - 11, P.blood2);
+    c.outline(P.ink);
+    finish(c, 32, B, 20, 2.5);
+    f.push(c);
+  }
+  // 2: dead guard (flat): face down, helm rolled away, spear under him
+  {
+    const c = cell();
+    c.ellipse(34, B - 3, 12, 3, P.blood1);
+    c.ellipse(31, B - 3.5, 7, 1.6, mix(P.blood1, P.ink, 0.35));
+    line(c, 10, B - 8, 52, B - 5, WOOD.c2); // spear
+    c.hline(52, B - 5, 3, IRON.c3);
+    box(c, 24, B - 8, 12, 5, IRON); // breastplate
+    c.rect(26, B - 7, 6, 3, P.blood1); // tabard
+    c.rect(18, B - 7, 6, 3, P.dark2); // legs
+    c.rect(15, B - 7, 3, 3, P.wood1); // boots
+    blob(c, 43, B - 5, 3, 2.6, IRON); // helm, rolled away
+    c.outline(P.ink);
+    f.push(c);
+  }
+  // 3: boulder, lichen and a cap of moss
+  {
+    const c = cell();
+    blob(c, 32, B - 8, 11, 9, STN);
+    line(c, 30, B - 4, 34, B - 10, P.stone1); // crack
+    c.set(35, B - 11, P.stone1);
+    mossTop(c, 25, B - 16, 12, 3);
+    for (const [x, y] of [[36, B - 7], [38, B - 9]]) c.set(x, y, mix(P.stone3, P.wax1, 0.4)); // lichen
+    c.hline(22, B - 1, 20, P.stone1);
+    c.outline(P.ink);
+    finish(c, 32, B, 13);
+    f.push(c);
+  }
+  // 4: dead tree: twisted trunk, bark lit on one side, roots gripping the ground
+  {
+    const c = cell();
+    for (let y = B - 26; y <= B; y++) {
+      const w = y > B - 4 ? 5 + (y - (B - 4)) : 4;
+      const x0 = 30 + Math.round(Math.sin(y * 0.25) * 1.2);
+      c.hline(x0, y, w, WOOD.c1);
+      c.set(x0, y, WOOD.c3);
+      c.set(x0 + w - 1, y, WOOD.c0);
+    }
+    for (let y = B - 24; y < B - 4; y += 5) c.set(31, y, WOOD.c0); // bark knots
+    for (const [x0, y0, x1, y1] of [[31, B - 24, 20, B - 38], [33, B - 22, 44, B - 36], [26, B - 32, 18, B - 30], [40, B - 31, 46, B - 40], [22, B - 35, 24, B - 44]] as const) {
+      line(c, x0, y0, x1, y1, WOOD.c1);
+      line(c, x0 + 1, y0, x1 + 1, y1, WOOD.c0);
+    }
+    for (const [x, dx] of [[28, -5], [36, 5]]) line(c, x, B - 1, x + dx, B + 1, WOOD.c1); // roots
+    c.set(19, B - 39, P.ink); // a crow on the high branch
+    c.rect(20, B - 40, 2, 2, P.ink);
+    c.outline(P.ink);
+    finish(c, 32, B, 9);
+    f.push(c);
+  }
+  // 5: wheel debris (flat): a broken wheel and splintered boards
+  {
+    const c = cell();
+    c.ellipse(24, B - 4, 8, 3.5, WOOD.c2);
+    c.ellipse(24, B - 4, 6, 2.4, WOOD.c0);
+    for (let a = 0; a < 5; a++) line(c, 24, B - 4, 24 + Math.cos(a * 1.2) * 6, B - 4 + Math.sin(a * 1.2) * 2.4, WOOD.c1);
+    c.disc(24, B - 4, 1.2, IRON.c2);
+    boards(c, 36, B - 6, 14, 3, WOOD, false, 3, 7);
+    line(c, 38, B - 1, 50, B - 3, WOOD.c2);
+    c.set(51, B - 4, WOOD.c3); // splinter
+    c.outline(P.ink);
+    f.push(c);
+  }
+  // 6: signpost: two arrow boards with carved marks
+  {
+    const c = cell();
+    box(c, 31, B - 26, 3, 26, WOOD);
+    for (const [y, dir] of [[B - 24, 1], [B - 17, -1]] as const) {
+      const x0 = dir > 0 ? 33 : 20;
+      boards(c, x0, y, 12, 5, WOOD, false, 5, y);
+      const tip = dir > 0 ? x0 + 12 : x0 - 1;
+      c.vline(tip, y + 1, 3, WOOD.c1);
+      c.set(tip + dir, y + 2, WOOD.c1);
+      for (let x = x0 + 2; x < x0 + 10; x += 2) c.set(x, y + 2, WOOD.c0); // carved letters
+    }
+    mossTop(c, 30, B - 1, 5, 9);
+    c.outline(P.ink);
+    finish(c, 32, B, 5);
+    f.push(c);
+  }
+  // 7: candle cairn: pilgrims' stacked stones, candles burning on them, wax run down the sides
+  {
+    const c = cell();
+    blob(c, 32, B - 4, 8, 4, STN);
+    blob(c, 31, B - 10, 6, 3.5, STN);
+    blob(c, 32, B - 15, 4, 2.5, STN);
+    for (const [x, y, h] of [[27, B - 12, 4], [36, B - 11, 3], [31, B - 17, 5], [24, B - 6, 3]] as const) candleAt(c, x, y, h);
+    for (const [x, y, l] of [[29, B - 9, 3], [35, B - 8, 4], [33, B - 13, 2]] as const) c.vline(x, y, l, P.wax2);
+    c.outline(P.ink);
+    finish(c, 32, B, 10);
+    f.push(c);
+  }
+  // 8: gibbet: post and arm, an iron cage with what is left of someone inside
+  {
+    const c = cell();
+    box(c, 22, B - 38, 3, 38, WOOD);
+    box(c, 22, B - 38, 20, 3, WOOD);
+    line(c, 24, B - 30, 31, B - 36, WOOD.c1); // brace
+    c.vline(38, B - 35, 5, IRON.c1); // chain
+    const cy = B - 30;
+    c.rect(33, cy, 10, 16, P.dark1);
+    blob(c, 38, cy + 5, 2.5, 2.5, BONE_R); // skull
+    c.set(37, cy + 5, P.ink);
+    c.set(39, cy + 5, P.ink);
+    c.vline(38, cy + 8, 5, BONE_R.c1); // spine and ribs
+    for (const y of [9, 11]) c.hline(36, cy + y, 5, BONE_R.c1);
+    for (let x = 33; x <= 43; x += 3) {
+      c.vline(x, cy, 16, IRON.c2);
+      c.set(x, cy, IRON.c3);
+    }
+    c.hline(33, cy, 11, IRON.c3);
+    c.hline(33, cy + 15, 11, IRON.c1);
+    c.outline(P.ink);
+    finish(c, 26, B, 6);
+    f.push(c);
+  }
+  // 9: large rock (2 tiles): a split outcrop, moss in the cleft, lichen on its face
+  {
+    const c = cell();
+    blob(c, 24, B - 10, 11, 10, STN);
+    blob(c, 39, B - 8, 9, 8, STN);
+    line(c, 31, B - 16, 32, B - 1, P.stone1); // the cleft
+    for (let y = B - 14; y < B - 2; y += 3) c.set(32, y, P.moss1);
+    mossTop(c, 16, B - 19, 12, 11);
+    mossTop(c, 34, B - 15, 8, 12);
+    for (const [x, y] of [[20, B - 7], [42, B - 5], [26, B - 12]]) c.set(x, y, mix(P.stone3, P.wax1, 0.4));
+    c.outline(P.ink);
+    finish(c, 32, B, 21, 3);
+    f.push(c);
+  }
+  // 10: ruined pillar, ivy climbing it, rubble at its foot
+  {
+    const c = cell();
+    for (let y = B - 36; y <= B; y++) {
+      c.hline(27, y, 10, STN.c1);
+      c.set(27, y, STN.c3);
+      c.set(28, y, STN.c2);
+      c.set(36, y, STN.c0);
+      c.set(35, y, mix(STN.c1, STN.c0, 0.5));
+    }
+    for (const y of [B - 28, B - 18, B - 8]) c.hline(27, y, 10, STN.c0); // drums
+    // broken top: jagged
+    for (const [x, d] of [[27, 3], [28, 2], [29, 0], [30, 1], [31, 4], [32, 2], [33, 0], [34, 1], [35, 3], [36, 5]] as const) for (let k = 0; k < d; k++) c.set(x, B - 36 + k, null);
+    ivy(c, 29, B - 34, 30, 5);
+    ivy(c, 34, B - 30, 22, 6);
+    blob(c, 22, B - 2, 4, 2.5, STN);
+    blob(c, 41, B - 2, 3, 2, STN);
+    c.outline(P.ink);
+    finish(c, 32, B, 11);
+    f.push(c);
+  }
+  // 11: fallen lintel (3 tiles): the old toll arch, carved words worn away, moss along its top
+  {
+    const c = cell();
+    box(c, 6, B - 10, 52, 9, STN);
+    c.hline(7, B - 9, 50, STN.c3);
+    for (let x = 12; x < 52; x += 4) c.hline(x, B - 6, 2, STN.c0); // carved words
+    c.rect(25, B - 7, 8, 3, STN.c0); // a coin slot, the toll's mark
+    c.set(29, B - 6, GOLD0);
+    line(c, 44, B - 10, 47, B - 2, STN.c0); // crack
+    mossTop(c, 6, B - 11, 52, 13);
+    c.outline(P.ink);
+    finish(c, 32, B, 28, 2);
+    f.push(c);
+  }
+  // 12: grass tuft: tall grass with seed heads
+  {
+    const c = cell();
+    const r = rng(12);
+    for (let i = 0; i < 9; i++) {
+      const x = 27 + Math.floor(r() * 10);
+      const h = 5 + Math.floor(r() * 6);
+      const lean = r() < 0.5 ? -1 : 1;
+      line(c, x, B, x + lean * Math.floor(h / 4), B - h, i % 3 ? P.moss2 : P.moss1);
+      if (i % 3 === 0) c.set(x + lean * Math.floor(h / 4), B - h - 1, mix(P.wax1, P.moss2, 0.4)); // seed head
+    }
+    c.outline(P.ink);
+    f.push(c);
+  }
+  packSheet('decor_road', f, W, H, B);
+}
+
+// ---------------------------------------------------------------- Wick's Rest (64x64, ground line 62)
+function genHubDecor() {
   const W = 64;
   const H = 64;
   const B = 62;
+  const f: Img[] = [];
   const cell = () => new Img(W, H);
-  const deco: Img[] = [];
-  // 0: the great altar (three tiles), its fire burning high in a black iron bowl
+
+  // 0: Oskar's stall (3 tiles): striped awning, a counter of powder kegs, pouches and bottles
   {
     const c = cell();
-    c.rect(9, B - 14, 46, 14, P.stone2); // the block
-    c.hline(9, B - 1, 46, P.stone1);
-    for (const x of [15, 27, 37, 49]) c.vline(x, B - 12, 10, P.stone1); // panels
-    c.rect(8, B - 17, 48, 4, P.stone3); // top slab
-    c.rect(22, B - 17, 20, 12, P.blood1); // altar cloth
+    for (const x of [8, 54]) box(c, x, B - 30, 3, 30, WOOD); // posts
+    boards(c, 8, B - 14, 49, 13, WOOD, false, 4, 21); // counter front
+    box(c, 7, B - 16, 51, 3, WOOD); // counter top
+    // goods on the counter
+    for (const x of [12, 19]) {
+      box(c, x, B - 22, 6, 6, DWOOD); // powder kegs
+      c.hline(x, B - 20, 6, IRON.c2);
+      c.set(x + 2, B - 22, P.dark1);
+    }
+    for (const [x, col] of [[28, P.teal2], [31, P.blood2], [34, P.moss2]] as const) {
+      c.rect(x, B - 21, 2, 5, col); // bottles
+      c.set(x, B - 21, P.wax2);
+      c.set(x, B - 22, P.wood1); // cork
+    }
+    blob(c, 41, B - 18, 3, 2.5, WOOD); // pouches
+    blob(c, 47, B - 18, 3, 2.5, CANVAS);
+    // striped awning with a scalloped edge
+    for (let y = B - 34; y < B - 26; y++) {
+      const inset = Math.round((B - 26 - y) * 0.5);
+      for (let x = 5 + inset; x < 60 - inset; x++) {
+        const stripe = Math.floor((x - 5) / 6) % 2;
+        const base = stripe ? P.wax2 : P.blood2;
+        c.set(x, y, y === B - 34 ? mix(base, P.white, 0.3) : x > 56 - inset ? mix(base, P.ink, 0.3) : base);
+      }
+    }
+    for (let x = 5; x < 60; x++) if ((x - 5) % 6 < 4) c.set(x, B - 26, Math.floor((x - 5) / 6) % 2 ? P.wax1 : P.blood1);
+    c.outline(P.ink);
+    finish(c, 32, B, 28, 2.5);
+    f.push(c);
+  }
+  // 1: campfire: a ring of stones, crossed logs, a tall flame and a pot on a hook
+  {
+    const c = cell();
+    for (let a = 0; a < 8; a++) blob(c, 32 + Math.cos(a * 0.785) * 8, B - 3 + Math.sin(a * 0.785) * 3, 2.4, 1.8, STN);
+    line(c, 25, B - 2, 39, B - 6, WOOD.c1);
+    line(c, 25, B - 6, 39, B - 2, WOOD.c2);
+    c.ellipse(32, B - 5, 5, 2, P.ember);
+    for (const [x, h] of [[29, 8], [32, 12], [35, 9], [31, 6], [34, 7]] as const) {
+      c.vline(x, B - 4 - h, h, P.flame1);
+      c.vline(x, B - 4 - h + 2, h - 3, P.flame2);
+      c.set(x, B - 5 - h, P.ember);
+    }
+    // a pot on a tripod
+    line(c, 24, B - 1, 32, B - 22, WOOD.c0);
+    line(c, 40, B - 1, 32, B - 22, WOOD.c0);
+    c.vline(32, B - 21, 3, IRON.c1);
+    c.ellipse(32, B - 16, 3.5, 2.5, IRON.c0);
+    c.hline(29, B - 18, 7, IRON.c2);
+    c.outline(P.ink);
+    finish(c, 32, B, 12);
+    f.push(c);
+  }
+  // 2: well: stone ring, a shingled roof on posts, bucket and rope, dark water
+  {
+    const c = cell();
+    for (const x of [22, 40]) box(c, x, B - 34, 3, 26, WOOD);
+    for (let y = B - 42; y < B - 34; y++) {
+      const inset = B - 34 - y;
+      boards(c, 18 + inset, y, 29 - inset * 2, 1, WOOD, false, 1, y);
+    }
+    c.hline(20, B - 34, 25, WOOD.c0);
+    box(c, 22, B - 30, 21, 2, WOOD); // windlass
+    c.vline(32, B - 28, 10, P.wax1); // rope
+    box(c, 30, B - 19, 5, 4, WOOD); // bucket
+    c.hline(30, B - 18, 5, IRON.c2);
+    // stone ring
+    for (let y = B - 14; y < B; y++) {
+      c.hline(18, y, 29, STN.c1);
+      c.set(18, y, STN.c3);
+      c.set(46, y, STN.c0);
+    }
+    for (const y of [B - 10, B - 5]) c.hline(18, y, 29, STN.c0);
+    for (const [x, y] of [[24, B - 13], [31, B - 9], [38, B - 13], [27, B - 4], [42, B - 4]]) c.vline(x, y, 3, STN.c0);
+    c.ellipse(32, B - 14, 13, 3, STN.c2);
+    c.ellipse(32, B - 14, 10, 2, P.ink); // the dark water
+    c.hline(29, B - 14, 3, P.teal1);
+    mossTop(c, 18, B - 14, 6, 21);
+    c.outline(P.ink);
+    finish(c, 32, B, 16);
+    f.push(c);
+  }
+  // 3: tent (2 tiles): patched canvas, a dark flap, pegs and guy ropes
+  {
+    const c = cell();
+    for (let y = B - 26; y < B; y++) {
+      const half = Math.round((y - (B - 26)) * 0.95) + 2;
+      for (let x = 32 - half; x <= 32 + half; x++) {
+        const t = (x - 32 + half) / (half * 2);
+        c.set(x, y, t < 0.45 ? (t < 0.08 ? CANVAS.c3 : CANVAS.c2) : t > 0.9 ? CANVAS.c0 : CANVAS.c1);
+      }
+    }
+    c.vline(32, B - 26, 26, CANVAS.c0); // ridge seam
+    for (let y = B - 12; y < B; y++) c.hline(32 - Math.round((y - (B - 12)) * 0.45), y, Math.round((y - (B - 12)) * 0.9) + 1, P.ink); // the open flap
+    line(c, 32, B - 12, 25, B - 1, CANVAS.c3);
+    c.rect(38, B - 18, 5, 4, mix(CANVAS.c1, P.teal2, 0.4)); // a patch
+    c.set(38, B - 18, CANVAS.c3);
+    c.vline(32, B - 30, 4, WOOD.c1); // pole tip
+    for (const [x0, x1] of [[10, 14], [54, 50]]) line(c, x1, B - 6, x0, B, P.wax1); // guy ropes
+    c.outline(P.ink);
+    finish(c, 32, B, 26, 2.5);
+    f.push(c);
+  }
+  // 4: fence: weathered posts and rails
+  {
+    const c = cell();
+    for (const x of [22, 40]) box(c, x, B - 14, 3, 14, WOOD);
+    for (const y of [B - 11, B - 6]) box(c, 18, y, 29, 2, WOOD);
+    c.set(33, B - 11, WOOD.c0); // a split in the rail
+    mossTop(c, 21, B - 1, 6, 31);
+    c.outline(P.ink);
+    finish(c, 32, B, 14, 2);
+    f.push(c);
+  }
+  // 5: lantern post: iron hook, a lit lantern swinging on it
+  {
+    const c = cell();
+    box(c, 30, B - 34, 3, 34, WOOD);
+    box(c, 30, B - 34, 10, 2, IRON);
+    c.vline(38, B - 32, 3, IRON.c1);
+    box(c, 36, B - 29, 5, 7, IRON);
+    c.rect(37, B - 28, 3, 5, P.flame1);
+    c.rect(38, B - 27, 1, 3, P.flame2);
+    c.hline(36, B - 22, 5, IRON.c0);
+    c.outline(P.ink);
+    finish(c, 32, B, 5);
+    f.push(c);
+  }
+  // 6: hand cart (2 tiles): sacks of grain and a spade
+  {
+    const c = cell();
+    boards(c, 16, B - 14, 28, 8, WOOD, false, 4, 61);
+    c.disc(26, B - 5, 5, WOOD.c2);
+    c.disc(26, B - 5, 3.6, WOOD.c0);
+    for (let a = 0; a < 4; a++) line(c, 26, B - 5, 26 + Math.cos(a * 1.57) * 4, B - 5 + Math.sin(a * 1.57) * 4, WOOD.c1);
+    line(c, 44, B - 12, 54, B - 4, WOOD.c1); // handles
+    blob(c, 22, B - 17, 5, 3.5, CANVAS);
+    blob(c, 32, B - 18, 5, 4, CANVAS);
+    c.hline(30, B - 21, 4, WOOD.c0); // tied necks
+    line(c, 38, B - 24, 42, B - 14, WOOD.c1); // spade
+    box(c, 36, B - 27, 4, 4, IRON);
+    c.outline(P.ink);
+    finish(c, 32, B, 18);
+    f.push(c);
+  }
+  // 7: altar (2 tiles): stone, a red cloth with gold trim, candles burning, wax run down its front
+  {
+    const c = cell();
+    box(c, 18, B - 14, 28, 14, STN);
+    for (let x = 22; x < 44; x += 6) c.vline(x, B - 12, 11, STN.c0); // panels
+    c.rect(24, B - 16, 16, 9, CLOTH_RED.c1);
+    c.hline(24, B - 16, 16, CLOTH_RED.c3);
+    c.hline(24, B - 8, 16, P.flame1);
+    c.set(31, B - 12, P.flame2);
+    c.set(32, B - 12, P.flame2);
+    c.set(31, B - 11, GOLD0);
+    box(c, 17, B - 17, 30, 3, STN);
+    for (const [x, h] of [[20, 7], [24, 5], [38, 6], [43, 8], [28, 4]] as const) candleAt(c, x, B - 17, h);
+    for (const [x, l] of [[19, 5], [45, 7], [36, 3]] as const) c.vline(x, B - 14, l, P.wax2);
+    c.outline(P.ink);
+    finish(c, 32, B, 17);
+    f.push(c);
+  }
+  // 8: prayer bench (2 tiles): a worn kneeler
+  {
+    const c = cell();
+    boards(c, 16, B - 12, 32, 4, WOOD, false, 4, 81);
+    box(c, 16, B - 12, 32, 2, WOOD);
+    for (const x of [18, 44]) box(c, x, B - 10, 3, 10, WOOD);
+    box(c, 17, B - 4, 30, 2, DWOOD); // the kneeling rail
+    c.rect(26, B - 4, 12, 2, CLOTH_RED.c1); // a worn cushion
+    c.outline(P.ink);
+    finish(c, 32, B, 17, 2);
+    f.push(c);
+  }
+  // 9: bedroll (flat): teal wool rolled up and strapped, a blanket half out
+  {
+    const c = cell();
+    c.ellipse(30, B - 3, 10, 3, mix(P.teal1, P.stone2, 0.3));
+    c.ellipse(29, B - 3.5, 8, 2, mix(P.teal2, P.stone3, 0.2));
+    blob(c, 41, B - 4, 4, 4, { c0: P.teal1, c1: P.teal2, c2: P.teal3, c3: mix(P.teal3, P.wax2, 0.4) });
+    c.vline(40, B - 8, 7, P.wood1); // strap
+    c.outline(P.ink);
+    f.push(c);
+  }
+  // 10: bookshelf (2 tiles): books of every colour, a skull, a candle
+  {
+    const c = cell();
+    box(c, 18, B - 36, 28, 36, DWOOD);
+    const r = rng(10);
+    for (const sy of [B - 33, B - 23, B - 13]) {
+      c.rect(20, sy, 24, 9, P.ink);
+      let x = 20;
+      while (x < 43) {
+        const w = 2 + Math.floor(r() * 2);
+        const h = 6 + Math.floor(r() * 3);
+        const col = [P.blood1, P.teal2, P.wood2, P.moss1, P.stone2, P.blood2][Math.floor(r() * 6)];
+        if (r() < 0.12) {
+          x += 2;
+          continue;
+        }
+        c.rect(x, sy + 9 - h, w, h, col);
+        c.vline(x, sy + 9 - h, h, mix(col, P.white, 0.25));
+        c.set(x, sy + 10 - h + 1, GOLD0); // gilt on the spine
+        x += w;
+      }
+      c.hline(20, sy + 9, 24, DWOOD.c3); // shelf
+    }
+    blob(c, 40, B - 26, 2.5, 2.2, BONE_R); // skull
+    c.set(39, B - 26, P.ink);
+    candleAt(c, 24, B - 33 + 9, 4);
+    c.outline(P.ink);
+    finish(c, 32, B, 16, 2);
+    f.push(c);
+  }
+  // 11: ruined wall (3 tiles): timber and plaster, broken open, ivy over it
+  {
+    const c = cell();
+    box(c, 6, B - 34, 52, 34, CANVAS);
+    for (const x of [6, 26, 55]) box(c, x, B - 36, 4, 36, DWOOD); // timber frame
+    box(c, 6, B - 36, 53, 3, DWOOD);
+    line(c, 10, B - 33, 25, B - 4, DWOOD.c2); // brace
+    // a hole broken through, laths showing
+    c.rect(34, B - 26, 16, 16, P.ink);
+    for (let y = B - 25; y < B - 11; y += 3) c.hline(34, y, 16, DWOOD.c1);
+    for (const [x, y] of [[33, B - 27], [50, B - 18], [40, B - 10]]) c.rect(x, y, 3, 2, CANVAS.c1);
+    c.rect(44, B - 34, 8, 6, P.ink); // a window
+    c.hline(44, B - 31, 8, DWOOD.c1);
+    ivy(c, 12, B - 33, 26, 41);
+    ivy(c, 30, B - 33, 18, 42);
+    ivy(c, 53, B - 33, 30, 43);
+    c.outline(P.ink);
+    finish(c, 32, B, 28, 2);
+    f.push(c);
+  }
+  // 12: notice board: pinned notices, one a wanted poster of a hooded convict
+  {
+    const c = cell();
+    for (const x of [22, 40]) box(c, x, B - 26, 3, 26, WOOD);
+    boards(c, 20, B - 28, 25, 14, WOOD, false, 4, 91);
+    box(c, 19, B - 30, 27, 3, DWOOD); // little roof
+    c.rect(22, B - 26, 8, 10, P.wax2); // the wanted poster
+    c.hline(22, B - 26, 8, P.wax1);
+    for (const [x, y] of [[25, B - 24], [26, B - 24], [24, B - 23], [25, B - 23], [26, B - 23], [27, B - 23], [24, B - 22], [27, B - 22], [24, B - 21], [25, B - 21], [26, B - 21], [27, B - 21]]) c.set(x, y, P.teal1); // your hood
+    c.set(25, B - 22, P.flame2);
+    c.set(26, B - 22, P.flame2);
+    c.hline(23, B - 18, 6, P.dark2);
+    c.rect(33, B - 25, 9, 7, mix(P.wax1, P.wood2, 0.3)); // a second notice
+    for (const y of [B - 23, B - 21]) c.hline(34, y, 7, P.dark2);
+    for (const [x, y] of [[25, B - 26], [37, B - 25]]) c.set(x, y, P.blood2); // pins
+    c.outline(P.ink);
+    finish(c, 32, B, 12, 2);
+    f.push(c);
+  }
+  packSheet('decor_hub', f, W, H, B);
+}
+
+// ---------------------------------------------------------------- Tallow Works (64x64, ground line 62)
+function genWorksDecor() {
+  const W = 64;
+  const H = 64;
+  const B = 62;
+  const f: Img[] = [];
+  const cell = () => new Img(W, H);
+  const TAL: Ramp = { c0: mix(P.wax1, P.wood1, 0.5), c1: mix(P.wax1, P.wood2, 0.2), c2: P.wax1, c3: P.wax2 };
+
+  // 0: rendering vat (3 tiles wide, 2 deep): riveted iron, tallow bubbling at the brim, a fire under it
+  {
+    const c = cell();
+    c.ellipse(32, B - 10, 23, 10, P.dark1);
+    for (let y = B - 30; y < B - 8; y++) {
+      for (let x = 9; x <= 54; x++) {
+        const t = (x - 9) / 45;
+        c.set(x, y, t < 0.08 ? IRON.c3 : t < 0.3 ? IRON.c2 : t > 0.9 ? IRON.c0 : IRON.c1);
+      }
+    }
+    for (const y of [B - 26, B - 15]) {
+      c.hline(9, y, 46, IRON.c0);
+      c.hline(9, y - 1, 46, IRON.c3);
+      for (let x = 12; x < 54; x += 6) c.set(x, y - 1, GOLD0); // rivets
+    }
+    for (const [x, l] of [[14, 9], [22, 5], [41, 12], [50, 6]] as const) {
+      c.vline(x, B - 30, l, TAL.c2); // tallow run over the side
+      c.set(x, B - 30 + l, TAL.c1);
+    }
+    c.ellipse(32, B - 31, 23, 6, IRON.c0); // rim
+    c.ellipse(32, B - 31.5, 22, 5, IRON.c2);
+    c.ellipse(32, B - 31, 20, 4.5, TAL.c2); // molten tallow
+    c.ellipse(26, B - 32, 8, 2, TAL.c3);
+    for (const [x, y] of [[38, B - 31], [43, B - 30], [31, B - 30]]) {
+      c.disc(x, y, 1.2, TAL.c3); // bubbles
+      c.set(x + 1, y + 1, TAL.c0);
+    }
+    c.rect(26, B - 9, 12, 7, P.ink); // firebox under it
+    c.rect(27, B - 7, 10, 5, P.ember);
+    c.rect(29, B - 6, 6, 4, P.flame1);
+    c.rect(31, B - 5, 2, 3, P.flame2);
+    c.outline(P.ink);
+    finish(c, 32, B, 26, 3);
+    f.push(c);
+  }
+  // 1: hook on a chain, hanging from above (no footprint)
+  {
+    const c = cell();
+    for (let y = 0; y < 44; y += 3) {
+      c.rect(31, y, 2, 2, IRON.c2);
+      c.set(31, y, IRON.c3);
+      c.set(32, y + 2, IRON.c0);
+    }
+    box(c, 30, 44, 4, 3, IRON);
+    line(c, 33, 47, 35, 52, IRON.c3);
+    line(c, 35, 52, 31, 54, IRON.c2);
+    c.set(30, 52, IRON.c2);
+    c.set(30, 51, IRON.c3); // the point
+    c.set(34, 50, P.blood1);
+    c.outline(P.ink);
+    c.ellipse(32, B - 1, 3, 1, withAlpha(P.ink, 120)); // shadow on the floor
+    f.push(c);
+  }
+  // 2: pilgrim cage (2 tiles): straw on the floor, a robe left behind, a name tag on the door
+  {
+    const c = cell();
+    c.rect(9, B - 26, 30, 26, P.dark1);
+    c.rect(10, B - 25, 28, 24, mix(P.dark1, P.ink, 0.5));
+    for (const [x, y] of [[12, B - 3], [18, B - 2], [28, B - 3], [33, B - 2]]) line(c, x, y, x + 4, y - 1, mix(P.wax1, P.wood1, 0.4)); // straw
+    blob(c, 22, B - 5, 5, 2.5, STN); // a dropped robe
+    c.rect(20, B - 6, 3, 2, mix(P.wax1, P.stone3, 0.3)); // its tag
+    for (let x = 9; x <= 38; x += 4) {
+      c.vline(x, B - 26, 26, IRON.c2);
+      c.set(x, B - 26, IRON.c3);
+      c.vline(x + 1, B - 25, 25, IRON.c0);
+    }
+    box(c, 8, B - 27, 32, 2, IRON);
+    box(c, 8, B - 2, 32, 2, IRON);
+    box(c, 30, B - 16, 4, 4, IRON); // lock
+    c.set(31, B - 15, P.ink);
+    c.outline(P.ink);
+    finish(c, 24, B, 17, 2);
+    f.push(c);
+  }
+  // 3: tallow blocks stacked on a pallet, bound with twine and stamped
+  {
+    const c = cell();
+    boards(c, 21, B - 3, 22, 3, WOOD, false, 3, 33);
+    for (const [x, y] of [[22, 11], [32, 11], [27, 19]]) {
+      box(c, x, B - y, 10, 8, TAL);
+      c.vline(x + 5, B - y, 8, mix(TAL.c1, P.wood1, 0.4)); // twine
+      c.hline(x, B - y + 4, 10, mix(TAL.c1, P.wood1, 0.4));
+      c.rect(x + 2, B - y + 2, 2, 1, P.blood1); // stamp
+    }
+    c.outline(P.ink);
+    finish(c, 32, B, 12);
+    f.push(c);
+  }
+  // 4: furnace (2 tiles), tall: soot brick, an iron door on a glowing mouth, a flue into the dark
+  {
+    const c = cell();
+    box(c, 9, B - 36, 30, 36, { c0: hex('#2a1c1c'), c1: mix(P.wood1, P.dark2, 0.35), c2: mix(P.wood1, P.dark2, 0.15), c3: hex('#80523a') });
+    for (let row = 0; row < 11; row++) {
+      const y = B - 34 + row * 3;
+      c.hline(10, y, 28, hex('#2a1c1c'));
+      for (let x = 10 + (row % 2) * 4; x < 38; x += 8) c.vline(x, y, 3, hex('#2a1c1c'));
+    }
+    box(c, 17, B - 44, 14, 9, IRON); // flue
+    c.rect(14, B - 16, 20, 14, P.ink);
+    c.rect(16, B - 13, 16, 11, P.ember); // the mouth
+    c.rect(18, B - 11, 12, 9, P.flame1);
+    c.rect(21, B - 9, 6, 7, P.flame2);
+    box(c, 33, B - 17, 4, 15, IRON); // the door, swung open
+    c.set(35, B - 10, GOLD0);
+    c.outline(P.ink);
+    finish(c, 24, B, 17, 2);
+    f.push(c);
+  }
+  // 5: iron pipe rising into the dark, a valve wheel, a hiss of steam
+  {
+    const c = cell();
+    for (let y = B - 46; y < B; y++) {
+      c.hline(28, y, 8, IRON.c1);
+      c.set(28, y, IRON.c3);
+      c.set(29, y, IRON.c2);
+      c.set(35, y, IRON.c0);
+    }
+    for (const y of [B - 34, B - 12]) box(c, 26, y, 12, 3, IRON);
+    c.disc(40, B - 24, 3, IRON.c0); // valve wheel
+    c.disc(40, B - 24, 2, P.blood1);
+    c.set(39, B - 25, P.blood2);
+    c.hline(36, B - 24, 3, IRON.c2);
+    for (const [x, y] of [[26, B - 36], [24, B - 38], [25, B - 40]]) c.set(x, y, withAlpha(P.stone4, 170)); // steam
+    c.outline(P.ink);
+    finish(c, 32, B, 6);
+    f.push(c);
+  }
+  // 6: robe rack (2 tiles): pilgrims' robes hung up with their name tags
+  {
+    const c = cell();
+    for (const x of [9, 37]) box(c, x, B - 28, 3, 28, WOOD);
+    box(c, 9, B - 29, 31, 2, WOOD);
+    const cols: Ramp[] = [STN, { c0: P.teal1, c1: P.teal1, c2: P.teal2, c3: P.teal3 }, WOOD, STN, { c0: P.dark1, c1: P.dark2, c2: P.stone1, c3: P.stone2 }];
+    cols.forEach((r, i) => {
+      const x = 12 + i * 5;
+      for (let y = B - 26; y < B - 8; y++) {
+        const w = 4 + (y > B - 16 ? 1 : 0);
+        c.hline(x, y, w, r.c1);
+        c.set(x, y, r.c2);
+        c.set(x + w - 1, y, r.c0);
+      }
+      c.hline(x + 1, B - 27, 2, IRON.c2); // hook
+      c.rect(x + 1, B - 22, 2, 2, P.wax2); // name tag
+      c.set(x + 1, B - 21, P.dark2);
+    });
+    c.outline(P.ink);
+    finish(c, 24, B, 16, 2);
+    f.push(c);
+  }
+  // 7: the foreman's desk (2 tiles): the Chandler's ledger open on it, a quill, a candle, a stack of coin
+  {
+    const c = cell();
+    box(c, 9, B - 14, 30, 4, DWOOD);
+    for (const x of [10, 35]) box(c, x, B - 10, 3, 10, DWOOD);
+    boards(c, 13, B - 10, 22, 6, DWOOD, true, 5, 71);
+    c.rect(16, B - 18, 12, 4, P.wax2); // the ledger
+    c.vline(22, B - 18, 4, P.wax1);
+    for (const y of [B - 17, B - 16]) {
+      c.hline(17, y, 4, P.dark2);
+      c.hline(23, y, 4, P.dark2);
+    }
+    c.rect(15, B - 15, 14, 1, P.blood1); // its binding
+    line(c, 29, B - 20, 32, B - 15, P.wax2); // quill
+    candleAt(c, 12, B - 14, 4);
+    for (let i = 0; i < 3; i++) c.hline(33, B - 15 - i, 3, i % 2 ? P.flame2 : P.flame1); // coins
+    c.outline(P.ink);
+    finish(c, 24, B, 16, 2);
+    f.push(c);
+  }
+  // 8: lift cage platform (flat, 2 tiles: anchor and east) with its chains
+  {
+    const c = cell();
+    boards(c, 24, B - 6, 32, 6, WOOD, true, 5, 81);
+    c.hline(24, B - 6, 32, IRON.c3);
+    c.hline(24, B - 1, 32, IRON.c1);
+    for (const x of [25, 54])
+      for (let y = 0; y < B - 6; y += 3) {
+        c.rect(x, y, 1, 2, IRON.c2);
+        c.set(x, y, IRON.c3);
+      }
+    f.push(c);
+  }
+  // 9: heap of chain (flat)
+  {
+    const c = cell();
+    for (let i = 0; i < 10; i++) {
+      const x = 23 + (i % 4) * 5 + (i > 7 ? 2 : 0);
+      const y = B - 2 - Math.floor(i / 4) * 2;
+      c.ellipse(x, y, 2.5, 1.5, IRON.c1);
+      c.ellipse(x, y, 1.2, 0.6, IRON.c0);
+      c.set(x - 1, y - 1, IRON.c3);
+    }
+    c.outline(P.ink);
+    f.push(c);
+  }
+  // 10: tallow cart (2 tiles): heaped high with rendered tallow, a robe thrown on top
+  {
+    const c = cell();
+    boards(c, 10, B - 14, 28, 9, WOOD, false, 3, 101);
+    box(c, 9, B - 15, 30, 2, WOOD);
+    for (const x of [16, 32]) {
+      c.disc(x, B - 4, 4, WOOD.c2);
+      c.disc(x, B - 4, 2.8, WOOD.c0);
+      c.disc(x, B - 4, 1, IRON.c2);
+    }
+    blob(c, 24, B - 19, 12, 5, TAL);
+    blob(c, 17, B - 22, 5, 3, TAL);
+    c.rect(26, B - 22, 6, 3, STN.c2); // a robe on the heap
+    c.set(26, B - 22, STN.c3);
+    c.outline(P.ink);
+    finish(c, 24, B, 16, 2);
+    f.push(c);
+  }
+  // 11: carters' toll booth (tall): a lit window, a price board, a bell to ring for the carter
+  {
+    const c = cell();
+    boards(c, 22, B - 30, 20, 30, WOOD, true, 4, 111);
+    for (let y = B - 36; y < B - 29; y++) {
+      const inset = B - 29 - y;
+      c.hline(19 + Math.floor(inset / 2), y, 26 - inset, y === B - 36 ? DWOOD.c3 : DWOOD.c1);
+    }
+    c.rect(26, B - 24, 12, 8, P.ink); // window
+    c.rect(27, B - 23, 10, 6, mix(P.flame1, P.ink, 0.5));
+    c.rect(29, B - 21, 2, 2, P.flame2);
+    c.hline(25, B - 16, 14, DWOOD.c3); // sill
+    c.rect(24, B - 12, 8, 5, P.wax1); // price board
+    for (const y of [B - 11, B - 9]) c.hline(25, y, 6, P.dark2);
+    c.vline(42, B - 30, 3, IRON.c1); // bell on a bracket
+    blob(c, 43, B - 26, 2, 2, BRONZE);
+    c.outline(P.ink);
+    finish(c, 32, B, 12, 2);
+    f.push(c);
+  }
+  packSheet('decor_works', f, W, H, B);
+}
+
+// ---------------------------------------------------------------- The Waxmire (64x64, ground line 62)
+function genMireDecor() {
+  const W = 64;
+  const H = 64;
+  const B = 62;
+  const f: Img[] = [];
+  const cell = () => new Img(W, H);
+  const WX: Ramp = { c0: mix(P.wax1, P.wood1, 0.55), c1: mix(P.wax1, P.wood2, 0.25), c2: P.wax1, c3: P.wax2 };
+  const MSTN: Ramp = { c0: mix(P.stone1, P.teal1, 0.3), c1: mix(P.stone2, P.teal1, 0.2), c2: P.stone3, c3: P.stone4 };
+
+  // 0: gravestone, sinking and leaning, moss on its shoulders, the name worn off
+  {
+    const c = cell();
+    for (let y = B - 18; y < B; y++) {
+      const top = y - (B - 18);
+      const half = top < 3 ? [3, 5, 6][top] : 6;
+      const lean = Math.round((B - y) * 0.12);
+      for (let x = 32 - half + lean; x < 32 + half + lean; x++) {
+        const t = (x - (32 - half + lean)) / (half * 2);
+        c.set(x, y, t < 0.15 ? MSTN.c3 : t < 0.3 ? MSTN.c2 : t > 0.85 ? MSTN.c0 : MSTN.c1);
+      }
+    }
+    for (const y of [B - 13, B - 11, B - 9]) c.hline(30, y, 5, MSTN.c0); // worn lettering
+    c.hline(31, B - 15, 3, MSTN.c0); // a carved flame
+    c.set(32, B - 16, MSTN.c0);
+    mossTop(c, 27, B - 17, 7, 201);
+    c.ellipse(32, B - 1, 9, 2, WX.c2); // the wax it is sinking into
+    c.hline(26, B - 2, 5, WX.c3);
+    c.outline(P.ink);
+    f.push(c);
+  }
+  // 1: grave cross: a strip of cloth tied on, candle wax dripped on its arms
+  {
+    const c = cell();
+    box(c, 31, B - 22, 3, 22, WOOD);
+    box(c, 25, B - 18, 15, 3, WOOD);
+    c.rect(34, B - 17, 2, 7, P.blood1); // a strip of cloth
+    c.set(35, B - 10, P.blood2);
+    for (const x of [26, 38]) {
+      c.set(x, B - 19, P.wax2);
+      c.vline(x, B - 15, 2, P.wax1);
+    }
+    c.ellipse(32, B - 1, 5, 1.5, WX.c2);
+    c.outline(P.ink);
+    finish(c, 32, B, 5, 1.5);
+    f.push(c);
+  }
+  // 2: reeds (tall enough to hide in): cattails, lit from one side
+  {
+    const c = cell();
+    const r = rng(202);
+    for (let i = 0; i < 14; i++) {
+      const x = 24 + Math.floor(r() * 16);
+      const h = 18 + Math.floor(r() * 16);
+      const lean = (r() - 0.5) * 4;
+      line(c, x, B, x + lean, B - h, i % 3 ? P.moss1 : P.moss2);
+      if (i % 3 === 0) {
+        c.vline(Math.round(x + lean), B - h - 4, 4, P.wood1); // cattail head
+        c.set(Math.round(x + lean), B - h - 4, P.wood2);
+        c.set(Math.round(x + lean), B - h - 5, P.moss2);
+      }
+    }
+    for (let i = 0; i < 5; i++) line(c, 26 + i * 3, B, 22 + i * 4, B - 10 - (i % 2) * 4, mix(P.moss2, P.wax1, 0.2)); // blades
+    c.outline(P.ink);
+    finish(c, 32, B, 10, 2);
+    f.push(c);
+  }
+  // 3: root tangle (2 tiles, tall): pale roots rearing out of the wax
+  {
+    const c = cell();
+    const r = rng(203);
+    for (let i = 0; i < 12; i++) {
+      const x0 = 10 + r() * 30;
+      const x1 = x0 + (r() - 0.5) * 16;
+      const y1 = B - 12 - r() * 22;
+      line(c, x0 + 1, B, x1 + 1, y1, WOOD.c0);
+      line(c, x0, B, x1, y1, i % 3 ? mix(P.wax1, P.wood1, 0.45) : P.wax1);
+      if (i % 4 === 0) line(c, x1, y1, x1 + (r() < 0.5 ? -4 : 4), y1 + 3, mix(P.wax1, P.wood1, 0.3));
+    }
+    for (let i = 0; i < 6; i++) c.set(12 + r() * 28, B - 6 - r() * 20, P.moss1); // moss caught in them
+    c.ellipse(24, B - 1, 15, 2.5, WX.c2);
+    c.outline(P.ink);
+    f.push(c);
+  }
+  // 4: stone angel (tall): weeping into its hands, wings folded, wax tears, moss on its shoulders
+  {
+    const c = cell();
+    box(c, 26, B - 6, 12, 6, MSTN); // plinth
+    for (let y = B - 30; y < B - 6; y++) {
+      const half = 3 + Math.round((y - (B - 30)) * 0.12);
+      for (let x = 32 - half; x <= 32 + half; x++) {
+        const t = (x - 32 + half) / (half * 2);
+        c.set(x, y, t < 0.2 ? MSTN.c3 : t > 0.8 ? MSTN.c0 : MSTN.c2);
+      }
+    }
+    for (let y = B - 26; y < B - 10; y += 4) line(c, 31, y, 30, y + 3, MSTN.c1); // robe folds
+    for (const side of [-1, 1]) {
+      // folded wings rising behind
+      for (let y = B - 36; y < B - 14; y++) {
+        const w = Math.max(1, 4 - Math.floor(Math.abs(y - (B - 30)) / 5));
+        c.hline(side < 0 ? 32 - 5 - w : 32 + 5, y, w, side < 0 ? MSTN.c2 : MSTN.c0);
+      }
+    }
+    blob(c, 32, B - 32, 3.5, 3.5, MSTN); // bowed head
+    c.rect(29, B - 30, 6, 3, MSTN.c3); // hands over the face
+    c.vline(30, B - 27, 5, P.wax2); // wax tears running down
+    c.vline(33, B - 27, 3, P.wax1);
+    mossTop(c, 26, B - 30, 12, 204);
+    c.outline(P.ink);
+    finish(c, 32, B, 8, 2);
+    f.push(c);
+  }
+  // 5: coffin (flat): half sunk, its lid knocked askew, something pale inside
+  {
+    const c = cell();
+    c.ellipse(32, B - 2, 15, 3, WX.c2);
+    boards(c, 20, B - 8, 24, 6, DWOOD, false, 3, 205);
+    c.rect(22, B - 7, 12, 3, P.ink);
+    c.rect(24, B - 6, 5, 2, P.wax2); // a pale hand
+    box(c, 28, B - 11, 18, 4, WOOD); // the lid
+    c.set(36, B - 10, GOLD0);
+    c.outline(P.ink);
+    f.push(c);
+  }
+  // 6: drowned candles (flat): a cluster burning on a raft of their own wax
+  {
+    const c = cell();
+    c.ellipse(32, B - 2, 10, 2.5, WX.c1);
+    c.ellipse(31, B - 2.5, 8, 1.6, WX.c2);
+    for (const [x, h] of [[26, 4], [29, 6], [33, 3], [36, 5], [31, 2], [38, 3]] as const) candleAt(c, x, B - 2, h);
+    c.outline(P.ink);
+    f.push(c);
+  }
+  // 7: dead willow (tall): a twisted trunk and curtains of dead hanging strands
+  {
+    const c = cell();
+    for (let y = B - 26; y <= B; y++) {
+      const w = y > B - 4 ? 5 + (y - (B - 4)) : 4;
+      const x0 = 30 + Math.round(Math.sin(y * 0.2) * 1.5);
+      c.hline(x0, y, w, WOOD.c1);
+      c.set(x0, y, WOOD.c3);
+      c.set(x0 + w - 1, y, WOOD.c0);
+    }
+    for (const [x0, y0, x1, y1] of [[31, B - 24, 18, B - 40], [33, B - 24, 46, B - 40], [32, B - 26, 32, B - 44]] as const) {
+      line(c, x0, y0, x1, y1, WOOD.c1);
+      line(c, x0 + 1, y0, x1 + 1, y1, WOOD.c0);
+    }
+    const r = rng(207);
+    for (let i = 0; i < 18; i++) {
+      const x = 14 + Math.floor(r() * 36);
+      const y = B - 42 + Math.floor(Math.abs(x - 32) * 0.3);
+      const len = 10 + Math.floor(r() * 14);
+      for (let k = 0; k < len; k++) c.set(x + (k > len / 2 ? (i % 2 ? 1 : 0) : 0), y + k, k % 4 === 0 ? P.moss2 : mix(P.moss1, P.wood1, 0.4));
+    }
+    c.outline(P.ink);
+    finish(c, 32, B, 9);
+    f.push(c);
+  }
+  // 8: sunken bell: the Abbey's old bell, rim above the wax, green with verdigris
+  {
+    const c = cell();
+    for (let y = B - 14; y < B - 1; y++) {
+      const half = Math.round(6 + (y - (B - 14)) * 0.5);
+      for (let x = 32 - half; x <= 32 + half; x++) {
+        const t = (x - 32 + half) / (half * 2);
+        c.set(x, y, t < 0.15 ? BRONZE.c3 : t < 0.35 ? BRONZE.c2 : t > 0.85 ? BRONZE.c0 : BRONZE.c1);
+      }
+    }
+    c.hline(24, B - 9, 17, BRONZE.c0); // cast band
+    for (const [x, y] of [[27, B - 12], [36, B - 6], [30, B - 4], [39, B - 10]]) c.set(x, y, mix(P.teal2, P.teal3, 0.5)); // verdigris
+    box(c, 30, B - 17, 4, 3, BRONZE);
+    c.ellipse(32, B - 1, 14, 2.5, WX.c2);
+    c.hline(22, B - 2, 6, WX.c3);
+    c.outline(P.ink);
+    f.push(c);
+  }
+  packSheet('decor_mire', f, W, H, B);
+}
+
+// ---------------------------------------------------------------- The Nave (64x64, ground line 62)
+function genNaveDecor() {
+  const W = 64;
+  const H = 64;
+  const B = 62;
+  const f: Img[] = [];
+  const cell = () => new Img(W, H);
+
+  // 0: the great altar (3 tiles): its fire burning high in a black iron bowl, the cloth, candles and wax
+  {
+    const c = cell();
+    box(c, 9, B - 14, 46, 14, STN);
+    for (const x of [15, 27, 37, 49]) {
+      c.vline(x, B - 12, 10, STN.c0);
+      c.vline(x + 1, B - 12, 10, STN.c2);
+    }
+    box(c, 8, B - 17, 48, 4, STN); // top slab
+    c.rect(22, B - 17, 20, 12, CLOTH_RED.c1); // altar cloth
+    c.vline(23, B - 16, 10, CLOTH_RED.c2);
+    c.vline(40, B - 16, 10, CLOTH_RED.c0);
     c.hline(22, B - 6, 20, P.flame1);
     c.vline(22, B - 17, 12, P.flame1);
-    c.vline(41, B - 17, 12, P.flame1);
-    for (const [x, l] of [[12, 6], [19, 9], [45, 7], [52, 5]]) c.vline(x, B - 14, l, P.wax1); // wax running down the front
-    c.ellipse(32, B - 19, 8, 3, P.dark2); // the fire bowl
-    c.hline(25, B - 18, 15, P.steel1);
+    c.vline(41, B - 17, 12, GOLD0);
+    for (const [x, y] of [[31, B - 13], [32, B - 13], [31, B - 12], [32, B - 11], [30, B - 12], [33, B - 12]]) c.set(x, y, P.flame2); // the Abbey's flame, stitched
+    for (const [x, l] of [[12, 6], [19, 9], [45, 7], [52, 5]] as const) {
+      c.vline(x, B - 14, l, P.wax1); // wax running down the front
+      c.set(x, B - 14 + l, P.wax2);
+    }
+    c.ellipse(32, B - 19, 8, 3, IRON.c0); // the fire bowl
+    c.hline(25, B - 18, 15, IRON.c2);
+    c.hline(25, B - 19, 15, IRON.c3);
     const r = rng(4242);
     for (let i = 0; i < 26; i++) {
       const x = 26 + Math.floor(r() * 13);
       const h = 4 + Math.floor(r() * (14 - Math.abs(x - 32) * 1.4));
       c.vline(x, B - 20 - h, h, i % 3 ? P.flame1 : P.flame2);
-      c.set(x, B - 21 - h, P.flame2);
+      c.set(x, B - 21 - h, i % 2 ? P.flame2 : P.ember);
     }
     c.vline(32, B - 40, 8, P.flame2);
-    for (const x of [12, 52]) {
-      c.rect(x - 1, B - 22, 3, 5, P.wax2); // altar candles
-      c.set(x, B - 23, P.flame2);
-    }
+    c.vline(31, B - 36, 4, P.white);
+    for (const x of [12, 52]) candleAt(c, x - 1, B - 17, 5);
+    for (const x of [16, 48]) candleAt(c, x, B - 17, 3);
     c.outline(P.ink);
-    deco.push(c);
+    finish(c, 32, B, 26, 2.5);
+    f.push(c);
   }
-  // 1: candelabrum, tall iron, three candles
+  // 1: candelabrum: tall wrought iron, three candles guttering
   {
     const c = cell();
-    c.vline(32, B - 30, 30, P.dark2);
-    c.vline(31, B - 30, 30, P.steel1);
-    c.hline(27, B - 1, 10, P.dark2); // feet
-    c.hline(28, B - 2, 8, P.steel1);
-    line(c, 26, B - 26, 38, B - 26, P.steel1); // the arms
-    line(c, 26, B - 26, 26, B - 30, P.steel1);
-    line(c, 38, B - 26, 38, B - 30, P.steel1);
+    c.vline(32, B - 30, 30, IRON.c0);
+    c.vline(31, B - 30, 30, IRON.c2);
+    c.set(31, B - 20, IRON.c3); // a knop on the stem
+    c.hline(30, B - 20, 4, IRON.c1);
+    c.hline(27, B - 1, 10, IRON.c0); // feet
+    c.hline(28, B - 2, 8, IRON.c2);
+    line(c, 26, B - 26, 38, B - 26, IRON.c2); // the arms
+    line(c, 26, B - 26, 26, B - 30, IRON.c2);
+    line(c, 38, B - 26, 38, B - 30, IRON.c1);
     for (const [x, y] of [[26, 31], [32, 34], [38, 31]]) {
-      c.rect(x - 1, B - y - 4, 2, 4, P.wax2);
-      c.set(x - 1, B - y - 5, P.flame2);
-      c.set(x - 1, B - y - 6, P.flame1);
-      c.vline(x + 1, B - y + 1, 3, P.wax1); // drips
+      c.hline(x - 2, B - y + 1, 4, IRON.c1); // drip pans
+      candleAt(c, x - 1, B - y + 1, 4);
+      c.vline(x + 1, B - y + 2, 3, P.wax1); // drips
     }
     c.outline(P.ink);
-    deco.push(c);
+    finish(c, 32, B, 6, 2);
+    f.push(c);
   }
   // 2, 3: a pew (anchor and west tile), whole or broken
   for (const broken of [false, true]) {
@@ -5758,38 +6313,360 @@ function genNave() {
     const x0 = 9;
     const w = 31;
     if (!broken) {
-      c.rect(x0, B - 16, w, 3, P.wood1); // backrest
-      c.hline(x0, B - 16, w, P.wood2);
-      c.rect(x0, B - 10, w, 4, P.wood2); // seat
-      c.hline(x0, B - 7, w, P.wood1);
-      for (const x of [x0, x0 + w - 2]) c.rect(x, B - 16, 2, 16, P.wood1); // ends
-      c.rect(x0 + 13, B - 6, 2, 6, P.wood1);
+      boards(c, x0, B - 17, w, 4, WOOD, false, 2, 32);
+      box(c, x0, B - 10, w, 4, WOOD); // seat
+      for (const x of [x0, x0 + w - 3]) box(c, x, B - 18, 3, 18, DWOOD); // carved ends
+      c.set(x0 + 1, B - 18, DWOOD.c3);
+      box(c, x0 + 13, B - 6, 3, 6, DWOOD);
+      c.rect(x0 + 6, B - 9, 3, 1, P.blood1); // a hymn book left on the seat
     } else {
-      line(c, x0, B - 14, x0 + 14, B - 10, P.wood1); // snapped backrest
-      line(c, x0 + 17, B - 12, x0 + w, B - 17, P.wood1);
-      c.rect(x0, B - 8, 12, 3, P.wood2);
-      c.rect(x0 + 18, B - 9, w - 18, 3, P.wood2);
-      for (const x of [x0, x0 + w - 2]) c.rect(x, B - 12, 2, 12, P.wood1);
-      for (const [x, y] of [[x0 + 14, 2], [x0 + 16, 4], [x0 + 12, 1]]) c.rect(x, B - y, 2, 1, P.wood2); // splinters
+      line(c, x0, B - 14, x0 + 14, B - 10, WOOD.c1); // snapped backrest
+      line(c, x0, B - 15, x0 + 14, B - 11, WOOD.c2);
+      line(c, x0 + 17, B - 12, x0 + w, B - 17, WOOD.c1);
+      box(c, x0, B - 8, 12, 3, WOOD);
+      box(c, x0 + 18, B - 9, w - 18, 3, WOOD);
+      for (const x of [x0, x0 + w - 3]) box(c, x, B - 12, 3, 12, DWOOD);
+      for (const [x, y] of [[x0 + 14, 2], [x0 + 16, 4], [x0 + 12, 1], [x0 + 20, 1]]) c.rect(x, B - y, 2, 1, WOOD.c3); // splinters
     }
     c.outline(P.ink);
-    deco.push(c);
+    finish(c, 24, B, 17, 2);
+    f.push(c);
   }
   // 4: the lift gate in the wall: a dark shaft behind iron bars, a chain going up
   {
     const c = cell();
     c.rect(24, B - 30, 17, 30, P.ink);
-    c.rect(24, B - 32, 17, 2, P.steel1);
-    for (let x = 25; x <= 39; x += 3) c.vline(x, B - 30, 30, P.steel1);
-    c.hline(24, B - 16, 17, P.steel1);
-    c.vline(32, B - 44, 12, P.dark2); // the chain
-    for (let y = B - 44; y < B - 32; y += 2) c.set(32, y, P.steel2);
+    for (let y = B - 30; y < B; y += 5) c.hline(25, y, 15, mix(P.ink, P.dark1, 0.5)); // the shaft's depth
+    box(c, 23, B - 33, 19, 3, IRON);
+    for (let x = 25; x <= 39; x += 3) {
+      c.vline(x, B - 30, 30, IRON.c2);
+      c.set(x, B - 30, IRON.c3);
+    }
+    c.hline(24, B - 16, 17, IRON.c1);
+    c.hline(24, B - 17, 17, IRON.c3);
+    for (let y = B - 46; y < B - 33; y += 2) {
+      c.set(32, y, IRON.c3);
+      c.set(32, y + 1, IRON.c0);
+    }
     c.outline(P.ink);
-    deco.push(c);
+    f.push(c);
   }
-  const img = new Img(W * deco.length, H);
-  deco.forEach((f, i) => img.blit(f, i * W, 0));
-  sheet('decor_nave', img, { cell: [W, H], pivot: [32, B], layer: 'single' });
+  packSheet('decor_nave', f, W, H, B);
+}
+
+// ---------------------------------------------------------------- The Guttering Abbey (64x64, ground line 62)
+// Scenery that tells each room's story: saints and banners at the doors, the fallen bell in the Bell Passage,
+// sarcophagi on the Crypt Stair, skulls in the Ossuary, desks and scrolls in the Scriptorium, stores in the Undercroft.
+function genAbbeyDecor() {
+  const W = 64;
+  const H = 64;
+  const B = 62;
+  const f: Img[] = [];
+  const cell = () => new Img(W, H);
+  const skull = (c: Img, x: number, y: number, lit = false) => {
+    blob(c, x, y, 2.4, 2.1, BONE_R);
+    c.set(x - 1, y, P.ink);
+    c.set(x + 1, y, P.ink);
+    c.set(x, y + 2, BONE_R.c0);
+    if (lit) c.set(x - 1, y, P.ember);
+  };
+
+  // 0: saint statue (tall): a hooded saint on a plinth, holding up a lit candle; wax run down the robe
+  {
+    const c = cell();
+    box(c, 25, B - 7, 14, 7, STN); // plinth
+    c.hline(27, B - 4, 10, STN.c0); // an inscription
+    for (let y = B - 34; y < B - 7; y++) {
+      const half = 4 + Math.round((y - (B - 34)) * 0.12);
+      for (let x = 32 - half; x <= 32 + half; x++) {
+        const t = (x - 32 + half) / (half * 2);
+        c.set(x, y, t < 0.18 ? STN.c3 : t < 0.35 ? STN.c2 : t > 0.82 ? STN.c0 : STN.c1);
+      }
+    }
+    for (const x of [30, 34]) line(c, x, B - 26, x + (x < 32 ? -1 : 1), B - 8, STN.c0); // robe folds
+    blob(c, 32, B - 36, 4, 4, STN); // hood
+    c.rect(30, B - 36, 4, 3, STN.c0); // the face in shadow
+    line(c, 35, B - 30, 38, B - 38, STN.c2); // arm raised
+    c.hline(37, B - 39, 3, STN.c2); // hand
+    candleAt(c, 38, B - 39, 3);
+    for (const [x, l] of [[37, 5], [35, 9], [30, 6]] as const) c.vline(x, B - 34, l, P.wax2); // wax run down
+    mossTop(c, 25, B - 7, 14, 301);
+    c.outline(P.ink);
+    finish(c, 32, B, 9, 2);
+    f.push(c);
+  }
+  // 1: stone bench (2 tiles): a slab on two legs, moss at its feet
+  {
+    const c = cell();
+    box(c, 11, B - 11, 27, 4, STN);
+    for (const x of [13, 32]) box(c, x, B - 8, 4, 8, STN);
+    mossTop(c, 12, B - 1, 7, 302);
+    c.set(22, B - 10, STN.c0); // a chip
+    c.outline(P.ink);
+    finish(c, 24, B, 15, 2);
+    f.push(c);
+  }
+  // 2: dry fountain (2 tiles): a stone basin, cracked and dry, a carved flame on its spire, ivy over the rim
+  {
+    const c = cell();
+    c.ellipse(24, B - 6, 15, 6, STN.c0);
+    c.ellipse(24, B - 7, 14, 5, STN.c2);
+    c.ellipse(24, B - 7, 11, 3.5, STN.c0); // the dry bowl
+    c.ellipse(23, B - 7.5, 9, 2.5, mix(STN.c0, P.dark2, 0.5));
+    line(c, 18, B - 8, 23, B - 6, P.dark1); // cracks in the dry bottom
+    line(c, 26, B - 8, 30, B - 6, P.dark1);
+    c.hline(11, B - 3, 27, STN.c1);
+    c.hline(11, B - 2, 27, STN.c0);
+    box(c, 22, B - 22, 5, 14, STN); // spire
+    c.set(24, B - 25, STN.c2); // the stone flame
+    c.hline(23, B - 24, 3, STN.c2);
+    c.hline(23, B - 23, 3, STN.c1);
+    ivy(c, 13, B - 9, 6, 303);
+    ivy(c, 34, B - 9, 5, 304);
+    mossTop(c, 12, B - 11, 24, 305);
+    c.outline(P.ink);
+    finish(c, 24, B, 17, 2.5);
+    f.push(c);
+  }
+  // 3: rubble (flat): fallen stone and dust
+  {
+    const c = cell();
+    c.ellipse(32, B - 1, 12, 2, mix(STN.c1, P.dark2, 0.4)); // dust
+    for (const [x, y, rx, ry] of [[26, B - 3, 4, 2.5], [33, B - 2, 3, 2], [38, B - 3, 3.5, 2.2], [30, B - 5, 2.5, 1.8]] as const) blob(c, x, y, rx, ry, STN);
+    c.set(22, B - 1, STN.c2);
+    c.set(43, B - 1, STN.c2);
+    c.outline(P.ink);
+    f.push(c);
+  }
+  // 4: the fallen bell (2 tiles): bronze, on its side, cracked through, its clapper spilled out
+  {
+    const c = cell();
+    for (let x = 10; x < 36; x++) {
+      const k = (x - 10) / 25;
+      const half = Math.round(4 + k * 7);
+      for (let y = B - 12 - half; y <= B - 12 + half; y++) {
+        const t = (y - (B - 12 - half)) / (half * 2);
+        c.set(x, y, t < 0.15 ? BRONZE.c3 : t < 0.35 ? BRONZE.c2 : t > 0.82 ? BRONZE.c0 : BRONZE.c1);
+      }
+    }
+    c.ellipse(36, B - 12, 2.5, 11, BRONZE.c0); // the mouth
+    c.ellipse(37, B - 12, 1.8, 9.5, P.ink);
+    for (const x of [16, 27]) c.vline(x, B - 12 - Math.round(4 + ((x - 10) / 25) * 7), Math.round(8 + ((x - 10) / 25) * 14), BRONZE.c0); // cast bands
+    line(c, 22, B - 20, 26, B - 9, P.ink); // the crack
+    line(c, 26, B - 9, 25, B - 4, P.ink);
+    for (const [x, y] of [[14, B - 9], [20, B - 17], [31, B - 5], [29, B - 18]]) c.set(x, y, mix(P.teal2, P.teal3, 0.5)); // verdigris
+    box(c, 7, B - 14, 4, 5, BRONZE); // crown loop
+    blob(c, 42, B - 3, 3, 2.5, IRON); // clapper
+    line(c, 39, B - 5, 36, B - 9, IRON.c1);
+    c.outline(P.ink);
+    finish(c, 24, B, 16, 2);
+    f.push(c);
+  }
+  // 5: bell rope (hangs from above, no footprint): frayed at the end, a knot to pull on
+  {
+    const c = cell();
+    for (let y = 0; y < B - 12; y++) {
+      c.set(32, y, y % 3 === 0 ? mix(P.wax1, P.wood2, 0.5) : P.wax1);
+      c.set(33, y, mix(P.wax1, P.wood1, 0.5));
+    }
+    blob(c, 32.5, B - 12, 2, 2, CANVAS); // the knot
+    for (const x of [31, 32, 33, 34]) c.vline(x, B - 10, 2 + (x % 2), mix(P.wax1, P.wood1, 0.3)); // frayed end
+    c.outline(P.ink);
+    c.ellipse(32, B - 1, 2.5, 1, withAlpha(P.ink, 100));
+    f.push(c);
+  }
+  // 6: sarcophagus (2 tiles): an effigy carved on the lid, hands folded; the lid shifted a finger's width
+  {
+    const c = cell();
+    box(c, 9, B - 12, 30, 12, STN);
+    for (const x of [15, 22, 29]) c.vline(x, B - 10, 8, STN.c0); // panels
+    box(c, 8, B - 17, 32, 5, STN); // the lid
+    c.hline(9, B - 16, 30, STN.c3);
+    blob(c, 13, B - 15, 2.5, 2, STN); // effigy: head on a pillow
+    c.rect(16, B - 16, 18, 3, STN.c2); // body
+    c.hline(16, B - 14, 18, STN.c1);
+    c.set(24, B - 15, STN.c0); // folded hands
+    c.set(25, B - 15, STN.c0);
+    line(c, 35, B - 17, 37, B - 14, STN.c3); // sword on the lid
+    c.hline(38, B - 13, 2, P.ink); // the gap where the lid has moved
+    mossTop(c, 9, B - 1, 8, 306);
+    c.outline(P.ink);
+    finish(c, 24, B, 17, 2);
+    f.push(c);
+  }
+  // 7: bone pile (tall): skulls and long bones heaped against the wall
+  {
+    const c = cell();
+    const r = rng(307);
+    for (let i = 0; i < 12; i++) {
+      const x = 22 + r() * 20;
+      const y = B - 2 - r() * 10;
+      line(c, x, y, x + (r() - 0.5) * 12, y - r() * 4, i % 2 ? BONE_R.c1 : BONE_R.c2);
+    }
+    for (const [x, y] of [[26, B - 5], [32, B - 7], [37, B - 4], [30, B - 13], [35, B - 12], [32, B - 18], [28, B - 9]] as const) skull(c, x, y);
+    candleAt(c, 32, B - 20, 3); // someone left a candle on top
+    c.outline(P.ink);
+    finish(c, 32, B, 12, 2);
+    f.push(c);
+  }
+  // 8: skull shelf (2 tiles, tall): stone niches, a skull in every one, a candle guttering in the middle
+  {
+    const c = cell();
+    box(c, 9, B - 38, 30, 38, STN);
+    for (let row = 0; row < 3; row++) {
+      const y = B - 35 + row * 11;
+      for (let col = 0; col < 4; col++) {
+        const x = 12 + col * 7;
+        c.rect(x, y, 5, 8, P.ink); // niche
+        c.hline(x, y + 8, 5, STN.c3); // its sill
+        if (row === 1 && col === 1) candleAt(c, x + 2, y + 8, 3);
+        else skull(c, x + 2, y + 5, row === 0 && col === 3);
+      }
+    }
+    mossTop(c, 9, B - 39, 30, 308);
+    c.outline(P.ink);
+    finish(c, 24, B, 16, 2);
+    f.push(c);
+  }
+  // 9: bones (flat): scattered on the floor
+  {
+    const c = cell();
+    for (const [x0, y0, x1, y1] of [[22, B - 2, 30, B - 4], [34, B - 1, 40, B - 3], [28, B - 5, 33, B - 5], [38, B - 5, 42, B - 6]] as const) {
+      line(c, x0, y0 + 1, x1, y1 + 1, BONE_R.c0);
+      line(c, x0, y0, x1, y1, BONE_R.c2);
+      c.set(x0, y0, BONE_R.c3);
+    }
+    skull(c, 26, B - 5);
+    c.outline(P.ink);
+    f.push(c);
+  }
+  // 10: lectern: a great book open on it, a candle to read by
+  {
+    const c = cell();
+    box(c, 29, B - 16, 5, 16, DWOOD);
+    box(c, 26, B - 2, 11, 2, DWOOD);
+    for (let y = 0; y < 5; y++) c.hline(24 + y, B - 22 + y, 16 - y, y === 0 ? DWOOD.c3 : DWOOD.c1); // sloped top
+    c.rect(25, B - 25, 14, 4, P.wax2); // the open book
+    c.vline(32, B - 25, 4, P.wax1);
+    for (const y of [B - 24, B - 23]) {
+      c.hline(26, y, 5, P.dark2);
+      c.hline(33, y, 5, P.dark2);
+    }
+    c.rect(33, B - 24, 2, 1, P.blood2); // an illuminated capital
+    c.vline(35, B - 21, 4, P.blood1); // ribbon marker
+    candleAt(c, 40, B - 17, 4);
+    c.outline(P.ink);
+    finish(c, 32, B, 8, 2);
+    f.push(c);
+  }
+  // 11: writing desk (2 tiles): a sloped copying desk, pages, an ink pot and quill, a candle, a stool
+  {
+    const c = cell();
+    for (let y = 0; y < 5; y++) c.hline(10, B - 18 + y, 26, y === 0 ? DWOOD.c3 : y === 4 ? DWOOD.c0 : DWOOD.c1);
+    for (const x of [11, 33]) box(c, x, B - 13, 3, 13, DWOOD);
+    c.rect(14, B - 19, 8, 4, P.wax2); // pages
+    c.rect(23, B - 19, 7, 4, mix(P.wax2, P.wax1, 0.5));
+    for (const y of [B - 18, B - 17]) c.hline(15, y, 6, P.dark2);
+    c.rect(31, B - 20, 2, 2, P.ink); // ink pot
+    line(c, 32, B - 21, 35, B - 26, P.wax2); // quill
+    candleAt(c, 12, B - 19, 3);
+    box(c, 20, B - 7, 8, 3, WOOD); // stool
+    for (const x of [21, 26]) c.vline(x, B - 4, 4, WOOD.c0);
+    c.outline(P.ink);
+    finish(c, 24, B, 15, 2);
+    f.push(c);
+  }
+  // 12: scroll pile (flat): rolled scrolls and a loose page
+  {
+    const c = cell();
+    for (const [x, y] of [[26, B - 3], [31, B - 2], [34, B - 4], [29, B - 5]] as const) {
+      c.rect(x, y, 6, 2, P.wax2);
+      c.hline(x, y + 1, 6, P.wax1);
+      c.set(x + 5, y, CANVAS.c1); // the roll's end
+      c.set(x + 2, y, P.blood1); // a seal
+    }
+    c.rect(38, B - 2, 4, 2, P.wax2);
+    c.hline(38, B - 2, 4, P.dark2);
+    c.outline(P.ink);
+    f.push(c);
+  }
+  // 13: barrels (tall): a cask and a small keg on top, iron hoops, a tap
+  {
+    const c = cell();
+    const cask = (cx: number, base: number, rx: number, h: number) => {
+      for (let y = base - h; y < base; y++) {
+        const k = (y - (base - h)) / h;
+        const half = Math.round(rx * (0.85 + Math.sin(k * Math.PI) * 0.15));
+        for (let x = cx - half; x <= cx + half; x++) {
+          const t = (x - cx + half) / (half * 2);
+          c.set(x, y, t < 0.18 ? WOOD.c3 : t < 0.35 ? WOOD.c2 : t > 0.82 ? WOOD.c0 : WOOD.c1);
+        }
+      }
+      for (const k of [0.2, 0.8]) c.hline(cx - rx, Math.round(base - h + h * k), rx * 2 + 1, IRON.c1);
+      c.ellipse(cx, base - h, rx - 1, 1.5, WOOD.c2); // the lid
+    };
+    cask(32, B, 8, 16);
+    cask(32, B - 16, 5, 9);
+    box(c, 30, B - 7, 3, 2, IRON); // tap
+    c.outline(P.ink);
+    finish(c, 32, B, 10, 2);
+    f.push(c);
+  }
+  // 14: sacks: grain slumped against each other, one split
+  {
+    const c = cell();
+    blob(c, 27, B - 6, 6, 6, CANVAS);
+    blob(c, 36, B - 5, 5.5, 5, CANVAS);
+    c.hline(25, B - 12, 4, WOOD.c0); // tied necks
+    c.hline(34, B - 10, 4, WOOD.c0);
+    for (const [x, y] of [[40, B - 1], [42, B], [41, B - 2]]) c.set(x, y, mix(P.wax1, P.wood2, 0.3)); // spilled grain
+    c.outline(P.ink);
+    finish(c, 32, B, 11, 2);
+    f.push(c);
+  }
+  // 15: candle stand: a tall iron pricket, one thick candle, wax heaped at its foot
+  {
+    const c = cell();
+    c.vline(32, B - 22, 22, IRON.c0);
+    c.vline(31, B - 22, 22, IRON.c2);
+    c.hline(28, B - 1, 8, IRON.c0);
+    c.hline(29, B - 2, 6, IRON.c2);
+    c.hline(28, B - 22, 8, IRON.c2); // drip pan
+    c.hline(28, B - 21, 8, IRON.c0);
+    c.rect(30, B - 28, 3, 6, P.wax2);
+    c.vline(32, B - 28, 6, P.wax1);
+    c.set(31, B - 29, P.ink);
+    flameAt(c, 31, B - 29, 2);
+    for (const x of [28, 35]) c.vline(x, B - 21, 3, P.wax2); // over the pan's edge
+    c.ellipse(32, B - 1, 4, 1, P.wax1);
+    c.outline(P.ink);
+    finish(c, 32, B, 5, 1.5);
+    f.push(c);
+  }
+  // 16: banner (hangs on the wall above, no footprint): the Abbey's red, a gold flame, frayed at the foot
+  {
+    const c = cell();
+    box(c, 23, B - 36, 19, 2, WOOD); // pole
+    c.set(22, B - 35, GOLD0);
+    c.set(42, B - 35, GOLD0);
+    for (let y = B - 34; y < B - 14; y++) {
+      const inset = y > B - 18 ? y - (B - 18) : 0;
+      for (let x = 25 + Math.min(inset, 7); x <= 39 - Math.min(inset, 7); x++) {
+        const t = (x - 25) / 14;
+        c.set(x, y, t < 0.15 ? CLOTH_RED.c3 : t < 0.3 ? CLOTH_RED.c2 : t > 0.85 ? CLOTH_RED.c0 : CLOTH_RED.c1);
+      }
+    }
+    for (const x of [26, 38]) c.vline(x, B - 34, 17, P.flame1); // gilt edging
+    // the flame
+    c.set(32, B - 30, P.flame2);
+    c.rect(31, B - 29, 3, 3, P.flame1);
+    c.set(32, B - 28, P.flame2);
+    c.hline(30, B - 25, 5, GOLD0);
+    for (const x of [28, 31, 34, 36]) c.set(x, B - 15 - (x % 2), null); // frayed hem
+    c.outline(P.ink);
+    f.push(c);
+  }
+  packSheet('decor_abbey', f, W, H, B);
 }
 
 // ---------------------------------------------------------------- font (original 5x7, ASCII 32..126, 16 per row)
@@ -5891,6 +6768,10 @@ genTiles();
 genRoadTiles();
 genRoadDecor();
 genHubDecor();
+genWorksDecor();
+genMireDecor();
+genNaveDecor();
+genAbbeyDecor();
 genChest();
 genNpcs();
 genTollwarden();

@@ -48,6 +48,26 @@
       "type": "prop",
       "kind": "candles",
       "at": [10, 13]
+    },
+    {
+      "type": "decor",
+      "kind": "sarcophagus",
+      "at": [10, 3]
+    },
+    {
+      "type": "decor",
+      "kind": "sarcophagus",
+      "at": [2, 7]
+    },
+    {
+      "type": "decor",
+      "kind": "candle_stand",
+      "at": [1, 12]
+    },
+    {
+      "type": "decor",
+      "kind": "bones",
+      "at": [7, 13]
     }
   ]
 }

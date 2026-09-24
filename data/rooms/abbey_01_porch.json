@@ -79,6 +79,36 @@
       "type": "prop",
       "kind": "pot",
       "at": [18, 13]
+    },
+    {
+      "type": "decor",
+      "kind": "saint_statue",
+      "at": [8, 1]
+    },
+    {
+      "type": "decor",
+      "kind": "saint_statue",
+      "at": [12, 1]
+    },
+    {
+      "type": "decor",
+      "kind": "banner",
+      "at": [4, 1]
+    },
+    {
+      "type": "decor",
+      "kind": "banner",
+      "at": [17, 1]
+    },
+    {
+      "type": "decor",
+      "kind": "stone_bench",
+      "at": [19, 9]
+    },
+    {
+      "type": "decor",
+      "kind": "rubble",
+      "at": [17, 3]
     }
   ]
 }

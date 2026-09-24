@@ -47,6 +47,21 @@
       "type": "prop",
       "kind": "candles",
       "at": [9, 7]
+    },
+    {
+      "type": "decor",
+      "kind": "altar",
+      "at": [7, 7]
+    },
+    {
+      "type": "decor",
+      "kind": "candle_stand",
+      "at": [4, 7]
+    },
+    {
+      "type": "decor",
+      "kind": "candle_stand",
+      "at": [10, 6]
     }
   ]
 }

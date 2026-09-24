@@ -229,6 +229,7 @@ Portrait frame 4 is the Mire Matron.
 | `taper_shot` | 12×6, pivot 6,3 | A flung lit taper, flame first (rotates with its flight) |
 | `black_flame` | 8×10, pivot 4,6 | Phase 2's projectiles |
 | `decor_nave` | 64×64, pivot 32,62 | 0 `great_altar` (3 tiles, its fire in an iron bowl), 1 `candelabrum`, 2 `pew` (2 tiles), 3 `pew_broken`, 4 `lift_gate` (iron bars over a dark shaft, set in a wall gap) |
+| `decor_abbey` | 64×64, pivot 32,62 | 0 `saint_statue` (tall), 1 `stone_bench` (2 tiles), 2 `dry_fountain` (2), 3 `rubble` (flat), 4 `fallen_bell` (2), 5 `bell_rope` (hangs, no footprint), 6 `sarcophagus` (2), 7 `bone_pile` (tall), 8 `skull_shelf` (2, tall), 9 `bones` (flat), 10 `lectern`, 11 `writing_desk` (2), 12 `scroll_pile` (flat), 13 `barrels` (tall), 14 `sacks`, 15 `candle_stand`, 16 `banner` (hangs on the wall above, no footprint) |
 
 Portrait frame 5 is the Chandler.
 
@@ -321,6 +322,7 @@ The manifest's `tiles` block maps tile kinds to sheet indices (index = row × 8 
 | `wall_cap` | 16–31 | Top of a wall. **Index = 16 + edge mask**, where the mask bits say which sides are open: N=1, E=2, S=4, W=8. Draw a rim on the open sides. |
 | `shade` (optional) | 32–39 | Soft wall shadow drawn over the floor. **Index = 32 + mask** of the floor cell's closed sides: N=1, E=2, W=4 (32 itself is never drawn). Semi-transparent black. |
 | `glow` (optional) | 14 | Tiles that give off light: each gets a flickering `light_glow` added on top (the candle niche). |
+| `wall_front_<variant>` (optional) | 48–51 | Wall faces used instead of `wall_front` when that floor variant lies at the wall's foot (the cell below, either side of it, or two below). The abbey's `wall_front_floor_moss` grows ivy down the stone and moss up its foot. |
 | `fringe_<variant>` (optional) | 16 each | Soft edge of a floor variant, drawn over the floor cells that border it. **Index = mask** of the sides where that variant is (N=1, E=2, S=4, W=8; mask 0 is never drawn). List the fringe sets top layer first: a variant spreads over the ones listed after it and over floors without a fringe, never over one listed before it. The abbey has none; see the other tilesets. |
 
 **Lighting:** light comes from the top left. Edges facing up or left catch a highlight; edges facing down or right fall into shadow. `light_glow` (fx, 56×56, pivot at its centre) is stepped rings of warm colour with a thin dithered band between steps, drawn with additive blending.

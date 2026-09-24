@@ -71,6 +71,31 @@
       "type": "prop",
       "kind": "candles",
       "at": [1, 10]
+    },
+    {
+      "type": "decor",
+      "kind": "saint_statue",
+      "at": [6, 1]
+    },
+    {
+      "type": "decor",
+      "kind": "saint_statue",
+      "at": [14, 1]
+    },
+    {
+      "type": "decor",
+      "kind": "banner",
+      "at": [4, 1]
+    },
+    {
+      "type": "decor",
+      "kind": "banner",
+      "at": [16, 1]
+    },
+    {
+      "type": "decor",
+      "kind": "rubble",
+      "at": [10, 10]
     }
   ]
 }

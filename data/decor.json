@@ -55,6 +55,23 @@
     "candelabrum": { "sprite": "decor_nave", "frame": 1, "blocks": [[0, 0]] },
     "pew": { "sprite": "decor_nave", "frame": 2, "blocks": [[-1, 0], [0, 0]] },
     "pew_broken": { "sprite": "decor_nave", "frame": 3, "blocks": [[-1, 0], [0, 0]] },
-    "lift_gate": { "sprite": "decor_nave", "frame": 4 }
+    "lift_gate": { "sprite": "decor_nave", "frame": 4 },
+    "saint_statue": { "sprite": "decor_abbey", "frame": 0, "blocks": [[0, 0]], "tall": true },
+    "stone_bench": { "sprite": "decor_abbey", "frame": 1, "blocks": [[-1, 0], [0, 0]] },
+    "dry_fountain": { "sprite": "decor_abbey", "frame": 2, "blocks": [[-1, 0], [0, 0]] },
+    "rubble": { "sprite": "decor_abbey", "frame": 3, "flat": true },
+    "fallen_bell": { "sprite": "decor_abbey", "frame": 4, "blocks": [[-1, 0], [0, 0]] },
+    "bell_rope": { "sprite": "decor_abbey", "frame": 5 },
+    "sarcophagus": { "sprite": "decor_abbey", "frame": 6, "blocks": [[-1, 0], [0, 0]] },
+    "bone_pile": { "sprite": "decor_abbey", "frame": 7, "blocks": [[0, 0]], "tall": true },
+    "skull_shelf": { "sprite": "decor_abbey", "frame": 8, "blocks": [[-1, 0], [0, 0]], "tall": true },
+    "bones": { "sprite": "decor_abbey", "frame": 9, "flat": true },
+    "lectern": { "sprite": "decor_abbey", "frame": 10, "blocks": [[0, 0]] },
+    "writing_desk": { "sprite": "decor_abbey", "frame": 11, "blocks": [[-1, 0], [0, 0]] },
+    "scroll_pile": { "sprite": "decor_abbey", "frame": 12, "flat": true },
+    "barrels": { "sprite": "decor_abbey", "frame": 13, "blocks": [[0, 0]], "tall": true },
+    "sacks": { "sprite": "decor_abbey", "frame": 14, "blocks": [[0, 0]] },
+    "candle_stand": { "sprite": "decor_abbey", "frame": 15, "blocks": [[0, 0]] },
+    "banner": { "sprite": "decor_abbey", "frame": 16 }
   }
 }

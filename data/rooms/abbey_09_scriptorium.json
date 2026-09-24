@@ -81,6 +81,51 @@
       "type": "prop",
       "kind": "crate",
       "at": [2, 8]
+    },
+    {
+      "type": "decor",
+      "kind": "writing_desk",
+      "at": [15, 2]
+    },
+    {
+      "type": "decor",
+      "kind": "writing_desk",
+      "at": [21, 2]
+    },
+    {
+      "type": "decor",
+      "kind": "writing_desk",
+      "at": [15, 13]
+    },
+    {
+      "type": "decor",
+      "kind": "writing_desk",
+      "at": [27, 13]
+    },
+    {
+      "type": "decor",
+      "kind": "bookshelf",
+      "at": [8, 1]
+    },
+    {
+      "type": "decor",
+      "kind": "bookshelf",
+      "at": [25, 1]
+    },
+    {
+      "type": "decor",
+      "kind": "scroll_pile",
+      "at": [17, 9]
+    },
+    {
+      "type": "decor",
+      "kind": "scroll_pile",
+      "at": [9, 12]
+    },
+    {
+      "type": "decor",
+      "kind": "lectern",
+      "at": [22, 8]
     }
   ]
 }

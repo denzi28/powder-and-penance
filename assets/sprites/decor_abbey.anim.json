@@ -1,0 +1,12 @@
+{
+  "image": "decor_abbey.png",
+  "cell": [
+    64,
+    64
+  ],
+  "pivot": [
+    32,
+    62
+  ],
+  "layer": "single"
+}

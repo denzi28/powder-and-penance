@@ -75,6 +75,51 @@
       "type": "prop",
       "kind": "crate",
       "at": [12, 15]
+    },
+    {
+      "type": "decor",
+      "kind": "skull_shelf",
+      "at": [9, 1]
+    },
+    {
+      "type": "decor",
+      "kind": "skull_shelf",
+      "at": [14, 1]
+    },
+    {
+      "type": "decor",
+      "kind": "skull_shelf",
+      "at": [21, 1]
+    },
+    {
+      "type": "decor",
+      "kind": "bone_pile",
+      "at": [4, 12]
+    },
+    {
+      "type": "decor",
+      "kind": "bone_pile",
+      "at": [22, 12]
+    },
+    {
+      "type": "decor",
+      "kind": "bones",
+      "at": [8, 7]
+    },
+    {
+      "type": "decor",
+      "kind": "bones",
+      "at": [17, 10]
+    },
+    {
+      "type": "decor",
+      "kind": "bones",
+      "at": [13, 3]
+    },
+    {
+      "type": "decor",
+      "kind": "candle_stand",
+      "at": [1, 6]
     }
   ]
 }

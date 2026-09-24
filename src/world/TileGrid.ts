@@ -110,6 +110,9 @@ export interface TileSet {
    * ground next to it instead of ending in a square edge. Index 0 is never drawn.
    * Sets are listed top layer first: a variant's edge spreads over the variants listed after it and over
    * floors that have no fringe, never over one listed before it (wax pools lie on the grass, not under it).
+   *
+   * Optional wall faces by nearby floor: `wall_front_floor_moss` is used for wall faces with moss on the floor
+   * just below them (ivy growing where it is damp).
    */
   [variant: string]: number[] | undefined;
 }
@@ -149,6 +152,16 @@ export function autotile(
   const fringes = Object.keys(ts)
     .filter(k => k.startsWith('fringe_'))
     .map(k => [k.slice('fringe_'.length), ts[k]!] as const);
+  const fronts = Object.keys(ts)
+    .filter(k => k.startsWith('wall_front_'))
+    .map(k => [k.slice('wall_front_'.length), ts[k]!] as const);
+  /** A wall face's tiles by the floor near its foot (the cell below it and the ones beside and below that). */
+  const frontNear = (x: number, y: number) => {
+    for (const [v, list] of fronts)
+      for (const [dx, dy] of [[0, 1], [-1, 1], [1, 1], [0, 2]] as const)
+        if (floor(x + dx, y + dy) && g.variant(x + dx, y + dy) === v) return list;
+    return undefined;
+  };
   const edgeOf = (x: number, y: number) => {
     const own = g.variant(x, y);
     for (const [v, list] of fringes) {
@@ -171,7 +184,7 @@ export function autotile(
           if (m) shade.push({ tx: x, ty: y, index: ts.shade[m] });
         }
       } else if (front(x, y)) {
-        statics.push({ tx: x, ty: y, index: pick(ts.wall_front, x, y) });
+        statics.push({ tx: x, ty: y, index: pick(frontNear(x, y) ?? ts.wall_front, x, y) });
       } else if (cap(x, y)) {
         statics.push({ tx: x, ty: y, index: ts.wall_cap[mask(x, y)] });
       } else {

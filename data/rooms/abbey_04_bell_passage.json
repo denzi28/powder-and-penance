@@ -52,6 +52,26 @@
       "type": "prop",
       "kind": "pot",
       "at": [3, 7]
+    },
+    {
+      "type": "decor",
+      "kind": "fallen_bell",
+      "at": [14, 1]
+    },
+    {
+      "type": "decor",
+      "kind": "bell_rope",
+      "at": [16, 4]
+    },
+    {
+      "type": "decor",
+      "kind": "bell_rope",
+      "at": [8, 2]
+    },
+    {
+      "type": "decor",
+      "kind": "rubble",
+      "at": [18, 7]
     }
   ]
 }
