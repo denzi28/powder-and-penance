@@ -80,29 +80,26 @@ export class AttackRunner {
     }
     if (this.t === s.windup) {
       if (s.pools) bus.emit('pools', { actor: o, strike: s, target: this.target });
+      if (s.eruptions) bus.emit('eruptions', { actor: o, strike: s, target: this.target, angle: this.angle });
       if (s.summon) bus.emit('summon', { actor: o, strike: s });
       else if (s.vanish) bus.emit('vanish', { actor: o, strike: s });
       else if (s.projectile) {
-        // `count` shots in an even fan `spreadDeg` wide around the aim (lobs: landing points swung round the
-        // thrower at the same distance), so a volley reads the same every time.
-        const pr = s.projectile;
-        let t = this.target ?? { x: o.x + Math.cos(this.angle) * 80, y: o.y + Math.sin(this.angle) * 80 };
-        // a Fuse-Runner's spark goes for the keg beside you, if there is one
-        const keg = s.aimAtKeg ? o.ctx.kegNear?.(t.x, t.y, s.aimAtKeg) : null;
-        if (keg) {
-          t = keg;
-          this.angle = Math.atan2(keg.y - o.y, keg.x - o.x);
-        }
-        const dist = Math.hypot(t.x - o.x, t.y - o.y);
-        for (let i = 0; i < pr.count; i++) {
-          const a = this.angle + (pr.count > 1 ? (i / (pr.count - 1) - 0.5) * pr.spreadDeg * DEG : 0);
-          const land = pr.count > 1 ? { x: o.x + Math.cos(a) * dist, y: o.y + Math.sin(a) * dist } : t;
-          o.ctx.projectiles.spawn(o, o.x + Math.cos(a) * 8, o.y + Math.sin(a) * 4, a, pr, land);
-        }
+        this.volley(0);
         bus.emit('thrown', { actor: o, strike: s });
       } else bus.emit('swing', { actor: o, strike: s, angle: this.angle, mirror: this.mirror });
     }
-    const spellOnly = s.summon || s.vanish || (s.pools && s.damage === 0);
+    // more volleys through the active frames (a barrage, a spiral)
+    const v = s.projectile?.volleys;
+    if (v && this.t > s.windup && this.phase === 'active' && (this.t - s.windup) % v.everyTicks === 0) {
+      const i = (this.t - s.windup) / v.everyTicks;
+      if (i < v.count) {
+        this.volley(i);
+        bus.emit('thrown', { actor: o, strike: s });
+      }
+    }
+    // a spin can catch you more than once
+    if (s.rehitTicks && this.phase === 'active' && this.t > s.windup && (this.t - s.windup) % s.rehitTicks === 0) this.hitSet.clear();
+    const spellOnly = s.summon || s.vanish || ((s.pools || s.eruptions) && s.damage === 0);
     if (this.phase === 'active' && !this.visualOnly && !s.projectile && !spellOnly)
       o.ctx.combat.add({
         owner: o,
@@ -116,13 +113,54 @@ export class AttackRunner {
     this.t++;
   }
 
+  /**
+   * Throw volley `i`: `count` shots in an even fan `spreadDeg` wide around the aim, or all the way round
+   * (`ring`); lobs land at the target's distance, swung round the thrower, so a volley reads the same every
+   * time. Later volleys turn by `turnDeg` each (a spiral) or aim afresh (`reaim`).
+   */
+  private volley(i: number) {
+    const s = this.strike;
+    const o = this.owner;
+    const pr = s.projectile!;
+    let t = this.target ?? { x: o.x + Math.cos(this.angle) * 80, y: o.y + Math.sin(this.angle) * 80 };
+    if (i === 0) {
+      // a Fuse-Runner's spark goes for the keg beside you, if there is one
+      const keg = s.aimAtKeg ? o.ctx.kegNear?.(t.x, t.y, s.aimAtKeg) : null;
+      if (keg) {
+        t = keg;
+        this.angle = Math.atan2(keg.y - o.y, keg.x - o.x);
+      }
+    }
+    const v = pr.volleys;
+    let aim = this.angle;
+    if (i > 0 && v) aim = v.reaim && this.target ? Math.atan2(t.y - o.y, t.x - o.x) : this.angle + i * v.turnDeg * DEG * this.mirror;
+    const dist = Math.hypot(t.x - o.x, t.y - o.y);
+    for (let k = 0; k < pr.count; k++) {
+      const a = pr.ring ? aim + (k / pr.count) * Math.PI * 2 : aim + (pr.count > 1 ? (k / (pr.count - 1) - 0.5) * pr.spreadDeg * DEG : 0);
+      const land = pr.count > 1 || i > 0 ? { x: o.x + Math.cos(a) * dist, y: o.y + Math.sin(a) * dist } : t;
+      o.ctx.projectiles.spawn(o, o.x + Math.cos(a) * 8, o.y + Math.sin(a) * 4, a, pr, v?.reaim && pr.lob ? t : land);
+    }
+  }
+
   shape(): HitShape {
     const s = this.strike;
     const hb = s.hitbox;
-    const cx = this.owner.x + Math.cos(this.angle) * hb.offset;
-    const cy = this.owner.y + s.originY + Math.sin(this.angle) * hb.offset;
+    let angle = this.angle;
+    let half = hb.shape === 'arc' ? hb.halfAngle * DEG : 0;
+    if (s.followSweep && hb.shape === 'arc') {
+      // centred on the weapon, widened to cover where it swept since the last tick (fast spins can't skip you)
+      const now = this.pose().angle;
+      this.t--;
+      const before = this.pose().angle;
+      this.t++;
+      const d = Math.atan2(Math.sin(now - before), Math.cos(now - before));
+      angle = now - d / 2;
+      half = Math.min(Math.PI, half + Math.abs(d) / 2);
+    }
+    const cx = this.owner.x + Math.cos(angle) * hb.offset;
+    const cy = this.owner.y + s.originY + Math.sin(angle) * hb.offset;
     return hb.shape === 'arc'
-      ? { kind: 'arc', cx, cy, angle: this.angle, radius: hb.radius, halfAngle: hb.halfAngle * DEG, inner: hb.inner }
+      ? { kind: 'arc', cx, cy, angle, radius: hb.radius, halfAngle: half, inner: hb.inner }
       : { kind: 'circle', cx, cy, radius: hb.radius };
   }
 

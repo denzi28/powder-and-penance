@@ -58,6 +58,7 @@ function critStrike(ticks: number, hitTick: number): StrikeDef {
     unblockable: true,
     unparryable: true,
     pull: false,
+    followSweep: false,
     sfx: 'swing_heavy',
   };
 }

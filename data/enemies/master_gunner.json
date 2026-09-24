@@ -6,19 +6,14 @@
     "title": "The Master Gunner",
     "introAnim": "intro",
     "introTicks": 170,
-    "slams": [
-      140
-    ],
+    "slams": [140],
     "slamShake": 0.5,
     "slamSfx": "b_cannon_fire",
     "introLine": "\"Powder's dry, the Order's gone, and I've still got one shot left in me. You'll do.\"",
     "roarSfx": "b_gunner_roar",
     "turn": {
       "kind": "master_gunner_duel",
-      "altar": [
-        13,
-        4
-      ],
+      "altar": [13, 4],
       "anim": "dismount",
       "ticks": 110,
       "line": "\"She's cracked! Fine. I'll finish this the old way.\""
@@ -26,75 +21,41 @@
   },
   "sprite": "gunner_cannon",
   "hp": 1000,
-  "poise": {
-    "max": 400,
-    "resetTicks": 300
-  },
+  "poise": {"max": 400, "resetTicks": 300},
   "tallow": 0,
   "speed": 18,
   "strafeSpeed": 14,
   "accelTicks": 20,
   "turnDegPerTick": 2.5,
-  "hurtbox": {
-    "w": 34,
-    "h": 34,
-    "offsetY": -16
-  },
-  "collider": {
-    "w": 28,
-    "h": 8
-  },
+  "hurtbox": {"w": 34, "h": 34, "offsetY": -16},
+  "collider": {"w": 28, "h": 8},
   "bodyRadius": 16,
   "knockbackResist": 1,
-  "spacing": {
-    "preferred": 150,
-    "strafeTicks": [
-      60,
-      120
-    ]
-  },
-  "attackGapTicks": [
-    24,
-    50
-  ],
+  "spacing": {"preferred": 150, "strafeTicks": [60, 120]},
+  "attackGapTicks": [24, 50],
   "staggerTicks": 50,
   "parriedTicks": 60,
   "deathTicks": 100,
   "corpseTicks": 999999,
   "blood": "stone3",
-  "steps": {
-    "sfx": "b_cannon_roll",
-    "volume": 0.7
-  },
+  "steps": {"sfx": "b_cannon_roll", "volume": 0.7},
   "moves": [
     {
-      "id": "cannonade",
-      "range": [
-        60,
-        320
-      ],
+      "id": "walking_barrage",
+      "range": [60, 320],
       "weight": 3,
-      "cooldown": 90,
+      "cooldown": 170,
       "strikes": [
         {
           "damage": 0,
           "poise": 0,
           "windup": 40,
-          "active": 3,
+          "active": 43,
           "recovery": 30,
           "trackDegPerTick": 2,
-          "telegraph": {
-            "tick": 14,
-            "kind": "danger"
-          },
-          "hitbox": {
-            "shape": "circle",
-            "radius": 1
-          },
-          "sweep": {
-            "fromDeg": 0,
-            "toDeg": 0
-          },
+          "telegraph": {"tick": 14, "kind": "danger"},
+          "hitbox": {"shape": "circle", "radius": 1},
+          "sweep": {"fromDeg": 0, "toDeg": 0},
           "windupSfx": "b_cannon_crank",
           "sfx": "b_cannon_fire",
           "anim": "lob",
@@ -108,24 +69,16 @@
             "hitstop": 6,
             "shake": 0.45,
             "radius": 4,
-            "count": 3,
-            "spreadDeg": 40,
-            "lob": {
-              "flightTicks": 55,
-              "arcHeight": 60,
-              "blastRadius": 28,
-              "sfx": "b_keg_blast"
-            }
+            "count": 1,
+            "lob": {"flightTicks": 55, "arcHeight": 60, "blastRadius": 28, "sfx": "b_keg_blast"},
+            "volleys": {"count": 4, "everyTicks": 14, "reaim": true}
           }
         }
       ]
     },
     {
       "id": "grapeshot",
-      "range": [
-        0,
-        170
-      ],
+      "range": [0, 170],
       "weight": 3,
       "cooldown": 70,
       "strikes": [
@@ -136,18 +89,9 @@
           "active": 3,
           "recovery": 36,
           "trackDegPerTick": 2.5,
-          "telegraph": {
-            "tick": 12,
-            "kind": "normal"
-          },
-          "hitbox": {
-            "shape": "circle",
-            "radius": 1
-          },
-          "sweep": {
-            "fromDeg": 0,
-            "toDeg": 0
-          },
+          "telegraph": {"tick": 12, "kind": "normal"},
+          "hitbox": {"shape": "circle", "radius": 1},
+          "sweep": {"fromDeg": 0, "toDeg": 0},
           "windupSfx": "b_cannon_crank",
           "sfx": "b_grapeshot",
           "anim": "fire",
@@ -169,10 +113,7 @@
     },
     {
       "id": "ram",
-      "range": [
-        0,
-        120
-      ],
+      "range": [0, 120],
       "weight": 2,
       "cooldown": 120,
       "strikes": [
@@ -185,26 +126,11 @@
           "trackDegPerTick": 3,
           "hyperArmor": 80,
           "unblockable": true,
-          "telegraph": {
-            "tick": 14,
-            "kind": "danger"
-          },
-          "lunge": {
-            "distance": 110,
-            "startTick": 34,
-            "ticks": 14
-          },
-          "hitbox": {
-            "shape": "circle",
-            "radius": 22,
-            "offset": 14
-          },
+          "telegraph": {"tick": 14, "kind": "danger"},
+          "lunge": {"distance": 110, "startTick": 34, "ticks": 14},
+          "hitbox": {"shape": "circle", "radius": 22, "offset": 14},
           "originY": -10,
-          "sweep": {
-            "fromDeg": 0,
-            "toDeg": 0,
-            "reach": 0
-          },
+          "sweep": {"fromDeg": 0, "toDeg": 0, "reach": 0},
           "knockback": 260,
           "hitstop": 7,
           "shake": 0.5,
@@ -216,10 +142,7 @@
     },
     {
       "id": "point_blank",
-      "range": [
-        0,
-        50
-      ],
+      "range": [0, 50],
       "weight": 2,
       "cooldown": 80,
       "strikes": [
@@ -230,27 +153,88 @@
           "active": 6,
           "recovery": 40,
           "trackDegPerTick": 3,
-          "telegraph": {
-            "tick": 8,
-            "kind": "normal"
-          },
-          "hitbox": {
-            "shape": "arc",
-            "radius": 58,
-            "halfAngle": 40
-          },
+          "telegraph": {"tick": 8, "kind": "normal"},
+          "hitbox": {"shape": "arc", "radius": 58, "halfAngle": 40},
           "originY": -14,
-          "sweep": {
-            "fromDeg": 0,
-            "toDeg": 0,
-            "reach": 0
-          },
+          "sweep": {"fromDeg": 0, "toDeg": 0, "reach": 0},
           "knockback": 240,
           "hitstop": 7,
           "shake": 0.45,
           "windupSfx": "b_cannon_crank",
           "sfx": "b_cannon_fire",
           "anim": "fire"
+        }
+      ]
+    },
+    {
+      "id": "cannonade",
+      "range": [60, 320],
+      "weight": 2,
+      "cooldown": 120,
+      "strikes": [
+        {
+          "damage": 0,
+          "poise": 0,
+          "windup": 40,
+          "active": 3,
+          "recovery": 30,
+          "trackDegPerTick": 2,
+          "telegraph": {"tick": 14, "kind": "danger"},
+          "hitbox": {"shape": "circle", "radius": 1},
+          "sweep": {"fromDeg": 0, "toDeg": 0},
+          "windupSfx": "b_cannon_crank",
+          "sfx": "b_cannon_fire",
+          "anim": "lob",
+          "projectile": {
+            "sprite": "cannonball",
+            "speed": 1,
+            "range": 1,
+            "damage": 45,
+            "poise": 60,
+            "knockback": 220,
+            "hitstop": 6,
+            "shake": 0.45,
+            "radius": 4,
+            "count": 3,
+            "spreadDeg": 40,
+            "lob": {"flightTicks": 55, "arcHeight": 60, "blastRadius": 28, "sfx": "b_keg_blast"}
+          }
+        }
+      ]
+    },
+    {
+      "id": "chain_shot",
+      "range": [60, 320],
+      "weight": 2,
+      "cooldown": 160,
+      "strikes": [
+        {
+          "damage": 0,
+          "poise": 0,
+          "windup": 38,
+          "active": 3,
+          "recovery": 34,
+          "trackDegPerTick": 2.5,
+          "telegraph": {"tick": 12, "kind": "danger"},
+          "hitbox": {"shape": "circle", "radius": 1},
+          "sweep": {"fromDeg": 0, "toDeg": 0},
+          "windupSfx": "b_cannon_crank",
+          "sfx": "b_chain_shot",
+          "anim": "fire",
+          "projectile": {
+            "sprite": "cannonball",
+            "speed": 160,
+            "range": 620,
+            "damage": 40,
+            "poise": 60,
+            "knockback": 200,
+            "hitstop": 6,
+            "shake": 0.35,
+            "radius": 7,
+            "count": 2,
+            "spreadDeg": 30,
+            "bounces": 3
+          }
         }
       ]
     }

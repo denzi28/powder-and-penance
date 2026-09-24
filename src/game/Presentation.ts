@@ -155,6 +155,22 @@ export function wirePresentation(gs: GameScene) {
     bus.emit('sfx', { id: e.sfx, x: e.x, y: e.y });
   });
 
+  // the ground erupting (game/Eruptions): debris in the burst's colours, a thump you feel close by
+  const ERUPT_BITS: Record<string, [string, string]> = {
+    spikes: ['stone3', 'stone4'],
+    wax: ['wax1', 'wax2'],
+    flame: ['flame1', 'flame2'],
+    water: ['teal3', 'cyan'],
+    ember: ['ember', 'flame2'],
+  };
+  bus.on('erupted', e => {
+    const [a, b] = ERUPT_BITS[e.fx];
+    gs.particles.burst(e.x, e.y, 6, -Math.PI / 2, 1.6, 10, 110, a, false);
+    gs.particles.burst(e.x, e.y, 10, -Math.PI / 2, 1.1, 6, 80, b, false);
+    gs.cam.addTrauma(Math.max(0, 0.3 - Math.hypot(e.x - gs.player.x, e.y - gs.player.y) / 500));
+    bus.emit('sfx', { id: e.sfx, x: e.x, y: e.y });
+  });
+
   bus.on('thrown', e => bus.emit('sfx', { id: e.strike.sfx === 'swing' ? 'throw' : e.strike.sfx, x: e.actor.x, y: e.actor.y }));
 
   bus.on('propBroken', e => {

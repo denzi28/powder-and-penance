@@ -231,7 +231,7 @@ describe('AttackRunner + CombatSystem', () => {
     const b = stub('enemy', 90, 28, combat, bus);
     const c = stub('enemy', 120, 28, combat, bus);
     const proj = new Projectiles();
-    const def = { sprite: 'bolt', speed: 300, range: 400, damage: 10, poise: 0, pierce: 1, knockback: 0, hitstop: 0, shake: 0, radius: 2, spreadDeg: 0, count: 1 };
+    const def = { sprite: 'bolt', speed: 300, range: 400, damage: 10, poise: 0, pierce: 1, knockback: 0, hitstop: 0, shake: 0, radius: 2, spreadDeg: 0, count: 1, ring: false, bounces: 0, returns: false, spin: 0 };
     proj.spawn(shooter, 24, 28, 0, def);
     for (let i = 0; i < 60 && proj.list.length; i++) proj.tick([shooter, a, b, c], grid, combat, bus);
     expect([a.hp, b.hp, c.hp]).toEqual([90, 90, 100]); // pierced one, stopped in the second
@@ -262,5 +262,117 @@ describe('AttackRunner + CombatSystem', () => {
     while (r.phase !== 'done') r.tick();
     const deg = proj.list.map(p => Math.round((p.angle * 180) / Math.PI)).sort((a, b) => a - b);
     expect(deg).toEqual([-20, 0, 20]);
+  });
+});
+
+describe('signature boss attacks', () => {
+  const open = () =>
+    buildGrid([
+      RoomData.parse({
+        id: 'r',
+        origin: [0, 0],
+        legend: { '#': 'wall', '.': 'floor' },
+        tiles: ['##############', ...Array.from({ length: 8 }, () => '#............#'), '##############'],
+      }),
+    ]);
+  const proj = (over: Record<string, unknown>) =>
+    StrikeDef.parse({
+      damage: 0, poise: 0, windup: 2, active: 12, recovery: 1,
+      hitbox: { shape: 'circle', radius: 1 },
+      projectile: { sprite: 'x', speed: 100, range: 100, damage: 10, poise: 0, radius: 3, ...over },
+    });
+  const deg = (a: number) => ((Math.round((a * 180) / Math.PI) % 360) + 360) % 360;
+
+  it('a ring throws all the way round, and volleys turn into a spiral', () => {
+    const combat = new CombatSystem();
+    const bus = new EventBus<GameEvents>();
+    const atk = stub('enemy', 100, 80, combat, bus);
+    const list = new Projectiles();
+    (atk.ctx as unknown as { projectiles: Projectiles }).projectiles = list;
+    const r = new AttackRunner(atk, proj({ count: 4, ring: true, volleys: { count: 3, everyTicks: 4, turnDeg: 10 } }), 0);
+    while (r.phase !== 'done') r.tick();
+    expect(list.list.map(p => deg(p.angle)).sort((a, b) => a - b)).toEqual([0, 10, 20, 90, 100, 110, 180, 190, 200, 270, 280, 290]);
+  });
+
+  it('homing shots bend round to a foe off to the side; straight ones fly past', () => {
+    const grid = open();
+    for (const homing of [undefined, { degPerTick: 4 }]) {
+      const combat = new CombatSystem();
+      const bus = new EventBus<GameEvents>();
+      const me = stub('enemy', 30, 40, combat, bus);
+      const you = stub('player', 150, 110, combat, bus);
+      const list = new Projectiles();
+      const def = proj({ range: 400, homing }).projectile!;
+      list.spawn(me, 30, 40, 0, def);
+      for (let i = 0; i < 200 && list.list.length; i++) list.tick([me, you], grid, combat, bus);
+      expect(you.hp).toBe(homing ? 90 : 100);
+    }
+  });
+
+  it('a bouncing shot glances off the wall and keeps flying', () => {
+    const combat = new CombatSystem();
+    const bus = new EventBus<GameEvents>();
+    const me = stub('enemy', 100, 60, combat, bus);
+    const list = new Projectiles();
+    let bounced = 0;
+    bus.on('projectileEnd', e => (bounced += e.bounce ? 1 : 0));
+    list.spawn(me, 100, 60, 0, proj({ range: 400, bounces: 1 }).projectile!);
+    for (let i = 0; i < 90; i++) list.tick([me], open(), combat, bus);
+    expect(bounced).toBe(1);
+    expect(list.list.length).toBe(1);
+    expect(Math.cos(list.list[0].angle)).toBeLessThan(0); // coming back the other way
+  });
+
+  it('a boomerang hits on the way out and on the way back, then is caught', () => {
+    const combat = new CombatSystem();
+    const bus = new EventBus<GameEvents>();
+    const me = stub('enemy', 40, 60, combat, bus);
+    const you = stub('player', 90, 60, combat, bus);
+    const list = new Projectiles();
+    list.spawn(me, 40, 60, 0, proj({ range: 110, returns: true, pierce: 5 }).projectile!);
+    expect(list.weaponOut(me)).toBe(true);
+    for (let i = 0; i < 300 && list.list.length; i++) list.tick([me, you], open(), combat, bus);
+    expect(you.hp).toBe(80);
+    expect(list.list.length).toBe(0);
+  });
+
+  it('a lob bursts into a ring of shards', () => {
+    const combat = new CombatSystem();
+    const bus = new EventBus<GameEvents>();
+    const me = stub('enemy', 40, 60, combat, bus);
+    const list = new Projectiles();
+    const def = proj({ lob: { flightTicks: 10, arcHeight: 20, blastRadius: 10 }, shards: { sprite: 'x', count: 6, speed: 80, range: 40, damage: 5 } }).projectile!;
+    list.spawn(me, 40, 60, 0, def, { x: 120, y: 60 });
+    for (let i = 0; i < 11; i++) list.tick([me], open(), combat, bus);
+    expect(list.list.length).toBe(6);
+    expect(list.list.every(p => !p.lob && Math.abs(p.x - 120) < 3)).toBe(true);
+  });
+
+  it('a followSweep spin catches you behind the attacker, and again after rehitTicks', () => {
+    const combat = new CombatSystem();
+    const bus = new EventBus<GameEvents>();
+    const atk = stub('enemy', 100, 60, combat, bus);
+    const behind = stub('player', 70, 60, combat, bus); // west, facing east
+    const spin = StrikeDef.parse({
+      damage: 10, poise: 0, windup: 2, active: 24, recovery: 1,
+      hitbox: { shape: 'arc', radius: 40, halfAngle: 20 },
+      sweep: { fromDeg: -90, toDeg: 630 },
+      followSweep: true,
+      rehitTicks: 12,
+    });
+    const r = new AttackRunner(atk, spin, 0);
+    while (r.phase !== 'done') {
+      r.tick();
+      combat.resolve([atk, behind], bus);
+    }
+    expect(behind.hp).toBe(80); // two turns, two hits
+    // the same arc without followSweep points east the whole time and never reaches behind
+    const still = stub('player', 70, 60, combat, bus);
+    const r2 = new AttackRunner(atk, { ...spin, followSweep: false }, 0);
+    while (r2.phase !== 'done') {
+      r2.tick();
+      combat.resolve([atk, still], bus);
+    }
+    expect(still.hp).toBe(100);
   });
 });

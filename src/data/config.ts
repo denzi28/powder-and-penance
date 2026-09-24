@@ -93,7 +93,13 @@ function loadAll(src: Record<string, unknown>) {
       if (turn && next) errors.push(`data/enemies/${e.id}.json: a boss has either "turn" or "next", not both`);
       for (const m of e.moves)
         for (const s of m.strikes)
+        {
           if (s.summon && !data.enemies[s.summon.kind]) errors.push(`data/enemies/${e.id}.json: move "${m.id}" summons unknown kind "${s.summon.kind}"`);
+          const v = s.projectile?.volleys;
+          if (v && (v.count - 1) * v.everyTicks >= s.active)
+            errors.push(`data/enemies/${e.id}.json: move "${m.id}": ${v.count} volleys every ${v.everyTicks} ticks need "active" of at least ${(v.count - 1) * v.everyTicks + 1}`);
+          if (s.followSweep && s.hitbox.shape !== 'arc') errors.push(`data/enemies/${e.id}.json: move "${m.id}": followSweep needs an arc hitbox`);
+        }
     }
     for (const r of Object.values(data.rooms))
       for (const en of r.entities)

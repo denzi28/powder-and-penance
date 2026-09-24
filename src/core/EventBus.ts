@@ -42,7 +42,7 @@ export interface GameEvents {
   critical: { attacker: Actor; victim: Actor; kind: 'riposte' | 'backstab' };
   /** A gun/crossbow fires; x/y = muzzle on the ground plane. */
   shot: { actor: Actor; weapon: WeaponDef; x: number; y: number; angle: number };
-  projectileEnd: { x: number; y: number; angle: number; wall: boolean };
+  projectileEnd: { x: number; y: number; angle: number; wall: boolean; bounce?: boolean };
   weaponDropped: { id: string; x: number; y: number };
   /** A lobbed projectile bursts (area damage already applied). */
   blast: { x: number; y: number; radius: number; sfx: string };
@@ -60,6 +60,8 @@ export interface GameEvents {
   vanish: { actor: Actor; strike: StrikeDef };
   /** A strike spills wax: the scene lays slowing pools (`target` = where the strike was aimed). */
   pools: { actor: Actor; strike: StrikeDef; target: { x: number; y: number } | null };
+  eruptions: { actor: Actor; strike: StrikeDef; target: { x: number; y: number } | null; angle: number };
+  erupted: { x: number; y: number; radius: number; fx: 'spikes' | 'wax' | 'flame' | 'water' | 'ember'; sfx: string };
   /** Player caught by a grab / released from it. */
   grabbed: { by: Actor };
   propBroken: { prop: Prop };

@@ -31,6 +31,7 @@ import { tickWarp, type WarpTarget } from '../game/Warp';
 import { Exits, findSpawn, type Exit } from '../world/Exits';
 import { LootDrops, rollLoot, type LootDrop } from '../world/LootDrops';
 import { Notes } from '../world/Notes';
+import { Eruptions } from '../game/Eruptions';
 import { Explosions, nearestKeg } from '../game/Explosions';
 import { Pathfinder } from '../world/Pathfinder';
 import { Player } from '../player/Player';
@@ -120,6 +121,7 @@ export class GameScene extends Phaser.Scene {
   notes!: Notes;
   /** Lit powder: kegs and mules on a fuse. */
   explosions = new Explosions();
+  eruptions = new Eruptions();
   loot!: LootDrops;
   marker!: DeathMarker;
   /** Current area (rooms with this `area` are built into one world). */
@@ -362,6 +364,7 @@ export class GameScene extends Phaser.Scene {
     this.combat.resolve(this.actors, this.bus);
     this.projectiles.tick(this.actors, this.grid, this.combat, this.bus);
     this.explosions.tick(this);
+    this.eruptions.tick(this);
     this.pools.tick();
     for (const e of this.enemies)
       if (e.veiled > 0 && e.veiled % 4 === 0) this.particles.burst(e.x + (this.rng() - 0.5) * 16, e.y - 6, 4, -Math.PI / 2, 1.4, 3, 18, e.veiled % 8 ? 'stone3' : 'stone2', false); // its smoke clings to it
@@ -656,6 +659,7 @@ export class GameScene extends Phaser.Scene {
     this.loot.clear();
     this.projectiles.clear();
     this.explosions.clear();
+    this.eruptions.clear();
     this.pools.clear();
   }
 
@@ -767,6 +771,7 @@ export class GameScene extends Phaser.Scene {
       p.tallow = kept;
       this.save();
     });
+    this.bus.on('eruptions', e => this.eruptions.start(e.actor, e.strike.eruptions!, e.target, e.angle, this));
     this.bus.on('summon', e => {
       const caster = e.actor as Enemy;
       const sm = e.strike.summon!;
@@ -933,6 +938,7 @@ export class GameScene extends Phaser.Scene {
     this.props.render(alpha);
     this.loot.render();
     this.projectileView.render(this.projectiles.list, alpha);
+    this.eruptions.draw(this);
     this.pools.draw(this);
     const still = !!(this.menu || this.gear || this.mapOpen || this.story.active || this.warp);
     this.npcs.update(delta, this.player, still);
@@ -972,6 +978,7 @@ export class GameScene extends Phaser.Scene {
     this.loot.clear();
     this.projectiles.clear();
     this.explosions.clear();
+    this.eruptions.clear();
     this.pools.clear();
     this.ground.setArea(area);
     this.marker.setArea(area);

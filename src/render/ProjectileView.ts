@@ -27,12 +27,13 @@ export class ProjectileView {
       if (s.texture.key !== p.def.sprite) {
         s.setTexture(p.def.sprite, 0);
         this.lib.applyOrigin(s, p.def.sprite);
+        if (p.def.spin) s.setOrigin(0.5, 0.5); // a thrown weapon turns about its middle
       }
       const x = Math.round(lerp(p.prevX, p.x, alpha));
       const y = Math.round(lerp(p.prevY, p.y, alpha));
       const h = Math.round(lerp(p.prevHeight, p.height, alpha));
       s.setPosition(x, y - h)
-        .setRotation(p.lob ? p.lob.t * 0.35 : p.angle) // pots tumble
+        .setRotation(p.lob ? p.lob.t * 0.35 : p.def.spin ? p.age * p.def.spin : p.angle) // pots tumble, blades whirl
         .setDepth(DEPTH.actor(y) + 0.5);
       if (p.lob && p.def.lob) {
         const k = Math.min(1, p.lob.t / p.def.lob.flightTicks);

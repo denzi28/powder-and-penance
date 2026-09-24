@@ -1131,6 +1131,50 @@ const RECIPES: Record<LayeredSound, Recipe> = {
     k.whoosh(0, 0.3, 3000, 600, 0.3, 0.1);
     k.rumble(0.02, 0.6, 0.3);
   },
+  // ---- signature boss attacks: the ground erupting, thrown weapons, spins
+  b_spikes: k => {
+    k.clang(0, 420, 0.5, 0.35); // iron stakes grating up through the flags
+    k.debris(0, 0.45, 0.5);
+    k.boom(0, 120, 60, 0.35, 0.6);
+    k.slice(0.01, 0.12, 0.3);
+  },
+  b_geyser: k => {
+    k.boom(0, 70, 40, 0.5, 0.7);
+    k.splash(0.03, 0.8, 0.8, true);
+    k.sizzle(0.1, 0.8, 0.3);
+    k.bubbles(0.2, 5, 0.35, true);
+  },
+  b_spout: k => {
+    k.boom(0, 80, 45, 0.4, 0.5);
+    k.splash(0.02, 0.9, 0.9);
+    k.bubbles(0.15, 6, 0.4);
+  },
+  b_ember_pop: k => {
+    k.pop(0, 220, 0.5);
+    k.fire(0, 0.35, 0.35, 1.2);
+  },
+  b_whirl: k => {
+    // a heavy blade turning end over end
+    for (let i = 0; i < 5; i++) k.whoosh(i * 0.14, 0.16, 250, 700, 0.35);
+  },
+  b_spin: k => {
+    for (let i = 0; i < 4; i++) k.whoosh(i * 0.12, 0.2, 200, 900, 0.45);
+    k.chain(0, 0.5, 0.25);
+  },
+  b_notes: k => {
+    k.voice(0, 1.2, 523, 587, 'oo', 0.3, 0, 2, 12);
+    k.voice(0.3, 0.9, 659, 622, 'oo', 0.22, 0, 2, 12);
+  },
+  b_wave: k => {
+    k.voice(0, 0.9, 700, 300, 'eh', 0.45, 0.4, 3, 8);
+    k.whoosh(0, 0.8, 200, 1400, 0.5);
+    k.splash(0.2, 0.6, 0.3);
+  },
+  b_chain_shot: k => {
+    k.boom(0, 90, 40, 0.8, 1);
+    k.chain(0.05, 0.7, 0.5);
+    k.whoosh(0.05, 0.6, 180, 500, 0.4);
+  },
   p_blunderbuss: k => {
     k.boom(0, 170, 55, 0.5, 0.8);
     k.debris(0.01, 0.3, 0.35);

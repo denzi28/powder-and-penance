@@ -13,7 +13,7 @@
     "roarSfx": "b_mother_roar",
     "next": {
       "kind": "mother_bones",
-      "chest": { "id": "great_vat_igniter", "item": "igniter", "at": [12, 14] },
+      "chest": {"id": "great_vat_igniter", "item": "igniter", "at": [12, 14]},
       "prompt": "SET HER ALIGHT",
       "hint": "Her wax still stirs, humming under the surface. It won't lie still until it burns.",
       "fallenLine": "She sinks into her pool, but the wax keeps moving. Something has pushed up out of the floor.",
@@ -25,24 +25,24 @@
   "weaponRestDeg": 45,
   "wader": true,
   "hp": 1000,
-  "poise": { "max": 280, "resetTicks": 300 },
+  "poise": {"max": 280, "resetTicks": 300},
   "tallow": 2000,
   "speed": 22,
   "strafeSpeed": 14,
   "accelTicks": 16,
   "turnDegPerTick": 3,
-  "collider": { "w": 24, "h": 8 },
-  "hurtbox": { "w": 30, "h": 46, "offsetY": -24 },
+  "collider": {"w": 24, "h": 8},
+  "hurtbox": {"w": 30, "h": 46, "offsetY": -24},
   "bodyRadius": 15,
   "knockbackResist": 0.95,
-  "spacing": { "preferred": 70, "strafeTicks": [60, 120] },
+  "spacing": {"preferred": 70, "strafeTicks": [60, 120]},
   "attackGapTicks": [15, 40],
   "staggerTicks": 50,
   "parriedTicks": 90,
   "deathTicks": 100,
   "corpseTicks": 999999,
   "blood": "wax1",
-  "steps": { "sfx": "b_step_heavy", "volume": 0.7 },
+  "steps": {"sfx": "b_step_heavy", "volume": 0.7},
   "moves": [
     {
       "id": "ladle_sweep",
@@ -51,39 +51,68 @@
       "cooldown": 60,
       "strikes": [
         {
-          "damage": 36, "poise": 50,
-          "windup": 34, "active": 8, "recovery": 36,
+          "damage": 36,
+          "poise": 50,
+          "windup": 34,
+          "active": 10,
+          "recovery": 36,
           "trackDegPerTick": 2.5,
           "hyperArmor": 60,
-          "telegraph": { "tick": 14, "kind": "normal" },
-          "hitbox": { "shape": "arc", "radius": 62, "halfAngle": 110 },
+          "telegraph": {"tick": 14, "kind": "normal"},
+          "hitbox": {"shape": "arc", "radius": 62, "halfAngle": 32},
           "originY": -14,
-          "sweep": { "fromDeg": -130, "toDeg": 130 },
-          "knockback": 180, "hitstop": 6, "shake": 0.3, "windupSfx": "b_mother_grunt", "sfx": "b_ladle_whoosh", "anim": "sweep"
+          "sweep": {"fromDeg": -130, "toDeg": 130},
+          "knockback": 180,
+          "hitstop": 6,
+          "shake": 0.3,
+          "windupSfx": "b_mother_grunt",
+          "sfx": "b_ladle_whoosh",
+          "anim": "sweep",
+          "followSweep": true
         }
       ]
     },
     {
       "id": "wax_spit",
-      "range": [50, 200],
+      "range": [50, 230],
       "weight": 3,
       "cooldown": 100,
       "strikes": [
         {
-          "damage": 0, "poise": 0,
-          "windup": 30, "active": 4, "recovery": 26,
+          "damage": 0,
+          "poise": 0,
+          "windup": 30,
+          "active": 4,
+          "recovery": 26,
           "trackDegPerTick": 4,
-          "telegraph": { "tick": 10, "kind": "normal" },
-          "hitbox": { "shape": "circle", "radius": 1, "offset": 0 },
+          "telegraph": {"tick": 10, "kind": "normal"},
+          "hitbox": {"shape": "circle", "radius": 1, "offset": 0},
           "originY": -30,
-          "sweep": { "fromDeg": -20, "toDeg": 20 },
-          "sfx": "b_spit", "anim": "spit",
+          "sweep": {"fromDeg": -20, "toDeg": 20},
+          "sfx": "b_spit",
+          "anim": "spit",
           "projectile": {
             "sprite": "wax_glob",
-            "speed": 1, "range": 1,
-            "damage": 26, "poise": 30, "knockback": 120, "hitstop": 4, "shake": 0.2,
-            "radius": 4, "count": 3, "spreadDeg": 26,
-            "lob": { "flightTicks": 48, "arcHeight": 46, "blastRadius": 22, "sfx": "b_wax_splat" }
+            "speed": 1,
+            "range": 1,
+            "damage": 30,
+            "poise": 30,
+            "knockback": 120,
+            "hitstop": 4,
+            "shake": 0.25,
+            "radius": 5,
+            "count": 1,
+            "lob": {"flightTicks": 52, "arcHeight": 56, "blastRadius": 24, "sfx": "b_wax_splat"},
+            "shards": {
+              "sprite": "wax_glob",
+              "count": 8,
+              "speed": 110,
+              "range": 80,
+              "damage": 16,
+              "poise": 10,
+              "knockback": 60,
+              "radius": 3
+            }
           }
         }
       ]
@@ -95,45 +124,54 @@
       "cooldown": 130,
       "strikes": [
         {
-          "damage": 52, "poise": 80,
-          "windup": 46, "active": 6, "recovery": 56,
+          "damage": 52,
+          "poise": 80,
+          "windup": 46,
+          "active": 6,
+          "recovery": 56,
           "trackDegPerTick": 2,
           "hyperArmor": 80,
           "unblockable": true,
-          "telegraph": { "tick": 18, "kind": "danger" },
-          "hitbox": { "shape": "circle", "radius": 40, "offset": 26 },
+          "telegraph": {"tick": 18, "kind": "danger"},
+          "hitbox": {"shape": "circle", "radius": 40, "offset": 26},
           "originY": -4,
-          "sweep": { "fromDeg": -150, "toDeg": 20 },
-          "knockback": 240, "hitstop": 9, "shake": 0.6, "windupSfx": "b_mother_heave", "sfx": "b_ladle_crush", "anim": "crush"
+          "sweep": {"fromDeg": -150, "toDeg": 20},
+          "knockback": 240,
+          "hitstop": 9,
+          "shake": 0.6,
+          "windupSfx": "b_mother_heave",
+          "sfx": "b_ladle_crush",
+          "anim": "crush"
         }
       ]
     },
     {
       "id": "stir",
-      "range": [0, 60],
+      "range": [0, 70],
       "weight": 2,
-      "cooldown": 110,
+      "cooldown": 200,
       "strikes": [
         {
-          "damage": 24, "poise": 30,
-          "windup": 22, "active": 6, "recovery": 8,
-          "trackDegPerTick": 4,
-          "hyperArmor": 40,
-          "telegraph": { "tick": 8, "kind": "normal" },
-          "hitbox": { "shape": "arc", "radius": 58, "halfAngle": 100 },
+          "damage": 26,
+          "poise": 30,
+          "windup": 30,
+          "active": 36,
+          "recovery": 44,
+          "trackDegPerTick": 3,
+          "hyperArmor": 80,
+          "telegraph": {"tick": 10, "kind": "danger"},
+          "hitbox": {"shape": "arc", "radius": 62, "halfAngle": 30},
           "originY": -14,
-          "sweep": { "fromDeg": -120, "toDeg": 120 },
-          "knockback": 100, "hitstop": 4, "shake": 0.2, "windupSfx": "b_mother_hum", "sfx": "b_ladle_whoosh", "anim": "sweep"
-        },
-        {
-          "damage": 24, "poise": 30,
-          "windup": 14, "active": 6, "recovery": 40,
-          "trackDegPerTick": 4,
-          "hyperArmor": 40,
-          "hitbox": { "shape": "arc", "radius": 58, "halfAngle": 100 },
-          "originY": -14,
-          "sweep": { "fromDeg": 120, "toDeg": -120 },
-          "knockback": 160, "hitstop": 6, "shake": 0.3, "sfx": "b_ladle_whoosh", "anim": "sweep"
+          "sweep": {"fromDeg": -90, "toDeg": 450},
+          "followSweep": true,
+          "rehitTicks": 18,
+          "pools": {"count": 4, "radius": 14, "spread": 44, "at": "self", "ticks": 300, "speedMult": 0.55},
+          "knockback": 130,
+          "hitstop": 4,
+          "shake": 0.25,
+          "windupSfx": "b_mother_hum",
+          "sfx": "b_spin",
+          "anim": "sweep"
         }
       ]
     },
@@ -144,16 +182,57 @@
       "cooldown": 260,
       "strikes": [
         {
-          "damage": 0, "poise": 0,
-          "windup": 30, "active": 4, "recovery": 32,
+          "damage": 0,
+          "poise": 0,
+          "windup": 30,
+          "active": 4,
+          "recovery": 32,
           "trackDegPerTick": 4,
           "hyperArmor": 40,
-          "telegraph": { "tick": 10, "kind": "normal" },
-          "hitbox": { "shape": "circle", "radius": 1, "offset": 0 },
+          "telegraph": {"tick": 10, "kind": "normal"},
+          "hitbox": {"shape": "circle", "radius": 1, "offset": 0},
           "originY": -30,
-          "sweep": { "fromDeg": -70, "toDeg": 30 },
-          "pools": { "count": 3, "radius": 16, "spread": 34, "at": "target", "ticks": 480, "speedMult": 0.55 },
-          "windupSfx": "b_mother_hum", "sfx": "b_wax_pour", "anim": "tip"
+          "sweep": {"fromDeg": -70, "toDeg": 30},
+          "pools": {"count": 3, "radius": 16, "spread": 34, "at": "target", "ticks": 480, "speedMult": 0.55},
+          "windupSfx": "b_mother_hum",
+          "sfx": "b_wax_pour",
+          "anim": "tip"
+        }
+      ]
+    },
+    {
+      "id": "geysers",
+      "range": [0, 260],
+      "weight": 2,
+      "cooldown": 280,
+      "strikes": [
+        {
+          "damage": 0,
+          "poise": 0,
+          "windup": 34,
+          "active": 4,
+          "recovery": 70,
+          "trackDegPerTick": 3,
+          "hyperArmor": 60,
+          "telegraph": {"tick": 12, "kind": "normal"},
+          "hitbox": {"shape": "circle", "radius": 1, "offset": 0},
+          "originY": -20,
+          "sweep": {"fromDeg": -70, "toDeg": 30},
+          "eruptions": {
+            "pattern": "follow",
+            "count": 4,
+            "stepTicks": 24,
+            "warnTicks": 30,
+            "radius": 20,
+            "damage": 34,
+            "poise": 40,
+            "knockback": 140,
+            "fx": "wax",
+            "sfx": "b_geyser"
+          },
+          "windupSfx": "b_mother_heave",
+          "sfx": "b_wax_pour",
+          "anim": "tip"
         }
       ]
     }

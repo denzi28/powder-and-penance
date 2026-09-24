@@ -506,6 +506,18 @@ const HitShape = z.discriminatedUnion('shape', [
   z.object({ shape: z.literal('arc'), radius: pos, halfAngle: num.min(0).max(180), offset: num.default(0), inner: num.min(0).default(0) }),
   z.object({ shape: z.literal('circle'), radius: pos, offset: num.default(0) }),
 ]);
+/** What a lobbed projectile scatters when it bursts: a ring of `count` straight shots from the landing point. */
+const ShardsDef = z.object({
+  sprite: z.string(),
+  count: int.positive(),
+  speed: pos,
+  range: pos,
+  damage: num.min(0),
+  poise: num.min(0).default(0),
+  knockback: num.min(0).default(0),
+  radius: pos.default(3),
+});
+export type ShardsDef = z.infer<typeof ShardsDef>;
 export const ProjectileDef = z.object({
   sprite: z.string(),
   speed: pos,
@@ -519,6 +531,23 @@ export const ProjectileDef = z.object({
   radius: pos,
   spreadDeg: num.min(0).default(0),
   count: int.positive().default(1),
+  /** `count` shots spaced evenly all the way round (spreadDeg is ignored). */
+  ring: z.boolean().default(false),
+  /**
+   * Thrown again `count` times in all, every `everyTicks` during the active frames (make `active` long
+   * enough). Each volley turns `turnDeg` further (a spiral), or aims afresh at the target with `reaim`.
+   */
+  volleys: z.object({ count: int.min(2), everyTicks: int.positive(), turnDeg: num.default(0), reaim: z.boolean().default(false) }).optional(),
+  /** Straight shots that bend toward the nearest foe, up to `degPerTick`, for their first `ticks`. */
+  homing: z.object({ degPerTick: pos, ticks: int.positive().default(9999) }).optional(),
+  /** Straight shots that glance off walls this many times before breaking. */
+  bounces: int.nonnegative().default(0),
+  /** A boomerang: at the end of its range (or at a wall) it turns and flies back to the thrower, able to hit again. */
+  returns: z.boolean().default(false),
+  /** Drawn spinning (a thrown weapon, a tumbling coin) instead of pointing along its flight. */
+  spin: num.default(0),
+  /** A lobbed shot scatters these when it bursts. */
+  shards: ShardsDef.optional(),
   /**
    * Lobbed: arcs over obstacles to the target point (speed/range ignored), a warning marker shows where it
    * will land, and it bursts there for area damage. Can't be blocked by walls; can be rolled through.
@@ -587,6 +616,39 @@ export const StrikeDef = z.object({
    * of `at` (the attacker, or the target). Anyone wading one moves at `speedMult`. They set after `ticks`.
    * Works on its own (damage 0: no hitbox) or alongside a swing.
    */
+  /**
+   * The ground erupts (spikes, geysers, flame, water): each point shows a warning for `warnTicks`, then bursts
+   * for area damage. The pattern, from the attacker toward its target when the active frames start:
+   * - line: `count` points marching from the attacker toward the target, `spacing` px apart;
+   * - star: `lines` lines of `count` radiating from the attacker;
+   * - follow: `count` points, each placed where the target stands when its turn comes;
+   * - ring: `count` points in a ring of `spacing` px round the target (and one on it, with `centre`);
+   * - scatter: `count` points at random within `spacing` px of the target.
+   * One point appears every `stepTicks`. `fx` picks the look: spikes, wax, flame, water or ember.
+   */
+  eruptions: z
+    .object({
+      pattern: z.enum(['line', 'star', 'follow', 'ring', 'scatter']),
+      count: int.positive(),
+      lines: int.positive().default(4),
+      spacing: num.min(0).default(24),
+      stepTicks: int.nonnegative().default(4),
+      warnTicks: int.positive().default(24),
+      radius: pos,
+      damage: num.min(0),
+      poise: num.min(0).default(0),
+      knockback: num.min(0).default(0),
+      centre: z.boolean().default(false),
+      fx: z.enum(['spikes', 'wax', 'flame', 'water', 'ember']),
+      sfx: z.string().default('b_ground_slam'),
+    })
+    .optional(),
+  /**
+   * The hitbox rides the weapon: an arc `hitbox.halfAngle` wide centred on the weapon's angle as it sweeps
+   * (with `sweep` running past 360 degrees, a spin). `rehitTicks`: anyone hit may be hit again this often.
+   */
+  followSweep: z.boolean().default(false),
+  rehitTicks: int.positive().optional(),
   pools: z
     .object({
       count: int.positive(),
@@ -1042,7 +1104,8 @@ export const LAYERED_SOUNDS = [
   // the Powder Vault
   'b_keg_blast', 'e_spark_pop', 'e_step_mule', 'e_mule_alert', 'e_mule_hurt', 'e_mule_die', 'e_mule_heave', 'e_mule_shove',
   'e_runner_alert', 'e_runner_hurt', 'e_runner_die', 'e_linstock_jab', 'b_cannon_roll', 'b_cannon_crank', 'b_cannon_fire',
-  'b_grapeshot', 'b_cannon_ram', 'b_gunner_roar', 'b_gunner_grunt', 'b_stock_swing', 'b_blunderbuss', 'p_blunderbuss', 'p_throw', 'p_throw_knife', 'p_eat', 'p_incense', 'p_cartridge', 'p_oil', 'p_smoke', 'p_drink_grog', 'p_candle', 'p_ring', 'p_paper',
+  'b_grapeshot', 'b_cannon_ram', 'b_gunner_roar', 'b_gunner_grunt', 'b_stock_swing', 'b_blunderbuss',
+  'b_spikes', 'b_geyser', 'b_spout', 'b_ember_pop', 'b_whirl', 'b_spin', 'b_notes', 'b_wave', 'b_chain_shot', 'p_blunderbuss', 'p_throw', 'p_throw_knife', 'p_eat', 'p_incense', 'p_cartridge', 'p_oil', 'p_smoke', 'p_drink_grog', 'p_candle', 'p_ring', 'p_paper',
 ] as const;
 export type LayeredSound = (typeof LAYERED_SOUNDS)[number];
 export const SURFACES = ['dirt', 'grass', 'stone', 'wood', 'metal', 'mud', 'grease', 'wax', 'moss'] as const;

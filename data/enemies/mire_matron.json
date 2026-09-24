@@ -14,25 +14,25 @@
   },
   "sprite": "mire_matron",
   "hp": 1100,
-  "poise": { "max": 260, "resetTicks": 280 },
+  "poise": {"max": 260, "resetTicks": 280},
   "tallow": 2600,
   "loot": "boss_salt",
   "speed": 34,
   "strafeSpeed": 22,
   "accelTicks": 12,
   "turnDegPerTick": 4,
-  "collider": { "w": 18, "h": 7 },
-  "hurtbox": { "w": 22, "h": 46, "offsetY": -24 },
+  "collider": {"w": 18, "h": 7},
+  "hurtbox": {"w": 22, "h": 46, "offsetY": -24},
   "bodyRadius": 12,
   "knockbackResist": 0.9,
-  "spacing": { "preferred": 60, "strafeTicks": [50, 100] },
+  "spacing": {"preferred": 60, "strafeTicks": [50, 100]},
   "attackGapTicks": [14, 36],
   "staggerTicks": 44,
   "parriedTicks": 80,
   "deathTicks": 110,
   "corpseTicks": 1800,
   "blood": "wax1",
-  "steps": { "sfx": "b_step_wet", "volume": 0.6 },
+  "steps": {"sfx": "b_step_wet", "volume": 0.6},
   "moves": [
     {
       "id": "drowning_sweep",
@@ -41,15 +41,24 @@
       "cooldown": 50,
       "strikes": [
         {
-          "damage": 38, "poise": 50,
-          "windup": 28, "active": 7, "recovery": 30,
+          "damage": 38,
+          "poise": 50,
+          "windup": 28,
+          "active": 9,
+          "recovery": 30,
           "trackDegPerTick": 3,
           "hyperArmor": 50,
-          "telegraph": { "tick": 10, "kind": "normal" },
-          "hitbox": { "shape": "arc", "radius": 60, "halfAngle": 110 },
+          "telegraph": {"tick": 10, "kind": "normal"},
+          "hitbox": {"shape": "arc", "radius": 60, "halfAngle": 32},
           "originY": -14,
-          "sweep": { "fromDeg": -130, "toDeg": 130 },
-          "knockback": 170, "hitstop": 6, "shake": 0.3, "windupSfx": "b_matron_breath", "sfx": "b_wet_swipe", "anim": "sweep"
+          "sweep": {"fromDeg": -130, "toDeg": 130},
+          "knockback": 170,
+          "hitstop": 6,
+          "shake": 0.3,
+          "windupSfx": "b_matron_breath",
+          "sfx": "b_wet_swipe",
+          "anim": "sweep",
+          "followSweep": true
         }
       ]
     },
@@ -60,42 +69,58 @@
       "cooldown": 180,
       "strikes": [
         {
-          "damage": 10, "poise": 0,
-          "windup": 32, "active": 6, "recovery": 80,
+          "damage": 10,
+          "poise": 0,
+          "windup": 32,
+          "active": 6,
+          "recovery": 80,
           "trackDegPerTick": 5,
           "unblockable": true,
           "unparryable": true,
-          "telegraph": { "tick": 12, "kind": "danger" },
-          "lunge": { "distance": 26, "startTick": 28, "ticks": 6 },
-          "hitbox": { "shape": "circle", "radius": 18, "offset": 20 },
+          "telegraph": {"tick": 12, "kind": "danger"},
+          "lunge": {"distance": 26, "startTick": 28, "ticks": 6},
+          "hitbox": {"shape": "circle", "radius": 18, "offset": 20},
           "originY": -12,
-          "sweep": { "fromDeg": 0, "toDeg": 0, "reach": 6 },
-          "grab": { "holdTicks": 80, "damage": 46, "throwKnockback": 220 },
-          "windupSfx": "b_matron_hush", "sfx": "b_embrace", "anim": "embrace"
+          "sweep": {"fromDeg": 0, "toDeg": 0, "reach": 6},
+          "grab": {"holdTicks": 80, "damage": 46, "throwKnockback": 220},
+          "windupSfx": "b_matron_hush",
+          "sfx": "b_embrace",
+          "anim": "embrace"
         }
       ]
     },
     {
       "id": "lullaby",
-      "range": [50, 220],
+      "range": [40, 260],
       "weight": 3,
-      "cooldown": 90,
+      "cooldown": 150,
       "strikes": [
         {
-          "damage": 0, "poise": 0,
-          "windup": 26, "active": 4, "recovery": 24,
+          "damage": 0,
+          "poise": 0,
+          "windup": 26,
+          "active": 4,
+          "recovery": 24,
           "trackDegPerTick": 4,
-          "telegraph": { "tick": 8, "kind": "normal" },
-          "hitbox": { "shape": "circle", "radius": 1, "offset": 0 },
+          "telegraph": {"tick": 8, "kind": "normal"},
+          "hitbox": {"shape": "circle", "radius": 1, "offset": 0},
           "originY": -30,
-          "sweep": { "fromDeg": -30, "toDeg": 30 },
-          "sfx": "b_matron_sing", "anim": "sing",
+          "sweep": {"fromDeg": -30, "toDeg": 30},
+          "sfx": "b_notes",
+          "anim": "sing",
           "projectile": {
-            "sprite": "mire_glob",
-            "speed": 1, "range": 1,
-            "damage": 26, "poise": 26, "knockback": 110, "hitstop": 4, "shake": 0.2,
-            "radius": 4, "count": 4, "spreadDeg": 50,
-            "lob": { "flightTicks": 44, "arcHeight": 44, "blastRadius": 22, "sfx": "b_wax_splat" }
+            "sprite": "note",
+            "speed": 72,
+            "range": 420,
+            "damage": 20,
+            "poise": 20,
+            "knockback": 80,
+            "hitstop": 3,
+            "shake": 0.1,
+            "radius": 4,
+            "count": 3,
+            "spreadDeg": 80,
+            "homing": {"degPerTick": 2.2, "ticks": 160}
           }
         }
       ]
@@ -107,16 +132,24 @@
       "cooldown": 150,
       "strikes": [
         {
-          "damage": 30, "poise": 60,
-          "windup": 34, "active": 6, "recovery": 40,
+          "damage": 30,
+          "poise": 60,
+          "windup": 34,
+          "active": 6,
+          "recovery": 40,
           "trackDegPerTick": 0,
           "hyperArmor": 80,
           "unblockable": true,
-          "telegraph": { "tick": 12, "kind": "danger" },
-          "hitbox": { "shape": "circle", "radius": 58, "offset": 0 },
+          "telegraph": {"tick": 12, "kind": "danger"},
+          "hitbox": {"shape": "circle", "radius": 58, "offset": 0},
           "originY": -6,
-          "sweep": { "fromDeg": -90, "toDeg": -90 },
-          "knockback": 280, "hitstop": 8, "shake": 0.5, "windupSfx": "b_matron_breath", "sfx": "b_matron_wail", "anim": "wail"
+          "sweep": {"fromDeg": -90, "toDeg": -90},
+          "knockback": 280,
+          "hitstop": 8,
+          "shake": 0.5,
+          "windupSfx": "b_matron_breath",
+          "sfx": "b_matron_wail",
+          "anim": "wail"
         }
       ]
     },
@@ -127,15 +160,95 @@
       "cooldown": 520,
       "strikes": [
         {
-          "damage": 0, "poise": 0,
-          "windup": 34, "active": 6, "recovery": 24,
+          "damage": 0,
+          "poise": 0,
+          "windup": 34,
+          "active": 6,
+          "recovery": 24,
           "trackDegPerTick": 0,
           "hyperArmor": 120,
-          "telegraph": { "tick": 10, "kind": "normal" },
-          "hitbox": { "shape": "circle", "radius": 1, "offset": 0 },
-          "sweep": { "fromDeg": -90, "toDeg": -90 },
-          "summon": { "kind": "drowned_pilgrim", "count": 3, "radius": 70, "shield": false },
-          "sfx": "b_matron_lullaby", "anim": "sing"
+          "telegraph": {"tick": 10, "kind": "normal"},
+          "hitbox": {"shape": "circle", "radius": 1, "offset": 0},
+          "sweep": {"fromDeg": -90, "toDeg": -90},
+          "summon": {"kind": "drowned_pilgrim", "count": 3, "radius": 70, "shield": false},
+          "sfx": "b_matron_lullaby",
+          "anim": "sing"
+        }
+      ]
+    },
+    {
+      "id": "keening",
+      "range": [0, 170],
+      "weight": 2,
+      "cooldown": 220,
+      "strikes": [
+        {
+          "damage": 0,
+          "poise": 0,
+          "windup": 32,
+          "active": 17,
+          "recovery": 40,
+          "trackDegPerTick": 0,
+          "hyperArmor": 90,
+          "telegraph": {"tick": 10, "kind": "danger"},
+          "hitbox": {"shape": "circle", "radius": 1, "offset": 0},
+          "originY": -20,
+          "sweep": {"fromDeg": -90, "toDeg": -90},
+          "projectile": {
+            "sprite": "mire_glob",
+            "speed": 105,
+            "range": 180,
+            "damage": 18,
+            "poise": 16,
+            "knockback": 90,
+            "hitstop": 2,
+            "shake": 0.05,
+            "radius": 4,
+            "count": 14,
+            "ring": true,
+            "volleys": {"count": 2, "everyTicks": 16, "turnDeg": 12.86}
+          },
+          "windupSfx": "b_matron_breath",
+          "sfx": "b_wave",
+          "anim": "wail"
+        }
+      ]
+    },
+    {
+      "id": "undertow",
+      "range": [0, 260],
+      "weight": 2,
+      "cooldown": 300,
+      "strikes": [
+        {
+          "damage": 0,
+          "poise": 0,
+          "windup": 30,
+          "active": 4,
+          "recovery": 50,
+          "trackDegPerTick": 0,
+          "hyperArmor": 60,
+          "telegraph": {"tick": 10, "kind": "normal"},
+          "hitbox": {"shape": "circle", "radius": 1, "offset": 0},
+          "originY": -20,
+          "sweep": {"fromDeg": -90, "toDeg": -90},
+          "eruptions": {
+            "pattern": "ring",
+            "count": 8,
+            "spacing": 46,
+            "stepTicks": 2,
+            "warnTicks": 36,
+            "radius": 16,
+            "damage": 30,
+            "poise": 35,
+            "knockback": 120,
+            "centre": true,
+            "fx": "water",
+            "sfx": "b_spout"
+          },
+          "windupSfx": "b_matron_hush",
+          "sfx": "b_matron_sing",
+          "anim": "sing"
         }
       ]
     }
