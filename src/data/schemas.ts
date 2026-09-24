@@ -945,7 +945,7 @@ export const LAYERED_SOUNDS = [
   'p_hurt', 'p_die', 'p_drink', 'p_roll_light', 'p_roll', 'p_roll_heavy', 'p_roll_flop',
   'p_unequip', 'p_draw', 'p_strap', 'p_armour_light', 'p_armour_heavy', 'p_mail_jingle',
   // the player: consumables, rings, notes
-  'p_use', 'p_belt', 'p_throw', 'p_throw_knife', 'p_eat', 'p_incense', 'p_cartridge', 'p_oil', 'p_smoke', 'p_drink_grog', 'p_candle', 'p_ring', 'p_paper',
+  'p_use', 'p_belt', 'p_swap', 'p_throw', 'p_throw_knife', 'p_eat', 'p_incense', 'p_cartridge', 'p_oil', 'p_smoke', 'p_drink_grog', 'p_candle', 'p_ring', 'p_paper',
 ] as const;
 export type LayeredSound = (typeof LAYERED_SOUNDS)[number];
 export const SURFACES = ['dirt', 'grass', 'stone', 'wood', 'metal', 'mud', 'grease', 'wax', 'moss'] as const;

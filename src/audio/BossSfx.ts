@@ -1101,6 +1101,13 @@ const RECIPES: Record<LayeredSound, Recipe> = {
     k.swell(0.05, 0.4, 880, 0.05);
     k.clang(0.1, 2600, 0.2, 0.05); // tallow dropped in the pouch as coin
   },
+  // changing gear on the Equipment screen: the old thing off, the new one on, a clasp
+  p_swap: k => {
+    k.whoosh(0, 0.13, 1400, 600, 0.35, 0.4); // off
+    k.whoosh(0.13, 0.15, 600, 1600, 0.4); // on
+    k.boom(0.2, 170, 120, 0.06, 0.3); // it settles against you
+    k.clang(0.27, 1900, 0.08, 0.14); // the clasp
+  },
   p_ring: k => {
     k.clang(0, 2800, 0.35, 0.1);
     k.bell(0.02, 1760, 0.6, 0.04);

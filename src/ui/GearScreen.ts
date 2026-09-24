@@ -352,12 +352,16 @@ export class GearScreen {
 
   private apply(key: SlotKey, id: string | null) {
     const p = this.p;
+    const norm = (x: string | null) => (x === FISTS ? null : x);
+    const changed = norm(slotEntry(p, key).id) !== norm(id);
     if (key === 'hand0') p.setSlot(0, id ?? FISTS);
     else if (key === 'hand1') {
       if (id && DATA.shields[id]) p.setShield(id);
       else p.setSlot(1, id ?? FISTS);
     } else if (key === 'ring0' || key === 'ring1') p.setRing(key === 'ring0' ? 0 : 1, id);
     else p.setArmour(key, id);
+    // any change swaps with a sound of its own, alongside the new thing's (a blade drawn, a buckle...)
+    if (changed) this.sfx('p_swap');
     this.sfx(id ? equipSound(key, id) : 'p_unequip');
   }
 }
