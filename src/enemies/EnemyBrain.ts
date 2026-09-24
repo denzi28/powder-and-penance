@@ -237,7 +237,8 @@ const ret: State<Enemy> = {
     if (e.awareness >= 1) return 'notice';
     if (e.awareness >= e.def.perception.suspicionAt) return 'suspicious';
     if (Math.hypot(e.homeX - e.x, e.homeY - e.y) < 3) {
-      if (e.def.leash.healOnReturn) e.hp = e.maxHp;
+      if (e.def.leash.healOnReturn && !e.noHealOnReturn) e.hp = e.maxHp;
+      e.noHealOnReturn = false;
       e.vx = e.vy = 0;
       return 'idle';
     }

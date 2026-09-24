@@ -64,9 +64,12 @@ export function wirePresentation(gs: GameScene) {
     const blood = h.killed || s.kind === 'critical' ? pc.bloodOnKill : pc.blood;
     gs.particles.burst(t.x, t.y, z, h.angle, 1.0, blood, 90, t.bloodColor, true);
     if (h.attacker === gs.player && s.kind !== 'critical') {
-      // your weapon's own sound: a blade biting, a club thudding, a shot striking
-      const ws = gs.player.weapon.sounds;
-      bus.emit('sfx', { id: (s.kind === 'projectile' ? ws.shotHit : ws.hit) ?? (heavy ? 'hit_heavy' : 'hit'), x: t.x, y: t.y });
+      // the sound of what hit: a blade biting, a club thudding, the shot of the gun that fired it; a thrown
+      // knife stabs, a firebomb's burst already made its own noise
+      const shot = s.kind === 'projectile';
+      const ws = shot ? (s.weapon ? DATA.weapons[s.weapon]?.sounds : null) : gs.player.weapon.sounds;
+      const id = ws ? (shot ? ws.shotHit : ws.hit) : s.unblockable ? null : 'p_hit_stab';
+      bus.emit('sfx', { id: id ?? (heavy ? 'hit_heavy' : 'hit'), x: t.x, y: t.y });
       if (heavy) bus.emit('sfx', { id: 'hit_heavy', x: t.x, y: t.y, volume: 0.5 });
     } else bus.emit('sfx', { id: heavy ? 'hit_heavy' : 'hit', x: t.x, y: t.y });
     if (t instanceof Enemy && !h.killed && t.def.voice?.hurt) bus.emit('sfx', { id: t.def.voice.hurt, x: t.x, y: t.y }); // its cry of pain

@@ -48,7 +48,7 @@ export class LootDrops {
   }
 
   /** Per tick: fly, land, and hand back the drops the player walked over. */
-  tick(px: number, py: number): LootDrop[] {
+  tick(px: number, py: number, canTake: (d: LootDrop) => boolean = () => true): LootDrop[] {
     const got: LootDrop[] = [];
     for (const d of this.list) {
       if (d.z > 0 || d.vz > 0) {
@@ -57,7 +57,7 @@ export class LootDrops {
         d.vz -= GRAVITY;
         d.z = Math.max(0, d.z + d.vz);
         if (d.z === 0) d.vz = d.vz < -1 ? -d.vz * 0.35 : 0; // one small bounce
-      } else if (Math.hypot(d.x - px, d.y - py) < PICKUP_RADIUS) got.push(d);
+      } else if (Math.hypot(d.x - px, d.y - py) < PICKUP_RADIUS && canTake(d)) got.push(d);
     }
     for (const d of got) this.remove(d);
     return got;

@@ -360,11 +360,27 @@ export class GameScene extends Phaser.Scene {
     this.arena.tick();
     this.tickTravel();
     if (!this.travel && !this.player.dead && !this.shrineSeq) this.story.checkTriggers();
-    if (!this.player.dead) for (const d of this.loot.tick(this.player.x, this.player.y)) this.collectLoot(d);
+    if (!this.player.dead) for (const d of this.loot.tick(this.player.x, this.player.y, d => this.canCollect(d))) this.collectLoot(d);
 
     for (const e of this.enemies.filter(en => en.remove)) this.removeEnemy(e);
     this.cam.tick(lead.x, lead.y);
     if (this.dirty && this.simTick % DATA.shrine.autosaveTicks === 0) this.save();
+  }
+
+  /** A drop the player can't take yet (a full stack) stays on the floor. */
+  private canCollect(d: LootDrop) {
+    if (d.kind !== 'item' || !d.item) return true;
+    return this.player.count(d.item) < DATA.consumables[d.item].max;
+  }
+
+  /** Put consumables straight into the pack, with a toast (a boss's drop). */
+  private giveDirect(id: string, n: number, x: number, y: number) {
+    const c = DATA.consumables[id];
+    const took = this.player.addItem(id, n);
+    this.flags.add(`found:${id}`);
+    this.numbers.add(`${c.name.toUpperCase()}${took > 1 ? ` x${took}` : ''}`, x, y - 30, hexToInt(DATA.palette.wax2));
+    this.showToast(c.name.toUpperCase(), `${took > 1 ? `${took} x ` : ''}${c.name}, into your pack. ${useLine(id)}`, c.description);
+    this.dirty = true;
   }
 
   private collectLoot(d: LootDrop) {
@@ -462,7 +478,7 @@ export class GameScene extends Phaser.Scene {
       },
     ];
     const t = this.player.loadTier;
-    this.menu = { title: 'PAUSED', subtitle: `${DATA.areas.areas[this.area].name}. Load ${this.player.equipLoad}/${DATA.load.capacity} (${t.label.toLowerCase()}).`, items, index, onBack: close };
+    this.menu = { title: 'PAUSED', subtitle: `${DATA.areas.areas[this.area].name}. Load ${this.player.equipLoad}/${this.player.capacity} (${t.label.toLowerCase()}).`, items, index, onBack: close };
     this.controls.clearBuffer();
   }
 
@@ -666,8 +682,15 @@ export class GameScene extends Phaser.Scene {
               kid.aggro();
             }
           }
+        if (e.actor.summoned) return;
         const loot = e.actor.def.loot;
-        if (loot) this.loot.spawn(rollLoot(DATA.loot.tables[loot], this.rng), e.actor.x, e.actor.y, this.rng);
+        if (loot) {
+          const roll = rollLoot(DATA.loot.tables[loot], this.rng);
+          // A boss's drop goes straight into the pack: loot on the floor is gone after a rest or a death,
+          // and a boss never comes back to drop it again.
+          if (e.actor.def.boss && roll.item) this.giveDirect(roll.item, roll.count, e.actor.x, e.actor.y);
+          else this.loot.spawn(roll, e.actor.x, e.actor.y, this.rng);
+        }
         const mb = e.actor.miniboss;
         if (mb) {
           this.flags.add(`miniboss:${mb.id}`);
@@ -709,6 +732,7 @@ export class GameScene extends Phaser.Scene {
         const kid = this.spawnEnemy(sm.kind, ok ? x : caster.x, ok ? y : caster.y, a);
         if (!kid) continue;
         kid.aggro();
+        kid.summoned = true; // a boss's summons pay nothing (they'd be endless)
         caster.summons.push(kid);
         this.particles.burst(kid.x, kid.y, 4, -Math.PI / 2, Math.PI * 2, 10, 70, 'flame1', false);
       }

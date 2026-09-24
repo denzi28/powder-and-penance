@@ -62,6 +62,10 @@ export class Enemy extends Actor {
   spawnId: string | null = null;
   /** Set when its room placement makes it a miniboss (a name bar, more health, a drop, dead for good). */
   miniboss: MinibossPlacement | null = null;
+  /** Called up by a boss: drops no Tallow or loot. */
+  summoned = false;
+  /** Lost the player in smoke: it walks back without healing (smoke isn't a way to reset a fight). */
+  noHealOnReturn = false;
   /** Enemies this one has summoned (strike.summon). */
   summons: Enemy[] = [];
   /** Sitting in a summoning bubble: invulnerable until every summon is dead. */
@@ -367,6 +371,7 @@ export class Enemy extends Actor {
     const st = this.sm.name;
     if (!COMBAT_STATES.has(st) && st !== 'notice' && st !== 'suspicious') return;
     this.awareness = 0;
+    this.noHealOnReturn = true;
     this.sm.change('return');
   }
 
