@@ -1,16 +1,14 @@
 // Applying placed items (data/items) and telling the player, in plain words and real numbers, what changed.
-// The item's own `description` is flavour text, shown under the explanation.
+// The item's own `description` is lore, kept for the INVENTORY.
 import { keysFor, keyName } from './Settings';
 import { DATA } from '../data/config';
 import type { GameScene } from '../scenes/GameScene';
 
 export function grantItem(gs: GameScene, id: string, itemId: string, x: number, y: number) {
   const item = DATA.items[itemId];
-  const e = item.effect;
   gs.flags.add(`item:${id}`);
   const what = applyItem(gs, itemId);
-  const lore = e.type === 'consumable' ? DATA.consumables[e.id].description : e.type === 'ring' ? DATA.rings[e.id].description : item.description;
-  gs.showToast(item.name.toUpperCase(), what, lore);
+  gs.showToast(item.name.toUpperCase(), what);
   gs.particles.burst(x, y, 10, -Math.PI / 2, 1.6, 12, 60, 'flame2', false); // sparks from the open chest
   gs.bus.emit('sfx', { id: 'item' });
   gs.save();

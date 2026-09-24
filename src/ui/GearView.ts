@@ -101,8 +101,9 @@ export class GearView {
     if (right) this.text(x + w - right.length * 6, y + (label ? 9 : 5), right, 'stone3');
   }
 
-  /** Name, stat lines and description, wrapped to `cols`, never running past `maxLines` lines in all. */
-  private details(x: number, y: number, cols: number, e: Entry | null, maxLines = 7, name = true) {
+  /** Name, stat lines and (with `lore`, in the INVENTORY only) the description, wrapped to `cols`, never
+   *  running past `maxLines` lines in all. */
+  private details(x: number, y: number, cols: number, e: Entry | null, maxLines = 7, name = true, lore = false) {
     if (!e) return;
     let yy = y;
     if (name) {
@@ -120,7 +121,7 @@ export class GearView {
     const all = wrap(e.description, fineCols).split('\n');
     const lines = all.slice(0, room);
     if (all.length > room) lines[room - 1] = lines[room - 1].slice(0, fineCols - 3) + '...';
-    if (lines[0]) this.fine.push({ kind: 'text', x, y: yy + 4, text: lines.join('\n'), color: hexToInt(DESC_COLOUR) });
+    if (lore && lines[0]) this.fine.push({ kind: 'text', x, y: yy + 4, text: lines.join('\n'), color: hexToInt(DESC_COLOUR) });
   }
 
   private drawEquip(s: GearScreen, p: Player) {
@@ -431,7 +432,7 @@ export class GearView {
       this.text(292, 62, wrap(e.name.toUpperCase(), 26), 'flame2');
       if (e.weight !== null) this.text(292, 80, `WEIGHT ${e.weight.toFixed(1)}${e.on ? '   EQUIPPED' : ''}`, 'stone3');
       else if (e.qty) this.text(292, 80, e.qty, 'stone3');
-      this.details(250, 98, 34, e, 14, false);
+      this.details(250, 98, 34, e, 14, false, true);
     }
     const onItems = TABS[s.tab] === 'ITEMS' && e?.id && DATA.consumables[e.id] && DATA.consumables[e.id].use.type !== 'material';
     this.text(22, DATA.game.height - 18, onItems ? 'UP/DOWN SELECT   E/ENTER PUT ON BELT   LEFT/RIGHT TAB   ESC BACK' : 'UP/DOWN SELECT   LEFT/RIGHT TAB   ESC BACK', 'stone2');

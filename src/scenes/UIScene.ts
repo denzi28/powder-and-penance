@@ -7,7 +7,7 @@ import { hexToInt } from '../ui/colors';
 import { MenuRenderer, wrap } from '../ui/MenuRenderer';
 import { GearView } from '../ui/GearView';
 import { TrailBar } from '../ui/TrailBar';
-import { MapView } from '../ui/MapView';
+import { MapView, minimapShown } from '../ui/MapView';
 import { DialogueBox } from '../ui/DialogueBox';
 import { BossBar } from '../ui/BossBar';
 import { warpVeil } from '../game/Warp';
@@ -342,14 +342,13 @@ export class UIScene extends Phaser.Scene {
     const cfg = DATA.hud.toast;
     const left = DATA.hud.x + HP_BAR_MAX + 6;
     // the minimap's column on the right, or at least room for the Tallow counter
-    const right = DATA.game.width - 8 - Math.max(SETTINGS.minimap && DATA.hud.minimap.enabled ? DATA.hud.minimap.w + 6 : 0, 64);
+    const right = DATA.game.width - 8 - Math.max(minimapShown(this.gs) ? DATA.hud.minimap.w + 6 : 0, 64);
     const cols = Math.min(cfg.cols, Math.floor((right - left - 8) / FINE.charW));
     const cx = (left + right) / 2;
     const col = (name: string) => hexToInt(DATA.palette[name]);
     const parts = [
       { text: wrap(t.title, cols), color: col('flame2'), gap: 0 },
       { text: wrap(t.body, cols), color: col('wax2'), gap: 1.5 },
-      ...(t.note ? [{ text: wrap(t.note, cols), color: col('stone4'), gap: 1 }] : []),
     ];
     const items: FineItem[] = [];
     let y = cfg.y + 2; // text starts inside the panel

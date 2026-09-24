@@ -59,7 +59,7 @@ export class MapView {
     this.redrawIfChanged(gs);
     if (!this.tex) return;
     if (gs.mapOpen) this.drawBig(gs);
-    else if (DATA.hud.minimap.enabled && SETTINGS.minimap && !gs.menu && !gs.player.dead) this.drawMini(gs);
+    else if (minimapShown(gs)) this.drawMini(gs);
   }
 
   // ------------------------------------------------------------------ texture
@@ -249,4 +249,9 @@ export class MapView {
     }
     return t.setText(s).setTint(hexToInt(color)).setVisible(true);
   }
+}
+
+/** The corner minimap: on in the settings, and out of the way in menus, at death and in boss fights. */
+export function minimapShown(gs: GameScene) {
+  return DATA.hud.minimap.enabled && SETTINGS.minimap && !gs.menu && !gs.player.dead && !gs.arena.fighting;
 }

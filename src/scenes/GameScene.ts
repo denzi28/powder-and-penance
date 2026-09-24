@@ -139,7 +139,7 @@ export class GameScene extends Phaser.Scene {
   /** Open menu (freezes the simulation). */
   menu: Menu | null = null;
   /** Item/event banner for the UI. */
-  toast: { title: string; body: string; note?: string; t: number; life: number } | null = null;
+  toast: { title: string; body: string; t: number; life: number } | null = null;
   /** Last hit taken by the player, for the UI damage vignette (t in ms since the hit). */
   hurt: { angle: number; strength: number; t: number } | null = null;
   /** Kneeling at a shrine: kindle (first visit) or rest, then the shrine menu opens. */
@@ -403,7 +403,7 @@ export class GameScene extends Phaser.Scene {
     const took = this.player.addItem(id, n);
     this.flags.add(`found:${id}`);
     this.numbers.add(`${c.name.toUpperCase()}${took > 1 ? ` x${took}` : ''}`, x, y - 30, hexToInt(DATA.palette.wax2));
-    this.showToast(c.name.toUpperCase(), `${took > 1 ? `${took} x ` : ''}${c.name}, into your pack. ${useLine(id)}`, c.description);
+    this.showToast(c.name.toUpperCase(), `${took > 1 ? `${took} x ` : ''}${c.name}, into your pack. ${useLine(id)}`);
     this.dirty = true;
   }
 
@@ -429,14 +429,14 @@ export class GameScene extends Phaser.Scene {
     this.dirty = true;
   }
 
-  /** The first time a kind of consumable is found, say what it does (and give its lore). */
+  /** The first time a kind of consumable is found, say what it does. */
   firstFind(id: string) {
     if (this.flags.has(`found:${id}`)) return;
     this.flags.add(`found:${id}`);
     const c = DATA.consumables[id];
     const keys = beltKeys();
     const how = c.use.type === 'material' ? '' : ` It goes on your belt: ${keys.cycle} cycles, ${keys.use} uses.`;
-    this.showToast(c.name.toUpperCase(), `${useLine(id)}${how}`, c.description);
+    this.showToast(c.name.toUpperCase(), `${useLine(id)}${how}`);
   }
 
   private tryRecoverMarker() {
@@ -558,9 +558,9 @@ export class GameScene extends Phaser.Scene {
     this.controls.clearBuffer();
   }
 
-  /** Banner: title, what happened, and an optional dimmer note (flavour text). */
-  showToast(title: string, body: string, note?: string) {
-    this.toast = { title, body, note, t: 0, life: note ? TOAST_TICKS : 240 };
+  /** Banner: title and what happened. (An item's lore is kept for the INVENTORY, not shown here.) */
+  showToast(title: string, body: string) {
+    this.toast = { title, body, t: 0, life: body.length > 90 ? TOAST_TICKS : 240 };
   }
 
   nearestInteractable() {

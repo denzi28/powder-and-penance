@@ -85,6 +85,11 @@ export class BossArena {
     return { arena: a.kind, boss: st.body.kind, level: -1 }; // between phases
   }
 
+  /** A boss fight is on (from the entrance to the last phase's fall). */
+  get fighting() {
+    return this.musicState() !== null;
+  }
+
   /** Is this tile currently sealed by smoke? (Doors in a sealed doorway can't be used.) */
   sealed(tx: number, ty: number) {
     return !!this.current?.seals.some(s => s.tx === tx && s.ty === ty);
