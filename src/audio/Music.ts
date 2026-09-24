@@ -388,7 +388,7 @@ export class ExploreMusic {
 
 // ---------------------------------------------------------------- the hall
 /** A synthetic impulse response: early reflections, then a dense stereo tail that darkens as it fades. */
-function hallImpulse(ctx: BaseAudioContext, secs: number): AudioBuffer {
+export function hallImpulse(ctx: BaseAudioContext, secs: number): AudioBuffer {
   const rate = ctx.sampleRate;
   const len = Math.floor(rate * secs);
   const buf = ctx.createBuffer(2, len, rate);

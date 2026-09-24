@@ -9,7 +9,7 @@
     "introTicks": 135,
     "slams": [],
     "introLine": "Hush now. Have you come to be born again?",
-    "roarSfx": "summon",
+    "roarSfx": "b_matron_lullaby",
     "deathScript": "matron_death"
   },
   "sprite": "mire_matron",
@@ -47,7 +47,7 @@
           "hitbox": { "shape": "arc", "radius": 60, "halfAngle": 110 },
           "originY": -14,
           "sweep": { "fromDeg": -130, "toDeg": 130 },
-          "knockback": 170, "hitstop": 6, "shake": 0.3, "sfx": "swing_heavy", "anim": "sweep"
+          "knockback": 170, "hitstop": 6, "shake": 0.3, "windupSfx": "b_matron_breath", "sfx": "b_wet_swipe", "anim": "sweep"
         }
       ]
     },
@@ -69,7 +69,7 @@
           "originY": -12,
           "sweep": { "fromDeg": 0, "toDeg": 0, "reach": 6 },
           "grab": { "holdTicks": 80, "damage": 46, "throwKnockback": 220 },
-          "sfx": "grab", "anim": "embrace"
+          "windupSfx": "b_matron_hush", "sfx": "b_embrace", "anim": "embrace"
         }
       ]
     },
@@ -87,13 +87,13 @@
           "hitbox": { "shape": "circle", "radius": 1, "offset": 0 },
           "originY": -30,
           "sweep": { "fromDeg": -30, "toDeg": 30 },
-          "sfx": "throw", "anim": "sing",
+          "sfx": "b_matron_sing", "anim": "sing",
           "projectile": {
             "sprite": "mire_glob",
             "speed": 1, "range": 1,
             "damage": 26, "poise": 26, "knockback": 110, "hitstop": 4, "shake": 0.2,
             "radius": 4, "count": 4, "spreadDeg": 50,
-            "lob": { "flightTicks": 44, "arcHeight": 44, "blastRadius": 22, "sfx": "break_pot" }
+            "lob": { "flightTicks": 44, "arcHeight": 44, "blastRadius": 22, "sfx": "b_wax_splat" }
           }
         }
       ]
@@ -114,7 +114,7 @@
           "hitbox": { "shape": "circle", "radius": 58, "offset": 0 },
           "originY": -6,
           "sweep": { "fromDeg": -90, "toDeg": -90 },
-          "knockback": 280, "hitstop": 8, "shake": 0.5, "sfx": "boss_roar", "anim": "wail"
+          "knockback": 280, "hitstop": 8, "shake": 0.5, "windupSfx": "b_matron_breath", "sfx": "b_matron_wail", "anim": "wail"
         }
       ]
     },
@@ -133,7 +133,7 @@
           "hitbox": { "shape": "circle", "radius": 1, "offset": 0 },
           "sweep": { "fromDeg": -90, "toDeg": -90 },
           "summon": { "kind": "drowned_pilgrim", "count": 3, "radius": 70, "shield": false },
-          "sfx": "summon", "anim": "sing"
+          "sfx": "b_matron_lullaby", "anim": "sing"
         }
       ]
     }

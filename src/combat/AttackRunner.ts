@@ -71,6 +71,7 @@ export class AttackRunner {
     const o = this.owner;
     const bus = o.ctx.bus;
     if (this.phase === 'windup' && trackTo !== undefined) this.track(trackTo);
+    if (this.t === 0 && s.windupSfx) bus.emit('sfx', { id: s.windupSfx, x: o.x, y: o.y });
     if (s.telegraph && this.t === s.telegraph.tick) bus.emit('telegraph', { actor: o, kind: s.telegraph.kind });
     if (s.lunge) {
       const l = s.lunge;
@@ -92,7 +93,7 @@ export class AttackRunner {
           const land = pr.count > 1 ? { x: o.x + Math.cos(a) * dist, y: o.y + Math.sin(a) * dist } : t;
           o.ctx.projectiles.spawn(o, o.x + Math.cos(a) * 8, o.y + Math.sin(a) * 4, a, pr, land);
         }
-        bus.emit('thrown', { actor: o });
+        bus.emit('thrown', { actor: o, strike: s });
       } else bus.emit('swing', { actor: o, strike: s, angle: this.angle, mirror: this.mirror });
     }
     const spellOnly = s.summon || s.vanish || (s.pools && s.damage === 0);

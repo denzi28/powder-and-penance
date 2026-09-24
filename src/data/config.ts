@@ -159,6 +159,19 @@ function loadAll(src: Record<string, unknown>) {
             errors.push(`data/audio/music.json: theme "${id}" layer ${i} bar ${b + 1}: "${line}" should be "degree:steps" words adding up to ${th.steps} steps`);
         }),
       );
+    // every sound an enemy makes must exist: a preset, or a layered boss sound
+    const sound = (id: string) => !!data.sfx.presets[id] || (S.BOSS_SOUNDS as readonly string[]).includes(id);
+    for (const e of Object.values(data.enemies) as S.EnemyDef[]) {
+      const ids: string[] = [];
+      for (const m of e.moves ?? [])
+        for (const st of m.strikes) {
+          ids.push(st.sfx);
+          if (st.windupSfx) ids.push(st.windupSfx);
+          if (st.projectile?.lob?.sfx) ids.push(st.projectile.lob.sfx);
+        }
+      if (e.boss) ids.push(e.boss.slamSfx, ...(e.boss.roarSfx ? [e.boss.roarSfx] : []));
+      for (const id of ids) if (!sound(id)) errors.push(`data/enemies/${e.id}.json: unknown sound "${id}"`);
+    }
     for (const k of Object.keys(data.ambient.decor)) if (!data.decor.decor[k]) errors.push(`data/audio/ambient.json: unknown decor kind "${k}"`);
     for (const r of Object.keys(data.ambient.roomEcho)) if (!data.rooms[r]) errors.push(`data/audio/ambient.json: roomEcho: unknown room "${r}"`);
     for (const a of Object.keys(data.ambient.areas)) if (!data.areas.areas[a]) errors.push(`data/audio/ambient.json: unknown area "${a}"`);

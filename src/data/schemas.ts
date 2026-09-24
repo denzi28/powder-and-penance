@@ -361,6 +361,8 @@ export const StrikeDef = z.object({
   /** Player only: tick from which a roll may cancel the recovery. */
   rollCancelFrom: int.nonnegative().optional(),
   sfx: z.string().default('swing'),
+  /** Sound as the strike starts winding up (a grunt, a chain, a breath): the tell you hear. */
+  windupSfx: z.string().optional(),
   /** Body animation to play (phased windup/active/recovery). Default: "attack" ("thrust" for player thrusts). */
   anim: z.string().optional(),
   /** Thrown instead of swung: launched at the target when the active frames start (no melee hitbox). */
@@ -723,6 +725,16 @@ export type AmbientDecor = z.infer<typeof AmbientDecor>;
 // ---- Ambient sound (data/audio/ambient.json) ----
 export const AMBIENT_SOUNDS = ['crow', 'creak', 'owl', 'bell', 'crickets', 'frog', 'bubble', 'drip', 'clank', 'steam', 'chain', 'choir', 'humming', 'crackle', 'roar', 'wings', 'squeak', 'plop'] as const;
 export type AmbientSound = (typeof AMBIENT_SOUNDS)[number];
+/** Boss sound effects: layered recipes in src/audio/BossSfx.ts, usable anywhere an effect id is (sfx). */
+export const BOSS_SOUNDS = [
+  'b_toll_heft', 'b_hammer_whoosh', 'b_hammer_thrust', 'b_bell_rise', 'b_bell_slam', 'b_toss', 'b_toll_roar',
+  'b_matron_breath', 'b_wet_swipe', 'b_matron_hush', 'b_embrace', 'b_matron_sing', 'b_matron_wail', 'b_matron_lullaby',
+  'b_mother_grunt', 'b_ladle_whoosh', 'b_spit', 'b_wax_splat', 'b_mother_heave', 'b_ladle_crush', 'b_mother_hum', 'b_wax_pour', 'b_mother_roar',
+  'b_bone_rattle', 'b_bone_whoosh', 'b_bone_jab', 'b_bone_hiss', 'b_bone_leap', 'b_ground_slam', 'b_bone_summon', 'b_bone_screech',
+  'b_chandler_chant', 'b_staff_whoosh', 'b_staff_thrust', 'b_flame_flick', 'b_censer', 'b_chandler_roar',
+  'b_blackflame_whoosh', 'b_blackflame_jab', 'b_blackflame_slam', 'b_blackflame_leap', 'b_volley', 'b_fire_burst', 'b_flood', 'b_blackflame_roar',
+] as const;
+export type BossSound = (typeof BOSS_SOUNDS)[number];
 export const SURFACES = ['dirt', 'grass', 'stone', 'wood', 'metal', 'mud', 'grease', 'wax', 'moss'] as const;
 export type Surface = (typeof SURFACES)[number];
 const Sound = z.enum(AMBIENT_SOUNDS);

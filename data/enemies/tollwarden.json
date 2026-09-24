@@ -8,9 +8,9 @@
     "introTicks": 110,
     "slams": [20, 60],
     "slamShake": 0.45,
-    "slamSfx": "bell_slam",
+    "slamSfx": "b_bell_slam",
     "introLine": "Toll is paid in tallow, pilgrim. And tallow is paid in you.",
-    "roarSfx": "boss_roar",
+    "roarSfx": "b_toll_roar",
     "deathScript": "tollwarden_death"
   },
   "sprite": "tollwarden",
@@ -50,7 +50,7 @@
           "hitbox": { "shape": "arc", "radius": 56, "halfAngle": 100 },
           "originY": -10,
           "sweep": { "fromDeg": -120, "toDeg": 120 },
-          "knockback": 160, "hitstop": 6, "shake": 0.3, "sfx": "swing_heavy", "anim": "sweep"
+          "knockback": 160, "hitstop": 6, "shake": 0.3, "windupSfx": "b_toll_heft", "sfx": "b_hammer_whoosh", "anim": "sweep"
         }
       ]
     },
@@ -70,7 +70,7 @@
           "hitbox": { "shape": "arc", "radius": 40, "halfAngle": 25 },
           "originY": -10,
           "sweep": { "fromDeg": 0, "toDeg": 0, "reach": 16 },
-          "knockback": 150, "hitstop": 7, "shake": 0.3, "sfx": "swing_heavy", "anim": "thrust"
+          "knockback": 150, "hitstop": 7, "shake": 0.3, "windupSfx": "b_toll_heft", "sfx": "b_hammer_thrust", "anim": "thrust"
         }
       ]
     },
@@ -90,7 +90,7 @@
           "hitbox": { "shape": "circle", "radius": 32, "offset": 30 },
           "originY": -4,
           "sweep": { "fromDeg": -160, "toDeg": 10 },
-          "knockback": 220, "hitstop": 8, "shake": 0.55, "sfx": "bell_slam", "anim": "slam"
+          "knockback": 220, "hitstop": 8, "shake": 0.55, "windupSfx": "b_bell_rise", "sfx": "b_bell_slam", "anim": "slam"
         }
       ]
     },
@@ -109,7 +109,7 @@
           "hitbox": { "shape": "arc", "radius": 44, "halfAngle": 50 },
           "originY": -10,
           "sweep": { "fromDeg": 0, "toDeg": 0, "reach": 10 },
-          "knockback": 60, "hitstop": 4, "shake": 0.15, "sfx": "swing", "anim": "thrust"
+          "knockback": 60, "hitstop": 4, "shake": 0.15, "windupSfx": "b_toll_heft", "sfx": "b_hammer_thrust", "anim": "thrust"
         },
         {
           "damage": 30, "poise": 40,
@@ -119,7 +119,7 @@
           "hitbox": { "shape": "arc", "radius": 54, "halfAngle": 110 },
           "originY": -10,
           "sweep": { "fromDeg": 120, "toDeg": -120 },
-          "knockback": 150, "hitstop": 6, "shake": 0.3, "sfx": "swing_heavy", "anim": "sweep"
+          "knockback": 150, "hitstop": 6, "shake": 0.3, "sfx": "b_hammer_whoosh", "anim": "sweep"
         }
       ]
     },
@@ -137,7 +137,7 @@
           "hitbox": { "shape": "circle", "radius": 1, "offset": 0 },
           "originY": -26,
           "sweep": { "fromDeg": 40, "toDeg": 40 },
-          "sfx": "throw", "anim": "toss",
+          "sfx": "b_toss", "anim": "toss",
           "projectile": {
             "sprite": "toll_coin", "speed": 200, "range": 240,
             "damage": 14, "poise": 12, "knockback": 40, "hitstop": 2, "shake": 0.05,

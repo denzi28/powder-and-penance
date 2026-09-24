@@ -8,9 +8,9 @@
     "introTicks": 130,
     "slams": [100],
     "slamShake": 0.35,
-    "slamSfx": "bell_slam",
+    "slamSfx": "b_ladle_crush",
     "introLine": "(She hums a work song, and lifts her ladle.)",
-    "roarSfx": "boss_roar",
+    "roarSfx": "b_mother_roar",
     "next": {
       "kind": "mother_bones",
       "chest": { "id": "great_vat_igniter", "item": "igniter", "at": [12, 14] },
@@ -57,7 +57,7 @@
           "hitbox": { "shape": "arc", "radius": 62, "halfAngle": 110 },
           "originY": -14,
           "sweep": { "fromDeg": -130, "toDeg": 130 },
-          "knockback": 180, "hitstop": 6, "shake": 0.3, "sfx": "swing_heavy", "anim": "sweep"
+          "knockback": 180, "hitstop": 6, "shake": 0.3, "windupSfx": "b_mother_grunt", "sfx": "b_ladle_whoosh", "anim": "sweep"
         }
       ]
     },
@@ -75,13 +75,13 @@
           "hitbox": { "shape": "circle", "radius": 1, "offset": 0 },
           "originY": -30,
           "sweep": { "fromDeg": -20, "toDeg": 20 },
-          "sfx": "throw", "anim": "spit",
+          "sfx": "b_spit", "anim": "spit",
           "projectile": {
             "sprite": "wax_glob",
             "speed": 1, "range": 1,
             "damage": 26, "poise": 30, "knockback": 120, "hitstop": 4, "shake": 0.2,
             "radius": 4, "count": 3, "spreadDeg": 26,
-            "lob": { "flightTicks": 48, "arcHeight": 46, "blastRadius": 22, "sfx": "break_pot" }
+            "lob": { "flightTicks": 48, "arcHeight": 46, "blastRadius": 22, "sfx": "b_wax_splat" }
           }
         }
       ]
@@ -102,7 +102,7 @@
           "hitbox": { "shape": "circle", "radius": 40, "offset": 26 },
           "originY": -4,
           "sweep": { "fromDeg": -150, "toDeg": 20 },
-          "knockback": 240, "hitstop": 9, "shake": 0.6, "sfx": "bell_slam", "anim": "crush"
+          "knockback": 240, "hitstop": 9, "shake": 0.6, "windupSfx": "b_mother_heave", "sfx": "b_ladle_crush", "anim": "crush"
         }
       ]
     },
@@ -121,7 +121,7 @@
           "hitbox": { "shape": "arc", "radius": 58, "halfAngle": 100 },
           "originY": -14,
           "sweep": { "fromDeg": -120, "toDeg": 120 },
-          "knockback": 100, "hitstop": 4, "shake": 0.2, "sfx": "swing_heavy", "anim": "sweep"
+          "knockback": 100, "hitstop": 4, "shake": 0.2, "windupSfx": "b_mother_hum", "sfx": "b_ladle_whoosh", "anim": "sweep"
         },
         {
           "damage": 24, "poise": 30,
@@ -131,7 +131,7 @@
           "hitbox": { "shape": "arc", "radius": 58, "halfAngle": 100 },
           "originY": -14,
           "sweep": { "fromDeg": 120, "toDeg": -120 },
-          "knockback": 160, "hitstop": 6, "shake": 0.3, "sfx": "swing_heavy", "anim": "sweep"
+          "knockback": 160, "hitstop": 6, "shake": 0.3, "sfx": "b_ladle_whoosh", "anim": "sweep"
         }
       ]
     },
@@ -151,7 +151,7 @@
           "originY": -30,
           "sweep": { "fromDeg": -70, "toDeg": 30 },
           "pools": { "count": 3, "radius": 16, "spread": 34, "at": "target", "ticks": 480, "speedMult": 0.55 },
-          "sfx": "wax_spill", "anim": "tip"
+          "windupSfx": "b_mother_hum", "sfx": "b_wax_pour", "anim": "tip"
         }
       ]
     }

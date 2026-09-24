@@ -8,9 +8,9 @@
     "introTicks": 110,
     "slams": [78],
     "slamShake": 0.55,
-    "slamSfx": "explosion",
+    "slamSfx": "b_blackflame_slam",
     "introLine": "(The black flame on his head leans toward you, like something listening.)",
-    "roarSfx": "boss_roar",
+    "roarSfx": "b_blackflame_roar",
     "deathScript": "chandler_death"
   },
   "sprite": "chandler_wick",
@@ -51,7 +51,7 @@
           "hitbox": { "shape": "arc", "radius": 64, "halfAngle": 100 },
           "originY": -14,
           "sweep": { "fromDeg": -120, "toDeg": 110 },
-          "knockback": 60, "hitstop": 3, "shake": 0.15, "sfx": "swing_heavy", "anim": "sweep"
+          "knockback": 60, "hitstop": 3, "shake": 0.15, "windupSfx": "b_chandler_chant", "sfx": "b_blackflame_whoosh", "anim": "sweep"
         },
         {
           "damage": 24, "poise": 25,
@@ -61,7 +61,7 @@
           "hitbox": { "shape": "arc", "radius": 64, "halfAngle": 100 },
           "originY": -14,
           "sweep": { "fromDeg": 110, "toDeg": -120 },
-          "knockback": 60, "hitstop": 3, "shake": 0.15, "sfx": "swing_heavy", "anim": "sweep"
+          "knockback": 60, "hitstop": 3, "shake": 0.15, "sfx": "b_blackflame_whoosh", "anim": "sweep"
         },
         {
           "damage": 20, "poise": 20,
@@ -72,7 +72,7 @@
           "hitbox": { "shape": "arc", "radius": 56, "halfAngle": 30 },
           "originY": -14,
           "sweep": { "fromDeg": 0, "toDeg": 0, "reach": 14 },
-          "knockback": 40, "hitstop": 3, "shake": 0.1, "sfx": "swing", "anim": "jab"
+          "knockback": 40, "hitstop": 3, "shake": 0.1, "sfx": "b_blackflame_jab", "anim": "jab"
         },
         {
           "damage": 20, "poise": 20,
@@ -83,7 +83,7 @@
           "hitbox": { "shape": "arc", "radius": 56, "halfAngle": 30 },
           "originY": -14,
           "sweep": { "fromDeg": 0, "toDeg": 0, "reach": 14 },
-          "knockback": 40, "hitstop": 3, "shake": 0.1, "sfx": "swing", "anim": "jab"
+          "knockback": 40, "hitstop": 3, "shake": 0.1, "sfx": "b_blackflame_jab", "anim": "jab"
         },
         {
           "damage": 44, "poise": 70,
@@ -96,7 +96,7 @@
           "originY": -4,
           "sweep": { "fromDeg": -160, "toDeg": 10, "reach": 8 },
           "pools": { "count": 1, "radius": 22, "ticks": 600, "at": "target" },
-          "knockback": 200, "hitstop": 8, "shake": 0.5, "sfx": "bell_slam", "anim": "slam"
+          "knockback": 200, "hitstop": 8, "shake": 0.5, "sfx": "b_blackflame_slam", "anim": "slam"
         }
       ]
     },
@@ -118,7 +118,7 @@
           "originY": -4,
           "sweep": { "fromDeg": -160, "toDeg": 10 },
           "pools": { "count": 1, "radius": 30, "ticks": 700 },
-          "knockback": 240, "hitstop": 10, "shake": 0.7, "sfx": "explosion", "anim": "leap"
+          "knockback": 240, "hitstop": 10, "shake": 0.7, "windupSfx": "b_blackflame_leap", "sfx": "b_blackflame_slam", "anim": "leap"
         },
         {
           "damage": 0, "poise": 0,
@@ -126,7 +126,7 @@
           "hitbox": { "shape": "circle", "radius": 1, "offset": 0 },
           "originY": -6,
           "sweep": { "fromDeg": 10, "toDeg": 10 },
-          "sfx": "throw", "anim": "leap",
+          "sfx": "b_volley", "anim": "leap",
           "projectile": {
             "sprite": "black_flame",
             "speed": 130, "range": 150,
@@ -150,13 +150,13 @@
           "hitbox": { "shape": "circle", "radius": 1, "offset": 0 },
           "originY": -44,
           "sweep": { "fromDeg": -40, "toDeg": 30 },
-          "sfx": "throw", "anim": "volley",
+          "sfx": "b_volley", "anim": "volley",
           "projectile": {
             "sprite": "black_flame",
             "speed": 1, "range": 1,
             "damage": 28, "poise": 30, "knockback": 120, "hitstop": 4, "shake": 0.2,
             "radius": 4, "count": 7, "spreadDeg": 80,
-            "lob": { "flightTicks": 38, "arcHeight": 44, "blastRadius": 20, "sfx": "explosion" }
+            "lob": { "flightTicks": 38, "arcHeight": 44, "blastRadius": 20, "sfx": "b_fire_burst" }
           }
         }
       ]
@@ -176,7 +176,7 @@
           "hitbox": { "shape": "circle", "radius": 1, "offset": 0 },
           "sweep": { "fromDeg": 60, "toDeg": 60 },
           "pools": { "count": 5, "radius": 26, "spread": 80, "at": "target", "ticks": 720, "speedMult": 0.45 },
-          "sfx": "swing", "anim": "flood"
+          "windupSfx": "b_chandler_chant", "sfx": "b_flood", "anim": "flood"
         }
       ]
     },
@@ -196,7 +196,7 @@
           "hitbox": { "shape": "arc", "radius": 56, "halfAngle": 32 },
           "originY": -14,
           "sweep": { "fromDeg": 0, "toDeg": 0, "reach": 18 },
-          "knockback": 180, "hitstop": 6, "shake": 0.3, "sfx": "swing_heavy", "anim": "jab"
+          "knockback": 180, "hitstop": 6, "shake": 0.3, "windupSfx": "b_chandler_chant", "sfx": "b_blackflame_jab", "anim": "jab"
         }
       ]
     }

@@ -8,9 +8,9 @@
     "introTicks": 115,
     "slams": [80],
     "slamShake": 0.5,
-    "slamSfx": "explosion",
+    "slamSfx": "b_ground_slam",
     "introLine": "(The wax burns away. What is left underneath gets up.)",
-    "roarSfx": "boss_roar",
+    "roarSfx": "b_bone_screech",
     "deathScript": "mother_tallow_death",
     "dust": true
   },
@@ -51,7 +51,7 @@
           "hitbox": { "shape": "arc", "radius": 60, "halfAngle": 115 },
           "originY": -14,
           "sweep": { "fromDeg": -130, "toDeg": 130 },
-          "knockback": 200, "hitstop": 6, "shake": 0.35, "sfx": "swing_heavy", "anim": "sweep"
+          "knockback": 200, "hitstop": 6, "shake": 0.35, "windupSfx": "b_bone_rattle", "sfx": "b_bone_whoosh", "anim": "sweep"
         }
       ]
     },
@@ -71,7 +71,7 @@
           "hitbox": { "shape": "arc", "radius": 50, "halfAngle": 30 },
           "originY": -14,
           "sweep": { "fromDeg": 0, "toDeg": 0, "reach": 14 },
-          "knockback": 50, "hitstop": 3, "shake": 0.1, "sfx": "swing", "anim": "jab"
+          "knockback": 50, "hitstop": 3, "shake": 0.1, "windupSfx": "b_bone_rattle", "sfx": "b_bone_jab", "anim": "jab"
         },
         {
           "damage": 22, "poise": 20,
@@ -82,7 +82,7 @@
           "hitbox": { "shape": "arc", "radius": 50, "halfAngle": 30 },
           "originY": -14,
           "sweep": { "fromDeg": 0, "toDeg": 0, "reach": 14 },
-          "knockback": 50, "hitstop": 3, "shake": 0.1, "sfx": "swing", "anim": "jab"
+          "knockback": 50, "hitstop": 3, "shake": 0.1, "sfx": "b_bone_jab", "anim": "jab"
         },
         {
           "damage": 30, "poise": 40,
@@ -93,7 +93,7 @@
           "hitbox": { "shape": "arc", "radius": 54, "halfAngle": 34 },
           "originY": -14,
           "sweep": { "fromDeg": 0, "toDeg": 0, "reach": 18 },
-          "knockback": 160, "hitstop": 6, "shake": 0.25, "sfx": "swing_heavy", "anim": "jab"
+          "knockback": 160, "hitstop": 6, "shake": 0.25, "sfx": "b_bone_jab", "anim": "jab"
         }
       ]
     },
@@ -111,13 +111,13 @@
           "hitbox": { "shape": "circle", "radius": 1, "offset": 0 },
           "originY": -30,
           "sweep": { "fromDeg": -20, "toDeg": 20 },
-          "sfx": "throw", "anim": "spit",
+          "sfx": "b_bone_hiss", "anim": "spit",
           "projectile": {
             "sprite": "ember_glob",
             "speed": 1, "range": 1,
             "damage": 32, "poise": 30, "knockback": 130, "hitstop": 4, "shake": 0.25,
             "radius": 4, "count": 5, "spreadDeg": 40,
-            "lob": { "flightTicks": 36, "arcHeight": 40, "blastRadius": 24, "sfx": "explosion" }
+            "lob": { "flightTicks": 36, "arcHeight": 40, "blastRadius": 24, "sfx": "b_fire_burst" }
           }
         }
       ]
@@ -139,7 +139,7 @@
           "hitbox": { "shape": "circle", "radius": 44, "offset": 10 },
           "originY": -4,
           "sweep": { "fromDeg": -150, "toDeg": 20 },
-          "knockback": 260, "hitstop": 10, "shake": 0.7, "sfx": "bell_slam", "anim": "leap"
+          "knockback": 260, "hitstop": 10, "shake": 0.7, "windupSfx": "b_bone_leap", "sfx": "b_ground_slam", "anim": "leap"
         }
       ]
     },
@@ -158,7 +158,7 @@
           "hitbox": { "shape": "circle", "radius": 1, "offset": 0 },
           "sweep": { "fromDeg": -90, "toDeg": -90 },
           "summon": { "kind": "wax_slime", "count": 3, "radius": 46, "shield": true },
-          "sfx": "summon", "anim": "summon"
+          "sfx": "b_bone_summon", "anim": "summon"
         }
       ]
     }

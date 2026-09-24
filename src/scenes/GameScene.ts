@@ -48,6 +48,7 @@ import { LightCones } from '../render/LightCones';
 import { Ambience } from '../world/Ambience';
 import { Sfx } from '../audio/Sfx';
 import { AmbientAudio } from '../audio/Ambient';
+import { BossSfx } from '../audio/BossSfx';
 import { BossMusic, ExploreMusic } from '../audio/Music';
 import { SaveSystem, type SaveData } from '../save/SaveSystem';
 import { MenuNav, type Menu } from '../ui/Menu';
@@ -86,6 +87,7 @@ export class GameScene extends Phaser.Scene {
   sfx = new Sfx();
   ambientAudio = new AmbientAudio(this.sfx);
   bossMusic = new BossMusic(this.sfx);
+  bossSfx = new BossSfx(this.sfx);
   exploreMusic = new ExploreMusic(this.sfx);
   saves = new SaveSystem();
 

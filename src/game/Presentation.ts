@@ -1,6 +1,7 @@
 // Turns gameplay events into feedback: hit-stop, shake, particles, sprites FX, sound, floating text,
 // flinches and the player's damage vignette. The simulation never calls any of this directly.
 import { DATA } from '../data/config';
+import { BossSfx } from '../audio/BossSfx';
 import { TILE } from '../world/TileGrid';
 import { Enemy } from '../enemies/Enemy';
 import { PROJECTILE_HEIGHT } from '../combat/Projectiles';
@@ -23,7 +24,8 @@ export function wirePresentation(gs: GameScene) {
       const d = Math.hypot(e.x - gs.player.x, e.y - gs.player.y);
       vol *= Math.max(0, 1 - d / DATA.audio.hearingDistance);
     }
-    gs.sfx.play(e.id, vol, (e.pitch ?? 1) * (0.96 + Math.random() * 0.08));
+    if (BossSfx.has(e.id)) gs.bossSfx.play(e.id, vol, e.x !== undefined ? (e.x - gs.player.x) / 200 : 0); // layered boss sounds
+    else gs.sfx.play(e.id, vol, (e.pitch ?? 1) * (0.96 + Math.random() * 0.08));
   });
 
   bus.on('footstep', e => {
@@ -140,7 +142,7 @@ export function wirePresentation(gs: GameScene) {
     bus.emit('sfx', { id: e.sfx, x: e.x, y: e.y });
   });
 
-  bus.on('thrown', e => bus.emit('sfx', { id: 'throw', x: e.actor.x, y: e.actor.y }));
+  bus.on('thrown', e => bus.emit('sfx', { id: e.strike.sfx === 'swing' ? 'throw' : e.strike.sfx, x: e.actor.x, y: e.actor.y }));
 
   bus.on('propBroken', e => {
     const p = e.prop;

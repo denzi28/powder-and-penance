@@ -8,7 +8,8 @@
     "introTicks": 160,
     "slams": [130],
     "slamShake": 0.35,
-    "slamSfx": "bell_slam",
+    "slamSfx": "b_bell_slam",
+    "roarSfx": "b_chandler_roar",
     "introLine": "\"Kneel, child. It is quicker kneeling.\"",
     "turn": {
       "kind": "chandler_wick",
@@ -55,7 +56,7 @@
           "hitbox": { "shape": "arc", "radius": 68, "halfAngle": 100 },
           "originY": -14,
           "sweep": { "fromDeg": -120, "toDeg": 120 },
-          "knockback": 170, "hitstop": 6, "shake": 0.3, "sfx": "swing_heavy", "anim": "sweep"
+          "knockback": 170, "hitstop": 6, "shake": 0.3, "windupSfx": "b_chandler_chant", "sfx": "b_staff_whoosh", "anim": "sweep"
         }
       ]
     },
@@ -74,7 +75,7 @@
           "hitbox": { "shape": "arc", "radius": 66, "halfAngle": 95 },
           "originY": -14,
           "sweep": { "fromDeg": -120, "toDeg": 110 },
-          "knockback": 90, "hitstop": 4, "shake": 0.2, "sfx": "swing_heavy", "anim": "sweep"
+          "knockback": 90, "hitstop": 4, "shake": 0.2, "windupSfx": "b_chandler_chant", "sfx": "b_staff_whoosh", "anim": "sweep"
         },
         {
           "damage": 34, "poise": 40,
@@ -84,7 +85,7 @@
           "hitbox": { "shape": "arc", "radius": 66, "halfAngle": 95 },
           "originY": -14,
           "sweep": { "fromDeg": 110, "toDeg": -120 },
-          "knockback": 170, "hitstop": 6, "shake": 0.3, "sfx": "swing_heavy", "anim": "sweep"
+          "knockback": 170, "hitstop": 6, "shake": 0.3, "sfx": "b_staff_whoosh", "anim": "sweep"
         }
       ]
     },
@@ -105,7 +106,7 @@
           "hitbox": { "shape": "circle", "radius": 26, "offset": 44 },
           "originY": -4,
           "sweep": { "fromDeg": -160, "toDeg": 10, "reach": 10 },
-          "knockback": 60, "hitstop": 10, "shake": 0.6, "sfx": "bell_slam", "anim": "slam"
+          "knockback": 60, "hitstop": 10, "shake": 0.6, "windupSfx": "b_bell_rise", "sfx": "b_bell_slam", "anim": "slam"
         }
       ]
     },
@@ -123,7 +124,7 @@
           "hitbox": { "shape": "circle", "radius": 1, "offset": 0 },
           "originY": -40,
           "sweep": { "fromDeg": -30, "toDeg": -30 },
-          "sfx": "throw", "anim": "flick",
+          "sfx": "b_flame_flick", "anim": "flick",
           "projectile": {
             "sprite": "taper_shot",
             "speed": 190, "range": 280,
@@ -138,7 +139,7 @@
           "hitbox": { "shape": "circle", "radius": 1, "offset": 0 },
           "originY": -40,
           "sweep": { "fromDeg": -30, "toDeg": -30 },
-          "sfx": "throw", "anim": "flick",
+          "sfx": "b_flame_flick", "anim": "flick",
           "projectile": {
             "sprite": "taper_shot",
             "speed": 210, "range": 280,
@@ -162,7 +163,7 @@
           "hitbox": { "shape": "circle", "radius": 1, "offset": 0 },
           "sweep": { "fromDeg": 60, "toDeg": 60 },
           "vanish": { "distance": 38, "ticks": 46 },
-          "sfx": "swing", "anim": "censer"
+          "sfx": "b_censer", "anim": "censer"
         },
         {
           "damage": 34, "poise": 40,
@@ -173,7 +174,7 @@
           "hitbox": { "shape": "arc", "radius": 62, "halfAngle": 28 },
           "originY": -14,
           "sweep": { "fromDeg": 0, "toDeg": 0, "reach": 16 },
-          "knockback": 150, "hitstop": 6, "shake": 0.25, "sfx": "swing_heavy", "anim": "jab"
+          "knockback": 150, "hitstop": 6, "shake": 0.25, "sfx": "b_staff_thrust", "anim": "jab"
         }
       ]
     }
