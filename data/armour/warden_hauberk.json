@@ -1,0 +1,11 @@
+{
+  "id": "warden_hauberk",
+  "name": "Warden's Hauberk",
+  "slot": "body",
+  "weight": 11,
+  "absorb": 0.15,
+  "poise": 11,
+  "icon": 13,
+  "description": "Riveted mail over a padded coat, the Abbey's colours long since rusted brown. It will turn a spear, and slow you to a walk.",
+  "ramp": ["#2c2f36", "#4f5560", "#7a8290", "#b4bcc8"]
+}

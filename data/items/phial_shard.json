@@ -1,6 +1,7 @@
 {
   "id": "phial_shard",
   "name": "Phial Shard",
+  "icon": 16,
   "description": "A sliver of stained glass from a chapel window, still warm.",
   "effect": { "type": "phialMax", "amount": 1 }
 }

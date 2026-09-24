@@ -280,6 +280,9 @@ Static scenery, referenced by `data/decor.json`, which picks a sheet and frame a
 | 2 | `guard_dead` (flat) | 6 | `signpost` |
 | 3 | `boulder` | 7 | `candle_cairn` |
 
+### Icons (`icons`: 16×16 cells, one row; the inventory and equipment screens)
+0 fists, 1 dagger, 2 straight sword, 3 greataxe, 4 revolver, 5 flintlock, 6 heavy crossbow, 7 buckler, 8 pilgrim's hood, 9 drowned veil, 10 gaoler's helm, 11 acolyte's robe, 12 renderer's apron, 13 warden's hauberk, 14 tallow lump, 15 powder pouch, 16 phial shard, 17 bitter salt, 18 cage key, 19 toll key, 20 igniter, 21 ledger, 22 seal of tallow, 23 seal of the mire, 24 mending phial, 25 empty slot. Weapons, shields, armour and items choose theirs with `icon`.
+
 ### Ambient life (`critters`: 16×16 cells, pivot 8,14, facing right) and `data/ambience.json`
 The critters sheet holds small animals that wander rooms and flee from the player (`src/world/Ambience.ts`):
 0-3 rat (idle, sniff, run a/b), 4-7 crow (idle, peck, fly a/b), 8-11 frog (sit, croak, hop a/b), 12-13 moth, 14-17 cat (sit, tail flick, walk a/b), 18-19 bat (wings up/down).

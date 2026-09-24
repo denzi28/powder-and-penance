@@ -54,6 +54,8 @@ function loadAll(src: Record<string, unknown>) {
     palette: one(S.Palette, 'palette'),
     weapons: dir(S.WeaponDef, 'weapons'),
     shields: dir(S.ShieldDef, 'shields'),
+    armour: dir(S.ArmourDef, 'armour'),
+    load: one(S.LoadCfg, 'config/load'),
     items: dir(S.ItemDef, 'items'),
     props: dir(S.PropDef, 'props'),
     loot: one(S.LootTables, 'loot'),
@@ -174,6 +176,17 @@ function loadAll(src: Record<string, unknown>) {
       for (const v of Object.values(e.voice ?? {})) if (v) ids.push(v);
       for (const id of ids) if (!sound(id)) errors.push(`data/enemies/${e.id}.json: unknown sound "${id}"`);
     }
+    for (const it of Object.values(data.items)) {
+      const e = it.effect;
+      if (e.type !== 'gear') continue;
+      const table = e.kind === 'weapon' ? data.weapons : e.kind === 'shield' ? data.shields : data.armour;
+      if (!table[e.id]) errors.push(`data/items/${it.id}.json: gear "${e.id}" is not a ${e.kind}`);
+    }
+    for (const w of Object.values(data.weapons))
+      for (const id of [w.sounds.draw, w.sounds.hit, w.sounds.shotHit, w.sounds.charge, ...(w.sounds.reload ?? []).map(r => r[1]), w.ranged?.fire.sfx, ...w.light.map(l => l.sfx), w.heavy?.strike.sfx])
+        if (id && !sound(id)) errors.push(`data/weapons/${w.id}.json: unknown sound "${id}"`);
+    for (const sh of Object.values(data.shields))
+      for (const id of [sh.blockSfx, sh.parrySfx]) if (!sound(id)) errors.push(`data/shields/${sh.id}.json: unknown sound "${id}"`);
     for (const k of Object.keys(data.ambient.decor)) if (!data.decor.decor[k]) errors.push(`data/audio/ambient.json: unknown decor kind "${k}"`);
     for (const r of Object.keys(data.ambient.roomEcho)) if (!data.rooms[r]) errors.push(`data/audio/ambient.json: roomEcho: unknown room "${r}"`);
     for (const a of Object.keys(data.ambient.areas)) if (!data.areas.areas[a]) errors.push(`data/audio/ambient.json: unknown area "${a}"`);

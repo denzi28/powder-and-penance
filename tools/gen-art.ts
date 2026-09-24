@@ -7434,6 +7434,225 @@ function genCritters() {
   sheet('critters', img, { cell: [16, 16], pivot: [8, 14], layer: 'single' });
 }
 
+// ---------------------------------------------------------------- icons (16x16, inventory and equipment screens)
+// 0 fists, 1 dagger, 2 straight sword, 3 greataxe, 4 revolver, 5 flintlock, 6 heavy crossbow, 7 buckler,
+// 8 pilgrim's hood, 9 drowned veil, 10 gaoler's helm, 11 acolyte's robe, 12 renderer's apron, 13 warden's hauberk,
+// 14 tallow lump, 15 powder pouch, 16 phial shard, 17 bitter salt, 18 cage key, 19 toll key, 20 igniter,
+// 21 ledger, 22 seal of tallow, 23 seal of the mire, 24 mending phial, 25 empty slot.
+function genIcons() {
+  const N = 26;
+  const img = new Img(16 * N, 16);
+  const icon = (i: number, draw: (c: Img) => void, outline = true) => {
+    const c = new Img(16, 16);
+    draw(c);
+    if (outline) c.outline(P.ink);
+    img.blit(c, i * 16, 0);
+  };
+  const blade = (c: Img, x0: number, y0: number, x1: number, y1: number) => {
+    line(c, x0, y0, x1, y1, IRON.c3);
+    line(c, x0 + 1, y0, x1 + 1, y1, IRON.c2);
+  };
+  // 0 fists: a clenched hand
+  icon(0, c => {
+    c.rect(4, 5, 8, 7, mix(P.wax1, P.wood2, 0.35));
+    for (const x of [4, 6, 8, 10]) c.vline(x + 1, 5, 3, mix(P.wax1, P.wood2, 0.6));
+    c.rect(3, 9, 3, 3, mix(P.wax1, P.wood2, 0.35));
+    c.rect(5, 12, 6, 2, DWOOD.c2);
+  });
+  // 1 dagger
+  icon(1, c => {
+    blade(c, 11, 2, 6, 9);
+    c.hline(4, 10, 5, GOLD0);
+    line(c, 5, 11, 3, 13, WOOD.c2);
+  });
+  // 2 straight sword
+  icon(2, c => {
+    blade(c, 13, 1, 5, 9);
+    line(c, 3, 8, 7, 12, GOLD0);
+    line(c, 4, 11, 2, 13, WOOD.c2);
+    c.set(1, 14, GOLD0);
+  });
+  // 3 greataxe
+  icon(3, c => {
+    line(c, 4, 15, 9, 1, WOOD.c2);
+    // a broad crescent blade on one side of the haft
+    for (let y = 1; y < 11; y++) {
+      const w = Math.round(Math.sin(((y - 1) / 9) * Math.PI) * 5);
+      const x0 = 9 - Math.round((y - 1) * 0.35);
+      if (w > 0) c.hline(x0, y, w, y % 3 === 0 ? IRON.c3 : IRON.c2);
+    }
+    c.vline(13, 3, 6, IRON.c3); // the edge
+    c.set(6, 12, WOOD.c1);
+  });
+  // 4 revolver
+  icon(4, c => {
+    c.rect(4, 5, 10, 2, IRON.c2);
+    c.rect(5, 7, 4, 3, IRON.c1);
+    c.disc(7, 8, 1.6, IRON.c3);
+    line(c, 5, 10, 3, 14, WOOD.c2);
+    line(c, 6, 10, 4, 14, WOOD.c1);
+  });
+  // 5 flintlock
+  icon(5, c => {
+    c.rect(3, 6, 11, 2, IRON.c1);
+    c.hline(3, 6, 11, IRON.c3);
+    c.rect(5, 8, 5, 2, WOOD.c2);
+    line(c, 5, 10, 3, 14, WOOD.c2);
+    c.set(7, 5, IRON.c3); // the cock
+    c.set(8, 4, IRON.c2);
+  });
+  // 6 heavy crossbow
+  icon(6, c => {
+    c.rect(7, 3, 2, 11, WOOD.c2);
+    line(c, 2, 6, 14, 6, IRON.c2);
+    line(c, 2, 6, 3, 9, IRON.c1);
+    line(c, 14, 6, 13, 9, IRON.c1);
+    line(c, 3, 9, 13, 9, P.wax1); // the string
+    c.set(8, 2, IRON.c3);
+  });
+  // 7 buckler
+  icon(7, c => {
+    c.disc(8, 8, 6, IRON.c1);
+    c.disc(8, 8, 5, IRON.c2);
+    c.disc(8, 8, 2, IRON.c3);
+    c.set(6, 5, P.white);
+  });
+  // 8 pilgrim's hood
+  icon(8, c => {
+    c.ellipse(8, 8, 6, 6, STN.c2);
+    c.ellipse(8, 9, 3.5, 4, P.dark1);
+    c.hline(3, 13, 10, STN.c1);
+    c.set(5, 4, STN.c3);
+  });
+  // 9 drowned veil: a waxy mask-like veil
+  icon(9, c => {
+    c.ellipse(8, 8, 5.5, 6.5, mix(P.wax1, P.moss2, 0.35));
+    c.set(6, 7, P.dark1);
+    c.set(10, 7, P.dark1);
+    for (let x = 3; x < 14; x += 2) c.vline(x, 12, 3, mix(P.wax1, P.moss2, 0.5)); // drips
+  });
+  // 10 gaoler's helm: iron with a barred face grille
+  icon(10, c => {
+    c.ellipse(8, 7, 6, 5.5, IRON.c1);
+    c.ellipse(8, 6, 5, 4, IRON.c2);
+    c.rect(4, 8, 8, 5, P.dark1);
+    for (const x of [5, 7, 9, 11]) c.vline(x, 8, 5, IRON.c3);
+    c.set(6, 3, IRON.c3);
+  });
+  // 11 acolyte's robe
+  icon(11, c => {
+    for (let y = 3; y < 15; y++) c.hline(8 - Math.floor(2 + y / 3), y, Math.floor(4 + (y / 3) * 2), y < 5 ? P.dark2 : P.dark1);
+    c.hline(5, 8, 6, P.ember); // singed sash
+    c.vline(8, 5, 9, P.stone1);
+  });
+  // 12 renderer's apron: stained leather
+  icon(12, c => {
+    c.rect(4, 4, 8, 11, mix(P.wood2, P.wax1, 0.2));
+    c.rect(5, 2, 6, 2, mix(P.wood2, P.wax1, 0.2));
+    c.hline(2, 6, 12, WOOD.c1); // ties
+    c.set(7, 9, P.blood1);
+    c.set(9, 11, P.blood1);
+    c.set(8, 10, mix(P.blood1, P.wood2, 0.5));
+  });
+  // 13 warden's hauberk: mail
+  icon(13, c => {
+    c.rect(3, 3, 10, 11, IRON.c1);
+    for (let y = 3; y < 14; y++) for (let x = 3 + (y % 2); x < 13; x += 2) c.set(x, y, IRON.c2);
+    c.rect(6, 2, 4, 2, P.dark1); // neck
+    c.hline(3, 13, 10, mix(P.blood1, P.wood1, 0.5)); // hem
+  });
+  // 14 tallow lump
+  icon(14, c => {
+    c.ellipse(8, 9, 5, 4, P.wax1);
+    c.ellipse(7, 8, 3, 2, P.wax2);
+  });
+  // 15 powder pouch
+  icon(15, c => {
+    c.ellipse(8, 10, 5, 4, WOOD.c2);
+    c.rect(6, 4, 4, 3, WOOD.c1);
+    c.hline(5, 7, 6, P.wax1);
+  });
+  // 16 phial shard
+  icon(16, c => {
+    line(c, 5, 12, 10, 3, mix(P.teal3, P.white, 0.3));
+    line(c, 6, 12, 11, 4, P.teal3);
+    line(c, 5, 12, 11, 12, P.teal2);
+    c.set(9, 5, P.white);
+  });
+  // 17 bitter salt
+  icon(17, c => {
+    c.ellipse(8, 11, 5, 2.5, P.wax2);
+    c.ellipse(8, 9, 3, 2.5, P.white);
+    c.set(6, 8, P.stone4);
+  });
+  // 18 cage key
+  icon(18, c => {
+    c.disc(5, 5, 2.5, IRON.c2);
+    c.set(5, 5, P.dark1);
+    line(c, 6, 6, 12, 12, IRON.c2);
+    c.hline(10, 12, 3, IRON.c2);
+  });
+  // 19 toll key: heavy iron, worn bright
+  icon(19, c => {
+    c.disc(5, 5, 3, IRON.c3);
+    c.disc(5, 5, 1.2, P.dark1);
+    line(c, 7, 7, 13, 13, IRON.c3);
+    c.rect(11, 12, 3, 2, IRON.c2);
+    c.rect(9, 10, 2, 2, IRON.c2);
+  });
+  // 20 igniter: a striker and flint with a spark
+  icon(20, c => {
+    c.rect(3, 8, 7, 4, IRON.c2);
+    c.rect(9, 9, 4, 3, STN.c3);
+    c.set(12, 6, P.flame2);
+    c.set(13, 5, P.flame1);
+    c.set(11, 5, P.flame1);
+  });
+  // 21 ledger
+  icon(21, c => {
+    c.rect(3, 3, 10, 11, P.blood1);
+    c.rect(4, 4, 8, 9, P.wax1);
+    for (const y of [6, 8, 10]) c.hline(5, y, 6, P.stone2);
+    c.vline(3, 3, 11, P.blood2);
+  });
+  // 22 seal of tallow: a wax seal, amber
+  icon(22, c => {
+    c.disc(8, 8, 5.5, P.flame1);
+    c.disc(8, 8, 3.5, mix(P.flame1, P.wood1, 0.3));
+    c.set(8, 8, P.flame2);
+    c.set(6, 5, P.wax2);
+  });
+  // 23 seal of the mire: green-black wax
+  icon(23, c => {
+    c.disc(8, 8, 5.5, P.moss1);
+    c.disc(8, 8, 3.5, mix(P.moss1, P.dark1, 0.5));
+    c.set(8, 8, P.moss2);
+    c.set(6, 5, P.wax1);
+  });
+  // 24 mending phial
+  icon(24, c => {
+    c.ellipse(8, 10, 4.5, 4, mix(P.teal2, P.dark1, 0.3));
+    c.ellipse(8, 11, 3.5, 2.5, P.flame1);
+    c.rect(7, 3, 3, 4, mix(P.teal2, P.dark1, 0.3));
+    c.rect(7, 2, 3, 1, WOOD.c2);
+    c.set(6, 9, P.white);
+  });
+  // 25 an empty slot: a faint dotted square
+  icon(
+    25,
+    c => {
+      for (let i = 2; i < 14; i += 2) {
+        c.set(i, 2, P.stone1);
+        c.set(i, 13, P.stone1);
+        c.set(2, i, P.stone1);
+        c.set(13, i, P.stone1);
+      }
+    },
+    false,
+  );
+  sheet('icons', img, { cell: [16, 16], pivot: [0, 0], layer: 'ui' });
+}
+
 // ---------------------------------------------------------------- font (original 5x7, ASCII 32..126, 16 per row)
 const GLYPHS: Record<string, string> = {
   ' ': '.....|.....|.....|.....|.....|.....|.....',
@@ -7540,6 +7759,7 @@ genAbbeyDecor();
 genChest();
 genNpcs();
 genCritters();
+genIcons();
 genTollwarden();
 genWorks();
 genMire();

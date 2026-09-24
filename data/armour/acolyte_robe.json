@@ -1,0 +1,11 @@
+{
+  "id": "acolyte_robe",
+  "name": "Acolyte's Robe",
+  "slot": "body",
+  "weight": 2.5,
+  "absorb": 0.05,
+  "poise": 2,
+  "icon": 11,
+  "description": "Heavy black cloth, singed at the cuffs. Powder acolytes wore them to carry the firepots without catching.",
+  "ramp": ["#141018", "#241c28", "#3a2e3d", "#5e4e60"]
+}

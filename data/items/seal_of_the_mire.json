@@ -1,6 +1,7 @@
 {
   "id": "seal_of_the_mire",
   "name": "Seal of the Mire",
+  "icon": 23,
   "description": "Cold wax pressed into the Abbey's candle, as smooth as a pebble from a riverbed. It smells of rain.",
   "effect": { "type": "key", "opens": "the great door of the Abbey Nave, together with the Seal of Tallow" }
 }

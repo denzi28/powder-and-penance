@@ -1,0 +1,11 @@
+{
+  "id": "gear_gaolers_helm",
+  "name": "Gaoler's Helm",
+  "icon": 10,
+  "description": "A barred iron helm from the Toll Gate's keepers. You see the world through a grate, as your charges did.",
+  "effect": {
+    "type": "gear",
+    "kind": "armour",
+    "id": "gaolers_helm"
+  }
+}

@@ -142,6 +142,12 @@
       "type": "prop",
       "kind": "pot",
       "at": [4, 12]
+    },
+    {
+      "type": "item",
+      "id": "road_03_gibbet_bend_pilgrims_hood",
+      "item": "gear_pilgrims_hood",
+      "at": [17, 8]
     }
   ]
 }

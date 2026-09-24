@@ -95,6 +95,12 @@
       "type": "prop",
       "kind": "pot",
       "at": [17, 4]
+    },
+    {
+      "type": "item",
+      "id": "works_01_toll_gate_gaolers_helm",
+      "item": "gear_gaolers_helm",
+      "at": [11, 1]
     }
   ]
 }

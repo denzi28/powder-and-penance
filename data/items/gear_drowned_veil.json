@@ -1,0 +1,11 @@
+{
+  "id": "gear_drowned_veil",
+  "name": "Drowned Veil",
+  "icon": 9,
+  "description": "A mourner's veil, soaked in wax until it set like a mask. It still smells of the Mire.",
+  "effect": {
+    "type": "gear",
+    "kind": "armour",
+    "id": "drowned_veil"
+  }
+}

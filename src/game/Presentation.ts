@@ -36,6 +36,9 @@ export function wirePresentation(gs: GameScene) {
     const v = gs.grid.variant(tx, ty);
     const surface = fs.surfaces[v] ?? fs.floor[gs.area] ?? fs.floor.default ?? 'stone';
     if (!gs.ambientAudio.step(surface, e.sprint)) gs.sfx.play('footstep', e.sprint ? 1.3 : 1); // before the ambient engine is up
+    // heavy armour jingles as you walk
+    const coat = gs.player.worn.body ? DATA.armour[gs.player.worn.body] : null;
+    if (coat && coat.weight >= 5) bus.emit('sfx', { id: 'p_mail_jingle', volume: Math.min(1, coat.weight / 12) * (e.sprint ? 1.3 : 0.9) });
   });
 
   bus.on('hit', h => {
@@ -48,7 +51,8 @@ export function wirePresentation(gs: GameScene) {
       gs.hitstop = Math.max(gs.hitstop, h.guardBroken ? 8 : 3);
       gs.cam.addTrauma(h.guardBroken ? 0.35 : 0.12);
       gs.particles.burst(t.x, t.y, z, h.angle + Math.PI, 1.6, pc.sparks * 2, 130, 'flame2', false);
-      bus.emit('sfx', { id: h.guardBroken ? 'guard_break' : 'block', x: t.x, y: t.y });
+      const shield = t === gs.player ? gs.player.shield : null;
+      bus.emit('sfx', { id: h.guardBroken ? 'guard_break' : (shield?.blockSfx ?? 'block'), x: t.x, y: t.y });
       t.flinch(h.angle, fb.flinchBlocked);
       return;
     }
@@ -59,7 +63,12 @@ export function wirePresentation(gs: GameScene) {
     gs.particles.burst(t.x, t.y, z, h.angle, 1.4, pc.sparks, 110, 'flame2', false);
     const blood = h.killed || s.kind === 'critical' ? pc.bloodOnKill : pc.blood;
     gs.particles.burst(t.x, t.y, z, h.angle, 1.0, blood, 90, t.bloodColor, true);
-    bus.emit('sfx', { id: heavy ? 'hit_heavy' : 'hit', x: t.x, y: t.y });
+    if (h.attacker === gs.player && s.kind !== 'critical') {
+      // your weapon's own sound: a blade biting, a club thudding, a shot striking
+      const ws = gs.player.weapon.sounds;
+      bus.emit('sfx', { id: (s.kind === 'projectile' ? ws.shotHit : ws.hit) ?? (heavy ? 'hit_heavy' : 'hit'), x: t.x, y: t.y });
+      if (heavy) bus.emit('sfx', { id: 'hit_heavy', x: t.x, y: t.y, volume: 0.5 });
+    } else bus.emit('sfx', { id: heavy ? 'hit_heavy' : 'hit', x: t.x, y: t.y });
     if (t instanceof Enemy && !h.killed && t.def.voice?.hurt) bus.emit('sfx', { id: t.def.voice.hurt, x: t.x, y: t.y }); // its cry of pain
     t.flinch(h.angle, heavy ? fb.flinchHeavy : fb.flinch);
 
@@ -83,7 +92,7 @@ export function wirePresentation(gs: GameScene) {
     const my = (e.parrier.y + e.attacker.y) / 2;
     gs.particles.burst(mx, my, 12, Math.atan2(e.attacker.y - e.parrier.y, e.attacker.x - e.parrier.x), 2.4, 14, 150, 'wax2', false);
     gs.fx.spawn('glint', 'normal', mx, my - 12, { depth: DEPTH.overlay - 5 });
-    bus.emit('sfx', { id: 'parry' });
+    bus.emit('sfx', { id: e.parrier === gs.player ? (gs.player.shield?.parrySfx ?? 'parry') : 'parry' });
     gs.numbers.add('PARRY', e.parrier.x, e.parrier.y - 34, hexToInt(pal().wax2));
   });
 

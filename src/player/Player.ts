@@ -1,5 +1,6 @@
 // Player simulation state. No Phaser here: PlayerView renders it, interpolating prev -> current position.
 import { DATA } from '../data/config';
+import type { LoadCfg } from '../data/schemas';
 import { AnimPlayer } from '../anim/AnimPlayer';
 import { SPRITES } from '../data/assets';
 import { Actor } from '../actors/Actor';
@@ -22,7 +23,7 @@ export interface Ammo {
 
 export class Player extends Actor {
   readonly team = 'player' as const;
-  readonly poise = new Poise(() => DATA.player.poise);
+  readonly poise = new Poise(() => ({ ...DATA.player.poise, max: DATA.player.poise.max + this.armourPoise }));
   readonly stamina = new Stamina(() => DATA.stamina, () => DATA.game.tickRate);
   readonly body = new AnimPlayer(SPRITES.player_body.animations);
   readonly legs = new AnimPlayer(SPRITES.player_legs.animations);
@@ -47,6 +48,8 @@ export class Player extends Actor {
   comboIndex = 0;
   /** Heavy attack charge ticks accumulated. */
   charge = 0;
+  /** The current roll's shape (set as it starts, from the equip load). */
+  rollCfg: ReturnType<typeof rollFor> | null = null;
   /** Freeze the body animation (heavy charge hold). */
   animHold = false;
 
@@ -54,6 +57,10 @@ export class Player extends Actor {
   slots: [string, string];
   slot = 0;
   shieldId: string | null;
+  /** Armour worn (data/armour ids). */
+  readonly worn: { head: string | null; body: string | null } = { head: null, body: null };
+  /** Everything owned (equipped or not). Fists aren't listed: they're always there. */
+  readonly inv: { weapons: string[]; shields: string[]; armour: string[] } = { weapons: [], shields: [], armour: [] };
   readonly ammo = new Map<string, Ammo>();
 
   // Resources
@@ -85,6 +92,8 @@ export class Player extends Actor {
     this.aimY = y + 32;
     this.slots = [...DATA.player.loadout.slots];
     this.shieldId = DATA.player.loadout.shield;
+    for (const id of this.slots) if (id !== FISTS && !this.inv.weapons.includes(id)) this.inv.weapons.push(id);
+    if (this.shieldId) this.inv.shields.push(this.shieldId);
     this.enforceTwoHanded();
     this.body.play('idle');
     this.legs.play('idle');
@@ -126,6 +135,78 @@ export class Player extends Actor {
   get shield() {
     if (!this.shieldId || this.weapon.twoHanded) return null;
     return DATA.shields[this.shieldId] ?? null;
+  }
+
+  // ------------------------------------------------------------------ gear and equip load
+  get armourPieces() {
+    return [this.worn.head, this.worn.body].filter((id): id is string => !!id && !!DATA.armour[id]).map(id => DATA.armour[id]);
+  }
+  get armourAbsorb() {
+    return Math.min(0.5, this.armourPieces.reduce((a, p) => a + p.absorb, 0));
+  }
+  get armourPoise() {
+    return this.armourPieces.reduce((a, p) => a + p.poise, 0);
+  }
+  override get damageTakenMult() {
+    return 1 - this.armourAbsorb;
+  }
+
+  /** Weight of everything equipped: both hands, the shield and armour. */
+  get equipLoad() {
+    return loadOf({ slots: this.slots, shield: this.shieldId, head: this.worn.head, body: this.worn.body });
+  }
+  get loadTier() {
+    return loadTier(this.equipLoad);
+  }
+
+  /** The roll as your equip load makes it (see data/config/load.json). */
+  rollParams() {
+    return rollFor(this.loadTier);
+  }
+
+  /** Put gear in the inventory. Returns false if it was already there. */
+  give(kind: 'weapon' | 'shield' | 'armour', id: string): boolean {
+    const list = kind === 'weapon' ? this.inv.weapons : kind === 'shield' ? this.inv.shields : this.inv.armour;
+    if (list.includes(id) || id === FISTS) return false;
+    list.push(id);
+    if (kind === 'weapon') this.ammoFor(id);
+    return true;
+  }
+
+  /** Take gear out of the inventory (unequipping it). */
+  lose(kind: 'weapon' | 'shield' | 'armour', id: string) {
+    if (kind === 'weapon') {
+      this.inv.weapons = this.inv.weapons.filter(w => w !== id);
+      this.slots = this.slots.map(w => (w === id ? FISTS : w)) as [string, string];
+      this.enforceTwoHanded();
+    } else if (kind === 'shield') {
+      this.inv.shields = this.inv.shields.filter(w => w !== id);
+      if (this.shieldId === id) this.shieldId = null;
+    } else {
+      this.inv.armour = this.inv.armour.filter(w => w !== id);
+      if (this.worn.head === id) this.worn.head = null;
+      if (this.worn.body === id) this.worn.body = null;
+    }
+  }
+
+  /** Put an owned weapon (or fists) in hand slot i; if it's in the other hand it moves over. */
+  setSlot(i: 0 | 1, id: string) {
+    if (id !== FISTS && !this.inv.weapons.includes(id)) return;
+    if (id !== FISTS && this.slots[1 - i] === id) this.slots[1 - i] = FISTS;
+    this.slots[i] = id;
+    this.ammoFor(id);
+    const l = this.lockedSlot;
+    this.slot = l ?? (this.slots[this.slot] === FISTS && this.slots[1 - this.slot] !== FISTS ? 1 - this.slot : this.slot);
+  }
+
+  setShield(id: string | null) {
+    if (id && !this.inv.shields.includes(id)) return;
+    this.shieldId = id;
+  }
+
+  setArmour(slot: 'head' | 'body', id: string | null) {
+    if (id && (!this.inv.armour.includes(id) || DATA.armour[id]?.slot !== slot)) return;
+    this.worn[slot] = id;
   }
 
   ammoFor(weaponId: string): Ammo {
@@ -195,7 +276,7 @@ export class Player extends Actor {
       else this.squash.set(DATA.juice.squash.hit);
       return;
     }
-    this.ctx.bus.emit('sfx', { id: 'player_hurt' });
+    this.ctx.bus.emit('sfx', { id: 'p_hurt' });
     if (h.staggered) this.sm.change('stagger', true);
     else this.squash.set(DATA.juice.squash.hit);
   }
@@ -231,6 +312,7 @@ export class Player extends Actor {
   dropActive(): string | null {
     const id = this.weaponId;
     if (id === FISTS) return null;
+    this.inv.weapons = this.inv.weapons.filter(w => w !== id);
     this.slots[this.slot] = FISTS;
     const other = 1 - this.slot;
     if (this.slots[other] !== FISTS) this.slot = other;
@@ -239,22 +321,26 @@ export class Player extends Actor {
   }
 
   /**
-   * Take a weapon into hand: fills the active slot if empty, else the other empty slot; with both full it
-   * replaces the active weapon. Returns the weapon that had to be let go (to drop on the floor), if any.
+   * A weapon picked up: it goes into the inventory, and into an empty hand if there is one (the active one
+   * first). With both hands full it just goes in the pack. Returns true if it came to hand.
    */
-  equip(id: string): string | null {
-    let released: string | null = null;
+  pickUpWeapon(id: string): boolean {
+    this.give('weapon', id);
+    if (this.slots.includes(id)) return true;
     if (this.slots[this.slot] === FISTS) this.slots[this.slot] = id;
     else if (this.slots[1 - this.slot] === FISTS) {
       this.slot = 1 - this.slot;
       this.slots[this.slot] = id;
-    } else {
-      released = this.slots[this.slot];
-      this.slots[this.slot] = id;
-    }
-    this.ammoFor(id);
+    } else return false;
     this.enforceTwoHanded();
-    return released;
+    return true;
+  }
+
+  /** Take a weapon from a rack straight into the active hand (the one it replaces stays in the pack). */
+  equip(id: string) {
+    this.give('weapon', id);
+    this.setSlot(this.slot as 0 | 1, id);
+    this.enforceTwoHanded();
   }
 
   /** Shrine rest / respawn: full HP, stamina, phials and ammo. */
@@ -311,4 +397,50 @@ export class Player extends Actor {
         this.ctx.bus.emit('dust', { x: this.x, y: this.y, kind: 'step' });
     }
   }
+}
+
+// ------------------------------------------------------------------ equip load (pure, shared with the menus)
+export interface Gear {
+  slots: readonly string[];
+  shield: string | null;
+  head: string | null;
+  body: string | null;
+}
+
+/** Total weight of a set of equipped gear. */
+export function loadOf(g: Gear): number {
+  let w = 0;
+  for (const id of new Set(g.slots)) w += DATA.weapons[id]?.weight ?? 0;
+  if (g.shield) w += DATA.shields[g.shield]?.weight ?? 0;
+  for (const a of [g.head, g.body]) if (a) w += DATA.armour[a]?.weight ?? 0;
+  return Math.round(w * 10) / 10;
+}
+
+/** The load tier for a weight: the first whose `upTo` (a fraction of capacity) it fits under. */
+export function loadTier(load: number) {
+  const tiers = DATA.load.tiers;
+  const f = load / DATA.load.capacity;
+  return tiers.find(t => f <= t.upTo + 1e-9) ?? tiers[tiers.length - 1];
+}
+
+/** The base roll (data/config/roll.json) reshaped by a load tier. */
+export function rollFor(tier: LoadCfg['tiers'][number]) {
+  const c = DATA.roll;
+  const m = tier.roll;
+  const travelTicks = Math.max(6, Math.round(c.travelTicks * m.travel));
+  const recover = Math.round((c.totalTicks - c.travelTicks) * m.recover);
+  const totalTicks = travelTicks + recover;
+  const iframeEnd = Math.max(c.iframeStart, Math.min(travelTicks, c.iframeEnd + m.iframes));
+  return {
+    stamina: c.stamina * m.stamina,
+    distance: c.distance * m.distance,
+    travelTicks,
+    totalTicks,
+    iframeStart: c.iframeStart,
+    iframeEnd,
+    curvePower: c.curvePower,
+    cancelFrom: totalTicks - (c.totalTicks - c.cancelFrom),
+    moveCancelFrom: totalTicks - (c.totalTicks - c.moveCancelFrom),
+    tier: tier.id,
+  };
 }

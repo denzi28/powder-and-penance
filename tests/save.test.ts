@@ -15,7 +15,7 @@ class MemStore implements KeyValueStore {
 }
 
 const sample: SaveData = {
-  version: 1,
+  version: 2,
   savedAt: 1,
   lastShrine: 'shrine_test',
   tallow: 120,
@@ -25,6 +25,7 @@ const sample: SaveData = {
   ammo: { revolver: { clip: 3, reserve: 12 } },
   world: { flags: ['shrine:shrine_test', 'item:test_shard'], groundItems: [{ weapon: 'dagger', x: 10, y: 20 }] },
   deathMarker: { x: 100, y: 50, tallow: 80 },
+  gear: { weapons: ['greataxe', 'revolver', 'dagger'], shields: ['buckler'], armour: ['pilgrims_hood'], head: 'pilgrims_hood', body: null },
 };
 
 describe('SaveSystem', () => {
@@ -47,6 +48,16 @@ describe('SaveSystem', () => {
     expect(!r.ok && r.reason).toBe('corrupt');
     expect(s.exists()).toBe(false);
     expect([...store.m.keys()].some(k => k.startsWith(`${SAVE_KEY}.corrupt-`))).toBe(true);
+  });
+
+  it('migrates a version-1 save: what was in hand becomes the inventory', () => {
+    const store = new MemStore();
+    const { gear: _gear, ...v1 } = sample;
+    store.setItem(SAVE_KEY, JSON.stringify({ ...v1, version: 1, loadout: { slots: ['straight_sword', 'fists'], slot: 0, shield: 'buckler' } }));
+    const r = new SaveSystem(store).load();
+    expect(r.ok).toBe(true);
+    expect(r.ok && r.save.version).toBe(2);
+    expect(r.ok && r.save.gear).toEqual({ weapons: ['straight_sword'], shields: ['buckler'], armour: [], head: null, body: null });
   });
 
   it('rejects saves that fail validation (e.g. negative tallow)', () => {

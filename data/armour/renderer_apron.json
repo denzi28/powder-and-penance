@@ -1,0 +1,11 @@
+{
+  "id": "renderer_apron",
+  "name": "Renderer's Apron",
+  "slot": "body",
+  "weight": 6,
+  "absorb": 0.09,
+  "poise": 6,
+  "icon": 12,
+  "description": "Thick leather, oiled with what it was worn to render. Blades slide off it. So does conscience.",
+  "ramp": ["#2e1d17", "#57382a", "#7c5638", "#a47a52"]
+}

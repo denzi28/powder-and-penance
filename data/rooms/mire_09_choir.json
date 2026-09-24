@@ -110,6 +110,12 @@
       "type": "decor",
       "kind": "stone_angel",
       "at": [21, 8]
+    },
+    {
+      "type": "item",
+      "id": "mire_09_choir_drowned_veil",
+      "item": "gear_drowned_veil",
+      "at": [11, 1]
     }
   ]
 }

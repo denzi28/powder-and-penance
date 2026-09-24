@@ -212,7 +212,11 @@ export const ItemDef = z.object({
     z.object({ type: z.literal('key'), opens: z.string() }),
     /** A quest item, kept for good (world flag "key:<item id>", so scripts can check it); `note` says what it's for. */
     z.object({ type: z.literal('quest'), note: z.string() }),
+    /** Gear: a weapon, shield or piece of armour, put in your inventory. */
+    z.object({ type: z.literal('gear'), kind: z.enum(['weapon', 'shield', 'armour']), id: z.string() }),
   ]),
+  /** Frame in the `icons` sheet. */
+  icon: int.nonnegative().default(0),
 });
 
 // ---- Story: characters, dialogue and cutscene scripts (see STORY.md) ----
@@ -627,6 +631,22 @@ export const WeaponDef = z
       .optional(),
     /** Critical damage multipliers applied to the weapon's base damage (first light strike or bash). */
     crit: z.object({ backstab: pos, riposte: pos }).default({ backstab: 2.5, riposte: 3 }),
+    /** Equip weight (counts toward equip load while in a hand slot). */
+    weight: num.min(0).default(0),
+    /** Frame in the `icons` sheet (inventory screens). */
+    icon: int.nonnegative().default(0),
+    description: z.string().default(''),
+    /** Sounds: `draw` when it comes to hand, `hit` when one of its strikes lands, `shotHit` when its shot lands, `charge` as a heavy starts charging, `reload` steps as [fraction of the reload, sound]. */
+    sounds: z
+      .object({
+        draw: z.string().optional(),
+        hit: z.string().optional(),
+        /** A shot or bolt landing. */
+        shotHit: z.string().optional(),
+        charge: z.string().optional(),
+        reload: z.array(z.tuple([num.min(0).max(1), z.string()])).optional(),
+      })
+      .default({}),
   })
   .passthrough()
   .superRefine((w, ctx) => {
@@ -649,7 +669,54 @@ export const ShieldDef = z.object({
   raiseTicks: int.nonnegative(),
   blockMoveMult: num.min(0).max(1),
   blockRegenMult: num.min(0).max(1),
+  weight: num.min(0).default(0),
+  icon: int.nonnegative().default(0),
+  description: z.string().default(''),
+  /** Sounds when it takes a blow and when it parries. */
+  blockSfx: z.string().default('block'),
+  parrySfx: z.string().default('parry'),
 });
+
+/** Armour (data/armour): worn on the head or body. Reduces damage taken, adds poise, weighs you down. */
+export const ArmourDef = z.object({
+  id: z.string(),
+  name: z.string(),
+  slot: z.enum(['head', 'body']),
+  weight: num.min(0),
+  /** Fraction of incoming damage it takes off (pieces add up). */
+  absorb: num.min(0).max(0.5),
+  /** Added to the player's poise (how much it takes to stagger you). */
+  poise: num.min(0),
+  icon: int.nonnegative(),
+  description: z.string(),
+  /** The colours it dresses the player in, dark to light: the cloak's teal is repainted with them (the hood by
+   *  head armour, the rest by body armour). */
+  ramp: z.tuple([z.string(), z.string(), z.string(), z.string()]),
+});
+export type ArmourDef = z.infer<typeof ArmourDef>;
+
+/** Equip load: tiers by the fraction of `capacity` your equipped gear weighs; each changes the roll and your pace. */
+export const LoadCfg = z.object({
+  capacity: pos,
+  tiers: z
+    .array(
+      z.object({
+        id: z.enum(['light', 'medium', 'heavy', 'over']),
+        label: z.string(),
+        /** Applies up to (and including) this fraction of capacity. */
+        upTo: pos,
+        /** Roll: distance and stamina multipliers, travel and recovery time multipliers, iframes added (ticks). */
+        roll: z.object({ distance: pos, travel: pos, recover: pos, stamina: pos, iframes: int }),
+        /** Walking speed multiplier; whether you can sprint. */
+        move: pos,
+        sprint: z.boolean().default(true),
+        /** One line for the equipment screen. */
+        note: z.string(),
+      }),
+    )
+    .min(1),
+});
+export type LoadCfg = z.infer<typeof LoadCfg>;
 
 /** wall, void, floor, or a named floor variant ("floor_moss", "floor_dirt"...) looked up in the area's tileset. */
 export const TileKind = z.string().regex(/^(wall|void|floor|floor_[a-z0-9_]+)$/, 'expected wall, void, floor or floor_<variant>');
@@ -757,6 +824,17 @@ export const LAYERED_SOUNDS = [
   'e_blob_rise', 'e_engulf', 'e_blob_nip', 'e_sizzle_rise', 'e_scald', 'e_blob_gurgle', 'e_blob_chirp', 'e_blob_hurt', 'e_blob_die', 'e_blob_pop', 'e_slime_die', 'e_step_slime',
   // mire lantern
   'e_lantern_alarm', 'e_lantern_hurt', 'e_lantern_die',
+  // the player ("p_"): weapons
+  'p_punch', 'p_punch_heavy', 'p_hit_blunt', 'p_draw_fists',
+  'p_dagger', 'p_dagger_heavy', 'p_hit_stab', 'p_draw_blade_small',
+  'p_sword', 'p_sword_heavy', 'p_hit_blade', 'p_draw_blade',
+  'p_axe', 'p_axe_heavy', 'p_hit_axe', 'p_draw_heavy',
+  'p_revolver', 'p_flintlock', 'p_crossbow', 'p_bash', 'p_hit_shot', 'p_hit_bolt', 'p_draw_gun',
+  'p_cyl_open', 'p_shell_out', 'p_round_in', 'p_cyl_close', 'p_powder_pour', 'p_ramrod', 'p_cock', 'p_crank', 'p_bolt_seat', 'p_latch',
+  'p_charge', 'p_block_buckler', 'p_parry',
+  // the player: body and gear
+  'p_hurt', 'p_die', 'p_drink', 'p_roll_light', 'p_roll', 'p_roll_heavy', 'p_roll_flop',
+  'p_unequip', 'p_draw', 'p_strap', 'p_armour_light', 'p_armour_heavy', 'p_mail_jingle',
 ] as const;
 export type LayeredSound = (typeof LAYERED_SOUNDS)[number];
 export const SURFACES = ['dirt', 'grass', 'stone', 'wood', 'metal', 'mud', 'grease', 'wax', 'moss'] as const;

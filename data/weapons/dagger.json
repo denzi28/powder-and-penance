@@ -1,6 +1,10 @@
 {
   "id": "dagger",
   "name": "Wick Knife",
+  "weight": 1.5,
+  "icon": 1,
+  "description": "A narrow blade for quick, low work. Deep in the back it does the most damage of anything you can carry.",
+  "sounds": { "draw": "p_draw_blade_small", "hit": "p_hit_stab" },
   "kind": "melee",
   "twoHanded": false,
   "view": { "sprite": "dagger", "restAngleOffsetDeg": 20 },
@@ -14,7 +18,7 @@
       "lunge": { "distance": 5, "startTick": 3, "ticks": 3 },
       "hitbox": { "shape": "arc", "radius": 20, "halfAngle": 50 },
       "sweep": { "fromDeg": -70, "toDeg": 60 },
-      "knockback": 30, "hitstop": 2, "shake": 0.06, "sfx": "swing"
+      "knockback": 30, "hitstop": 2, "shake": 0.06, "sfx": "p_dagger"
     },
     {
       "damage": 13, "poise": 5, "stamina": 9,
@@ -24,7 +28,7 @@
       "lunge": { "distance": 5, "startTick": 3, "ticks": 3 },
       "hitbox": { "shape": "arc", "radius": 20, "halfAngle": 50 },
       "sweep": { "fromDeg": 60, "toDeg": -70 },
-      "knockback": 30, "hitstop": 2, "shake": 0.06, "sfx": "swing"
+      "knockback": 30, "hitstop": 2, "shake": 0.06, "sfx": "p_dagger"
     },
     {
       "damage": 16, "poise": 8, "stamina": 11,
@@ -34,7 +38,7 @@
       "lunge": { "distance": 9, "startTick": 5, "ticks": 4 },
       "hitbox": { "shape": "arc", "radius": 23, "halfAngle": 25 },
       "sweep": { "fromDeg": 0, "toDeg": 0, "reach": 7 },
-      "knockback": 50, "hitstop": 3, "shake": 0.1, "sfx": "swing"
+      "knockback": 50, "hitstop": 3, "shake": 0.1, "sfx": "p_dagger"
     }
   ],
   "heavy": {
@@ -49,7 +53,7 @@
       "lunge": { "distance": 18, "startTick": 8, "ticks": 5 },
       "hitbox": { "shape": "arc", "radius": 24, "halfAngle": 22 },
       "sweep": { "fromDeg": 0, "toDeg": 0, "reach": 9 },
-      "knockback": 80, "hitstop": 4, "shake": 0.15, "sfx": "swing"
+      "knockback": 80, "hitstop": 4, "shake": 0.15, "sfx": "p_dagger_heavy"
     }
   }
 }

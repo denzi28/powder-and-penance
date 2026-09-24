@@ -126,6 +126,12 @@
       "type": "decor",
       "kind": "lectern",
       "at": [22, 8]
+    },
+    {
+      "type": "item",
+      "id": "abbey_09_scriptorium_acolyte_robe",
+      "item": "gear_acolyte_robe",
+      "at": [18, 6]
     }
   ]
 }

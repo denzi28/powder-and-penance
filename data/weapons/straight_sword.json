@@ -1,6 +1,10 @@
 {
   "id": "straight_sword",
   "name": "Straight Sword",
+  "weight": 3.5,
+  "icon": 2,
+  "description": "A guard's sword, plain and honest. Balanced for cutting, with a thrust at the end of the combo.",
+  "sounds": { "draw": "p_draw_blade", "hit": "p_hit_blade" },
   "kind": "melee",
   "twoHanded": false,
   "view": { "sprite": "sword", "restAngleOffsetDeg": 35 },
@@ -14,7 +18,7 @@
       "lunge": { "distance": 8, "startTick": 6, "ticks": 5 },
       "hitbox": { "shape": "arc", "radius": 26, "halfAngle": 70 },
       "sweep": { "fromDeg": -110, "toDeg": 80 },
-      "knockback": 70, "hitstop": 3, "shake": 0.12, "sfx": "swing"
+      "knockback": 70, "hitstop": 3, "shake": 0.12, "sfx": "p_sword"
     },
     {
       "damage": 22, "poise": 11, "stamina": 14,
@@ -24,7 +28,7 @@
       "lunge": { "distance": 8, "startTick": 5, "ticks": 5 },
       "hitbox": { "shape": "arc", "radius": 26, "halfAngle": 70 },
       "sweep": { "fromDeg": 90, "toDeg": -100 },
-      "knockback": 70, "hitstop": 3, "shake": 0.12, "sfx": "swing"
+      "knockback": 70, "hitstop": 3, "shake": 0.12, "sfx": "p_sword"
     },
     {
       "damage": 28, "poise": 16, "stamina": 16,
@@ -34,7 +38,7 @@
       "lunge": { "distance": 14, "startTick": 9, "ticks": 6 },
       "hitbox": { "shape": "arc", "radius": 31, "halfAngle": 28 },
       "sweep": { "fromDeg": 0, "toDeg": 0, "reach": 8 },
-      "knockback": 100, "hitstop": 4, "shake": 0.18, "sfx": "swing"
+      "knockback": 100, "hitstop": 4, "shake": 0.18, "sfx": "p_sword"
     }
   ],
   "heavy": {
@@ -49,7 +53,7 @@
       "lunge": { "distance": 18, "startTick": 14, "ticks": 6 },
       "hitbox": { "shape": "arc", "radius": 34, "halfAngle": 26 },
       "sweep": { "fromDeg": 0, "toDeg": 0, "reach": 10 },
-      "knockback": 150, "hitstop": 6, "shake": 0.3, "sfx": "swing_heavy"
+      "knockback": 150, "hitstop": 6, "shake": 0.3, "sfx": "p_sword_heavy"
     }
   }
 }

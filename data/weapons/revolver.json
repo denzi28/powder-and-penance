@@ -1,6 +1,10 @@
 {
   "id": "revolver",
   "name": "Parish Revolver",
+  "weight": 2.5,
+  "icon": 4,
+  "description": "Six chambers of Works steel. Quick to fire, slow to reload.",
+  "sounds": { "draw": "p_draw_gun", "hit": "p_hit_blunt", "shotHit": "p_hit_shot", "reload": [[0, "p_cyl_open"], [0.12, "p_shell_out"], [0.32, "p_round_in"], [0.44, "p_round_in"], [0.56, "p_round_in"], [0.68, "p_round_in"], [0.9, "p_cyl_close"]] },
   "kind": "ranged",
   "twoHanded": false,
   "view": { "sprite": "revolver", "restAngleOffsetDeg": 0 },
@@ -8,7 +12,7 @@
   "ranged": {
     "clip": 6,
     "reserveMax": 24,
-    "fire": { "windup": 3, "recovery": 22, "stamina": 6, "moveMult": 0.6, "recoilDeg": 25, "kick": 3, "shake": 0.08, "sfx": "gunshot" },
+    "fire": { "windup": 3, "recovery": 22, "stamina": 6, "moveMult": 0.6, "recoilDeg": 25, "kick": 3, "shake": 0.08, "sfx": "p_revolver" },
     "reload": { "ticks": 110, "stamina": 8, "moveMult": 0.4 },
     "projectile": {
       "sprite": "bullet", "speed": 420, "range": 280,
@@ -26,7 +30,7 @@
       "rollCancelFrom": 18,
       "hitbox": { "shape": "circle", "radius": 12, "offset": 8 },
       "sweep": { "fromDeg": 30, "toDeg": 0, "reach": 6 },
-      "knockback": 140, "hitstop": 3, "shake": 0.1, "sfx": "swing"
+      "knockback": 140, "hitstop": 3, "shake": 0.1, "sfx": "p_bash"
     }
   }
 }

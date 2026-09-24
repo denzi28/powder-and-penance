@@ -1,6 +1,10 @@
 {
   "id": "greataxe",
   "name": "Bellfounder's Axe",
+  "weight": 11,
+  "icon": 3,
+  "description": "An executioner's axe. Both hands, slow to swing, and nothing stands up to it.",
+  "sounds": { "draw": "p_draw_heavy", "hit": "p_hit_axe" },
   "kind": "melee",
   "twoHanded": true,
   "view": { "sprite": "greataxe", "restAngleOffsetDeg": 60 },
@@ -15,7 +19,7 @@
       "lunge": { "distance": 10, "startTick": 16, "ticks": 6 },
       "hitbox": { "shape": "arc", "radius": 32, "halfAngle": 80 },
       "sweep": { "fromDeg": -120, "toDeg": 80 },
-      "knockback": 150, "hitstop": 6, "shake": 0.3, "sfx": "swing_heavy"
+      "knockback": 150, "hitstop": 6, "shake": 0.3, "sfx": "p_axe"
     },
     {
       "damage": 46, "poise": 32, "stamina": 26,
@@ -26,7 +30,7 @@
       "lunge": { "distance": 10, "startTick": 18, "ticks": 6 },
       "hitbox": { "shape": "arc", "radius": 32, "halfAngle": 80 },
       "sweep": { "fromDeg": 90, "toDeg": -110 },
-      "knockback": 160, "hitstop": 6, "shake": 0.32, "sfx": "swing_heavy"
+      "knockback": 160, "hitstop": 6, "shake": 0.32, "sfx": "p_axe"
     }
   ],
   "heavy": {
@@ -42,7 +46,7 @@
       "lunge": { "distance": 12, "startTick": 22, "ticks": 6 },
       "hitbox": { "shape": "arc", "radius": 34, "halfAngle": 45 },
       "sweep": { "fromDeg": -160, "toDeg": 20 },
-      "knockback": 200, "hitstop": 8, "shake": 0.45, "sfx": "swing_heavy"
+      "knockback": 200, "hitstop": 8, "shake": 0.45, "sfx": "p_axe_heavy"
     }
   }
 }

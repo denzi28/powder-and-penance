@@ -72,6 +72,12 @@
       "type": "decor",
       "kind": "rubble",
       "at": [18, 7]
+    },
+    {
+      "type": "item",
+      "id": "abbey_04_bell_passage_greataxe",
+      "item": "gear_greataxe",
+      "at": [10, 1]
     }
   ]
 }

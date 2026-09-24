@@ -1,0 +1,11 @@
+{
+  "id": "gear_renderer_apron",
+  "name": "Renderer's Apron",
+  "icon": 12,
+  "description": "Thick leather, oiled with what it was worn to render. Blades slide off it. So does conscience.",
+  "effect": {
+    "type": "gear",
+    "kind": "armour",
+    "id": "renderer_apron"
+  }
+}

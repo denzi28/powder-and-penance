@@ -13,7 +13,7 @@ const angleDiff = (a: number, b: number) => Math.abs(Math.atan2(Math.sin(a - b),
 /** Move freely at a fraction of walk speed (used while blocking, shooting, reloading, swapping). */
 function moveFree(p: Player, mult: number) {
   const cfg = DATA.player;
-  const speed = cfg.walkSpeed * mult;
+  const speed = cfg.walkSpeed * mult * p.loadTier.move;
   p.accelerate(p.moveX * speed, p.moveY * speed, cfg.walkSpeed, cfg.accelTicks, cfg.decelTicks);
   p.integrate();
 }
@@ -115,11 +115,12 @@ function locomotion(p: Player): string {
   const moving = p.moveMag > 0.1;
   if (!inp.held('sprint')) p.sprintNeedsRepress = false;
   const wasSprinting = p.sm.name === 'sprint';
+  const tier = p.loadTier;
   const sprint =
-    moving && inp.held('sprint') && !p.sprintNeedsRepress && (wasSprinting ? p.stamina.value > 0 : p.stamina.canAct());
+    tier.sprint && moving && inp.held('sprint') && !p.sprintNeedsRepress && (wasSprinting ? p.stamina.value > 0 : p.stamina.canAct());
   if (wasSprinting && !sprint && p.stamina.value <= 0) p.sprintNeedsRepress = true;
 
-  const speed = cfg.walkSpeed * (sprint ? cfg.sprintMult : 1);
+  const speed = cfg.walkSpeed * (sprint ? cfg.sprintMult : 1) * tier.move;
   p.accelerate(p.moveX * speed, p.moveY * speed, cfg.walkSpeed, cfg.accelTicks, cfg.decelTicks);
   if (sprint) p.stamina.spend(DATA.stamina.sprintPerSec / DATA.game.tickRate);
   p.integrate();
@@ -187,6 +188,7 @@ const heavy: State<Player> = {
     if (atHoldPoint && p.input.held('heavy') && p.charge < h.chargeTicks) {
       r.track(p.aimAngle);
       p.charge++;
+      if (p.charge === 1) p.ctx.bus.emit('sfx', { id: p.weapon.sounds.charge ?? 'p_charge' }); // drawing back for a big one
       p.animHold = true;
       if (p.charge === h.chargeTicks) p.ctx.bus.emit('chargeFull', { actor: p });
       return;
@@ -250,19 +252,21 @@ const reload: State<Player> = {
     p.stamina.spend(p.weapon.ranged!.reload.stamina);
     p.reloadProgress = 0;
     p.weaponLowered = true;
-    p.ctx.bus.emit('sfx', { id: 'reload_start' });
+    if (!p.weapon.sounds.reload) p.ctx.bus.emit('sfx', { id: 'reload_start' });
   },
   tick(p, t) {
     const r = p.weapon.ranged!;
     moveFree(p, r.reload.moveMult);
     const total = reloadTicks(p);
     p.reloadProgress = t / total;
+    // the reload's own steps: a cylinder swung out, rounds in, a ramrod, a windlass cranked...
+    for (const [at, id] of p.weapon.sounds.reload ?? []) if (t === Math.floor(at * total)) p.ctx.bus.emit('sfx', { id });
     if (t >= total) {
       const a = p.ammoFor(p.weaponId);
       const n = Math.min(r.clip - a.clip, a.reserve);
       a.clip += n;
       a.reserve -= n;
-      p.ctx.bus.emit('sfx', { id: 'reload_end' });
+      if (!p.weapon.sounds.reload) p.ctx.bus.emit('sfx', { id: 'reload_end' });
       return 'idle';
     }
   },
@@ -281,7 +285,10 @@ const swap: State<Player> = {
   tick(p, t) {
     const total = DATA.player.swapTicks;
     moveFree(p, 0.7);
-    if (t === Math.floor(total / 2)) p.swapWeapon();
+    if (t === Math.floor(total / 2)) {
+      p.swapWeapon();
+      p.ctx.bus.emit('sfx', { id: p.weapon.sounds.draw ?? 'p_draw' }); // the other weapon comes to hand
+    }
     p.weaponVisible = t >= Math.floor(total / 2) - 3;
     if (t >= total) return 'idle';
   },
@@ -316,11 +323,14 @@ const block: State<Player> = {
 };
 
 // ------------------------------------------------------------------ roll
+/** The roll's sound by load: a light tumble, a normal roll, a heavy thud, a clumsy fall. */
+const ROLL_SFX: Record<string, string> = { light: 'p_roll_light', medium: 'p_roll', heavy: 'p_roll_heavy', over: 'p_roll_flop' };
+
 const easeOut = (t: number, power: number) => 1 - (1 - Math.min(1, Math.max(0, t))) ** power;
 
 const roll: State<Player> = {
   enter(p) {
-    const c = DATA.roll;
+    const c = (p.rollCfg = p.rollParams()); // the equip load shapes the roll
     p.stamina.spend(c.stamina);
     if (p.moveMag > 0.1) {
       p.rollDirX = p.moveX / p.moveMag;
@@ -336,10 +346,10 @@ const roll: State<Player> = {
     p.weaponVisible = false;
     p.squash.set(DATA.juice.squash.rollStart);
     p.ctx.bus.emit('dust', { x: p.x - p.rollDirX * 4, y: p.y - p.rollDirY * 2, kind: 'roll' });
-    p.ctx.bus.emit('sfx', { id: 'roll' });
+    p.ctx.bus.emit('sfx', { id: ROLL_SFX[c.tier] ?? 'roll' });
   },
   tick(p, t) {
-    const c = DATA.roll;
+    const c = p.rollCfg!;
     p.invulnerable = t >= c.iframeStart && t <= c.iframeEnd;
     if (t < c.travelTicks) {
       const d =
@@ -428,7 +438,7 @@ const heal: State<Player> = {
       restart: true,
       phases: { raise: c.raiseTicks, drink: c.healApplyTick - c.raiseTicks, lower: c.totalTicks - c.healApplyTick },
     });
-    p.ctx.bus.emit('sfx', { id: 'drink' });
+    p.ctx.bus.emit('sfx', { id: 'p_drink' });
   },
   tick(p, t) {
     const c = DATA.phial;
@@ -538,7 +548,7 @@ const dead: State<Player> = {
     p.legsVisible = false;
     p.weaponVisible = false;
     p.body.play('death', { restart: true });
-    p.ctx.bus.emit('sfx', { id: 'player_die' });
+    p.ctx.bus.emit('sfx', { id: 'p_die' });
     p.ctx.bus.emit('died', { actor: p });
   },
   tick() {},

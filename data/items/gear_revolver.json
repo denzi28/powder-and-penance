@@ -1,0 +1,11 @@
+{
+  "id": "gear_revolver",
+  "name": "Parish Revolver",
+  "icon": 4,
+  "description": "Six chambers of Works steel. Quick to fire, slow to reload.",
+  "effect": {
+    "type": "gear",
+    "kind": "weapon",
+    "id": "revolver"
+  }
+}

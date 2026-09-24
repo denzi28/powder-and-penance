@@ -25,11 +25,12 @@ npm run gen:art    # regenerate missing placeholder art (--force to overwrite al
 | Roll | Space | B / ○ |
 | Sprint (hold) | Shift | L3 or LB |
 | Swap weapon slot (disabled while holding a two-handed weapon) | Tab / wheel | D-pad ← → |
-| Drop the weapon in hand (the slot becomes bare fists) | G | D-pad ↓ |
+| Drop the weapon in hand on the ground (it leaves your inventory) | G | D-pad ↓ |
 | Drink a Mending Phial (about 1 s; a hit before it lands wastes the charge) | Q | X / □ |
 | Interact: talk, shrines, chests, doors, racks, dropped weapons | E | A / × |
 | Dialogue: next line / choose / skip cutscene | E, Enter, Space, click / W S or arrows / Esc | A / D-pad / B |
 | Map (pauses the game) | M (M or Esc closes) | Back / Select |
+| Pause menu: Equipment, Inventory, Quit (pauses the game) | Esc | Start |
 | Menus: choose / confirm / back | W S or arrows / Enter, E, Space / Esc | stick or D-pad / A / B |
 
 **Maps:** the minimap in the top-right corner follows you. **M** opens the large map of the current area: every room you've visited, shrines, doors (locked ones in red), and each exit labelled with where it leads. Rooms appear on the map once you enter them, and are saved. Minimap size and on/off: `minimap` in `data/config/hud.json`.

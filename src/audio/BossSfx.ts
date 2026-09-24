@@ -839,4 +839,214 @@ const RECIPES: Record<LayeredSound, Recipe> = {
     k.glass(0, 0.5);
     k.snuff(0.1, 0.4);
   },
+
+  // ======================================================== the player ("p_")
+  // ---- bare hands
+  p_punch: k => {
+    k.whoosh(0, 0.1, 600, 1800, 0.3, 0.5);
+    k.breath(0, 0.12, 0.08, false);
+  },
+  p_punch_heavy: k => {
+    k.whoosh(0, 0.2, 350, 1300, 0.45);
+    k.voice(0, 0.18, 150, 125, 'uh', 0.18, 0.5);
+  },
+  p_hit_blunt: k => {
+    k.boom(0, 150, 70, 0.12, 0.6);
+    k.pop(0, 220, 0.2);
+  },
+  p_draw_fists: k => k.whoosh(0, 0.15, 500, 1200, 0.15), // knuckles flexed, sleeves pushed back
+  // ---- the Wick Knife: quick and thin
+  p_dagger: k => {
+    k.whoosh(0, 0.1, 900, 3000, 0.3, 0.5);
+    k.slice(0.02, 0.08, 0.15);
+  },
+  p_dagger_heavy: k => {
+    k.whoosh(0, 0.16, 600, 2600, 0.4, 0.5);
+    k.slice(0.04, 0.1, 0.2);
+  },
+  p_hit_stab: k => {
+    k.slice(0, 0.06, 0.3);
+    k.boom(0, 170, 110, 0.07, 0.35);
+    k.splash(0.02, 0.1, 0.12);
+  },
+  p_draw_blade_small: k => {
+    k.slice(0, 0.18, 0.2);
+    k.clang(0.16, 2400, 0.2, 0.05);
+  },
+  // ---- the straight sword: a clean whoosh with a ring of steel
+  p_sword: k => {
+    k.whoosh(0, 0.18, 450, 2000, 0.45, 0.5);
+    k.clang(0.08, rnd(1500, 1700), 0.35, 0.04);
+  },
+  p_sword_heavy: k => {
+    k.whoosh(0, 0.28, 300, 1700, 0.6, 0.55);
+    k.clang(0.12, 1350, 0.5, 0.06);
+    k.voice(0, 0.2, 145, 120, 'ah', 0.16, 0.5);
+  },
+  p_hit_blade: k => {
+    k.slice(0, 0.08, 0.35);
+    k.boom(0, 140, 80, 0.1, 0.5);
+    k.splash(0.02, 0.12, 0.15);
+  },
+  p_draw_blade: k => {
+    k.slice(0, 0.3, 0.25); // steel from the scabbard
+    k.clang(0.28, 1800, 0.35, 0.08);
+  },
+  // ---- the Bellfounder's Axe: slow, heavy, it lands like a bell falling
+  p_axe: k => {
+    k.whoosh(0, 0.34, 150, 900, 0.75);
+    k.voice(0.05, 0.22, 135, 110, 'uh', 0.18, 0.6);
+  },
+  p_axe_heavy: k => {
+    k.whoosh(0, 0.45, 110, 700, 0.9);
+    k.voice(0, 0.35, 140, 100, 'ah', 0.25, 0.8);
+  },
+  p_hit_axe: k => {
+    k.boom(0, 95, 40, 0.3, 0.8);
+    k.slice(0, 0.1, 0.3);
+    k.clang(0, 420, 0.4, 0.12);
+    k.debris(0.02, 0.2, 0.15);
+  },
+  p_draw_heavy: k => {
+    k.whoosh(0, 0.3, 200, 800, 0.35);
+    k.boom(0.25, 120, 80, 0.12, 0.3); // hefted onto the shoulder
+  },
+  // ---- guns and the crossbow
+  p_revolver: k => {
+    k.boom(0, 260, 90, 0.18, 0.8); // the crack
+    k.pop(0, 900, 0.5);
+    k.whoosh(0, 0.3, 2500, 6000, 0.35, 0.05); // the report ringing off
+    k.clang(0.01, 3200, 0.15, 0.05);
+  },
+  p_flintlock: k => {
+    k.clang(0, 2600, 0.05, 0.15); // the flint snaps
+    k.sizzle(0.02, 0.1, 0.3); // the pan flashes
+    k.boom(0.09, 180, 45, 0.6, 1); // then the charge goes
+    k.whoosh(0.09, 0.6, 1500, 5000, 0.4, 0.05);
+    k.rumble(0.1, 0.8, 0.3);
+    k.breath(0.3, 0.6, 0.12, false); // smoke rolling off
+  },
+  p_crossbow: k => {
+    k.boom(0, 110, 70, 0.15, 0.6); // the string slaps the stock
+    k.clang(0, 520, 0.2, 0.15);
+    k.whoosh(0.02, 0.25, 1200, 3500, 0.35, 0.2); // the bolt away
+  },
+  p_bash: k => {
+    k.whoosh(0, 0.18, 400, 1400, 0.4);
+    k.clang(0.12, 700, 0.15, 0.08);
+  },
+  p_hit_shot: k => {
+    k.boom(0, 160, 70, 0.12, 0.55);
+    k.pop(0, 500, 0.3);
+    k.splash(0.01, 0.12, 0.12);
+  },
+  p_hit_bolt: k => {
+    k.boom(0, 120, 70, 0.15, 0.55);
+    k.slice(0, 0.05, 0.25);
+    k.clang(0.02, 900, 0.1, 0.06); // the fletching thrums
+  },
+  p_draw_gun: k => {
+    k.whoosh(0, 0.15, 500, 1300, 0.2);
+    k.clang(0.12, 1900, 0.08, 0.15); // a click as it's checked
+  },
+  // reload steps
+  p_cyl_open: k => k.clang(0, 1500, 0.1, 0.25),
+  p_shell_out: k => {
+    for (let i = 0; i < 4; i++) k.clang(i * 0.03, rnd(2600, 3400), 0.15, 0.08); // brass tinkling out
+  },
+  p_round_in: k => k.clang(0, rnd(2000, 2300), 0.06, 0.15),
+  p_cyl_close: k => {
+    k.clang(0, 1300, 0.12, 0.25);
+    k.clang(0.06, 1900, 0.06, 0.15);
+  },
+  p_powder_pour: k => {
+    const at = 0;
+    k.whoosh(at, 0.5, 3000, 5000, 0.12, 0.3); // grains trickling
+    k.pop(0.4, 700, 0.1);
+  },
+  p_ramrod: k => {
+    k.slice(0, 0.18, 0.18); // steel down the barrel
+    k.clang(0.16, 800, 0.08, 0.15);
+  },
+  p_cock: k => {
+    k.clang(0, 1800, 0.05, 0.2);
+    k.clang(0.08, 2400, 0.05, 0.2);
+  },
+  p_crank: k => {
+    for (let i = 0; i < 4; i++) k.clang(i * 0.05, 2100 - i * 60, 0.05, 0.12); // the ratchet
+    k.whoosh(0, 0.22, 300, 700, 0.15);
+  },
+  p_bolt_seat: k => {
+    k.slice(0, 0.1, 0.12);
+    k.boom(0.08, 200, 150, 0.06, 0.2);
+  },
+  p_latch: k => k.clang(0, 1600, 0.1, 0.25),
+  // ---- a heavy drawn back, shields
+  p_charge: k => {
+    k.breath(0, 0.45, 0.14, true); // a breath in
+    k.whoosh(0, 0.5, 150, 500, 0.15, 0.9); // the weapon drawn back
+  },
+  p_block_buckler: k => {
+    k.clang(0, 300, 0.4, 0.4);
+    k.boom(0, 120, 70, 0.15, 0.5);
+    k.debris(0, 0.1, 0.1); // sparks
+  },
+  p_parry: k => {
+    k.clang(0, 900, 0.9, 0.45); // the bright ring of a deflection
+    k.clang(0.01, 1350, 0.7, 0.25);
+    k.whoosh(0, 0.2, 1000, 3000, 0.3, 0.2);
+  },
+  // ---- the body
+  p_hurt: k => {
+    k.voice(0, 0.2, rnd(165, 185), 130, 'uh', 0.28, 0.6);
+    k.breath(0.1, 0.2, 0.1, false);
+  },
+  p_die: k => {
+    k.voice(0, 0.9, 160, 80, 'oh', 0.35, 0.6);
+    k.boom(0.6, 110, 50, 0.4, 0.5); // you fall
+    k.breath(0.7, 0.8, 0.12, false);
+  },
+  p_drink: k => {
+    k.bubbles(0, 5, 0.25, true); // gulps
+    k.breath(0.55, 0.45, 0.14, false); // a sigh
+    k.swell(0.3, 0.5, 440, 0.06);
+  },
+  p_roll_light: k => {
+    k.whoosh(0, 0.22, 500, 1500, 0.35); // cloth and air
+    k.boom(0.12, 150, 110, 0.06, 0.2);
+  },
+  p_roll: k => {
+    k.whoosh(0, 0.28, 350, 1200, 0.4);
+    k.boom(0.14, 120, 80, 0.1, 0.35);
+  },
+  p_roll_heavy: k => {
+    k.whoosh(0, 0.34, 250, 900, 0.4);
+    k.boom(0.18, 95, 50, 0.2, 0.6); // armour hitting the floor
+    k.chain(0.18, 0.15, 0.2);
+  },
+  p_roll_flop: k => {
+    k.voice(0, 0.2, 150, 120, 'uh', 0.2, 0.6);
+    k.boom(0.15, 80, 40, 0.3, 0.75); // a clumsy fall
+    k.chain(0.15, 0.2, 0.25);
+  },
+  // ---- changing gear
+  p_unequip: k => k.whoosh(0, 0.18, 400, 1000, 0.2),
+  p_draw: k => {
+    k.whoosh(0, 0.18, 500, 1400, 0.25);
+    k.clang(0.14, 1500, 0.15, 0.05);
+  },
+  p_strap: k => {
+    k.whoosh(0, 0.2, 700, 1500, 0.2); // leather pulled tight
+    k.clang(0.18, 1200, 0.15, 0.12); // the buckle
+  },
+  p_armour_light: k => {
+    k.whoosh(0, 0.3, 400, 1100, 0.25);
+    k.breath(0.05, 0.3, 0.06, false);
+  },
+  p_armour_heavy: k => {
+    k.chain(0, 0.4, 0.3);
+    k.boom(0.3, 110, 80, 0.12, 0.3);
+    k.clang(0.32, 900, 0.2, 0.1);
+  },
+  p_mail_jingle: k => k.chain(0, 0.08, 0.12),
 };

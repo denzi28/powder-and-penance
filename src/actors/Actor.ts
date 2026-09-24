@@ -62,6 +62,11 @@ export abstract class Actor {
   /** Palette key for hit particles. */
   abstract get bloodColor(): string;
   /** 0 = full knockback, 1 = immovable. */
+  /** Multiplier on damage taken (armour lowers it for the player). */
+  get damageTakenMult() {
+    return 1;
+  }
+
   get knockbackResist() {
     return 0;
   }

@@ -29,7 +29,10 @@
       "type": "exit",
       "id": "abbey_sluice_down",
       "at": [4, 13],
-      "to": { "area": "mire", "spawn": "from_abbey" },
+      "to": {
+        "area": "mire",
+        "spawn": "from_abbey"
+      },
       "when": "lever:mire_sluice",
       "closed": "A sluice channel runs down into the dark, its gate shut from below."
     },
@@ -79,6 +82,12 @@
       "type": "decor",
       "kind": "sacks",
       "at": [13, 11]
+    },
+    {
+      "type": "item",
+      "id": "abbey_10_undercroft_heavy_crossbow",
+      "item": "gear_heavy_crossbow",
+      "at": [11, 5]
     }
   ]
 }

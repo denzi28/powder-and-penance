@@ -1,0 +1,11 @@
+{
+  "id": "gear_greataxe",
+  "name": "Bellfounder's Axe",
+  "icon": 3,
+  "description": "An executioner's axe. Both hands, slow to swing, and nothing stands up to it.",
+  "effect": {
+    "type": "gear",
+    "kind": "weapon",
+    "id": "greataxe"
+  }
+}

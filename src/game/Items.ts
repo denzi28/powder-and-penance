@@ -57,6 +57,27 @@ export function grantItem(gs: GameScene, id: string, itemId: string, x: number, 
       gs.flags.add(`key:${item.id}`);
       what = `A key. It opens ${e.opens}. Keys are kept for good, even if you die.`;
       break;
+    case 'gear': {
+      const table = e.kind === 'weapon' ? DATA.weapons : e.kind === 'shield' ? DATA.shields : DATA.armour;
+      const g = table[e.id];
+      p.give(e.kind, e.id);
+      // wear it straight away if the slot it goes in is empty
+      let on = false;
+      if (e.kind === 'weapon') on = p.pickUpWeapon(e.id);
+      else if (e.kind === 'shield' && !p.shieldId) {
+        p.setShield(e.id);
+        on = true;
+      } else if (e.kind === 'armour') {
+        const slot = DATA.armour[e.id].slot;
+        if (!p.worn[slot]) {
+          p.setArmour(slot, e.id);
+          on = true;
+        }
+      }
+      const tier = p.loadTier;
+      what = `${g.name}${on ? ', equipped' : ', added to your pack'}. Weight ${g.weight}; equip load now ${p.equipLoad} of ${DATA.load.capacity} (${tier.label.toLowerCase()}: ${tier.note.toLowerCase()}). Change gear from EQUIPMENT (Esc).`;
+      break;
+    }
     case 'quest':
       gs.flags.add(`key:${item.id}`);
       what = `${e.note} Kept for good, even if you die.`;

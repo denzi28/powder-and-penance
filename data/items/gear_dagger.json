@@ -1,0 +1,11 @@
+{
+  "id": "gear_dagger",
+  "name": "Wick Knife",
+  "icon": 1,
+  "description": "A narrow blade for quick, low work. Deep in the back it does the most damage of anything you can carry.",
+  "effect": {
+    "type": "gear",
+    "kind": "weapon",
+    "id": "dagger"
+  }
+}

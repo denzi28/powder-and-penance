@@ -1,0 +1,9 @@
+{
+  "capacity": 30,
+  "tiers": [
+    { "id": "light", "label": "LIGHT", "upTo": 0.3, "roll": { "distance": 1.15, "travel": 0.9, "recover": 0.85, "stamina": 0.9, "iframes": 2 }, "move": 1.0, "note": "Quick, long roll" },
+    { "id": "medium", "label": "MEDIUM", "upTo": 0.7, "roll": { "distance": 1.0, "travel": 1.0, "recover": 1.0, "stamina": 1.0, "iframes": 0 }, "move": 1.0, "note": "Normal roll" },
+    { "id": "heavy", "label": "HEAVY", "upTo": 1.0, "roll": { "distance": 0.75, "travel": 1.2, "recover": 1.35, "stamina": 1.25, "iframes": -3 }, "move": 0.92, "note": "Short, slow roll" },
+    { "id": "over", "label": "OVERLOADED", "upTo": 99, "roll": { "distance": 0.35, "travel": 1.3, "recover": 1.9, "stamina": 1.5, "iframes": -8 }, "move": 0.6, "sprint": false, "note": "You stumble instead of rolling, and cannot run" }
+  ]
+}

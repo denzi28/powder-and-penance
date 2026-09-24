@@ -92,6 +92,8 @@ Stack: Phaser 3 + TypeScript + Vite. Zod-validated data files, Vitest tests.
   - Exploration music for every biome, Dark Souls quiet: slow, soft phrases with long silences between them, crossfading between areas, giving way to boss fights, ducking under Wren's harp.
   - Boss attack sounds: every boss move has its own layered sound. There's a wind-up tell (a grunt, chain, breath, hum, bone rattle or chant) and the swing or impact (bell-hammer tolls, ladle crashes in wax, bone rattles, black-flame roars), plus a roar for each boss and their own footsteps.
   - Regular enemy sounds: each of the 11 kinds has its own wind-up tells, attacks, footsteps, and a cry when it spots you, when it's hurt and as it dies (drowned pilgrims also moan as they rise out of the water).
+  - Inventory, equipment and equip load: a pause menu (Esc) with EQUIPMENT (two hands, shield, head, body, chosen from your pack with a live load preview) and INVENTORY (weapons, shields, armour, items, keys, with icons). Equip load sets the roll (light, medium, heavy, overloaded) and pace. Six armour pieces add damage reduction and poise and recolour your cloak. The spare weapons and the buckler are now found in chests across the world. Saves move to version 2 (old saves migrate).
+  - Player sounds: each weapon's own swings, hits, draw and charge; guns fire and reload in steps (cylinder, ramrod, windlass); shield block and parry; rolls by load; mail jingling; hurt, death, drinking; putting gear on.
   - Engine: optional `fringe_<variant>` tiles give floor kinds soft, ragged edges (grass frays onto dirt, wax pools spread a rounded lip). This fixes the square-edged wax pools.
 - Dialogue voice blips per speaker.
 - The Chandler finale, as above.

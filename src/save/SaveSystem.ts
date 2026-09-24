@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { formatZod } from '../data/schemas';
 
 export const SAVE_KEY = 'powder-and-penance.save';
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 2;
 
 const Ammo = z.object({ clip: z.number().int().min(0), reserve: z.number().int().min(0) });
 
@@ -29,10 +29,38 @@ export const SaveV1 = z.object({
   }),
   deathMarker: z.object({ x: z.number(), y: z.number(), tallow: z.number().int().min(1), area: z.string().optional() }).nullable(),
 });
-export type SaveData = z.infer<typeof SaveV1>;
+
+/** Version 2: the inventory (everything owned, not only what's in hand) and armour. */
+export const SaveV2 = SaveV1.extend({
+  version: z.literal(2),
+  gear: z.object({
+    weapons: z.array(z.string()),
+    shields: z.array(z.string()),
+    armour: z.array(z.string()),
+    head: z.string().nullable(),
+    body: z.string().nullable(),
+  }),
+});
+export type SaveData = z.infer<typeof SaveV2>;
 
 /** Upgrade older save shapes: MIGRATIONS[n] turns a version-n save into version n+1. */
-const MIGRATIONS: Record<number, (s: Record<string, unknown>) => Record<string, unknown>> = {};
+const MIGRATIONS: Record<number, (s: Record<string, unknown>) => Record<string, unknown>> = {
+  // v1 -> v2: what was in hand becomes the inventory; no armour yet
+  1: s => {
+    const lo = s.loadout as { slots: string[]; shield: string | null };
+    return {
+      ...s,
+      version: 2,
+      gear: {
+        weapons: [...new Set(lo.slots.filter(id => id !== 'fists'))],
+        shields: lo.shield ? [lo.shield] : [],
+        armour: [],
+        head: null,
+        body: null,
+      },
+    };
+  },
+};
 
 export interface KeyValueStore {
   getItem(key: string): string | null;
@@ -56,7 +84,7 @@ export class SaveSystem {
       let data = JSON.parse(raw) as Record<string, unknown>;
       let v = Number(data.version);
       while (v < SAVE_VERSION && MIGRATIONS[v]) data = MIGRATIONS[v++](data);
-      const r = SaveV1.safeParse(data);
+      const r = SaveV2.safeParse(data);
       if (r.success) return { ok: true, save: r.data };
       return this.corrupt(raw, formatZod(r.error));
     } catch (e) {

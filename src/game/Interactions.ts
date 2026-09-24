@@ -22,9 +22,9 @@ export function nearestInteractable(gs: GameScene): Interactable | null {
       label: `PICK UP ${DATA.weapons[item.weapon].name}`,
       use: () => {
         gs.ground.remove(item);
-        const released = p.equip(item.weapon);
-        if (released) gs.ground.add(released, p.x, p.y + 2); // hands full: swap with the one on the floor
-        announce(gs, DATA.weapons[item.weapon].name);
+        const inHand = p.pickUpWeapon(item.weapon);
+        if (inHand) announce(gs, DATA.weapons[item.weapon].name);
+        else gs.showToast(DATA.weapons[item.weapon].name.toUpperCase(), 'Your hands are full, so it goes in your pack. Change weapons from EQUIPMENT (Esc).');
         gs.markDirty();
       },
     };
@@ -124,7 +124,8 @@ export function nearestInteractable(gs: GameScene): Interactable | null {
   return {
     label: id ? `TAKE ${DATA.shields[id].name}` : 'REMOVE SHIELD',
     use: () => {
-      p.shieldId = id;
+      if (id) p.give('shield', id);
+      p.setShield(id);
       announce(gs, id ? DATA.shields[id].name : 'no shield');
       gs.markDirty();
     },

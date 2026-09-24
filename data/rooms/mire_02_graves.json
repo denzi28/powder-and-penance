@@ -142,6 +142,12 @@
       "id": "mire_tallow",
       "item": "tallow_lump",
       "at": [21, 1]
+    },
+    {
+      "type": "item",
+      "id": "mire_02_graves_dagger",
+      "item": "gear_dagger",
+      "at": [10, 1]
     }
   ]
 }

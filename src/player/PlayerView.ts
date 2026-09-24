@@ -1,6 +1,8 @@
 // Renders the player: shadow, legs (movement-facing), torso (aim-facing) and the held weapon.
 // Positions are interpolated between ticks and snapped to whole pixels.
 import Phaser from 'phaser';
+import { DATA } from '../data/config';
+import { hexToInt } from '../ui/colors';
 import { DEG, lerp } from '../core/math';
 import { DEPTH } from '../render/depth';
 import { HeldWeapon, lerpAngle } from '../render/HeldWeapon';
@@ -50,6 +52,9 @@ export class PlayerView {
       .setScale(bf.flip ? -sx : sx, sy)
       .setPosition(x, y + torsoDy)
       .setDepth(depth + 0.1);
+    // armour repaints the cloak: its own sheet, built once per outfit
+    const outfit = outfitTexture(this.body.scene, p.worn.head, p.worn.body);
+    if (this.body.texture.key !== outfit) this.body.setTexture(outfit, bf.frame);
     tint(this.body, flash);
 
     const anchor = p.body.frame.hand ?? this.lib.manifest('player_body').handAnchors?.[bf.authoredDir] ?? [0, -10];
@@ -123,4 +128,65 @@ export class PlayerView {
 export function tint(s: Phaser.GameObjects.Sprite, white: boolean) {
   if (white) s.setTintFill(0xffffff);
   else if (s.isTinted) s.clearTint();
+}
+
+/**
+ * The player's body sheet dressed in armour: the cloak's teal pixels are repainted with each piece's colour
+ * ramp, matched by brightness. Head armour takes the hood (the top rows of each frame's figure), body armour
+ * the rest. Built once per outfit as a canvas sheet; returns its texture key ("player_body" when unarmoured).
+ */
+export function outfitTexture(scene: Phaser.Scene, head: string | null, body: string | null): string {
+  const h = head ? DATA.armour[head] : null;
+  const b = body ? DATA.armour[body] : null;
+  if (!h && !b) return 'player_body';
+  const key = `player_body~${head ?? '-'}~${body ?? '-'}`;
+  if (scene.textures.exists(key)) return key;
+  const src = scene.textures.get('player_body').getSourceImage() as HTMLImageElement;
+  const canvas = document.createElement('canvas');
+  canvas.width = src.width;
+  canvas.height = src.height;
+  const ctx = canvas.getContext('2d')!;
+  ctx.drawImage(src, 0, 0);
+  const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const d = img.data;
+  const ramp = (a: { ramp: readonly string[] } | null) => a?.ramp.map(c => [(hexToInt(c) >> 16) & 255, (hexToInt(c) >> 8) & 255, hexToInt(c) & 255]);
+  const hr = ramp(h);
+  const br = ramp(b);
+  const CELL = 32;
+  const HOOD_ROWS = 7;
+  const lum = (r: number, g: number, bl: number) => 0.3 * r + 0.59 * g + 0.11 * bl;
+  const L0 = lum(16, 38, 42);
+  const L1 = lum(125, 191, 166);
+  for (let cy = 0; cy < canvas.height; cy += CELL)
+    for (let cx = 0; cx < canvas.width; cx += CELL) {
+      // where the figure starts in this frame (the hood is its top rows)
+      let top = -1;
+      for (let y = 0; y < CELL && top < 0; y++)
+        for (let x = 0; x < CELL; x++)
+          if (d[((cy + y) * canvas.width + cx + x) * 4 + 3] > 0) {
+            top = y;
+            break;
+          }
+      if (top < 0) continue;
+      for (let y = 0; y < CELL; y++)
+        for (let x = 0; x < CELL; x++) {
+          const i = ((cy + y) * canvas.width + cx + x) * 4;
+          if (d[i + 3] === 0) continue;
+          const r = d[i];
+          const g = d[i + 1];
+          const bl = d[i + 2];
+          // the cloak: teal (green and blue well above red)
+          if (!(g > r + 12 && bl > r + 12)) continue;
+          const ramp4 = y < top + HOOD_ROWS ? (hr ?? br) : br;
+          if (!ramp4) continue;
+          const k = Math.max(0, Math.min(0.999, (lum(r, g, bl) - L0) / (L1 - L0)));
+          const c = ramp4[Math.floor(k * 4)];
+          d[i] = c[0];
+          d[i + 1] = c[1];
+          d[i + 2] = c[2];
+        }
+    }
+  ctx.putImageData(img, 0, 0);
+  scene.textures.addSpriteSheet(key, canvas as unknown as HTMLImageElement, { frameWidth: CELL, frameHeight: CELL });
+  return key;
 }

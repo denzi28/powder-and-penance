@@ -1,0 +1,11 @@
+{
+  "id": "drowned_veil",
+  "name": "Drowned Veil",
+  "slot": "head",
+  "weight": 0.8,
+  "absorb": 0.03,
+  "poise": 0,
+  "icon": 9,
+  "description": "A mourner's veil, soaked in wax until it set like a mask. It still smells of the Mire.",
+  "ramp": ["#3b4a34", "#6c7a58", "#a3a47c", "#d2caa0"]
+}

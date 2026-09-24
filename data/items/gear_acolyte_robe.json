@@ -1,0 +1,11 @@
+{
+  "id": "gear_acolyte_robe",
+  "name": "Acolyte's Robe",
+  "icon": 11,
+  "description": "Heavy black cloth, singed at the cuffs. Powder acolytes wore them to carry the firepots without catching.",
+  "effect": {
+    "type": "gear",
+    "kind": "armour",
+    "id": "acolyte_robe"
+  }
+}

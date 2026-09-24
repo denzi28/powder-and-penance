@@ -8,7 +8,7 @@ export function snapshot(gs: GameScene): SaveData {
   const p = gs.player;
   const m = gs.marker.data;
   return {
-    version: 1,
+    version: 2,
     savedAt: Date.now(),
     lastShrine: gs.lastShrine,
     tallow: p.tallow,
@@ -16,6 +16,7 @@ export function snapshot(gs: GameScene): SaveData {
     stats: { level: 1 },
     loadout: { slots: [...p.slots], slot: p.slot, shield: p.shieldId },
     ammo: Object.fromEntries(p.ammo),
+    gear: { weapons: [...p.inv.weapons], shields: [...p.inv.shields], armour: [...p.inv.armour], head: p.worn.head, body: p.worn.body },
     world: {
       flags: [...gs.flags],
       groundItems: gs.ground.list.map(i => ({ weapon: i.weapon, x: i.x, y: i.y, area: i.area })),
@@ -30,9 +31,17 @@ export function applySave(gs: GameScene, s: SaveData) {
   const known = (id: string) => (DATA.weapons[id] ? id : FISTS); // data may have changed since saving
   p.tallow = s.tallow;
   p.phials = { ...s.phials };
+  // the inventory first (dropping anything the data no longer has), then what's equipped from it
+  p.inv.weapons = s.gear.weapons.filter(id => DATA.weapons[id] && id !== FISTS);
+  p.inv.shields = s.gear.shields.filter(id => DATA.shields[id]);
+  p.inv.armour = s.gear.armour.filter(id => DATA.armour[id]);
+  p.worn.head = s.gear.head && p.inv.armour.includes(s.gear.head) ? s.gear.head : null;
+  p.worn.body = s.gear.body && p.inv.armour.includes(s.gear.body) ? s.gear.body : null;
   p.slots = [known(s.loadout.slots[0]), known(s.loadout.slots[1])];
+  for (const id of p.slots) if (id !== FISTS && !p.inv.weapons.includes(id)) p.inv.weapons.push(id);
   p.slot = s.loadout.slot;
   p.shieldId = s.loadout.shield && DATA.shields[s.loadout.shield] ? s.loadout.shield : null;
+  if (p.shieldId && !p.inv.shields.includes(p.shieldId)) p.inv.shields.push(p.shieldId);
   p.enforceTwoHanded();
   for (const [id, a] of Object.entries(s.ammo)) p.ammo.set(id, { ...a });
   for (const g of s.world.groundItems) if (DATA.weapons[g.weapon]) gs.ground.add(g.weapon, g.x, g.y, g.area ?? gs.area);

@@ -1,6 +1,7 @@
 {
   "id": "bitter_salt",
   "name": "Bitter Salt",
+  "icon": 17,
   "description": "Stirred into the phial, it mends deeper wounds.",
   "effect": { "type": "phialLevel", "amount": 1 }
 }

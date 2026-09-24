@@ -1,6 +1,7 @@
 {
   "id": "ammo_pouch",
   "name": "Powder Pouch",
+  "icon": 15,
   "description": "Shot, powder and bolts, wrapped in oilcloth against the damp.",
   "effect": { "type": "ammo", "amount": 0.5 }
 }

@@ -101,6 +101,12 @@
           "face": 1
         }
       ]
+    },
+    {
+      "type": "item",
+      "id": "works_07_office_revolver",
+      "item": "gear_revolver",
+      "at": [7, 1]
     }
   ]
 }

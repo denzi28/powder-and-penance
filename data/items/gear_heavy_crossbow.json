@@ -1,0 +1,11 @@
+{
+  "id": "gear_heavy_crossbow",
+  "name": "Heavy Crossbow",
+  "icon": 6,
+  "description": "A siege crossbow cranked with a windlass. The bolts go through shields and whoever holds them.",
+  "effect": {
+    "type": "gear",
+    "kind": "weapon",
+    "id": "heavy_crossbow"
+  }
+}

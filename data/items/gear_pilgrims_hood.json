@@ -1,0 +1,11 @@
+{
+  "id": "gear_pilgrims_hood",
+  "name": "Pilgrim's Hood",
+  "icon": 8,
+  "description": "Grey wool, salt-stiff. Every pilgrim on the Penance Road wore one, and most were buried in it.",
+  "effect": {
+    "type": "gear",
+    "kind": "armour",
+    "id": "pilgrims_hood"
+  }
+}

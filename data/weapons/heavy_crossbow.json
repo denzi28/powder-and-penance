@@ -1,6 +1,10 @@
 {
   "id": "heavy_crossbow",
   "name": "Heavy Crossbow",
+  "weight": 8,
+  "icon": 6,
+  "description": "A siege crossbow cranked with a windlass. The bolts go through shields and whoever holds them.",
+  "sounds": { "draw": "p_draw_heavy", "hit": "p_hit_blunt", "shotHit": "p_hit_bolt", "reload": [[0.02, "p_crank"], [0.2, "p_crank"], [0.38, "p_crank"], [0.56, "p_crank"], [0.78, "p_bolt_seat"], [0.94, "p_latch"]] },
   "kind": "ranged",
   "twoHanded": true,
   "view": { "sprite": "crossbow", "restAngleOffsetDeg": 0 },
@@ -8,7 +12,7 @@
   "ranged": {
     "clip": 1,
     "reserveMax": 12,
-    "fire": { "windup": 6, "recovery": 30, "stamina": 8, "moveMult": 0.5, "recoilDeg": 10, "kick": 2, "shake": 0.1, "sfx": "crossbow" },
+    "fire": { "windup": 6, "recovery": 30, "stamina": 8, "moveMult": 0.5, "recoilDeg": 10, "kick": 2, "shake": 0.1, "sfx": "p_crossbow" },
     "reload": { "ticks": 120, "stamina": 12, "moveMult": 0.3 },
     "projectile": {
       "sprite": "bolt", "speed": 300, "range": 320,
@@ -26,7 +30,7 @@
       "rollCancelFrom": 22,
       "hitbox": { "shape": "circle", "radius": 13, "offset": 9 },
       "sweep": { "fromDeg": 30, "toDeg": 0, "reach": 6 },
-      "knockback": 160, "hitstop": 3, "shake": 0.12, "sfx": "swing"
+      "knockback": 160, "hitstop": 3, "shake": 0.12, "sfx": "p_bash"
     }
   }
 }

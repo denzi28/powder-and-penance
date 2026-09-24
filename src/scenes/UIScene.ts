@@ -3,6 +3,7 @@ import Phaser from 'phaser';
 import { DATA, onDataError, onDataReload } from '../data/config';
 import { hexToInt } from '../ui/colors';
 import { MenuRenderer, wrap } from '../ui/MenuRenderer';
+import { GearView } from '../ui/GearView';
 import { TrailBar } from '../ui/TrailBar';
 import { MapView } from '../ui/MapView';
 import { DialogueBox } from '../ui/DialogueBox';
@@ -38,6 +39,7 @@ export class UIScene extends Phaser.Scene {
   private dialogueBox!: DialogueBox;
   private bossBar!: BossBar;
   private menuUi!: MenuRenderer;
+  private gearView!: GearView;
   private hpTrail!: TrailBar;
   private vignette!: Phaser.GameObjects.Graphics;
 
@@ -80,6 +82,7 @@ export class UIScene extends Phaser.Scene {
     this.dialogueBox = new DialogueBox(this);
     this.bossBar = new BossBar(this);
     this.menuUi = new MenuRenderer(this, 16);
+    this.gearView = new GearView(this, 100); // over everything else in the HUD
     this.hpTrail = new TrailBar(this.gs.player.hp);
     this.vignette = this.add.graphics().setDepth(12);
     const offErr = onDataError(msg => this.err.setText(`DATA ERROR (see console)\n${msg.split('\n').slice(0, 6).join('\n')}`));
@@ -155,6 +158,7 @@ export class UIScene extends Phaser.Scene {
     this.dialogueBox.update(this.gs, dt);
     this.bossBar.update(this.gs, dt);
     this.menuUi.draw(this.gs.menu);
+    this.gearView.draw(this.gs.gear, this.gs.player);
     this.drawDeath();
     this.drawCard();
   }

@@ -49,6 +49,7 @@ import { Ambience } from '../world/Ambience';
 import { Sfx } from '../audio/Sfx';
 import { AmbientAudio } from '../audio/Ambient';
 import { BossSfx } from '../audio/BossSfx';
+import { GearScreen } from '../ui/GearScreen';
 import { BossMusic, ExploreMusic } from '../audio/Music';
 import { SaveSystem, type SaveData } from '../save/SaveSystem';
 import { MenuNav, type Menu } from '../ui/Menu';
@@ -149,6 +150,8 @@ export class GameScene extends Phaser.Scene {
   areaBanner: { name: string; t: number } | null = null;
   /** Large map open (M): the world is paused. */
   mapOpen = false;
+  /** Equipment / inventory screen (from the pause menu): the world is paused. */
+  gear: GearScreen | null = null;
   /** Quick travel between shrines in progress (game/Warp): the world is paused. */
   warp: { to: WarpTarget; t: number } | null = null;
 
@@ -306,6 +309,14 @@ export class GameScene extends Phaser.Scene {
       this.mapOpen = true;
       return;
     }
+    if (this.gear) {
+      this.gear.update(this.controls);
+      return;
+    }
+    if (this.controls.pressed('pause') && !this.menu && !this.player.dead && !this.shrineSeq && !this.travel) {
+      this.openPause();
+      return;
+    }
     if (this.menu) {
       const r = this.menuNav.update(this.menu, this.controls);
       if (r === 'moved') this.bus.emit('sfx', { id: 'menu_move' });
@@ -408,6 +419,44 @@ export class GameScene extends Phaser.Scene {
   }
 
   // ------------------------------------------------------------------ menus, toasts, saving
+  /** The pause menu (Esc): the world waits. */
+  openPause(index = 0) {
+    const close = () => this.closeMenu();
+    const items = [
+      { label: 'RESUME', enabled: true, action: close },
+      { label: 'EQUIPMENT', enabled: true, action: () => this.openGear('equip') },
+      { label: 'INVENTORY', enabled: true, action: () => this.openGear('inventory') },
+      {
+        label: 'QUIT TO TITLE',
+        enabled: true,
+        action: () => {
+          this.save();
+          this.scene.stop('ui');
+          this.scene.start('title');
+        },
+      },
+    ];
+    const t = this.player.loadTier;
+    this.menu = { title: 'PAUSED', subtitle: `${DATA.areas.areas[this.area].name}. Load ${this.player.equipLoad}/${DATA.load.capacity} (${t.label.toLowerCase()}).`, items, index, onBack: close };
+    this.controls.clearBuffer();
+  }
+
+  openGear(kind: 'equip' | 'inventory') {
+    this.menu = null;
+    this.controls.clearBuffer();
+    this.gear = new GearScreen(
+      kind,
+      this.player,
+      this.flags,
+      () => {
+        this.gear = null;
+        this.markDirty();
+        this.openPause(kind === 'equip' ? 1 : 2);
+      },
+      id => this.bus.emit('sfx', { id }),
+    );
+  }
+
   closeMenu() {
     this.menu = null;
     this.controls.clearBuffer();
@@ -753,7 +802,7 @@ export class GameScene extends Phaser.Scene {
     this.loot.render();
     this.projectileView.render(this.projectiles.list, alpha);
     this.pools.draw(this);
-    const still = !!(this.menu || this.mapOpen || this.story.active || this.warp);
+    const still = !!(this.menu || this.gear || this.mapOpen || this.story.active || this.warp);
     this.npcs.update(delta, this.player, still);
     this.chatter.update(delta, this.player, this.flags, still);
     this.ambience.update(delta, this.player, this.cameras.main.worldView, still || !!this.hitstop);

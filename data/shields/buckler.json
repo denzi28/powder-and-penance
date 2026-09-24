@@ -1,6 +1,9 @@
 {
   "id": "buckler",
   "name": "Iron Buckler",
+  "weight": 2.5,
+  "icon": 7,
+  "description": "A small round shield with an iron boss. Raise it at the last moment to turn a blow aside.",
   "sprite": "buckler",
   "stability": 0.55,
   "absorption": 0.8,
@@ -9,5 +12,7 @@
   "parryRearmTicks": 20,
   "raiseTicks": 3,
   "blockMoveMult": 0.45,
-  "blockRegenMult": 0.3
+  "blockRegenMult": 0.3,
+  "blockSfx": "p_block_buckler",
+  "parrySfx": "p_parry"
 }

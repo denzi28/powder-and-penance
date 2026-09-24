@@ -1,0 +1,11 @@
+{
+  "id": "gear_buckler",
+  "name": "Iron Buckler",
+  "icon": 7,
+  "description": "A small round shield with an iron boss. Raise it at the last moment to turn a blow aside.",
+  "effect": {
+    "type": "gear",
+    "kind": "shield",
+    "id": "buckler"
+  }
+}

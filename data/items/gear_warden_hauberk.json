@@ -1,0 +1,11 @@
+{
+  "id": "gear_warden_hauberk",
+  "name": "Warden's Hauberk",
+  "icon": 13,
+  "description": "Riveted mail over a padded coat, the Abbey's colours long since rusted brown. It will turn a spear, and slow you to a walk.",
+  "effect": {
+    "type": "gear",
+    "kind": "armour",
+    "id": "warden_hauberk"
+  }
+}

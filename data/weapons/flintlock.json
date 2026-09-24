@@ -1,6 +1,10 @@
 {
   "id": "flintlock",
   "name": "Chapel Flintlock",
+  "weight": 3,
+  "icon": 5,
+  "description": "A chapel guard's pistol. One shot, and it has to count; the reload takes an age.",
+  "sounds": { "draw": "p_draw_gun", "hit": "p_hit_blunt", "shotHit": "p_hit_shot", "reload": [[0.02, "p_powder_pour"], [0.35, "p_ramrod"], [0.5, "p_ramrod"], [0.65, "p_ramrod"], [0.93, "p_cock"]] },
   "kind": "ranged",
   "twoHanded": false,
   "view": { "sprite": "flintlock", "restAngleOffsetDeg": 0 },
@@ -8,7 +12,7 @@
   "ranged": {
     "clip": 1,
     "reserveMax": 10,
-    "fire": { "windup": 10, "recovery": 40, "stamina": 10, "moveMult": 0.4, "recoilDeg": 45, "kick": 5, "shake": 0.25, "sfx": "gunshot_heavy" },
+    "fire": { "windup": 10, "recovery": 40, "stamina": 10, "moveMult": 0.4, "recoilDeg": 45, "kick": 5, "shake": 0.25, "sfx": "p_flintlock" },
     "reload": { "ticks": 150, "stamina": 10, "moveMult": 0.4 },
     "projectile": {
       "sprite": "ball", "speed": 360, "range": 240,
@@ -26,7 +30,7 @@
       "rollCancelFrom": 18,
       "hitbox": { "shape": "circle", "radius": 12, "offset": 9 },
       "sweep": { "fromDeg": 30, "toDeg": 0, "reach": 6 },
-      "knockback": 140, "hitstop": 3, "shake": 0.1, "sfx": "swing"
+      "knockback": 140, "hitstop": 3, "shake": 0.1, "sfx": "p_bash"
     }
   }
 }

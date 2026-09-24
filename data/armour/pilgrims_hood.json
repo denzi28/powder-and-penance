@@ -1,0 +1,11 @@
+{
+  "id": "pilgrims_hood",
+  "name": "Pilgrim's Hood",
+  "slot": "head",
+  "weight": 1,
+  "absorb": 0.02,
+  "poise": 1,
+  "icon": 8,
+  "description": "Grey wool, salt-stiff. Every pilgrim on the Penance Road wore one, and most were buried in it.",
+  "ramp": ["#2a2830", "#4a4652", "#6f6a78", "#9a95a3"]
+}

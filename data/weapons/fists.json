@@ -1,6 +1,10 @@
 {
   "id": "fists",
   "name": "Bare Hands",
+  "weight": 0,
+  "icon": 0,
+  "description": "Your own two hands. Nothing to lose.",
+  "sounds": { "draw": "p_draw_fists", "hit": "p_hit_blunt" },
   "kind": "melee",
   "twoHanded": false,
   "view": { "sprite": "fist", "restAngleOffsetDeg": 0, "hidden": true },
@@ -14,7 +18,7 @@
       "lunge": { "distance": 4, "startTick": 3, "ticks": 3 },
       "hitbox": { "shape": "arc", "radius": 16, "halfAngle": 40 },
       "sweep": { "fromDeg": 0, "toDeg": 0, "reach": 4 },
-      "knockback": 30, "hitstop": 2, "shake": 0.05, "sfx": "swing"
+      "knockback": 30, "hitstop": 2, "shake": 0.05, "sfx": "p_punch"
     },
     {
       "damage": 7, "poise": 5, "stamina": 8,
@@ -24,7 +28,7 @@
       "lunge": { "distance": 4, "startTick": 3, "ticks": 3 },
       "hitbox": { "shape": "arc", "radius": 16, "halfAngle": 40 },
       "sweep": { "fromDeg": 0, "toDeg": 0, "reach": 4 },
-      "knockback": 40, "hitstop": 2, "shake": 0.05, "sfx": "swing"
+      "knockback": 40, "hitstop": 2, "shake": 0.05, "sfx": "p_punch"
     }
   ],
   "heavy": {
@@ -35,7 +39,7 @@
       "rollCancelFrom": 18,
       "hitbox": { "shape": "circle", "radius": 12, "offset": 8 },
       "sweep": { "fromDeg": 0, "toDeg": 0, "reach": 5 },
-      "knockback": 150, "hitstop": 3, "shake": 0.1, "sfx": "swing"
+      "knockback": 150, "hitstop": 3, "shake": 0.1, "sfx": "p_punch_heavy"
     }
   }
 }
