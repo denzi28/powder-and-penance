@@ -76,6 +76,7 @@ Stack: Phaser 3 + TypeScript + Vite. Zod-validated data files, Vitest tests.
   - The Abbey tileset: calmer, darker flagstones (plain slabs mostly; cracks, wax spills and grave slabs are rare), moss that grows out of the joints, ashlar walls with a lit lip (plus broken blocks, candle niches and wax runs), wall tops with a pale coping stone.
   - Engine: optional `shade` tiles (a soft shadow on the floor along walls) and `glow` tiles (candle niches cast a flickering warm light, `light_glow`). See ASSETS.md § tiles.
   - The other tilesets: Penance Road and Wick's Rest (soil, grass tufts, forest brush, earth cliffs with grass lips and hung lanterns, packed roads, planks), the Tallow Works (soot flagstones, iron grates glowing from below, running-bond soot brick with pipes and furnace vents, riveted iron tops), the Waxmire (wet mud, swamp grass, rippling black water, root banks with candle offerings, wrinkled wax pools).
+  - Enemies redrawn with shaded material ramps (same poses, anchors and frames): Wickling (a wax face in a brown cowl, drips, rope belt), Bulwark Warden (plate with a red plume, gilt-trimmed tabard, planked tower shield with the Abbey's flame), Powder Acolyte (scorched robe, painted porcelain mask, clay pot bandolier), Taper Hound (fur sheen, ribs, wax running off its taper), Belfry Brute (banded bronze bell with verdigris, rope-bound arms, apron straps), Renderer (greasy apron, mouth-cloth, spare hook), Vat Crawler / Vat Spawn / wax slimes (glossy wax with half-rendered bones inside), Drowned Pilgrim (sodden, teal-tinged robe, wax running off the hood), Mire Lantern (iron cage filled with cold light).
   - Engine: optional `fringe_<variant>` tiles give floor kinds soft, ragged edges (grass frays onto dirt, wax pools spread a rounded lip). This fixes the square-edged wax pools.
 - Dialogue voice blips per speaker.
 - The Chandler finale, as above.
@@ -83,7 +84,7 @@ Stack: Phaser 3 + TypeScript + Vite. Zod-validated data files, Vitest tests.
 - Fixed: the player got stuck in the Nave doorway. The arena sealed while the player stood on the tile next to the seal, which then became solid. Arenas now wake only 2+ tiles away from every seal (`src/game/arenaWake.ts`); a test covers all arenas.
 
 ## Remaining for Act 1
-- **Pixel-art beauty pass** ← in progress. Done: the player and all four tilesets. Still procedural placeholder: enemies, bosses, decor, portraits. The Chandler, the Last Candle and the Nave decor are the roughest.
+- **Pixel-art beauty pass** ← in progress. Done: the player, all four tilesets and the regular enemies. Still procedural placeholder: bosses, weapons, decor, portraits, death frames. The Chandler, the Last Candle and the Nave decor are the roughest.
 - **Brother Aldous** (Abbey Scriptorium): give him Bitter Salt and he fights beside you against the Chandler (needs an ally AI). Otherwise you meet him later as a Wickling in the Nave Approach.
 - **Sister Maudlin's forgive/condemn choice** (after the Chandler's ledger). Forgive: she stays and helps in Act 2. Condemn: she leaves and her shrine goes cold.
 - **Progression:** level up at Maudlin with Tallow (Vit/End/Str/Dex, cost curve, stat scaling).

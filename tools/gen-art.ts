@@ -613,14 +613,42 @@ type WickPose = { bob?: number; hunch?: number; flame?: number; sway?: number; l
 /** Screen direction the body faces, per authored direction (for leaning into / away from an attack). */
 const FACE_VEC: Record<Dir5, [number, number]> = { S: [0, 1], SE: [0.7, 0.7], E: [1, 0], NE: [0.7, -0.7], N: [0, -1] };
 
+/** Shared enemy ramps (light from the top left, like the player). */
+const EN = {
+  robe0: hex('#2a1b18'),
+  robe1: mix(P.wood1, P.dark2, 0.35),
+  robe2: P.wood1,
+  robe3: hex('#7a5238'),
+  rope: mix(P.wax1, P.wood2, 0.45),
+  wax0: mix(P.wax1, P.wood2, 0.5),
+  wax1: mix(P.wax1, P.wood2, 0.2),
+  wax2: P.wax1,
+  wax3: P.wax2,
+  steel0: hex('#3c4350'),
+  steel1: hex('#5d6776'),
+  steel2: P.steel1,
+  steel3: P.steel2,
+};
+
+/** A robe row [y, x, w] shaded from a lit left edge to a dark right edge. */
+function shadedRow(c: Img, x: number, y: number, w: number, r0: RGBA, r1: RGBA, r2: RGBA, r3: RGBA) {
+  c.hline(x, y, w, r2);
+  c.set(x, y, r3);
+  if (w > 4) c.set(x + 1, y, mix(r2, r3, 0.5));
+  c.set(x + w - 1, y, r0);
+  if (w > 3) c.set(x + w - 2, y, r1);
+}
+
 function drawWickling(c: Img, dir: Dir5, pose: WickPose) {
   const o = { bob: 0, hunch: 0, flame: 0, sway: 0, lean: 0, ...pose };
   const b = o.bob;
+  const E = EN;
   // Lean: head and shoulders shift toward the facing (positive) or away from it (negative, anticipation).
   const [fx, fy] = FACE_VEC[dir];
   const lx = Math.round(o.lean * fx);
   const ly = Math.round(o.lean * fy * 0.7);
   const shoulders = Math.round(o.lean * fx * 0.5);
+  const back = dir === 'N' || dir === 'NE';
   // Robe: a ragged bell shape
   const rows: [number, number, number][] = [
     [17, 13, 6],
@@ -636,35 +664,71 @@ function drawWickling(c: Img, dir: Dir5, pose: WickPose) {
   ];
   for (const [y, x, w] of rows) {
     const sway = y >= 24 ? o.sway : y <= 20 ? shoulders : 0;
-    c.hline(x + sway, y + b, w, P.wood1);
-    c.set(x + sway, y + b, P.wood2);
+    shadedRow(c, x + sway, y + b, w, E.robe0, E.robe1, E.robe2, E.robe3);
   }
-  for (let x = 10; x < 22; x += 2) c.set(x + o.sway, 27 + b, P.dark2); // ragged hem
-  c.vline(16 + shoulders, 19 + b, 6, P.dark2); // robe seam
-  // Wax head, drooping
+  // folds that open toward the hem
+  for (const [x0, x1] of [[14, 13], [18, 19]]) line(c, x0 + shoulders, 21 + b, x1 + o.sway, 26 + b, E.robe1);
+  for (let x = 10; x < 22; x += 2) c.set(x + o.sway, 27 + b, E.robe0); // ragged hem
+  // rope belt with a knot and a hanging end
+  c.hline(12 + shoulders, 21 + b, 8, E.rope);
+  c.hline(12 + shoulders, 22 + b, 8, E.robe1);
+  if (!back) c.set(15 + shoulders, 22 + b, E.rope); // the knot
+  // cowl collar gathered around the neck
+  c.hline(13 + shoulders, 17 + b, 6, E.robe1);
+  c.set(13 + shoulders, 17 + b, E.robe3);
+
+  // Wax head, drooping, melting down over the collar
   const hx = 16 + (o.flinch ? -1 : 0) + lx;
   const hy = 13 + b + o.hunch + ly;
-  c.disc(hx, hy, 3.6, P.wax1);
-  c.set(hx - 2, hy - 2, P.wax2);
-  c.set(hx - 1, hy - 3, P.wax2);
-  c.set(hx - 3, hy + 3, P.wax1);
-  c.set(hx + 3, hy + 2, P.wax1);
+  // the cowl the face sits in
+  c.ellipse(hx, hy + 0.5, 4.8, 4.4, E.robe1);
+  c.ellipse(hx - 0.6, hy, 4, 3.8, E.robe2, (x, y) => x + 0.5 - hx + (y + 0.5 - hy) < 1.5);
+  c.set(hx - 4, hy - 1, E.robe3);
+  c.set(hx - 3, hy - 3, E.robe3);
+  if (back) {
+    c.ellipse(hx, hy + 0.5, 3.6, 3.4, E.robe1); // the back of the cowl, a wax crown showing above it
+    c.hline(hx - 2, hy - 3, 4, E.wax1);
+    c.set(hx - 1, hy - 4, E.wax3);
+  } else c.disc(hx + (dir === 'E' ? 1 : 0), hy + 0.4, 3.2, E.wax1);
+  if (!back) {
+    const fx0 = hx + (dir === 'E' ? 1 : 0);
+    c.ellipse(fx0 + 1, hy + 1.2, 2.4, 2.2, E.wax0, (x, y) => x + 0.5 - fx0 + (y + 0.5 - hy) > 1.4); // shaded lower right
+    c.set(fx0 - 2, hy - 2, E.wax3);
+    c.set(fx0 - 1, hy - 2, E.wax2);
+  }
+  // drips running off the head onto the robe
+  c.vline(hx - 2, hy + 3, 3, E.wax1);
+  c.set(hx - 2, hy + 6, E.wax2);
+  c.vline(hx + 2, hy + 3, 2, E.wax0);
   const eye = o.flinch ? P.ember : P.blood2;
+  const socket = mix(E.wax0, P.dark2, 0.55);
+  const face = (ex: number[]) => {
+    for (const x of ex) {
+      c.set(x, hy - 1, socket); // sunken brow
+      c.set(x, hy, eye);
+    }
+  };
   if (dir === 'S') {
-    c.set(hx - 2, hy, eye);
-    c.set(hx + 1, hy, eye);
+    face([hx - 2, hx + 1]);
+    c.set(hx - 2, hy + 1, E.wax3); // a tear of wax
+    c.hline(hx - 1, hy + 2, 2, socket); // slack mouth
   } else if (dir === 'SE') {
-    c.set(hx - 1, hy, eye);
-    c.set(hx + 2, hy, eye);
-  } else if (dir === 'E') c.set(hx + 2, hy, eye);
+    face([hx - 1, hx + 2]);
+    c.set(hx, hy + 2, socket);
+  } else if (dir === 'E') face([hx + 2]);
   // Candle stub + flame
-  c.rect(hx - 1, hy - 6, 2, 3, P.wax2);
+  c.rect(hx - 1, hy - 6, 2, 3, E.wax3);
+  c.vline(hx, hy - 6, 3, E.wax2);
+  c.set(hx - 2, hy - 4, E.wax2); // wax pooled at its foot
+  c.set(hx + 1, hy - 4, E.wax1);
   c.set(hx, hy - 7, P.ink);
   c.set(hx + (o.flame ? -1 : 0), hy - 8, P.flame2);
   c.set(hx, hy - 9, o.flame ? P.flame2 : P.flame1);
+  if (o.flame) c.set(hx, hy - 10, mix(P.flame1, P.ember, 0.5));
   // Pale hand (weapon grip) — must match WICK_HAND
   const [ax, ay] = WICK_HAND[dir];
-  c.rect(ax - 1, ay - 1 + b, 2, 2, P.wax1);
+  c.rect(ax - 1, ay - 1 + b, 2, 2, E.wax1);
+  c.set(ax, ay + b, E.wax0);
 }
 
 function drawWicklingDeath(c: Img, f: number) {
@@ -1208,49 +1272,82 @@ const WARDEN_HAND: Record<Dir5, [number, number]> = { S: [21, 18], SE: [21, 17],
 function drawWarden(c: Img, dir: Dir5, pose: BodyPose & { shield?: number }) {
   const o = { bob: 0, lean: 0, hunch: 0, step: -1, shield: 0, flinch: false, ...pose };
   const b = o.bob;
+  const E = EN;
   const { lx, ly, sh } = leanOffsets(dir, o.lean);
   const [fx] = FACE_VEC[dir];
+  const back = dir === 'N' || dir === 'NE';
   const towerShield = (sx: number, sy: number, w: number) => {
+    // oak planks bound in iron, the Abbey's flame painted on it
     c.rect(sx, sy, w, 14, P.wood2);
-    c.vline(sx, sy, 14, P.steel2);
-    c.vline(sx + w - 1, sy, 14, P.steel2);
-    c.hline(sx, sy, w, P.steel2);
-    c.hline(sx, sy + 13, w, P.steel2);
+    for (let x = sx + 2; x < sx + w - 1; x += 2) c.vline(x, sy + 1, 12, P.wood1);
+    c.vline(sx, sy, 14, E.steel3);
+    c.vline(sx + w - 1, sy, 14, E.steel1);
+    c.hline(sx, sy, w, E.steel3);
+    c.hline(sx, sy + 13, w, E.steel1);
+    c.hline(sx, sy + 7, w, E.steel2); // iron band
     if (w >= 4) {
-      c.rect(sx + Math.floor(w / 2) - 1, sy + 3, 2, 3, P.blood1);
-      c.set(sx + Math.floor(w / 2), sy + 7, P.steel2);
+      const m = sx + Math.floor(w / 2);
+      c.set(m, sy + 2, P.flame2);
+      c.rect(m - 1, sy + 3, 2, 3, P.blood2);
+      c.set(m - 1, sy + 3, P.blood1);
+      c.set(m, sy + 7, E.steel3); // boss
     }
   };
   if (dir === 'N') towerShield(9, 13 + b, 3); // carried in front, mostly hidden by the body
-  // Legs
+  // Legs: greaves and dark boots
   const liftL = o.step === 1 ? 2 : 0;
   const liftR = o.step === 3 ? 2 : 0;
-  c.rect(13, 22 + b, 2, 4 - liftL, P.stone2);
-  c.rect(12, 26 - liftL, 3, 2, P.dark1);
-  c.rect(17, 22 + b, 2, 4 - liftR, P.stone2);
-  c.rect(17, 26 - liftR, 3, 2, P.dark1);
-  // Torso plates
-  c.rect(11 + sh, 13 + b, 10, 10, P.steel1);
-  c.vline(11 + sh, 13 + b, 10, P.steel2);
-  c.vline(20 + sh, 13 + b, 10, P.stone2);
-  c.hline(11 + sh, 19 + b, 10, P.dark2);
-  if (dir === 'S' || dir === 'SE') {
-    c.rect(14 + sh + (dir === 'SE' ? 1 : 0), 14 + b, 4, 9, P.blood1);
-    c.vline(14 + sh + (dir === 'SE' ? 1 : 0), 14 + b, 9, P.blood2);
-  } else if (dir === 'E') c.rect(17 + sh, 14 + b, 3, 9, P.blood1);
-  else for (const y of [15, 17]) c.hline(12 + sh, y + b, 8, P.stone2);
-  // Helm with crest; cold cyan eyes behind the visor slit
+  c.rect(13, 22 + b, 2, 4 - liftL, E.steel2);
+  c.set(13, 22 + b, E.steel3);
+  c.rect(12, 26 - liftL, 3, 2, E.steel0);
+  c.rect(17, 22 + b, 2, 4 - liftR, E.steel1);
+  c.rect(17, 26 - liftR, 3, 2, E.steel0);
+  // Torso: breastplate over mail, pauldrons
+  c.rect(11 + sh, 13 + b, 10, 10, E.steel2);
+  c.vline(11 + sh, 13 + b, 10, E.steel3);
+  c.vline(12 + sh, 14 + b, 8, mix(E.steel2, E.steel3, 0.4));
+  c.vline(20 + sh, 13 + b, 10, E.steel0);
+  c.vline(19 + sh, 13 + b, 10, E.steel1);
+  c.hline(11 + sh, 21 + b, 10, E.steel1); // mail skirt
+  for (let x = 11; x < 21; x += 2) c.set(x + sh, 22 + b, E.steel0);
+  c.rect(10 + sh, 13 + b, 3, 2, E.steel3); // pauldrons
+  c.set(10 + sh, 14 + b, E.steel2);
+  c.rect(19 + sh, 13 + b, 3, 2, E.steel1);
+  c.hline(11 + sh, 19 + b, 10, P.wood1); // sword belt
+  if (!back) {
+    const tx = 14 + sh + (dir === 'SE' ? 1 : dir === 'E' ? 3 : 0);
+    const tw = dir === 'E' ? 3 : 4;
+    c.rect(tx, 14 + b, tw, 9, P.blood1); // tabard
+    c.vline(tx, 14 + b, 9, P.blood2);
+    c.hline(tx, 14 + b, tw, P.flame1); // gilt trim
+    c.hline(tx, 22 + b, tw, mix(P.blood1, P.ink, 0.4));
+    if (dir !== 'E') c.set(tx + 1, 17 + b, P.flame2); // flame badge
+    c.hline(tx, 19 + b, tw, mix(P.wood1, P.blood1, 0.5));
+  } else {
+    for (const y of [15, 17]) c.hline(12 + sh, y + b, 8, E.steel1); // backplate lames
+    c.rect(14 + sh, 20 + b, 4, 3, P.blood1); // tabard tail
+  }
+  // Helm: great helm with a red plume; cold cyan eyes behind the visor slit
   const hx = 16 + lx + (o.flinch ? -1 : 0);
   const hy = 5 + b + o.hunch + ly;
-  c.rect(hx - 3, hy, 6, 1, P.steel1);
-  c.rect(hx - 4, hy + 1, 8, 7, P.steel1);
-  c.hline(hx - 3, hy + 1, 3, P.steel2);
-  c.rect(hx - 1, hy - 2, 2, 2, P.ember);
+  c.rect(hx - 3, hy, 6, 1, E.steel2);
+  c.rect(hx - 4, hy + 1, 8, 7, E.steel2);
+  c.vline(hx - 4, hy + 1, 7, E.steel3);
+  c.hline(hx - 3, hy + 1, 3, E.steel3);
+  c.vline(hx + 3, hy + 1, 7, E.steel0);
+  c.vline(hx + 2, hy + 2, 6, E.steel1);
+  c.hline(hx - 4, hy + 7, 8, E.steel1); // gorget line
+  // plume
+  c.rect(hx - 1, hy - 3, 2, 3, P.blood2);
+  c.set(hx - 1, hy - 3, mix(P.blood2, P.wax2, 0.3));
+  c.set(hx + 1, hy - 2, P.blood1);
+  c.set(hx + 1, hy - 1, P.blood1);
   const eye = o.flinch ? P.ember : P.cyan;
   if (dir === 'S') {
     c.hline(hx - 3, hy + 4, 6, P.ink);
     c.set(hx - 2, hy + 4, eye);
     c.set(hx + 1, hy + 4, eye);
+    c.vline(hx, hy + 5, 2, E.steel1); // nasal ridge
   } else if (dir === 'SE') {
     c.hline(hx - 2, hy + 4, 5, P.ink);
     c.set(hx - 1, hy + 4, eye);
@@ -1266,7 +1363,8 @@ function drawWarden(c: Img, dir: Dir5, pose: BodyPose & { shield?: number }) {
   else if (dir === 'E') towerShield(21 + push, 12 + b, 2);
   else if (dir === 'NE') towerShield(18 + push, 11 + b, 3);
   const [ax, ay] = WARDEN_HAND[dir];
-  c.rect(ax - 1, ay - 1 + b, 2, 2, P.steel2);
+  c.rect(ax - 1, ay - 1 + b, 2, 2, E.steel3);
+  c.set(ax, ay + b, E.steel1);
 }
 
 function wardenDeath(c: Img, f: number) {
@@ -1288,35 +1386,63 @@ function drawAcolyte(c: Img, dir: Dir5, pose: BodyPose & { pot?: PotPos }) {
   const b = o.bob;
   const { lx, ly, sh } = leanOffsets(dir, o.lean);
   const [fx, fy] = FACE_VEC[dir];
+  const back = dir === 'N' || dir === 'NE';
+  const r0 = mix(P.dark1, P.ink, 0.4);
+  const r1 = P.dark1;
+  const r2 = P.dark2;
+  const r3 = mix(P.dark2, P.stone2, 0.5);
   const liftL = o.step === 1 ? 2 : 0;
   const liftR = o.step === 3 ? 2 : 0;
-  c.rect(13, 25 - liftL + b, 2, 2, P.dark1);
-  c.rect(17, 25 - liftR + b, 2, 2, P.dark1);
+  c.rect(13, 25 - liftL + b, 2, 2, P.wood1);
+  c.rect(17, 25 - liftR + b, 2, 2, mix(P.wood1, P.dark1, 0.5));
+  // Robe, scorched at the hem
   for (let y = 13; y <= 25; y++) {
     const w = 6 + Math.floor((y - 13) / 2);
     const x = 16 - Math.floor(w / 2) + (y < 19 ? sh : 0);
-    c.hline(x, y + b, w, P.dark2);
-    c.set(x, y + b, P.stone1);
+    shadedRow(c, x, y + b, w, r0, r1, r2, r3);
   }
-  // Ember sash + bandolier of tiny pots
-  for (let i = 0; i < 5; i++) c.set(12 + i * 2 + sh, 15 + i + b, dir === 'N' ? P.dark1 : P.flame1);
+  for (let x = 10; x < 22; x += 2) c.set(x, 25 + b, mix(P.ember, r1, 0.5)); // singed hem
+  line(c, 16 + sh, 20 + b, 15, 25 + b, r1); // fold
+  // Ember sash, and a bandolier of tiny clay pots across the chest
   c.hline(11 + sh, 20 + b, 10, P.ember);
+  c.hline(11 + sh, 21 + b, 10, mix(P.ember, P.dark1, 0.5));
+  if (!back)
+    for (let i = 0; i < 4; i++) {
+      const px = 12 + i * 2 + sh;
+      const py = 15 + i + b;
+      c.set(px, py, P.wood2);
+      c.set(px + 1, py, P.wood1);
+      c.set(px, py - 1, P.flame2);
+    }
+  else line(c, 12 + sh, 19 + b, 19 + sh, 14 + b, P.wood1);
   // Hood and porcelain mask
   const hx = 16 + lx + (o.flinch ? -1 : 0);
   const hy = 6 + b + o.hunch + ly;
-  c.disc(hx, hy + 3, 4, P.dark1);
-  c.set(hx, hy - 2, P.dark1);
-  if (dir !== 'N' && dir !== 'NE') {
+  c.disc(hx, hy + 3, 4, r1);
+  c.ellipse(hx - 1, hy + 2, 3, 3, r2, (x, y) => x + 0.5 - hx + (y + 0.5 - hy - 3) < 0.5);
+  c.set(hx - 3, hy + 1, r3);
+  c.set(hx, hy - 2, r1);
+  c.set(hx, hy - 1, r2);
+  if (!back) {
     const mx = dir === 'S' ? hx - 2 : dir === 'SE' ? hx - 1 : hx;
-    c.rect(mx, hy + 2, dir === 'E' ? 3 : 4, 4, P.wax2);
-    c.set(mx + 1, hy + 3, o.flinch ? P.ember : P.ink);
-    if (dir !== 'E') c.set(mx + 3, hy + 3, o.flinch ? P.ember : P.ink);
+    const mw = dir === 'E' ? 3 : 4;
+    c.rect(mx, hy + 2, mw, 4, P.wax2);
+    c.vline(mx + mw - 1, hy + 2, 4, P.wax1); // the mask's shaded side
+    c.hline(mx, hy + 5, mw, mix(P.wax1, P.stone2, 0.4));
+    const eye = o.flinch ? P.ember : P.ink;
+    c.set(mx + 1, hy + 3, eye);
+    if (dir !== 'E') {
+      c.set(mx + 3, hy + 3, eye);
+      c.set(mx + 3, hy + 4, P.blood2); // a painted tear
+    } else c.set(mx + 1, hy + 4, P.blood2);
   }
   // The pot in hand
   const pot = (px: number, py: number) => {
     c.rect(px - 1, py - 1, 3, 3, P.wood2);
-    c.set(px - 1, py, P.wood1);
-    c.set(px, py - 2, P.flame2); // lit fuse
+    c.set(px - 1, py - 1, mix(P.wood2, P.wax1, 0.4));
+    c.vline(px + 1, py - 1, 3, P.wood1);
+    c.set(px, py - 2, P.dark2); // fuse
+    c.set(px, py - 3, P.flame2); // lit
   };
   if (o.pot === 'hip') pot(21, 19 + b);
   else if (o.pot === 'raised') pot(hx + 3, hy - 3);
@@ -1338,28 +1464,50 @@ function acolyteDeath(c: Img, f: number) {
 function drawHound(c: Img, dir: Dir5, pose: { crouch?: number; stretch?: number; head?: number; step?: number; flinch?: boolean }) {
   const o = { crouch: 0, stretch: 0, head: 0, step: -1, flinch: false, ...pose };
   const cr = o.crouch;
+  const fur0 = mix(P.ink, P.dark1, 0.5);
+  const fur1 = P.dark1;
+  const fur2 = mix(P.dark1, P.dark2, 0.7);
+  const fur3 = mix(P.dark2, P.stone2, 0.5); // the sheen along the back
   const candle = (x: number, y: number) => {
     c.rect(x, y, 2, 4, P.wax2);
-    c.set(x, y - 1, P.flame2);
-    c.set(x + 1, y - 2, P.flame1);
+    c.vline(x + 1, y + 1, 3, P.wax1);
+    c.set(x - 1, y + 3, P.wax1); // wax run down its flank
+    c.set(x + 2, y + 4, P.wax1);
+    c.set(x, y - 1, P.ink);
+    c.set(x, y - 2, P.flame2);
+    c.set(x + 1, y - 3, P.flame1);
   };
   const eye = o.flinch ? P.wax2 : P.ember;
   if (dir === 'S' || dir === 'N') {
     const legs = [13, 18];
-    legs.forEach((x, i) => c.rect(x, 22 + cr, 2, 5 - cr - (o.step === (i ? 3 : 1) ? 1 : 0), P.dark1));
-    c.ellipse(16, 20 + cr, 5, 3.5, P.dark1);
+    legs.forEach((x, i) => {
+      const h = 5 - cr - (o.step === (i ? 3 : 1) ? 1 : 0);
+      c.rect(x, 22 + cr, 2, h, i ? fur0 : fur1);
+      c.set(x, 22 + cr + h - 1, fur2); // paw
+    });
+    c.ellipse(16, 20 + cr, 5, 3.5, fur1);
+    c.ellipse(15, 19 + cr, 3.5, 2, fur2);
+    for (const x of [13, 15, 17]) c.set(x, 21 + cr, fur0); // ribs
     if (dir === 'S') {
-      c.disc(16, 16 + cr + (o.head > 0 ? 2 : 0), 3.5, P.dark1);
-      c.set(14, 13 + cr, P.dark1);
-      c.set(18, 13 + cr, P.dark1);
-      c.set(14, 15 + cr, eye);
-      c.set(17, 15 + cr, eye);
-      c.rect(15, 18 + cr + (o.head > 0 ? 2 : 0), 2, 2, P.stone1);
-      c.set(15, 19 + cr + (o.head > 0 ? 2 : 0), P.ink);
-      if (o.head > 1) c.hline(14, 21 + cr, 4, P.wax2); // bared teeth
+      const hy = 16 + cr + (o.head > 0 ? 2 : 0);
+      c.disc(16, hy, 3.5, fur1);
+      c.ellipse(15, hy - 1, 2.4, 2, fur2);
+      c.set(13, hy - 3, fur1); // ears
+      c.set(12, hy - 4, fur1);
+      c.set(19, hy - 3, fur1);
+      c.set(20, hy - 4, fur0);
+      c.set(14, hy - 1, eye);
+      c.set(17, hy - 1, eye);
+      c.rect(15, hy + 2, 2, 2, P.stone1); // muzzle
+      c.set(15, hy + 3, P.ink);
+      if (o.head > 1) c.hline(14, hy + 5, 4, P.wax2); // bared teeth
     } else {
-      c.vline(16, 23 + cr, 3, P.dark1); // tail
-      c.disc(16, 16 + cr, 3, P.dark1);
+      c.vline(16, 23 + cr, 3, fur1); // tail
+      c.set(16, 26 + cr, fur2);
+      c.disc(16, 16 + cr, 3, fur1);
+      c.set(14, 13 + cr, fur1);
+      c.set(18, 13 + cr, fur1);
+      c.hline(15, 17 + cr, 3, fur3);
     }
     candle(15, 12 + cr);
     return;
@@ -1368,25 +1516,34 @@ function drawHound(c: Img, dir: Dir5, pose: { crouch?: number; stretch?: number;
   const s = o.stretch;
   const bodyX = 15;
   const bodyY = 20 + cr;
-  c.ellipse(bodyX, bodyY, 7 + s, 3, P.dark1);
-  c.hline(bodyX - 5, bodyY - 2, 9 + s, P.stone1);
-  // Legs: back pair and front pair, alternating stride
+  // Legs: back pair and front pair, alternating stride (far legs darker)
   const stride = o.step === 1 ? 1 : o.step === 3 ? -1 : 0;
   const legTop = bodyY + 2;
   const legLen = Math.max(2, 27 - legTop);
-  for (const [x, d] of [[bodyX - 5 - Math.max(0, s), stride], [bodyX - 3 - Math.max(0, s), -stride], [bodyX + 4 + s, -stride], [bodyX + 6 + s, stride]] as const)
-    c.vline(x + d, legTop, s > 1 ? legLen - 2 : legLen, P.dark1);
-  c.set(bodyX - 8 - s, bodyY - 2, P.dark1); // tail
-  c.set(bodyX - 9 - s, bodyY - 3, P.dark1);
+  const legs = [[bodyX - 5 - Math.max(0, s), stride, fur1], [bodyX - 3 - Math.max(0, s), -stride, fur0], [bodyX + 4 + s, -stride, fur0], [bodyX + 6 + s, stride, fur1]] as const;
+  for (const [x, d, col] of legs) c.vline(x + d, legTop, s > 1 ? legLen - 2 : legLen, col);
+  c.ellipse(bodyX, bodyY, 7 + s, 3, fur1);
+  c.ellipse(bodyX - 1, bodyY - 1, 5 + s, 1.6, fur2);
+  c.hline(bodyX - 5, bodyY - 2, 9 + s, fur3); // sheen along the spine
+  for (const x of [-2, 0, 2]) c.vline(bodyX + x, bodyY + 1, 2, fur0); // ribs
+  c.set(bodyX - 8 - s, bodyY - 2, fur1); // tail
+  c.set(bodyX - 9 - s, bodyY - 3, fur1);
+  c.set(bodyX - 10 - s, bodyY - 3, fur2);
   // Head + snout
   const hx = bodyX + 8 + s + o.head;
   const hy = bodyY - 3 + (dir === 'NE' ? -1 : 0) + (o.head < 0 ? 1 : 0);
-  c.disc(hx, hy, 2.6, P.dark1);
-  c.rect(hx + 2, hy, 3, 2, P.dark1);
+  c.disc(hx, hy, 2.6, fur1);
+  c.set(hx - 1, hy - 1, fur2);
+  c.rect(hx + 2, hy, 3, 2, fur1);
+  c.hline(hx + 2, hy, 2, fur2);
   c.set(hx + 4, hy, P.ink);
-  c.set(hx - 1, hy - 3, P.dark1); // ear
+  c.set(hx - 1, hy - 3, fur1); // ear
+  c.set(hx - 2, hy - 4, fur1);
   c.set(hx + 1, hy - 1, eye);
-  if (o.head > 1) c.hline(hx + 2, hy + 2, 3, P.wax2); // open jaws
+  if (o.head > 1) {
+    c.hline(hx + 2, hy + 2, 3, P.wax2); // open jaws
+    c.set(hx + 3, hy + 3, P.blood1);
+  }
   candle(bodyX - 1, bodyY - 7);
 }
 
@@ -1408,39 +1565,78 @@ function drawBrute(c: Img, dir: Dir5, pose: BodyPose) {
   const o = { bob: 0, lean: 0, hunch: 0, step: -1, flinch: false, sway: 0, ...pose };
   const b = o.bob;
   const { lx, ly, sh } = leanOffsets(dir, o.lean);
+  const back = dir === 'N' || dir === 'NE';
+  const skin0 = mix(P.wax1, P.wood1, 0.55);
+  const skin1 = mix(P.wax1, P.wood2, 0.35);
+  const skin2 = P.wax1;
+  const skin3 = P.wax2;
+  const br0 = mix(P.ember, P.wood1, 0.5);
+  const br1 = P.ember;
+  const br2 = P.flame1;
+  const br3 = P.flame2;
   const liftL = o.step === 1 ? 2 : 0;
   const liftR = o.step === 3 ? 2 : 0;
-  // Legs
+  // Legs: wrapped in rags, heavy boots
   c.rect(16, 34 + b, 6, 7 - liftL, P.dark2);
-  c.rect(15, 41 - liftL, 7, 3, P.dark1);
-  c.rect(26, 34 + b, 6, 7 - liftR, P.dark2);
-  c.rect(26, 41 - liftR, 7, 3, P.dark1);
-  // Barrel chest, leather apron, huge arms
-  c.ellipse(24 + sh, 26 + b, 12, 10, P.wax1);
-  c.ellipse(20 + sh, 23 + b, 5, 4, P.wax2);
+  c.vline(16, 34 + b, 7 - liftL, mix(P.dark2, P.stone2, 0.4));
+  for (let y = 35; y < 40; y += 2) c.hline(16, y + b - liftL, 6, P.dark1);
+  c.rect(15, 41 - liftL, 7, 3, P.wood1);
+  c.hline(15, 41 - liftL, 7, P.wood2);
+  c.rect(26, 34 + b, 6, 7 - liftR, mix(P.dark2, P.dark1, 0.5));
+  for (let y = 35; y < 40; y += 2) c.hline(26, y + b - liftR, 6, P.dark1);
+  c.rect(26, 41 - liftR, 7, 3, mix(P.wood1, P.dark1, 0.4));
+  // Barrel chest, shaded; leather apron with straps; huge arms
+  c.ellipse(24 + sh, 26 + b, 12, 10, skin1);
+  c.ellipse(21 + sh, 24 + b, 8, 7, skin2);
+  c.ellipse(19 + sh, 22 + b, 4, 3, skin3);
+  c.ellipse(29 + sh, 29 + b, 6, 6, skin0, (x, y) => x - (24 + sh) + (y - 26 - b) > 6);
   c.rect(17 + sh, 29 + b, 14, 7, P.wood1);
   c.hline(17 + sh, 29 + b, 14, P.wood2);
-  c.ellipse(11 + sh + o.sway, 28 + b, 3.5, 7, P.wax1);
-  c.ellipse(37 + sh + o.sway, 28 + b, 3.5, 7, P.wax1);
-  // Bronze bell helm
+  c.vline(17 + sh, 29 + b, 7, P.wood2);
+  c.vline(30 + sh, 29 + b, 7, mix(P.wood1, P.dark1, 0.5));
+  if (!back) {
+    line(c, 18 + sh, 18 + b, 20 + sh, 29 + b, P.wood1); // apron straps
+    line(c, 30 + sh, 18 + b, 28 + sh, 29 + b, P.wood1);
+    c.set(24 + sh, 32 + b, EN.steel3); // a bell-rope ring on the apron
+  } else line(c, 17 + sh, 20 + b, 31 + sh, 27 + b, P.wood1); // strap across the back
+  const arm = (ax: number, lit: boolean) => {
+    c.ellipse(ax, 28 + b, 3.5, 7, lit ? skin1 : skin0);
+    c.ellipse(ax - 1, 26 + b, 2, 4, lit ? skin2 : skin1);
+    for (const y of [30, 32]) c.hline(ax - 3, y + b, 7, P.wood1); // rope wrapped round the forearm
+  };
+  arm(11 + sh + o.sway, true);
+  arm(37 + sh + o.sway, false);
+  // Bronze bell helm, banded, with a verdigris line at the rim
   const hx = 24 + lx + (o.flinch ? -2 : 0);
   const top = 6 + b + o.hunch + ly;
   for (let y = 0; y <= 13; y++) {
     const half = Math.round(4 + y * 0.45);
-    c.hline(hx - half, top + y, half * 2, P.flame1);
-    c.set(hx - half, top + y, P.flame2);
-    c.set(hx + half - 1, top + y, P.ember);
+    const x0 = hx - half;
+    const w = half * 2;
+    c.hline(x0, top + y, w, br2);
+    c.hline(x0 + w - 3, top + y, 3, br1);
+    c.set(x0 + w - 1, top + y, br0);
+    c.hline(x0 + 1, top + y, 2, br3);
+    c.set(x0, top + y, br2);
+  }
+  for (const y of [4, 9]) {
+    const half = Math.round(4 + y * 0.45);
+    c.hline(hx - half, top + y, half * 2, br1); // cast bands
   }
   c.hline(hx - 10, top + 14, 20, P.dark2); // rim
-  c.rect(hx - 1, top - 2, 2, 2, P.ember); // crown loop
-  if (dir !== 'N' && dir !== 'NE') {
+  c.hline(hx - 9, top + 13, 18, mix(br1, P.teal2, 0.5)); // verdigris
+  c.rect(hx - 1, top - 2, 2, 2, br1); // crown loop
+  c.set(hx - 1, top - 2, br3);
+  if (!back) {
     const sx = dir === 'S' ? hx - 3 : dir === 'SE' ? hx - 1 : hx + 2;
     c.hline(sx, top + 10, dir === 'E' ? 4 : 6, P.ink);
+    c.hline(sx, top + 11, dir === 'E' ? 4 : 6, br0);
     c.set(sx + 1, top + 10, o.flinch ? P.wax2 : P.flame2);
     if (dir !== 'E') c.set(sx + 4, top + 10, o.flinch ? P.wax2 : P.flame2);
   }
   const [ax, ay] = BRUTE_HAND[dir];
-  c.rect(ax - 2, ay - 2 + b, 4, 4, P.wax1);
+  c.rect(ax - 2, ay - 2 + b, 4, 4, skin2);
+  c.hline(ax - 2, ay + 1 + b, 4, skin0);
 }
 
 function bruteDeath(c: Img, f: number) {
@@ -1607,28 +1803,60 @@ function drawRenderer(c: Img, dir: Dir5, pose: BodyPose) {
   const o = { bob: 0, lean: 0, hunch: 0, step: -1, flinch: false, sway: 0, ...pose };
   const b = o.bob;
   const { lx, ly, sh } = leanOffsets(dir, o.lean);
+  const back = dir === 'N' || dir === 'NE';
+  const cl0 = mix(P.stone1, P.ink, 0.45);
+  const cl1 = P.stone1;
+  const cl2 = mix(P.stone1, P.stone2, 0.5);
+  const lea1 = mix(P.wood1, P.dark2, 0.3);
+  const lea2 = P.wood2;
   const liftL = o.step === 1 ? 2 : 0;
   const liftR = o.step === 3 ? 2 : 0;
   c.rect(13, 22 + b, 2, 5 - liftL, P.dark2); // thin legs
   c.rect(12, 27 - liftL, 3, 1, P.dark1);
-  c.rect(17, 22 + b, 2, 5 - liftR, P.dark2);
+  c.rect(17, 22 + b, 2, 5 - liftR, P.dark1);
   c.rect(17, 27 - liftR, 3, 1, P.dark1);
-  c.rect(12 + sh, 12 + b, 8, 11, P.stone1); // tall narrow body
-  c.rect(13 + sh, 14 + b, 6, 9, P.wood2); // leather apron, stained
-  c.set(15 + sh, 17 + b, P.wax1);
-  c.set(16 + sh, 20 + b, P.wax1);
-  c.rect(10 + sh + o.sway, 13 + b, 2, 8, P.stone1); // long arms
-  c.rect(20 + sh + o.sway, 13 + b, 2, 8, P.stone1);
+  // Tall narrow body under a greasy leather apron
+  c.rect(12 + sh, 12 + b, 8, 11, cl1);
+  c.vline(12 + sh, 12 + b, 11, cl2);
+  c.vline(19 + sh, 12 + b, 11, cl0);
+  if (!back) {
+    c.rect(13 + sh, 14 + b, 6, 9, lea2);
+    c.vline(13 + sh, 14 + b, 9, mix(lea2, P.wax1, 0.3));
+    c.vline(18 + sh, 14 + b, 9, lea1);
+    c.hline(13 + sh, 14 + b, 6, lea1); // bib edge
+    // tallow smeared down the front
+    for (const [x, y] of [[15, 16], [15, 17], [16, 20], [17, 18]]) c.set(x + sh, y + b, P.wax1);
+    c.set(14 + sh, 21 + b, P.blood1);
+  } else {
+    line(c, 12 + sh, 13 + b, 19 + sh, 19 + b, lea1); // apron strings crossing the back
+    line(c, 19 + sh, 13 + b, 12 + sh, 19 + b, lea1);
+  }
+  c.hline(12 + sh, 20 + b, 8, P.dark1); // belt, a spare hook hanging from it
+  c.set(19 + sh, 21 + b, EN.steel3);
+  c.set(19 + sh, 22 + b, EN.steel2);
+  // long arms, gloved
+  c.rect(10 + sh + o.sway, 13 + b, 2, 8, cl1);
+  c.set(10 + sh + o.sway, 13 + b, cl2);
+  c.rect(10 + sh + o.sway, 20 + b, 2, 2, lea1);
+  c.rect(20 + sh + o.sway, 13 + b, 2, 8, cl0);
+  c.rect(20 + sh + o.sway, 20 + b, 2, 2, lea1);
+  // Hood, a pale face half hidden behind a mouth-cloth
   const hx = 16 + lx + (o.flinch ? -1 : 0);
   const hy = 4 + b + o.hunch + ly;
-  c.rect(hx - 3, hy, 6, 8, P.dark2); // hood
+  c.rect(hx - 3, hy, 6, 8, P.dark2);
   c.rect(hx - 2, hy - 1, 4, 1, P.dark2);
-  if (dir !== 'N' && dir !== 'NE') {
+  c.vline(hx - 3, hy, 8, mix(P.dark2, P.stone2, 0.4));
+  c.vline(hx + 2, hy, 8, P.dark1);
+  c.set(hx - 1, hy - 2, P.dark2); // hood point
+  if (!back) {
     const fx = dir === 'S' ? hx - 2 : dir === 'SE' ? hx - 1 : hx;
-    c.rect(fx, hy + 3, dir === 'E' ? 3 : 4, 3, P.wax1); // pale face, a mouth-cloth
-    c.hline(fx, hy + 5, dir === 'E' ? 3 : 4, P.stone3);
-    c.set(fx + 1, hy + 3, o.flinch ? P.ember : P.ink);
-    if (dir !== 'E') c.set(fx + 3, hy + 3, o.flinch ? P.ember : P.ink);
+    const fw = dir === 'E' ? 3 : 4;
+    c.rect(fx, hy + 3, fw, 3, P.wax1);
+    c.hline(fx, hy + 3, fw, mix(P.wax1, P.dark2, 0.4)); // brow in the hood's shadow
+    c.hline(fx, hy + 5, fw, P.stone3); // mouth-cloth
+    c.hline(fx, hy + 6, fw, P.stone2);
+    c.set(fx + 1, hy + 4, o.flinch ? P.ember : P.ink);
+    if (dir !== 'E') c.set(fx + 3, hy + 4, o.flinch ? P.ember : P.ink);
   }
 }
 function rendererDeath(c: Img, f: number) {
@@ -1650,13 +1878,34 @@ function drawCrawler(c: Img, _dir: Dir5, pose: BodyPose & { size?: number }) {
   const h = 6 * s - sq * 0.6;
   const cx = 16 + o.lean;
   const cy = 26 - h;
-  c.ellipse(cx, cy + h * 0.4, w, h, P.wax1);
-  c.ellipse(cx - w * 0.3, cy, w * 0.5, h * 0.6, P.wax2);
-  for (const d of [-0.6, 0.1, 0.7]) c.vline(Math.round(cx + w * d), Math.round(cy + h * 0.9), 2, P.wax1); // drips
-  c.set(Math.round(cx - 2 * s), Math.round(cy), o.flinch ? P.ember : P.ink); // sunken eyes
-  c.set(Math.round(cx + 2 * s), Math.round(cy), o.flinch ? P.ember : P.ink);
+  const w0 = mix(P.wax1, P.wood1, 0.45);
+  const w1 = mix(P.wax1, P.wood2, 0.2);
+  c.ellipse(cx, cy + h * 0.4, w, h, w1);
+  c.ellipse(cx + w * 0.25, cy + h * 0.75, w * 0.75, h * 0.55, w0, (_x, y) => y > cy + h * 0.5); // heavy, shaded underside
+  c.ellipse(cx - w * 0.2, cy + h * 0.1, w * 0.62, h * 0.7, P.wax1);
+  c.ellipse(cx - w * 0.35, cy - h * 0.1, w * 0.3, h * 0.35, P.wax2); // gloss
+  c.set(Math.round(cx - w * 0.45), Math.round(cy - h * 0.25), P.white);
+  // half-rendered things still inside it: a rib, a knuckle
+  if (s >= 1) {
+    c.hline(Math.round(cx + 2), Math.round(cy + h * 0.5), 3, mix(P.wax1, P.stone3, 0.5));
+    c.set(Math.round(cx - 4), Math.round(cy + h * 0.6), mix(P.wax2, P.stone3, 0.4));
+  }
+  for (const d of [-0.6, 0.1, 0.7]) {
+    const dx = Math.round(cx + w * d);
+    c.vline(dx, Math.round(cy + h * 0.9), 2, w1); // drips
+    c.set(dx, Math.round(cy + h * 0.9) + 2, w0);
+  }
+  const eye = o.flinch ? P.ember : P.ink;
+  for (const ex of [cx - 2 * s, cx + 2 * s]) {
+    c.set(Math.round(ex), Math.round(cy) - 1, w0); // sunken sockets
+    c.set(Math.round(ex), Math.round(cy), eye);
+  }
+  c.hline(Math.round(cx - 1), Math.round(cy + 2 * s), 2, w0); // slack mouth
   c.vline(Math.round(cx + 1), Math.round(cy - h - 1), 2, P.dark2); // wick
-  if (!o.flinch) c.set(Math.round(cx + 1), Math.round(cy - h - 2), P.flame2);
+  if (!o.flinch) {
+    c.set(Math.round(cx + 1), Math.round(cy - h - 2), P.flame2);
+    c.set(Math.round(cx + 1), Math.round(cy - h - 3), P.flame1);
+  }
 }
 function crawlerDeath(c: Img, f: number, size: number) {
   if (f < 2) {
@@ -2432,32 +2681,62 @@ function drawDrowned(c: Img, dir: Dir5, pose: BodyPose & { sink?: number }) {
   const o = { bob: 0, lean: 0, hunch: 0, step: -1, flinch: false, sway: 0, sink: 0, ...pose };
   const b = o.bob + o.sink;
   const { lx, ly, sh } = leanOffsets(dir, o.lean);
+  const back = dir === 'N' || dir === 'NE';
   const cut = 28; // nothing is drawn below the wax surface line
   const put = (x: number, y: number, w: number, h: number, col: RGBA) => {
     for (let j = 0; j < h; j++) if (y + j < cut) c.hline(x, y + j, w, col);
   };
+  const r0 = mix(P.stone1, P.teal1, 0.4);
+  const r1 = mix(P.stone1, P.teal1, 0.15);
+  const r2 = mix(P.stone2, P.teal2, 0.2);
+  const r3 = mix(P.stone3, P.teal3, 0.3);
+  const skin = mix(P.wax2, P.teal3, 0.25);
   const liftL = o.step === 1 ? 2 : 0;
   const liftR = o.step === 3 ? 2 : 0;
-  put(13, 22 + b, 2, 5 - liftL, P.stone1);
-  put(17, 22 + b, 2, 5 - liftR, P.stone1);
-  put(11 + sh, 12 + b, 10, 12, P.stone2); // sodden robe
-  put(12 + sh, 20 + b, 8, 4, P.wax1); // wax clotted at the hem
+  put(13, 22 + b, 2, 5 - liftL, r1);
+  put(17, 22 + b, 2, 5 - liftR, r0);
+  // sodden robe, darker where it is soaked, wax clotted at the hem
+  put(11 + sh, 12 + b, 10, 12, r2);
+  put(11 + sh, 12 + b, 1, 12, r3);
+  put(19 + sh, 12 + b, 2, 12, r1);
+  put(20 + sh, 12 + b, 1, 12, r0);
+  put(14 + sh, 16 + b, 1, 6, r1); // clinging folds
+  put(17 + sh, 15 + b, 1, 7, r1);
+  put(12 + sh, 20 + b, 8, 4, P.wax1);
+  put(12 + sh, 20 + b, 8, 1, P.wax2);
+  put(18 + sh, 21 + b, 2, 3, mix(P.wax1, P.wood1, 0.35));
   for (const x of [12, 15, 19]) put(x + sh, 24 + b, 1, 2, P.wax1); // drips
-  put(8 + sh + o.sway, 13 + b, 2, 11, P.stone2); // long arms
-  put(22 + sh + o.sway, 13 + b, 2, 11, P.stone2);
-  put(8 + sh + o.sway, 23 + b, 2, 2, P.wax2); // pale hands
-  put(22 + sh + o.sway, 23 + b, 2, 2, P.wax2);
+  // long arms, hanging too low
+  put(8 + sh + o.sway, 13 + b, 2, 11, r2);
+  put(8 + sh + o.sway, 13 + b, 1, 11, r3);
+  put(22 + sh + o.sway, 13 + b, 2, 11, r1);
+  put(8 + sh + o.sway, 23 + b, 2, 2, skin); // pale hands, long fingers
+  put(8 + sh + o.sway, 25 + b, 1, 1, skin);
+  put(22 + sh + o.sway, 23 + b, 2, 2, skin);
+  put(23 + sh + o.sway, 25 + b, 1, 1, skin);
   const hx = 16 + lx + (o.flinch ? -1 : 0);
   const hy = 4 + b + o.hunch + ly;
-  put(hx - 4, hy, 8, 9, P.stone1); // hood
+  put(hx - 4, hy, 8, 9, r1); // hood
+  put(hx - 4, hy, 1, 9, r2);
+  put(hx + 3, hy, 1, 9, r0);
   put(hx - 3, hy + 1, 6, 2, P.wax1); // wax running off the hood
-  if (dir !== 'N' && dir !== 'NE') {
+  put(hx - 3, hy + 1, 3, 1, P.wax2);
+  put(hx - 3, hy + 3, 1, 2, P.wax1);
+  put(hx + 2, hy + 3, 1, 3, P.wax1);
+  if (!back) {
     const fx = dir === 'S' ? hx - 2 : dir === 'SE' ? hx - 1 : hx;
-    put(fx, hy + 4, dir === 'E' ? 3 : 4, 4, P.wax2);
+    const fw = dir === 'E' ? 3 : 4;
+    put(fx, hy + 4, fw, 4, skin);
+    put(fx + fw - 1, hy + 4, 1, 4, mix(skin, r1, 0.4));
     put(fx + (dir === 'E' ? 1 : 0), hy + 5, 1, 1, o.flinch ? P.ember : P.ink);
     if (dir !== 'E') put(fx + 3, hy + 5, 1, 1, o.flinch ? P.ember : P.ink);
+    put(fx + 1, hy + 7, 2, 1, mix(skin, P.ink, 0.5)); // open mouth
   }
-  if (o.sink > 0) c.ellipse(16, cut, 9, 2, P.wax1); // the pool it's coming out of
+  if (o.sink > 0) {
+    c.ellipse(16, cut, 9, 2, P.wax1); // the pool it's coming out of
+    c.hline(10, cut - 1, 4, P.wax2);
+    c.ellipse(16, cut + 1, 6, 1, mix(P.wax1, P.wood1, 0.4));
+  }
 }
 function drownedDeath(c: Img, f: number) {
   if (f < 2) drawDrowned(c, 'S', { sink: 3 + f * 4, flinch: true });
@@ -2472,15 +2751,26 @@ function drownedDeath(c: Img, f: number) {
 function drawLantern(c: Img, _dir: Dir5, pose: BodyPose) {
   const o = { bob: 0, flinch: false, sway: 0, ...pose };
   const y0 = 8 + o.bob;
+  const flame = o.flinch ? P.ember : P.cyan;
   c.ellipse(16, 27, 5, 1.5, withAlpha(P.ink, 90)); // its shadow far below
-  c.vline(16, y0 - 4, 4, P.steel1); // ring
-  c.rect(12, y0, 9, 11, P.dark1);
-  for (const x of [12, 16, 20]) c.vline(x, y0, 11, P.steel1);
-  c.hline(12, y0, 9, P.steel2);
-  c.hline(12, y0 + 10, 9, P.steel2);
-  c.ellipse(16, y0 + 6, 2.5, 3.5, o.flinch ? P.ember : P.cyan); // cold, pale flame
-  c.set(16, y0 + 4, P.white);
-  for (const [x, y] of [[13 + o.sway, y0 + 13], [18 - o.sway, y0 + 15], [15, y0 + 17]]) c.set(x, y, P.teal3); // wisps
+  c.vline(16, y0 - 4, 2, EN.steel3); // ring
+  c.set(15, y0 - 3, EN.steel2);
+  c.set(17, y0 - 3, EN.steel1);
+  c.vline(16, y0 - 2, 2, EN.steel1);
+  c.rect(13, y0 - 1, 7, 1, EN.steel1); // cap
+  c.hline(14, y0 - 2, 5, EN.steel2);
+  c.rect(12, y0, 9, 11, mix(P.dark1, P.teal1, 0.5));
+  c.ellipse(16, y0 + 6, 3.8, 4.8, mix(P.teal1, P.cyan, 0.35)); // light filling the cage
+  c.ellipse(16, y0 + 6, 2.5, 3.5, flame); // cold, pale flame
+  c.ellipse(16, y0 + 5, 1.2, 2, P.white);
+  for (const x of [12, 16, 20]) c.vline(x, y0, 11, EN.steel1);
+  c.vline(12, y0, 11, EN.steel2);
+  c.vline(20, y0, 11, EN.steel0);
+  c.hline(12, y0, 9, EN.steel3);
+  c.hline(12, y0 + 10, 9, EN.steel2);
+  c.hline(13, y0 + 11, 7, EN.steel0);
+  // wisps of cold light trailing below
+  for (const [x, y, col] of [[13 + o.sway, y0 + 13, P.teal3], [18 - o.sway, y0 + 15, P.teal2], [15, y0 + 17, P.teal3], [16 + o.sway, y0 + 19, P.teal2]] as const) c.set(x, y, col);
 }
 function lanternDeath(c: Img, f: number) {
   if (f < 2) drawLantern(c, 'S', { bob: 4 + f * 6, flinch: true });
