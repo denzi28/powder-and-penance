@@ -195,6 +195,9 @@ export const LootEntry = z.object({
   tallow: Vec2.optional(),
   /** Restores this fraction of every carried ranged weapon's reserve. */
   ammo: num.positive().max(1).optional(),
+  /** A consumable (data/consumables id), `count` of them. */
+  item: z.string().optional(),
+  count: int.positive().default(1),
 });
 export const LootTables = z.object({ tables: z.record(z.string(), z.array(LootEntry).min(1)) });
 
@@ -214,10 +217,114 @@ export const ItemDef = z.object({
     z.object({ type: z.literal('quest'), note: z.string() }),
     /** Gear: a weapon, shield or piece of armour, put in your inventory. */
     z.object({ type: z.literal('gear'), kind: z.enum(['weapon', 'shield', 'armour']), id: z.string() }),
+    /** Consumables (data/consumables id) for the quick-use belt. */
+    z.object({ type: z.literal('consumable'), id: z.string(), count: int.positive().default(1) }),
+    /** A ring (data/rings id). */
+    z.object({ type: z.literal('ring'), id: z.string() }),
   ]),
   /** Frame in the `icons` sheet. */
   icon: int.nonnegative().default(0),
 });
+
+/**
+ * Modifiers from worn rings and from consumables' timed effects. Additions add up, multipliers multiply,
+ * `keepTallow` and `sureFooted` take the largest.
+ */
+export const Mods = z
+  .object({
+    /** Added to max HP. */
+    maxHp: num.optional(),
+    /** Added to max stamina. */
+    stamina: num.optional(),
+    /** Stamina regeneration multiplier. */
+    staminaRegen: pos.optional(),
+    /** Roll stamina cost multiplier. */
+    rollCost: pos.optional(),
+    /** Added to poise. */
+    poise: num.optional(),
+    /** Multiplier on all the damage you deal. */
+    damage: pos.optional(),
+    /** Multiplier on the damage of your shots and thrown things. */
+    rangedDamage: pos.optional(),
+    /** Multiplier on the damage you deal while at or below 30% HP. */
+    desperate: pos.optional(),
+    /** Multiplier on the damage you take (after armour). */
+    damageTaken: pos.optional(),
+    /** Multiplier on what a phial drink heals. */
+    heal: pos.optional(),
+    /** Multiplier on how fast enemies notice you. */
+    notice: pos.optional(),
+    /** Multiplier on Tallow from kills and drops. */
+    tallowGain: pos.optional(),
+    /** Multiplier on equip load capacity. */
+    capacity: pos.optional(),
+    /** Fraction of carried Tallow kept when you die (the rest is left behind as usual). */
+    keepTallow: num.min(0).max(1).optional(),
+    /** Fraction of the slowdown of wax, mud and spilled pools that you ignore. */
+    sureFooted: num.min(0).max(1).optional(),
+  })
+  .strict();
+export type Mods = z.infer<typeof Mods>;
+
+/** A consumable (data/consumables): carried in a stack, used from the quick-use belt. */
+export const ConsumableDef = z.object({
+  id: z.string(),
+  name: z.string(),
+  icon: int.nonnegative(),
+  /** Its quick lore. */
+  description: z.string(),
+  /** How many you can carry. */
+  max: int.positive(),
+  /** Sound on use (the throw, the bite, the strike of the match). */
+  sfx: z.string().default('p_use'),
+  use: z.discriminatedUnion('type', [
+    /** Thrown where you aim: a straight projectile, or a lobbed one (def.lob) that bursts where the cursor is. */
+    z.object({ type: z.literal('throw'), projectile: z.lazy(() => ProjectileDef) }),
+    /** Heals `amount` HP spread over `ticks`. */
+    z.object({ type: z.literal('regen'), amount: int.positive(), ticks: int.positive() }),
+    /** A timed effect: `mods` for `ticks`. `label` shows under the HUD. `lose` makes enemies lose track of you. */
+    z.object({ type: z.literal('buff'), ticks: int.positive(), label: z.string(), mods: Mods, lose: z.boolean().default(false), colour: z.string().default('wax2') }),
+    /** Loads every carried gun and gives this fraction of its spare shots. */
+    z.object({ type: z.literal('reload'), reserve: num.min(0).max(1) }),
+    /** Turned into Tallow. */
+    z.object({ type: z.literal('tallow'), amount: int.positive() }),
+  ]),
+});
+export type ConsumableDef = z.infer<typeof ConsumableDef>;
+
+/** A ring (data/rings): two can be worn; each changes you while worn. */
+export const RingDef = z.object({
+  id: z.string(),
+  name: z.string(),
+  icon: int.nonnegative(),
+  description: z.string(),
+  /** One plain line saying what it does (the equipment screen shows it). */
+  effect: z.string(),
+  mods: Mods,
+});
+export type RingDef = z.infer<typeof RingDef>;
+
+/** A lore note (data/notes): lying on the floor (room entity "note"); read, it is kept in NOTES. */
+export const NoteDef = z.object({
+  id: z.string(),
+  title: z.string(),
+  /** Paragraphs separated by blank lines. */
+  text: z.string(),
+});
+export type NoteDef = z.infer<typeof NoteDef>;
+
+/**
+ * An enemy placement made a miniboss (`"miniboss": {...}` on a room's enemy entity): a name bar at the bottom
+ * of the screen while it fights you, `hpMult` times its health, it stays dead for good once killed (world flag
+ * "miniboss:<id>"), and it drops `drop` (data/items) where it falls.
+ */
+export const MinibossPlacement = z.object({
+  id: z.string(),
+  title: z.string(),
+  drop: z.string(),
+  hpMult: pos.default(1),
+});
+export type MinibossPlacement = z.infer<typeof MinibossPlacement>;
 
 // ---- Story: characters, dialogue and cutscene scripts (see STORY.md) ----
 /**
@@ -493,6 +600,8 @@ export const EnemyDef = z.object({
   hp: pos,
   poise: PoiseCfg,
   tallow: int.nonnegative().default(0),
+  /** A loot table (data/loot.json) rolled where it dies. */
+  loot: z.string().optional(),
   speed: num.min(0).default(0),
   strafeSpeed: num.min(0).default(0),
   accelTicks: pos.default(6),
@@ -835,6 +944,8 @@ export const LAYERED_SOUNDS = [
   // the player: body and gear
   'p_hurt', 'p_die', 'p_drink', 'p_roll_light', 'p_roll', 'p_roll_heavy', 'p_roll_flop',
   'p_unequip', 'p_draw', 'p_strap', 'p_armour_light', 'p_armour_heavy', 'p_mail_jingle',
+  // the player: consumables, rings, notes
+  'p_use', 'p_belt', 'p_throw', 'p_throw_knife', 'p_eat', 'p_incense', 'p_cartridge', 'p_oil', 'p_smoke', 'p_drink_grog', 'p_candle', 'p_ring', 'p_paper',
 ] as const;
 export type LayeredSound = (typeof LAYERED_SOUNDS)[number];
 export const SURFACES = ['dirt', 'grass', 'stone', 'wood', 'metal', 'mud', 'grease', 'wax', 'moss'] as const;

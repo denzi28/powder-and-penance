@@ -38,18 +38,25 @@ Each new biome is somewhere the Order's grey never reached, and each hides a pie
 
 ---
 
-## Step 1: Loot and lore foundations
+## Step 1: Loot and lore foundations (done)
 *The systems every new area will drop things into. It's small, but everything after it leans on it.*
-- **Consumables and a quick-use slot.** A belt of 3 slots, cycled with a key/D-pad and used with a key/button, with its own HUD icon. The first ones:
-  - Firebomb: a thrown arc that bursts.
-  - Throwing Knife.
-  - Bitter Salt: stops the Drip's slow for a while; already in the data.
-  - Honeycomb: heals over time.
-  - Warding Incense: enemies notice you later.
-- **Rings (charms)**, 2 slots on the Equipment screen, with small passives: stamina regen, a longer parry window, a backstab heal, a lighter load, more Tallow.
-- **Lore notes.** Readable letters, ledger pages and hymns found in the world, collected in a new **NOTES** tab of the Inventory. There's also a "read" action on lore items.
-- **Minibosses.** A smaller health bar at the bottom of the screen. They can be fought without a smoke-sealed arena, their own music layer is optional, and they drop a unique item.
-- **Tests:** consumables, ring effects, save migration (v3).
+- **Consumables and a quick-use belt.** C uses what's on the belt, X cycles it (R3 / D-pad up on a pad), and its icon and count sit bottom-left. Each of the 11 has its own lore, its own icon and its own effect:
+  - Firebomb: thrown to where you aim, bursts for area damage.
+  - Pilgrim's Knife: thrown straight, quick and cheap.
+  - Wild Honeycomb: heals over six seconds.
+  - Grey Salt Crust: wax, mud and spilled pools stop slowing you.
+  - Warding Incense: you take a quarter less damage.
+  - Paper Cartridge: loads every gun you carry at once, plus some spare shots.
+  - Chandler's Oil: your hits deal 30% more.
+  - Stale Wafer: stamina comes back 60% faster.
+  - Smoke Pellet: enemies hunting you lose you, and notice you far slower.
+  - Ringer's Grog: +40 poise, hard to stagger.
+  - Pilgrim's Tallow Candle: turned into Tallow.
+- **Rings**, 2 slots on the Equipment screen, 10 to find, each with its own passive: max stamina, max HP, more Tallow, more carrying capacity, keeping a third of your Tallow when you die, more damage at low HP, stronger phial drinks, stealth, stronger shots and throws, more poise.
+- **Lore notes.** 8 letters, ledger pages, hymns and a child's drawing lie on the floor. Read one with E and it's kept in the new **NOTES** tab of the Inventory.
+- **Minibosses.** Any placed enemy can be made one: a smaller name bar at the bottom of the screen, more health, dead for good once killed, and a unique drop. The Belfry Brute and Hesk, the Unrelieved Warden, drop rings.
+- **Loot.** Enemies have loot tables, so consumables drop where they fall. Chests in 18 rooms hold rings and consumables.
+- **Tests:** every consumable, ring and note is unique and can be found; modifiers; save migration (v3).
 
 ## Step 2: The economy
 *Tallow finally buys things, so the bigger world has something to spend it on.*

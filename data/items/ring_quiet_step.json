@@ -1,0 +1,10 @@
+{
+  "id": "ring_quiet_step",
+  "name": "Ring of the Quiet Step",
+  "icon": 44,
+  "description": "Felt-lined, from the novices who crept to the vigils late. The Abbess heard every one of them, but not the ones who wore this.",
+  "effect": {
+    "type": "ring",
+    "id": "ring_quiet_step"
+  }
+}

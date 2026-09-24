@@ -77,6 +77,12 @@
       "kind": "renderer",
       "at": [6, 10],
       "facing": "N"
+    },
+    {
+      "type": "item",
+      "id": "chest_porters_knot",
+      "item": "porters_knot",
+      "at": [7, 1]
     }
   ]
 }

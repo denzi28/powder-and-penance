@@ -1,0 +1,10 @@
+{
+  "id": "porters_knot",
+  "name": "Porter's Knot",
+  "icon": 40,
+  "description": "A ring of plaited rope, worn by the carters who hauled wax to the Works. The knot is tied so it tightens under load.",
+  "effect": {
+    "type": "ring",
+    "id": "porters_knot"
+  }
+}

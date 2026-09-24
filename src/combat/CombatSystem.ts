@@ -139,7 +139,8 @@ export class CombatSystem {
       }
     }
 
-    const damage = src.damage > 0 ? Math.max(1, Math.round(src.damage * (target.damageTakenMult ?? 1))) : 0; // armour
+    const dealt = src.damage * (attacker.damageDealtMult?.(src.kind) ?? 1);
+    const damage = dealt > 0 ? Math.max(1, Math.round(dealt * (target.damageTakenMult ?? 1))) : 0; // armour
     target.hp = Math.max(0, target.hp - damage);
     const killed = target.hp <= 0;
     const staggered = !killed && src.kind !== 'critical' && target.poise.hit(src.poise, target.hyperArmor);
@@ -169,7 +170,7 @@ export class CombatSystem {
   private applyBlocked(src: HitSource, target: Actor, guard: Guard, bus: EventBus<GameEvents>): HitInfo {
     const cost = src.damage * (1 - guard.stability) * DATA.combat.blockStaminaMult;
     const guardBroken = target.spendGuardStamina(cost);
-    const chip = Math.round(src.damage * (1 - guard.absorption) * (target.damageTakenMult ?? 1));
+    const chip = Math.round(src.damage * (src.owner.damageDealtMult?.(src.kind) ?? 1) * (1 - guard.absorption) * (target.damageTakenMult ?? 1));
     target.hp = Math.max(0, target.hp - chip);
     const angle = this.knockAngle(src, target);
     target.knock(angle, src.knockback * 0.5 * (1 - target.knockbackResist));

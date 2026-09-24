@@ -30,6 +30,7 @@ import { check } from '../story/conditions';
 import { tickWarp, type WarpTarget } from '../game/Warp';
 import { Exits, findSpawn, type Exit } from '../world/Exits';
 import { LootDrops, rollLoot, type LootDrop } from '../world/LootDrops';
+import { Notes } from '../world/Notes';
 import { Pathfinder } from '../world/Pathfinder';
 import { Player } from '../player/Player';
 import { PlayerView } from '../player/PlayerView';
@@ -58,13 +59,13 @@ import { installDebugKeys } from '../debug/DebugKeys';
 import { hexToInt } from '../ui/colors';
 import { wirePresentation } from '../game/Presentation';
 import { handleInteract, nearestInteractable } from '../game/Interactions';
-import { grantItem } from '../game/Items';
+import { grantItem, useLine } from '../game/Items';
 import { tickShrineSeq } from '../game/ShrineFlow';
 import { applySave, snapshot } from '../game/Persistence';
 import { updateAim } from '../game/aim';
 import type { Actor } from '../actors/Actor';
 import type { Dir8 } from '../core/math';
-import type { RoomData } from '../data/schemas';
+import { MinibossPlacement, type RoomData } from '../data/schemas';
 
 const DIR_ANGLE: Record<Dir8, number> = { E: 0, SE: 45, S: 90, SW: 135, W: 180, NW: 225, N: 270, NE: 315 };
 /** How long an item banner stays up (ticks), fade included: long enough to read the explanation. */
@@ -113,6 +114,7 @@ export class GameScene extends Phaser.Scene {
   /** Wax spilled by bosses (strike.pools): slows whoever wades it. */
   pools = new WaxPools();
   levers!: Levers;
+  notes!: Notes;
   loot!: LootDrops;
   marker!: DeathMarker;
   /** Current area (rooms with this `area` are built into one world). */
@@ -232,6 +234,7 @@ export class GameScene extends Phaser.Scene {
     this.story = new Story(this);
     this.arena = new BossArena(this);
     this.levers = new Levers(this.lib);
+    this.notes = new Notes(this.lib);
     this.loot = new LootDrops(this.lib);
     this.marker = new DeathMarker(this.lib);
     const spawn = this.respawnPoint();
@@ -360,8 +363,14 @@ export class GameScene extends Phaser.Scene {
   private collectLoot(d: LootDrop) {
     const p = this.player;
     if (d.kind === 'tallow') {
-      p.tallow += d.amount;
-      this.numbers.add(`+${d.amount}`, p.x, p.y - 30, hexToInt(DATA.palette.flame2));
+      const got = Math.round(d.amount * p.mods.tallowGain);
+      p.tallow += got;
+      this.numbers.add(`+${got}`, p.x, p.y - 30, hexToInt(DATA.palette.flame2));
+    } else if (d.kind === 'item' && d.item) {
+      const c = DATA.consumables[d.item];
+      const took = p.addItem(d.item, d.amount);
+      this.numbers.add(took ? `${c.name.toUpperCase()}${took > 1 ? ` x${took}` : ''}` : `${c.name.toUpperCase()} (FULL)`, p.x, p.y - 30, hexToInt(DATA.palette.wax2));
+      if (took) this.firstFind(d.item);
     } else {
       for (const wid of new Set(p.slots)) {
         const r = DATA.weapons[wid]?.ranged;
@@ -371,6 +380,14 @@ export class GameScene extends Phaser.Scene {
     }
     this.bus.emit('sfx', { id: 'tallow' });
     this.dirty = true;
+  }
+
+  /** The first time a kind of consumable is found, say what it does (and give its lore). */
+  firstFind(id: string) {
+    if (this.flags.has(`found:${id}`)) return;
+    this.flags.add(`found:${id}`);
+    const c = DATA.consumables[id];
+    this.showToast(c.name.toUpperCase(), `${useLine(id)} It goes on your belt: X cycles, C (or R3) uses.`, c.description);
   }
 
   private tryRecoverMarker() {
@@ -441,7 +458,9 @@ export class GameScene extends Phaser.Scene {
     this.controls.clearBuffer();
   }
 
-  openGear(kind: 'equip' | 'inventory') {
+  /** Open EQUIPMENT or INVENTORY from the pause menu (back returns there), or straight onto a note just read
+   *  (back returns to the game). */
+  openGear(kind: 'equip' | 'inventory', note?: string) {
     this.menu = null;
     this.controls.clearBuffer();
     this.gear = new GearScreen(
@@ -451,10 +470,12 @@ export class GameScene extends Phaser.Scene {
       () => {
         this.gear = null;
         this.markDirty();
-        this.openPause(kind === 'equip' ? 1 : 2);
+        if (note) this.controls.clearBuffer();
+        else this.openPause(kind === 'equip' ? 1 : 2);
       },
       id => this.bus.emit('sfx', { id }),
     );
+    if (note) this.gear.focus('NOTES', note);
   }
 
   closeMenu() {
@@ -625,7 +646,14 @@ export class GameScene extends Phaser.Scene {
               kid.aggro();
             }
           }
-        const gain = e.actor.def.tallow;
+        const loot = e.actor.def.loot;
+        if (loot) this.loot.spawn(rollLoot(DATA.loot.tables[loot], this.rng), e.actor.x, e.actor.y, this.rng);
+        const mb = e.actor.miniboss;
+        if (mb) {
+          this.flags.add(`miniboss:${mb.id}`);
+          if (!this.flags.has(`item:${mb.id}`)) grantItem(this, mb.id, mb.drop, e.actor.x, e.actor.y);
+        }
+        const gain = Math.round(e.actor.def.tallow * this.player.mods.tallowGain);
         if (gain > 0) {
           this.player.tallow += gain;
           this.numbers.add(`+${gain}`, e.actor.x, e.actor.y - 20, hexToInt(DATA.palette.flame2));
@@ -641,8 +669,11 @@ export class GameScene extends Phaser.Scene {
       const p = this.player;
       // In a boss arena the candle falls just outside the doorway you came through, not in the fight.
       const at = this.arena.markerPoint ?? { x: p.x, y: p.y };
-      this.marker.set(p.tallow > 0 ? { x: at.x, y: at.y, tallow: p.tallow, area: this.area } : null);
-      p.tallow = 0;
+      // (a Miser's Band keeps some of it on you)
+      const kept = Math.floor(p.tallow * p.mods.keepTallow);
+      const left = p.tallow - kept;
+      this.marker.set(left > 0 ? { x: at.x, y: at.y, tallow: left, area: this.area } : null);
+      p.tallow = kept;
       this.save();
     });
     this.bus.on('summon', e => {
@@ -771,10 +802,17 @@ export class GameScene extends Phaser.Scene {
         if (en.type !== 'enemy') return;
         const spawnId = `${r.id}#${i}`;
         if (this.flags.has(`slain:${spawnId}`)) return;
+        const mb = en.miniboss === undefined ? null : MinibossPlacement.parse(en.miniboss);
+        if (mb && this.flags.has(`miniboss:${mb.id}`)) return; // minibosses stay dead
         if (DATA.enemies[String(en.kind)]?.boss && this.flags.has(`boss:${String(en.kind)}`)) return; // bosses stay dead
         const facing = (DIR_ANGLE[(en.facing as Dir8) ?? 'S'] ?? 90) * (Math.PI / 180);
         const e = this.spawnEnemy(String(en.kind), (r.origin[0] + en.at[0]) * TILE + TILE / 2, (r.origin[1] + en.at[1]) * TILE + TILE - 2, facing);
-        if (e) e.spawnId = spawnId;
+        if (!e) return;
+        e.spawnId = spawnId;
+        if (mb) {
+          e.miniboss = mb;
+          e.hp = e.maxHp;
+        }
       });
   }
 
@@ -793,6 +831,7 @@ export class GameScene extends Phaser.Scene {
     this.numbers.update(fxDelta);
     this.shrines.update(delta);
     this.pickups.update(delta);
+    this.notes.update(delta);
     this.marker.update(delta);
     if (this.hurt) this.hurt.t += delta;
 
@@ -992,6 +1031,7 @@ export class GameScene extends Phaser.Scene {
     this.chatter.reset();
     this.arena.build(this.rooms);
     this.levers.build(this.rooms, this.leverPulled);
+    this.notes.build(this.rooms, id => this.flags.has(`note:${id}`));
     this.placeWeapons();
   }
 

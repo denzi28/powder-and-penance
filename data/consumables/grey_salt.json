@@ -1,0 +1,17 @@
+{
+  "id": "grey_salt",
+  "name": "Grey Salt Crust",
+  "icon": 29,
+  "max": 5,
+  "sfx": "p_eat",
+  "description": "Scraped from the pans where the mire dries in summer. Rubbed on boot soles, wax and mud won't take hold of you.",
+  "use": {
+    "type": "buff",
+    "ticks": 3600,
+    "label": "SURE-FOOTED",
+    "colour": "stone4",
+    "mods": {
+      "sureFooted": 1
+    }
+  }
+}

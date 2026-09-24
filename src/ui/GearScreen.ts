@@ -3,18 +3,22 @@
 // is paused while they're open. Drawn by GearView in the UI scene; this is the state and the navigation.
 import { DATA } from '../data/config';
 import { FISTS, loadOf, loadTier, type Gear } from '../player/Player';
+import { useLine } from '../game/Items';
 import type { Player } from '../player/Player';
 import type { Input } from '../input/Input';
 
-export type SlotKey = 'hand0' | 'hand1' | 'shield' | 'head' | 'body';
+export type SlotKey = 'hand0' | 'hand1' | 'shield' | 'head' | 'body' | 'ring0' | 'ring1';
 export const SLOTS: { key: SlotKey; label: string }[] = [
   { key: 'hand0', label: 'RIGHT HAND I' },
   { key: 'hand1', label: 'RIGHT HAND II' },
   { key: 'shield', label: 'LEFT HAND' },
   { key: 'head', label: 'HEAD' },
   { key: 'body', label: 'BODY' },
+  { key: 'ring0', label: 'RING I' },
+  { key: 'ring1', label: 'RING II' },
 ];
-export const TABS = ['WEAPONS', 'SHIELDS', 'ARMOUR', 'ITEMS', 'KEYS'] as const;
+export const TABS = ['WEAPONS', 'SHIELDS', 'ARMOUR', 'RINGS', 'ITEMS', 'KEYS', 'NOTES'] as const;
+export const NOTE_ICON = 47;
 
 /** One thing to show in a list or the detail panel. */
 export interface Entry {
@@ -75,6 +79,25 @@ export function armourEntry(id: string): Entry {
   };
 }
 
+export function ringEntry(id: string): Entry {
+  const r = DATA.rings[id];
+  return { id, name: r.name, icon: r.icon, weight: null, stats: [r.effect.toUpperCase()], description: r.description };
+}
+
+export function consumableEntry(p: Player, id: string): Entry {
+  const c = DATA.consumables[id];
+  return {
+    id,
+    name: c.name,
+    icon: c.icon,
+    weight: null,
+    qty: `${p.count(id)}/${c.max}`,
+    stats: [useLine(id).toUpperCase()],
+    description: c.description,
+    on: p.belt === id,
+  };
+}
+
 const none = (what: string, description: string): Entry => ({ id: null, name: what, icon: ICON_EMPTY, weight: 0, stats: [], description });
 
 export function slotEntry(p: Player, key: SlotKey): Entry {
@@ -86,6 +109,11 @@ export function slotEntry(p: Player, key: SlotKey): Entry {
     }
     case 'shield':
       return p.shieldId ? shieldEntry(p.shieldId) : none('NO SHIELD', 'Nothing in the left hand. You can still roll.');
+    case 'ring0':
+    case 'ring1': {
+      const id = p.rings[key === 'ring0' ? 0 : 1];
+      return id ? ringEntry(id) : none('NO RING', 'A bare finger.');
+    }
     default: {
       const id = p.worn[key];
       return id ? armourEntry(id) : none(`NO ${key.toUpperCase()} ARMOUR`, 'Nothing worn here.');
@@ -101,6 +129,9 @@ export function slotOptions(p: Player, key: SlotKey): Entry[] {
       return [{ ...weaponEntry(FISTS), id: FISTS }, ...p.inv.weapons.map(weaponEntry)];
     case 'shield':
       return [none('NO SHIELD', 'Leave the left hand free.'), ...p.inv.shields.map(shieldEntry)];
+    case 'ring0':
+    case 'ring1':
+      return [none('NO RING', 'Take it off.'), ...p.inv.rings.map(id => ({ ...ringEntry(id), on: p.rings.includes(id) }))];
     default:
       return [none('NOTHING', 'Go without.'), ...p.inv.armour.filter(id => DATA.armour[id].slot === key).map(armourEntry)];
   }
@@ -117,7 +148,7 @@ export function gearWith(p: Player, key: SlotKey, id: string | null): Gear {
     slots[i] = w;
     g.slots = slots;
   } else if (key === 'shield') g.shield = id;
-  else g[key] = id;
+  else if (key === 'head' || key === 'body') g[key] = id;
   return g;
 }
 
@@ -131,6 +162,12 @@ export function tabEntries(p: Player, flags: ReadonlySet<string>, tab: number): 
       return p.inv.shields.map(id => ({ ...shieldEntry(id), on: eq.has(id) }));
     case 'ARMOUR':
       return p.inv.armour.map(id => ({ ...armourEntry(id), on: eq.has(id) }));
+    case 'RINGS':
+      return p.inv.rings.map(id => ({ ...ringEntry(id), on: p.rings.includes(id) }));
+    case 'NOTES':
+      return Object.values(DATA.notes)
+        .filter(n => flags.has(`note:${n.id}`))
+        .map(n => ({ id: n.id, name: n.title, icon: NOTE_ICON, weight: null, stats: [], description: n.text }));
     case 'ITEMS': {
       const out: Entry[] = [
         {
@@ -152,6 +189,7 @@ export function tabEntries(p: Player, flags: ReadonlySet<string>, tab: number): 
           description: 'Rendered wax, the only coin that means anything here. Lose it when you die; walk back to where you fell to take it up again.',
         },
       ];
+      for (const id of p.carried) out.push(consumableEntry(p, id));
       for (const id of p.inv.weapons) {
         const r = DATA.weapons[id].ranged;
         if (!r) continue;
@@ -168,6 +206,7 @@ export function tabEntries(p: Player, flags: ReadonlySet<string>, tab: number): 
       }
       return out;
     }
+    case 'KEYS':
     default:
       return Object.values(DATA.items)
         .filter(it => (it.effect.type === 'key' || it.effect.type === 'quest') && flags.has(`key:${it.id}`))
@@ -223,12 +262,19 @@ export class GearScreen {
     return l[i] ?? null;
   }
 
+  /** Open the inventory on a tab, on a given entry (e.g. the note just picked up). */
+  focus(tab: (typeof TABS)[number], id: string) {
+    this.tab = TABS.indexOf(tab);
+    this.index = Math.max(0, this.list().findIndex(e => e.id === id));
+  }
+
   /** The equip load now, and what it would be with the highlighted choice. */
   load() {
     const now = loadOf({ slots: this.p.slots, shield: this.p.shieldId, head: this.p.worn.head, body: this.p.worn.body });
     let preview: number | null = null;
     if (this.choosing) preview = loadOf(gearWith(this.p, this.choosing.key, this.choosing.options[this.choosing.index]?.id ?? null));
-    return { now, preview, capacity: DATA.load.capacity, tier: loadTier(preview ?? now) };
+    const cap = this.p.capacity;
+    return { now, preview, capacity: cap, tier: loadTier(preview ?? now, cap) };
   }
 
   update(input: Input) {
@@ -252,6 +298,12 @@ export class GearScreen {
       if (step && n) {
         this.index = (this.index + step + n) % n;
         this.sfx('menu_move');
+      }
+      // on ITEMS, confirm puts the highlighted consumable on the belt
+      const sel = this.selected();
+      if (TABS[this.tab] === 'ITEMS' && sel?.id && DATA.consumables[sel.id] && input.pressed('confirm')) {
+        this.p.belt = sel.id;
+        this.sfx('p_belt');
       }
       if (input.pressed('back') || input.pressed('pause')) this.onClose();
       return;
@@ -289,6 +341,7 @@ export class GearScreen {
     const p = this.p;
     if (key === 'hand0' || key === 'hand1') p.setSlot(key === 'hand0' ? 0 : 1, id ?? FISTS);
     else if (key === 'shield') p.setShield(id);
+    else if (key === 'ring0' || key === 'ring1') p.setRing(key === 'ring0' ? 0 : 1, id);
     else p.setArmour(key, id);
     this.sfx(id ? equipSound(key, id) : 'p_unequip');
   }
@@ -298,5 +351,6 @@ export class GearScreen {
 function equipSound(key: SlotKey, id: string): string {
   if (key === 'hand0' || key === 'hand1') return DATA.weapons[id]?.sounds.draw ?? 'p_draw';
   if (key === 'shield') return 'p_strap';
+  if (key === 'ring0' || key === 'ring1') return 'p_ring';
   return (DATA.armour[id]?.weight ?? 0) >= 5 ? 'p_armour_heavy' : 'p_armour_light';
 }

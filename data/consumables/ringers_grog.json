@@ -1,0 +1,17 @@
+{
+  "id": "ringers_grog",
+  "name": "Ringer's Grog",
+  "icon": 35,
+  "max": 4,
+  "sfx": "p_drink_grog",
+  "description": "What the bell-ringers drank before the long peal: small beer, pepper and a spoon of gunpowder. You will not fall over. You may not stop.",
+  "use": {
+    "type": "buff",
+    "ticks": 2400,
+    "label": "STEADFAST",
+    "colour": "ember",
+    "mods": {
+      "poise": 40
+    }
+  }
+}

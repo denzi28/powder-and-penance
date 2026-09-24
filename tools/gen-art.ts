@@ -7440,7 +7440,7 @@ function genCritters() {
 // 14 tallow lump, 15 powder pouch, 16 phial shard, 17 bitter salt, 18 cage key, 19 toll key, 20 igniter,
 // 21 ledger, 22 seal of tallow, 23 seal of the mire, 24 mending phial, 25 empty slot.
 function genIcons() {
-  const N = 26;
+  const N = 48;
   const img = new Img(16 * N, 16);
   const icon = (i: number, draw: (c: Img) => void, outline = true) => {
     const c = new Img(16, 16);
@@ -7650,7 +7650,228 @@ function genIcons() {
     },
     false,
   );
+  // ---- consumables (26-36)
+  // 26 firebomb: a clay pot with a lit rag
+  icon(26, c => {
+    c.disc(8, 10, 4.5, WOOD.c2);
+    c.disc(7, 9, 2.5, WOOD.c3);
+    c.hline(4, 10, 9, P.dark2);
+    c.rect(7, 4, 3, 2, WOOD.c1);
+    line(c, 8, 4, 10, 1, P.wax1); // the rag
+    c.set(10, 1, P.flame2);
+    c.set(11, 0, P.flame1);
+    c.set(9, 1, P.flame1);
+  });
+  // 27 pilgrim's knife: a plain double-edged blade, point up-right
+  icon(27, c => {
+    line(c, 5, 11, 12, 4, IRON.c3);
+    line(c, 5, 10, 11, 4, IRON.c2);
+    c.set(12, 3, P.white);
+    line(c, 3, 13, 5, 11, WOOD.c2); // wrapped grip
+    c.set(4, 12, P.wax1);
+    c.hline(4, 10, 3, IRON.c1);
+  });
+  // 28 wild honeycomb: amber cells
+  icon(28, c => {
+    for (const [x, y] of [[4, 5], [8, 5], [6, 8], [10, 8], [4, 11], [8, 11]] as const) {
+      c.disc(x + 1, y + 1, 2, P.flame1);
+      c.set(x + 1, y + 1, mix(P.flame2, P.wax2, 0.5));
+    }
+    c.set(12, 13, P.flame2); // a drip
+    c.set(12, 14, P.flame1);
+  });
+  // 29 grey salt crust: a cracked grey slab
+  icon(29, c => {
+    c.rect(3, 6, 10, 6, STN.c2);
+    c.hline(3, 6, 10, STN.c3);
+    c.hline(3, 11, 10, STN.c1);
+    line(c, 6, 6, 8, 11, STN.c0);
+    line(c, 10, 7, 11, 11, STN.c0);
+    c.set(5, 8, P.white);
+    c.set(9, 7, P.white);
+  });
+  // 30 warding incense: a cone with a curl of teal smoke
+  icon(30, c => {
+    for (let y = 8; y < 14; y++) c.hline(8 - Math.floor((y - 8) / 2), y, 1 + Math.floor((y - 8) / 2) * 2, y < 10 ? P.ember : WOOD.c2);
+    c.set(8, 7, P.flame2);
+    for (const [x, y] of [[8, 6], [7, 5], [7, 4], [8, 3], [9, 2], [9, 1]] as const) c.set(x, y, P.teal3);
+    c.set(6, 3, P.teal2);
+  });
+  // 31 paper cartridge: a twist of printed paper with a ball
+  icon(31, c => {
+    c.rect(5, 4, 5, 9, P.wax1);
+    c.vline(5, 4, 9, P.wax2);
+    for (const y of [6, 8, 10]) c.hline(6, y, 3, P.stone2); // the psalter's lines
+    c.set(7, 3, P.wax1);
+    c.set(8, 2, P.wax1);
+    c.disc(8, 13, 1.5, IRON.c1);
+    c.set(7, 12, IRON.c3);
+  });
+  // 32 chandler's oil: a stoppered bottle, amber-dark
+  icon(32, c => {
+    c.ellipse(8, 10, 4, 4, mix(P.flame1, P.dark1, 0.45));
+    c.ellipse(8, 11, 3, 2.5, mix(P.ember, P.dark1, 0.3));
+    c.rect(7, 3, 3, 4, mix(P.flame1, P.dark1, 0.45));
+    c.rect(7, 2, 3, 1, WOOD.c2);
+    c.set(6, 8, P.flame2);
+  });
+  // 33 stale wafer: a round host stamped with a cross
+  icon(33, c => {
+    c.disc(8, 8, 5, P.wax2);
+    c.disc(8, 8, 4, P.wax1);
+    c.hline(6, 8, 5, mix(P.wax1, P.wood2, 0.4));
+    c.vline(8, 6, 5, mix(P.wax1, P.wood2, 0.4));
+    c.set(12, 11, P.wax1); // a bite out of it
+    c.set(11, 12, P.ink);
+  });
+  // 34 smoke pellet: a dark ball with a grey puff
+  icon(34, c => {
+    c.disc(7, 10, 3.5, P.dark2);
+    c.set(6, 9, P.stone2);
+    c.disc(11, 5, 2.2, P.stone3);
+    c.disc(9, 4, 1.5, P.stone2);
+    c.disc(12, 3, 1.2, P.stone4);
+  });
+  // 35 ringer's grog: a leather jack with froth
+  icon(35, c => {
+    c.rect(4, 5, 7, 9, WOOD.c1);
+    c.vline(4, 5, 9, WOOD.c2);
+    c.hline(4, 4, 7, P.wax2); // froth
+    c.set(5, 3, P.wax2);
+    c.set(8, 3, P.wax2);
+    c.rect(11, 7, 2, 4, WOOD.c1); // handle
+    c.set(11, 8, P.ink);
+    c.set(12, 9, P.ink);
+    c.hline(4, 10, 7, P.ember); // a peppered band
+  });
+  // 36 pilgrim's tallow candle: a thick candle, unlit
+  icon(36, c => {
+    c.rect(6, 5, 5, 9, P.wax1);
+    c.vline(6, 5, 9, P.wax2);
+    c.set(8, 3, P.dark2);
+    c.set(8, 4, P.dark2);
+    c.hline(5, 14, 7, WOOD.c1);
+    c.set(10, 7, P.wax2); // a drip
+    c.set(10, 8, P.wax2);
+  });
+  // ---- rings (37-46): a band seen at an angle, with its setting
+  const band = (c: Img, metal: Ramp, setting: (c: Img) => void) => {
+    c.ellipse(8, 10, 5, 3.5, metal.c2);
+    c.ellipse(8, 10, 3.5, 2, P.ink);
+    c.hline(5, 7, 6, metal.c3);
+    c.hline(5, 13, 6, metal.c1);
+    setting(c);
+  };
+  const JET: Ramp = { c0: P.ink, c1: P.dark1, c2: P.dark2, c3: P.stone1 };
+  const SILVER: Ramp = { c0: P.stone2, c1: P.stone3, c2: P.steel2, c3: P.white };
+  const ROPE: Ramp = { c0: WOOD.c0, c1: WOOD.c1, c2: WOOD.c2, c3: WOOD.c3 };
+  // 37 band of steady breath: a bronze band with a tiny bell
+  icon(37, c =>
+    band(c, BRONZE, c => {
+      c.disc(8, 4, 2.2, BRONZE.c3);
+      c.set(8, 6, BRONZE.c1);
+      c.set(8, 1, BRONZE.c2);
+    }),
+  );
+  // 38 parish signet: gold with a flat red seal face
+  icon(38, c =>
+    band(c, BRONZE, c => {
+      c.rect(6, 3, 5, 4, P.blood1);
+      c.rect(7, 4, 3, 2, P.blood2);
+      c.set(8, 4, P.wax2);
+    }),
+  );
+  // 39 cutpurse's band: filed thin, dull iron
+  icon(39, c => {
+    c.ellipse(8, 9, 5, 3, IRON.c2);
+    c.ellipse(8, 9, 4, 2, P.ink);
+    c.set(4, 8, IRON.c3);
+    c.set(12, 10, IRON.c1);
+  });
+  // 40 porter's knot: plaited rope with a knot
+  icon(40, c =>
+    band(c, ROPE, c => {
+      for (let x = 4; x < 12; x += 2) c.set(x, 7, WOOD.c0);
+      c.disc(8, 5, 2, WOOD.c3);
+      c.set(8, 5, WOOD.c1);
+    }),
+  );
+  // 41 miser's band: gold, with a coin set in it
+  icon(41, c =>
+    band(c, BRONZE, c => {
+      c.disc(8, 4, 2.5, GOLD0);
+      c.disc(8, 4, 1.5, P.flame2);
+      c.set(8, 4, GOLD0);
+    }),
+  );
+  // 42 ring of the last candle: silver with a lit flame
+  icon(42, c =>
+    band(c, SILVER, c => {
+      c.rect(7, 4, 3, 3, P.wax2);
+      c.set(8, 3, P.flame2);
+      c.set(8, 2, P.flame1);
+      c.set(9, 1, P.flame2);
+    }),
+  );
+  // 43 mourner's ring: black jet
+  icon(43, c =>
+    band(c, JET, c => {
+      c.ellipse(8, 4.5, 3, 2.2, P.dark2);
+      c.set(7, 4, P.stone3);
+    }),
+  );
+  // 44 ring of the quiet step: grey felt-lined band
+  icon(44, c =>
+    band(c, SILVER, c => {
+      c.ellipse(8, 10, 3.5, 2, mix(P.stone2, P.teal1, 0.4));
+      c.ellipse(8, 10, 2.5, 1.2, P.ink);
+      c.set(8, 6, P.teal3);
+    }),
+  );
+  // 45 powder-maker's ring: iron, blackened, with a speck of saltpetre
+  icon(45, c =>
+    band(c, IRON, c => {
+      c.disc(8, 4.5, 2, P.dark2);
+      c.set(8, 4, P.white);
+      c.set(4, 10, P.ink);
+      c.set(12, 9, P.ink);
+    }),
+  );
+  // 46 warden's ward: a heavy iron band stamped with a gate
+  icon(46, c =>
+    band(c, IRON, c => {
+      c.rect(6, 2, 5, 5, IRON.c1);
+      c.vline(7, 3, 3, P.ink);
+      c.vline(9, 3, 3, P.ink);
+      c.hline(6, 2, 5, IRON.c3);
+    }),
+  );
+  // 47 a lore note: a curled sheet with writing
+  icon(47, c => {
+    c.rect(4, 3, 8, 11, P.wax1);
+    c.vline(4, 3, 11, P.wax2);
+    c.hline(4, 13, 8, mix(P.wax1, P.wood2, 0.5));
+    for (const y of [5, 7, 9, 11]) c.hline(5, y, y === 11 ? 3 : 6, P.stone1);
+    c.set(11, 3, mix(P.wax1, P.wood2, 0.5)); // a torn corner
+  });
   sheet('icons', img, { cell: [16, 16], pivot: [0, 0], layer: 'ui' });
+
+  // A throwing knife in flight (pointing right), and a note lying on the floor
+  const knife = new Img(9, 3);
+  knife.hline(3, 1, 5, P.steel2);
+  knife.set(8, 1, P.white);
+  knife.hline(0, 1, 3, WOOD.c2);
+  knife.set(3, 0, IRON.c1);
+  knife.set(3, 2, IRON.c1);
+  sheet('knife', knife, { cell: [9, 3], pivot: [4, 1], layer: 'fx' });
+  const note = new Img(10, 7);
+  note.rect(1, 1, 8, 5, P.wax1);
+  note.hline(1, 1, 8, P.wax2);
+  note.hline(2, 3, 5, P.stone2);
+  note.hline(2, 4, 4, P.stone2);
+  note.set(8, 5, mix(P.wax1, P.wood2, 0.5));
+  note.outline(P.ink);
+  sheet('note', note, { cell: [10, 7], pivot: [5, 4], layer: 'single' });
 }
 
 // ---------------------------------------------------------------- font (original 5x7, ASCII 32..126, 16 per row)

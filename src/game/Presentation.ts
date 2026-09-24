@@ -174,6 +174,38 @@ export function wirePresentation(gs: GameScene) {
     bus.emit('sfx', { id: 'heal' });
   });
 
+  // Consumables: their sound, a puff that says what happened, and the effect's name over your head.
+  bus.on('itemUsed', e => {
+    const c = DATA.consumables[e.id];
+    const u = c.use;
+    bus.emit('sfx', { id: c.sfx });
+    const p = gs.player;
+    const up = -Math.PI / 2;
+    if (u.type === 'buff') {
+      if (u.lose) {
+        // a billow of grey around you
+        gs.particles.burst(e.x, e.y, 4, up, Math.PI * 2, 40, 60, 'stone3', false);
+        gs.particles.burst(e.x, e.y, 10, up, Math.PI * 2, 30, 40, 'stone2', false);
+      } else gs.particles.burst(e.x, e.y, 10, up, 1.6, 16, 30, u.colour, false);
+      gs.numbers.add(u.label, p.x, p.y - 34, hexToInt(pal()[u.colour]));
+    } else if (u.type === 'regen') {
+      gs.particles.burst(e.x, e.y, 10, up, 2, 10, 25, 'flame2', false);
+      gs.numbers.add(`+${u.amount} HP`, p.x, p.y - 34, hexToInt(pal().flame2));
+    } else if (u.type === 'reload') {
+      gs.numbers.add('LOADED', p.x, p.y - 34, hexToInt(pal().wax2));
+    } else if (u.type === 'tallow') {
+      gs.particles.burst(e.x, e.y, 10, up, 2, 8, 30, 'wax2', false);
+      gs.numbers.add(`+${u.amount}`, p.x, p.y - 34, hexToInt(pal().flame2));
+    }
+    gs.markDirty();
+  });
+
+  bus.on('buffEnded', e => {
+    const u = DATA.consumables[e.id]?.use;
+    if (u?.type !== 'buff') return;
+    gs.numbers.add(`${u.label} FADES`, gs.player.x, gs.player.y - 34, hexToInt(pal().stone3));
+  });
+
   bus.on('healFailed', e => {
     gs.particles.burst(e.actor.x, e.actor.y, 14, -Math.PI / 2, 3, 8, 70, 'steel2', false);
     bus.emit('sfx', { id: 'heal_fail' });

@@ -23,7 +23,7 @@ export class EnemyBars {
     g.clear();
     for (const v of views) {
       const e = v.e;
-      if (e.dead || !e.isFighter || e.def.boss) continue; // bosses use the big bar at the bottom of the screen
+      if (e.dead || !e.isFighter || e.def.boss || e.miniboss) continue; // bosses and minibosses use the bar at the bottom of the screen
       let trail = this.trails.get(e);
       if (!trail) this.trails.set(e, (trail = new TrailBar(e.hp)));
       trail.update(e.hp, e.maxHp, dtMs, fb.trailHoldMs, fb.trailDrainPerSec);

@@ -1,0 +1,17 @@
+{
+  "id": "chandlers_oil",
+  "name": "Chandler's Oil",
+  "icon": 32,
+  "max": 4,
+  "sfx": "p_oil",
+  "description": "Rendered from the same vats as the candles. Rubbed on steel it smokes and bites; the Chandlers never say what's in it.",
+  "use": {
+    "type": "buff",
+    "ticks": 2400,
+    "label": "OILED STEEL",
+    "colour": "flame2",
+    "mods": {
+      "damage": 1.3
+    }
+  }
+}

@@ -75,7 +75,7 @@ describe('gear in the world', () => {
 
 describe('sounds named in code', () => {
   it('exist as layered sounds', () => {
-    const src = ['src/player/PlayerStates.ts', 'src/player/Player.ts', 'src/game/Presentation.ts', 'src/ui/GearScreen.ts']
+    const src = ['src/player/PlayerStates.ts', 'src/player/Player.ts', 'src/game/Presentation.ts', 'src/ui/GearScreen.ts', 'src/game/Interactions.ts']
       .map(f => fs.readFileSync(path.join(__dirname, '..', f), 'utf8'))
       .join('\n');
     const named = new Set([...src.matchAll(/'(p_[a-z_]+)'/g)].map(m => m[1]));

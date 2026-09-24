@@ -1,0 +1,10 @@
+{
+  "id": "ring_last_candle",
+  "name": "Ring of the Last Candle",
+  "icon": 42,
+  "effect": "+35% damage at or below 30% HP",
+  "mods": {
+    "desperate": 1.35
+  },
+  "description": "Given to the last watchman of the night, who must not let the flame go out. They burn brightest at the end; everyone does."
+}

@@ -8,7 +8,7 @@ export function snapshot(gs: GameScene): SaveData {
   const p = gs.player;
   const m = gs.marker.data;
   return {
-    version: 2,
+    version: 3,
     savedAt: Date.now(),
     lastShrine: gs.lastShrine,
     tallow: p.tallow,
@@ -17,6 +17,7 @@ export function snapshot(gs: GameScene): SaveData {
     loadout: { slots: [...p.slots], slot: p.slot, shield: p.shieldId },
     ammo: Object.fromEntries(p.ammo),
     gear: { weapons: [...p.inv.weapons], shields: [...p.inv.shields], armour: [...p.inv.armour], head: p.worn.head, body: p.worn.body },
+    items: { pack: Object.fromEntries(p.pack), belt: p.belt, rings: [...p.inv.rings], worn: [p.rings[0], p.rings[1]] },
     world: {
       flags: [...gs.flags],
       groundItems: gs.ground.list.map(i => ({ weapon: i.weapon, x: i.x, y: i.y, area: i.area })),
@@ -43,6 +44,14 @@ export function applySave(gs: GameScene, s: SaveData) {
   p.shieldId = s.loadout.shield && DATA.shields[s.loadout.shield] ? s.loadout.shield : null;
   if (p.shieldId && !p.inv.shields.includes(p.shieldId)) p.inv.shields.push(p.shieldId);
   p.enforceTwoHanded();
+  // consumables (at most what can be carried), the belt, rings
+  p.pack.clear();
+  for (const [id, n] of Object.entries(s.items.pack)) if (DATA.consumables[id] && n > 0) p.pack.set(id, Math.min(n, DATA.consumables[id].max));
+  p.belt = s.items.belt && p.pack.has(s.items.belt) ? s.items.belt : (p.carried[0] ?? null);
+  p.inv.rings = s.items.rings.filter(id => DATA.rings[id]);
+  p.rings[0] = s.items.worn[0] && p.inv.rings.includes(s.items.worn[0]) ? s.items.worn[0] : null;
+  p.rings[1] = s.items.worn[1] && p.inv.rings.includes(s.items.worn[1]) && s.items.worn[1] !== p.rings[0] ? s.items.worn[1] : null;
+  p.hp = p.maxHp;
   for (const [id, a] of Object.entries(s.ammo)) p.ammo.set(id, { ...a });
   for (const g of s.world.groundItems) if (DATA.weapons[g.weapon]) gs.ground.add(g.weapon, g.x, g.y, g.area ?? gs.area);
   gs.marker.set(s.deathMarker ? { ...s.deathMarker, area: s.deathMarker.area ?? gs.area } : null);

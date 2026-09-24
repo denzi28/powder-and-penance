@@ -95,6 +95,12 @@
           "face": -1
         }
       ]
+    },
+    {
+      "type": "item",
+      "id": "chest_mourners_ring",
+      "item": "mourners_ring",
+      "at": [7, 1]
     }
   ]
 }

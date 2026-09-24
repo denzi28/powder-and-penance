@@ -54,6 +54,11 @@
       "id": "works_salt",
       "item": "bitter_salt",
       "at": [15, 4]
+    },
+    {
+      "type": "note",
+      "note": "note_miners_prayer",
+      "at": [8, 9]
     }
   ]
 }

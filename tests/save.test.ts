@@ -15,7 +15,7 @@ class MemStore implements KeyValueStore {
 }
 
 const sample: SaveData = {
-  version: 2,
+  version: 3,
   savedAt: 1,
   lastShrine: 'shrine_test',
   tallow: 120,
@@ -26,6 +26,7 @@ const sample: SaveData = {
   world: { flags: ['shrine:shrine_test', 'item:test_shard'], groundItems: [{ weapon: 'dagger', x: 10, y: 20 }] },
   deathMarker: { x: 100, y: 50, tallow: 80 },
   gear: { weapons: ['greataxe', 'revolver', 'dagger'], shields: ['buckler'], armour: ['pilgrims_hood'], head: 'pilgrims_hood', body: null },
+  items: { pack: { firebomb: 2, honeycomb: 1 }, belt: 'firebomb', rings: ['parish_signet', 'misers_band'], worn: ['parish_signet', null] },
 };
 
 describe('SaveSystem', () => {
@@ -52,12 +53,23 @@ describe('SaveSystem', () => {
 
   it('migrates a version-1 save: what was in hand becomes the inventory', () => {
     const store = new MemStore();
-    const { gear: _gear, ...v1 } = sample;
+    const { gear: _gear, items: _items, ...v1 } = sample;
     store.setItem(SAVE_KEY, JSON.stringify({ ...v1, version: 1, loadout: { slots: ['straight_sword', 'fists'], slot: 0, shield: 'buckler' } }));
     const r = new SaveSystem(store).load();
     expect(r.ok).toBe(true);
-    expect(r.ok && r.save.version).toBe(2);
+    expect(r.ok && r.save.version).toBe(3);
     expect(r.ok && r.save.gear).toEqual({ weapons: ['straight_sword'], shields: ['buckler'], armour: [], head: null, body: null });
+    expect(r.ok && r.save.items).toEqual({ pack: {}, belt: null, rings: [], worn: [null, null] });
+  });
+
+  it('migrates a version-2 save: nothing carried or worn yet, everything else kept', () => {
+    const store = new MemStore();
+    const { items: _items, ...v2 } = sample;
+    store.setItem(SAVE_KEY, JSON.stringify({ ...v2, version: 2 }));
+    const r = new SaveSystem(store).load();
+    expect(r.ok && r.save.version).toBe(3);
+    expect(r.ok && r.save.gear).toEqual(sample.gear);
+    expect(r.ok && r.save.items).toEqual({ pack: {}, belt: null, rings: [], worn: [null, null] });
   });
 
   it('rejects saves that fail validation (e.g. negative tallow)', () => {

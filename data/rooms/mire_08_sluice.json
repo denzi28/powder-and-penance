@@ -71,6 +71,12 @@
       "id": "mire_salt",
       "item": "bitter_salt",
       "at": [11, 11]
+    },
+    {
+      "type": "item",
+      "id": "chest_misers_band",
+      "item": "misers_band",
+      "at": [4, 1]
     }
   ]
 }

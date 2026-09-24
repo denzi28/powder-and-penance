@@ -68,6 +68,17 @@
       "id": "mire_shard",
       "item": "phial_shard",
       "at": [10, 9]
+    },
+    {
+      "type": "item",
+      "id": "chest_cutpurse",
+      "item": "cutpurse_band",
+      "at": [6, 1]
+    },
+    {
+      "type": "note",
+      "note": "note_pips_drawing",
+      "at": [6, 8]
     }
   ]
 }

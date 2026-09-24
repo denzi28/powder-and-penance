@@ -8,6 +8,7 @@
   "hp": 60,
   "poise": { "max": 25, "resetTicks": 90 },
   "tallow": 20,
+  "loot": "wickling",
   "speed": 50,
   "strafeSpeed": 30,
   "accelTicks": 6,

@@ -1,0 +1,17 @@
+{
+  "id": "communion_wafer",
+  "name": "Stale Wafer",
+  "icon": 33,
+  "max": 5,
+  "sfx": "p_eat",
+  "description": "Left over from a mass nobody came to. It is still blessed; the priest said blessings do not go stale. He lied about the bread.",
+  "use": {
+    "type": "buff",
+    "ticks": 1800,
+    "label": "BLESSED BREATH",
+    "colour": "wax2",
+    "mods": {
+      "staminaRegen": 1.6
+    }
+  }
+}

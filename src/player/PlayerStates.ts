@@ -71,6 +71,13 @@ function tryStartAction(p: Player): string | undefined {
     if (p.phials.charges > 0) return 'heal';
     p.ctx.bus.emit('sfx', { id: 'phial_empty' });
   }
+  if (inp.consume('useItem')) {
+    if (p.belt && p.count(p.belt) > 0) {
+      p.using = p.belt;
+      return 'useItem';
+    }
+    p.ctx.bus.emit('sfx', { id: 'phial_empty' });
+  }
   const w = p.weapon;
   if (inp.peek('light')) {
     const crit = findCritical(p);
@@ -457,6 +464,33 @@ const heal: State<Player> = {
   },
 };
 
+// Using a consumable: a quick throw, or a short committed eat/drink/strike at half speed. It is only spent
+// (and takes effect) at USE_AT; a hit before then keeps it.
+const USE = { throw: { at: 8, total: 22, cancel: 14 }, other: { at: 24, total: 36, cancel: 30 } };
+const useItem: State<Player> = {
+  enter(p) {
+    const c = DATA.consumables[p.using!];
+    p.weaponLowered = true;
+    if (c.use.type === 'throw') p.body.play('attack', { restart: true, phases: { windup: 6, active: 3, recovery: 12 } });
+    else p.body.play('drink', { restart: true, phases: { raise: 12, drink: 14, lower: 10 } });
+  },
+  tick(p, t) {
+    const id = p.using;
+    const c = id ? DATA.consumables[id] : null;
+    if (!id || !c) return 'idle';
+    const u = c.use.type === 'throw' ? USE.throw : USE.other;
+    moveFree(p, c.use.type === 'throw' ? 0.6 : 0.45);
+    if (t === u.at) p.applyConsumable(id);
+    if (t >= u.cancel && p.stamina.canAct() && p.input.consume('roll')) return 'roll';
+    if (t >= u.total) return 'idle';
+  },
+  exit(p) {
+    p.weaponLowered = false;
+    p.using = null;
+    p.body.play('idle');
+  },
+};
+
 /** Kneeling at a shrine (kindling or resting). The scene decides when to stand up again. */
 const rest: State<Player> = {
   enter(p) {
@@ -571,6 +605,7 @@ export const PLAYER_STATES: Record<string, State<Player>> = {
   swap,
   block,
   heal,
+  useItem,
   rest,
   critical,
   stagger,

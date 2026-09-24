@@ -8,6 +8,7 @@
   "hp": 55,
   "poise": { "max": 20, "resetTicks": 80 },
   "tallow": 45,
+  "loot": "drowned",
   "speed": 38,
   "strafeSpeed": 24,
   "accelTicks": 8,

@@ -1,0 +1,12 @@
+{
+  "id": "paper_cartridge",
+  "name": "Paper Cartridge",
+  "icon": 31,
+  "max": 8,
+  "sfx": "p_cartridge",
+  "description": "Ball and a measured charge twisted in a scrap of psalter. Bite, pour, ram: a soldier's prayer is three words long.",
+  "use": {
+    "type": "reload",
+    "reserve": 0.25
+  }
+}

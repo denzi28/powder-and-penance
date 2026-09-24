@@ -13,7 +13,7 @@ import { TILE } from '../world/TileGrid';
 import { BRAINS } from './EnemyBrain';
 import type { WorldCtx } from '../core/World';
 import type { HitInfo } from '../combat/CombatSystem';
-import type { MoveDef } from '../data/schemas';
+import type { MinibossPlacement, MoveDef } from '../data/schemas';
 
 /** States in which the enemy is actively fighting (knows where you are). */
 export const COMBAT_STATES: ReadonlySet<string> = new Set(['approach', 'strafe', 'attack']);
@@ -60,6 +60,8 @@ export class Enemy extends Actor {
   remove = false;
   /** Stable id of the room placement this enemy came from ("<room>#<index>"); null for debug spawns. */
   spawnId: string | null = null;
+  /** Set when its room placement makes it a miniboss (a name bar, more health, a drop, dead for good). */
+  miniboss: MinibossPlacement | null = null;
   /** Enemies this one has summoned (strike.summon). */
   summons: Enemy[] = [];
   /** Sitting in a summoning bubble: invulnerable until every summon is dead. */
@@ -123,7 +125,7 @@ export class Enemy extends Actor {
     return DATA.enemies[this.kind];
   }
   get maxHp() {
-    return this.def.hp;
+    return Math.round(this.def.hp * (this.miniboss?.hpMult ?? 1));
   }
   get collider() {
     return this.def.collider;
@@ -272,7 +274,7 @@ export class Enemy extends Actor {
       if (this.awareness < 1) {
         const d = Math.hypot(p.x - this.x, p.y - this.y);
         const k = Math.max(0, Math.min(1, (d - per.nearDistance) / Math.max(1, per.farDistance - per.nearDistance)));
-        this.awareness = Math.min(1, this.awareness + 1 / (per.detectTicksNear + (per.detectTicksFar - per.detectTicksNear) * k));
+        this.awareness = Math.min(1, this.awareness + (p.mods?.notice ?? 1) / (per.detectTicksNear + (per.detectTicksFar - per.detectTicksNear) * k));
       }
     } else if (!inCombat) {
       this.awareness = Math.max(0, this.awareness - per.forgetPerTick);
@@ -357,6 +359,15 @@ export class Enemy extends Actor {
     this.noteSighting();
     this.sm.change('approach');
     this.alertRoom();
+  }
+
+  /** Lose the player (smoke): stop hunting and go back to the post. Bosses and minibosses aren't fooled. */
+  loseTrack() {
+    if (this.dead || !this.isFighter || this.def.boss || this.miniboss) return;
+    const st = this.sm.name;
+    if (!COMBAT_STATES.has(st) && st !== 'notice' && st !== 'suspicious') return;
+    this.awareness = 0;
+    this.sm.change('return');
   }
 
   /** Everyone in our room learns where the player is, even behind walls. */

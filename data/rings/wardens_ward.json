@@ -1,0 +1,11 @@
+{
+  "id": "wardens_ward",
+  "name": "Warden's Ward",
+  "icon": 46,
+  "effect": "+30 poise, and a little less damage taken",
+  "mods": {
+    "poise": 30,
+    "damageTaken": 0.93
+  },
+  "description": "A Bulwark Warden's oath-ring, iron, stamped with a gate. They swore to stand, and the ring holds them to it."
+}

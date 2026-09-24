@@ -182,6 +182,8 @@ Enemies hold their weapon like the player does: `handAnchors` in the body manife
 | `door` | 16×32 | 8,32 | none | Frame 0 = in a horizontal wall (face-on), frame 1 = in a vertical wall (seen from above). Hidden when open. |
 | `prop_crate`, `prop_pot`, `prop_candles` | 16×16 | 8,14 | none | Frame 0 = intact, frame 1 = rubble |
 | `loot` | 7×7 | 3,5 | none | Frame 0 = Tallow drop, frame 1 = powder drop |
+| `knife` | 9×3 | 4,1 | none | A thrown Pilgrim's Knife in flight, pointing right |
+| `note` | 10×7 | 5,4 | none | A lore note lying on the floor (it glints with `item_glint`) |
 
 ### NPCs (`npc_oskar`, `npc_maudlin`, `npc_pip`: 32×32, pivot 16,28)
 - Frames: 0–1 idle (breathing), 2–3 talking (mouth open, then closed).
@@ -281,7 +283,7 @@ Static scenery, referenced by `data/decor.json`, which picks a sheet and frame a
 | 3 | `boulder` | 7 | `candle_cairn` |
 
 ### Icons (`icons`: 16×16 cells, one row; the inventory and equipment screens)
-0 fists, 1 dagger, 2 straight sword, 3 greataxe, 4 revolver, 5 flintlock, 6 heavy crossbow, 7 buckler, 8 pilgrim's hood, 9 drowned veil, 10 gaoler's helm, 11 acolyte's robe, 12 renderer's apron, 13 warden's hauberk, 14 tallow lump, 15 powder pouch, 16 phial shard, 17 bitter salt, 18 cage key, 19 toll key, 20 igniter, 21 ledger, 22 seal of tallow, 23 seal of the mire, 24 mending phial, 25 empty slot. Weapons, shields, armour and items choose theirs with `icon`.
+0 fists, 1 dagger, 2 straight sword, 3 greataxe, 4 revolver, 5 flintlock, 6 heavy crossbow, 7 buckler, 8 pilgrim's hood, 9 drowned veil, 10 gaoler's helm, 11 acolyte's robe, 12 renderer's apron, 13 warden's hauberk, 14 tallow lump, 15 powder pouch, 16 phial shard, 17 bitter salt, 18 cage key, 19 toll key, 20 igniter, 21 ledger, 22 seal of tallow, 23 seal of the mire, 24 mending phial, 25 empty slot. Consumables: 26 firebomb, 27 pilgrim's knife, 28 wild honeycomb, 29 grey salt crust, 30 warding incense, 31 paper cartridge, 32 chandler's oil, 33 stale wafer, 34 smoke pellet, 35 ringer's grog, 36 pilgrim's tallow candle. Rings: 37 band of steady breath, 38 parish signet, 39 cutpurse's band, 40 porter's knot, 41 miser's band, 42 ring of the last candle, 43 mourner's ring, 44 ring of the quiet step, 45 powder-maker's ring, 46 warden's ward. 47 lore note. Weapons, shields, armour, items, consumables and rings choose theirs with `icon`; a consumable dropped on the floor is drawn with its icon at 5/8 scale.
 
 ### Ambient life (`critters`: 16×16 cells, pivot 8,14, facing right) and `data/ambience.json`
 The critters sheet holds small animals that wander rooms and flee from the player (`src/world/Ambience.ts`):

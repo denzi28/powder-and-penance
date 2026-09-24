@@ -6,6 +6,7 @@
   "hp": 40,
   "poise": { "max": 14, "resetTicks": 60 },
   "tallow": 30,
+  "loot": "hound",
   "speed": 95,
   "strafeSpeed": 70,
   "accelTicks": 4,

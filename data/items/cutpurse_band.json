@@ -1,0 +1,10 @@
+{
+  "id": "cutpurse_band",
+  "name": "Cutpurse's Band",
+  "icon": 39,
+  "description": "Filed thin to slip between purse-strings. Its last owner took from everyone in the Mire, and the Mire took him back.",
+  "effect": {
+    "type": "ring",
+    "id": "cutpurse_band"
+  }
+}

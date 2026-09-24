@@ -1,0 +1,10 @@
+{
+  "id": "mourners_ring",
+  "name": "Mourner's Ring",
+  "icon": 43,
+  "effect": "Phial drinks heal 25% more",
+  "mods": {
+    "heal": 1.25
+  },
+  "description": "Black jet, the kind widows wore. The chapel glass in the phials remembers grief, and is kinder to those who carry it."
+}

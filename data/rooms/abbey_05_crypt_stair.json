@@ -68,6 +68,12 @@
       "type": "decor",
       "kind": "bones",
       "at": [7, 13]
+    },
+    {
+      "type": "item",
+      "id": "chest_quiet_step",
+      "item": "ring_quiet_step",
+      "at": [9, 6]
     }
   ]
 }

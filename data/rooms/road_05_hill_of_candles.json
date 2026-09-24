@@ -181,6 +181,18 @@
           "ticks": 30
         }
       ]
+    },
+    {
+      "type": "item",
+      "id": "cache_honey",
+      "item": "cache_honey",
+      "at": [11, 8]
+    },
+    {
+      "type": "item",
+      "id": "chest_parish_signet",
+      "item": "parish_signet",
+      "at": [9, 8]
     }
   ]
 }

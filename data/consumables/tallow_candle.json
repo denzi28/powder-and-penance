@@ -1,0 +1,12 @@
+{
+  "id": "tallow_candle",
+  "name": "Pilgrim's Tallow Candle",
+  "icon": 36,
+  "max": 20,
+  "sfx": "p_candle",
+  "description": "Bought at the gate for the shrine inside. The shrines are dark now, but the Chandlers still take it back at weight.",
+  "use": {
+    "type": "tallow",
+    "amount": 60
+  }
+}

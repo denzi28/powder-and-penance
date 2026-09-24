@@ -1,0 +1,17 @@
+{
+  "id": "warding_incense",
+  "name": "Warding Incense",
+  "icon": 30,
+  "max": 4,
+  "sfx": "p_incense",
+  "description": "Myrrh cut with gunpowder, lit at both ends. The smoke clings to the clothes and turns blows aside, or seems to.",
+  "use": {
+    "type": "buff",
+    "ticks": 2700,
+    "label": "WARDED",
+    "colour": "teal3",
+    "mods": {
+      "damageTaken": 0.75
+    }
+  }
+}

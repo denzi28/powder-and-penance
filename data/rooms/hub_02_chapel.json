@@ -84,6 +84,12 @@
       "npc": "maudlin",
       "at": [5, 3],
       "when": "maudlin_in_chapel"
+    },
+    {
+      "type": "item",
+      "id": "cache_wafers",
+      "item": "cache_wafers",
+      "at": [5, 6]
     }
   ]
 }

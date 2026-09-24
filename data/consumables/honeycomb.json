@@ -1,0 +1,13 @@
+{
+  "id": "honeycomb",
+  "name": "Wild Honeycomb",
+  "icon": 28,
+  "max": 5,
+  "sfx": "p_eat",
+  "description": "From the hives by the old orchard wall. The bees there never learned to fear smoke, and the honey tastes faintly of it.",
+  "use": {
+    "type": "regen",
+    "amount": 40,
+    "ticks": 360
+  }
+}

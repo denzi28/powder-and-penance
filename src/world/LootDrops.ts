@@ -3,11 +3,14 @@
 import Phaser from 'phaser';
 import { DEPTH } from '../render/depth';
 import type { SpriteLib } from '../anim/SpriteLib';
+import { DATA } from '../data/config';
 import type { LootEntry } from '../data/schemas';
 
 export interface LootDrop {
-  kind: 'tallow' | 'ammo';
+  kind: 'tallow' | 'ammo' | 'item';
   amount: number;
+  /** A consumable (kind "item"). */
+  item?: string;
   x: number;
   y: number;
   z: number;
@@ -20,7 +23,7 @@ export interface LootDrop {
 const PICKUP_RADIUS = 12;
 const GRAVITY = 0.35;
 
-/** Weighted pick from a loot table (an entry with neither tallow nor ammo means "nothing"). */
+/** Weighted pick from a loot table (an entry with no tallow, ammo or item means "nothing"). */
 export function rollLoot(table: LootEntry[], rng: () => number): LootEntry {
   let roll = rng() * table.reduce((s, e) => s + e.weight, 0);
   for (const e of table) if ((roll -= e.weight) <= 0) return e;
@@ -33,13 +36,15 @@ export class LootDrops {
   constructor(private lib: SpriteLib) {}
 
   spawn(entry: LootEntry, x: number, y: number, rng: () => number) {
-    const add = (kind: LootDrop['kind'], amount: number, frame: number) => {
+    const add = (kind: LootDrop['kind'], amount: number, frame: number, item?: string) => {
       const a = rng() * Math.PI * 2;
-      const sprite = this.lib.sprite('loot').setFrame(frame);
-      this.list.push({ kind, amount, x, y, z: 6, vx: Math.cos(a) * 0.8, vy: Math.sin(a) * 0.5, vz: 2.2, sprite });
+      // consumables drop as their own icon, small
+      const sprite = item ? this.lib.sprite('icons').setFrame(frame).setScale(0.625).setOrigin(0.5, 0.85) : this.lib.sprite('loot').setFrame(frame);
+      this.list.push({ kind, amount, item, x, y, z: 6, vx: Math.cos(a) * 0.8, vy: Math.sin(a) * 0.5, vz: 2.2, sprite });
     };
     if (entry.tallow) add('tallow', Math.round(entry.tallow[0] + (entry.tallow[1] - entry.tallow[0]) * rng()), 0);
     if (entry.ammo) add('ammo', entry.ammo, 1);
+    if (entry.item && DATA.consumables[entry.item]) add('item', entry.count, DATA.consumables[entry.item].icon, entry.item);
   }
 
   /** Per tick: fly, land, and hand back the drops the player walked over. */

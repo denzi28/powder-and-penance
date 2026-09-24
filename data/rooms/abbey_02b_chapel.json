@@ -62,6 +62,17 @@
       "type": "decor",
       "kind": "candle_stand",
       "at": [10, 6]
+    },
+    {
+      "type": "item",
+      "id": "cache_incense",
+      "item": "cache_incense",
+      "at": [7, 1]
+    },
+    {
+      "type": "note",
+      "note": "note_taper_hymn",
+      "at": [6, 4]
     }
   ]
 }

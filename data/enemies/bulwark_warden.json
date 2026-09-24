@@ -8,6 +8,7 @@
   "hp": 120,
   "poise": { "max": 45, "resetTicks": 120 },
   "tallow": 60,
+  "loot": "warden",
   "speed": 38,
   "strafeSpeed": 22,
   "accelTicks": 8,

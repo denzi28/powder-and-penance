@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { formatZod } from '../data/schemas';
 
 export const SAVE_KEY = 'powder-and-penance.save';
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 3;
 
 const Ammo = z.object({ clip: z.number().int().min(0), reserve: z.number().int().min(0) });
 
@@ -41,7 +41,18 @@ export const SaveV2 = SaveV1.extend({
     body: z.string().nullable(),
   }),
 });
-export type SaveData = z.infer<typeof SaveV2>;
+
+/** Version 3: consumables (and which is on the belt) and rings. Lore notes read are world flags ("note:<id>"). */
+export const SaveV3 = SaveV2.extend({
+  version: z.literal(3),
+  items: z.object({
+    pack: z.record(z.string(), z.number().int().min(0)),
+    belt: z.string().nullable(),
+    rings: z.array(z.string()),
+    worn: z.tuple([z.string().nullable(), z.string().nullable()]),
+  }),
+});
+export type SaveData = z.infer<typeof SaveV3>;
 
 /** Upgrade older save shapes: MIGRATIONS[n] turns a version-n save into version n+1. */
 const MIGRATIONS: Record<number, (s: Record<string, unknown>) => Record<string, unknown>> = {
@@ -60,6 +71,8 @@ const MIGRATIONS: Record<number, (s: Record<string, unknown>) => Record<string, 
       },
     };
   },
+  // v2 -> v3: nothing carried or worn yet
+  2: s => ({ ...s, version: 3, items: { pack: {}, belt: null, rings: [], worn: [null, null] } }),
 };
 
 export interface KeyValueStore {
@@ -84,7 +97,7 @@ export class SaveSystem {
       let data = JSON.parse(raw) as Record<string, unknown>;
       let v = Number(data.version);
       while (v < SAVE_VERSION && MIGRATIONS[v]) data = MIGRATIONS[v++](data);
-      const r = SaveV2.safeParse(data);
+      const r = SaveV3.safeParse(data);
       if (r.success) return { ok: true, save: r.data };
       return this.corrupt(raw, formatZod(r.error));
     } catch (e) {

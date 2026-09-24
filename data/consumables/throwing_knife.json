@@ -1,0 +1,22 @@
+{
+  "id": "throwing_knife",
+  "name": "Pilgrim's Knife",
+  "icon": 27,
+  "max": 12,
+  "sfx": "p_throw_knife",
+  "description": "Pilgrims were forbidden blades, so they carried 'bread knives', balanced for the hand and sharpened on both edges.",
+  "use": {
+    "type": "throw",
+    "projectile": {
+      "sprite": "knife",
+      "speed": 300,
+      "range": 170,
+      "damage": 16,
+      "poise": 8,
+      "knockback": 40,
+      "hitstop": 2,
+      "shake": 0.03,
+      "radius": 3
+    }
+  }
+}

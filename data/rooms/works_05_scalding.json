@@ -80,6 +80,12 @@
       "type": "prop",
       "kind": "pot",
       "at": [20, 1]
+    },
+    {
+      "type": "item",
+      "id": "cache_salt",
+      "item": "cache_salt",
+      "at": [12, 1]
     }
   ]
 }

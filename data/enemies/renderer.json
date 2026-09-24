@@ -8,6 +8,7 @@
   "hp": 70,
   "poise": { "max": 26, "resetTicks": 90 },
   "tallow": 60,
+  "loot": "renderer",
   "speed": 40,
   "strafeSpeed": 26,
   "accelTicks": 8,

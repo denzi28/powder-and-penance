@@ -67,6 +67,11 @@ export abstract class Actor {
     return 1;
   }
 
+  /** Multiplier on the damage this actor's hits deal (rings and oils for the player). */
+  damageDealtMult(_kind: 'melee' | 'projectile' | 'critical') {
+    return 1;
+  }
+
   get knockbackResist() {
     return 0;
   }

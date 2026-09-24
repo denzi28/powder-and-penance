@@ -1,0 +1,11 @@
+{
+  "id": "cache_oil",
+  "name": "Chandler's Oil x2",
+  "icon": 32,
+  "description": "Rendered from the same vats as the candles. Rubbed on steel it smokes and bites; the Chandlers never say what's in it.",
+  "effect": {
+    "type": "consumable",
+    "id": "chandlers_oil",
+    "count": 2
+  }
+}

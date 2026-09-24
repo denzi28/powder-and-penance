@@ -147,6 +147,17 @@
       "talk": "oskar_wreck",
       "when": "!oskar_freed",
       "at": [9, 7]
+    },
+    {
+      "type": "item",
+      "id": "cache_candles",
+      "item": "cache_candles",
+      "at": [14, 3]
+    },
+    {
+      "type": "note",
+      "note": "note_sentence",
+      "at": [15, 10]
     }
   ]
 }

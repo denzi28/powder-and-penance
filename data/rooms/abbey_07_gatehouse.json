@@ -82,6 +82,12 @@
       "type": "decor",
       "kind": "rubble",
       "at": [6, 13]
+    },
+    {
+      "type": "item",
+      "id": "cache_cartridges",
+      "item": "cache_cartridges",
+      "at": [8, 6]
     }
   ]
 }

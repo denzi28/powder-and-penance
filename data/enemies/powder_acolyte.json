@@ -6,6 +6,7 @@
   "hp": 45,
   "poise": { "max": 18, "resetTicks": 90 },
   "tallow": 40,
+  "loot": "acolyte",
   "speed": 42,
   "strafeSpeed": 30,
   "accelTicks": 6,

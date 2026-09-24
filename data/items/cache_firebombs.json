@@ -1,0 +1,11 @@
+{
+  "id": "cache_firebombs",
+  "name": "Firebomb x3",
+  "icon": 26,
+  "description": "A clay pot of lamp oil stoppered with a rag. The Order calls it heresy when you throw one, and justice when they do.",
+  "effect": {
+    "type": "consumable",
+    "id": "firebomb",
+    "count": 3
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "id": "cache_incense",
+  "name": "Warding Incense x2",
+  "icon": 30,
+  "description": "Myrrh cut with gunpowder, lit at both ends. The smoke clings to the clothes and turns blows aside, or seems to.",
+  "effect": {
+    "type": "consumable",
+    "id": "warding_incense",
+    "count": 2
+  }
+}

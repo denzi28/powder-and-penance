@@ -33,7 +33,13 @@
       "type": "enemy",
       "kind": "belfry_brute",
       "at": [13, 9],
-      "facing": "N"
+      "facing": "N",
+      "miniboss": {
+        "id": "mb_belfry_brute",
+        "title": "The Belfry Brute",
+        "drop": "ring_steady_breath",
+        "hpMult": 1.6
+      }
     },
     {
       "type": "item",

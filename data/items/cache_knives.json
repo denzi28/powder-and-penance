@@ -1,0 +1,11 @@
+{
+  "id": "cache_knives",
+  "name": "Pilgrim's Knife x6",
+  "icon": 27,
+  "description": "Pilgrims were forbidden blades, so they carried 'bread knives', balanced for the hand and sharpened on both edges.",
+  "effect": {
+    "type": "consumable",
+    "id": "throwing_knife",
+    "count": 6
+  }
+}

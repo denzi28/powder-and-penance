@@ -94,6 +94,11 @@
       "type": "prop",
       "kind": "crate",
       "at": [1, 11]
+    },
+    {
+      "type": "note",
+      "note": "note_carters_tally",
+      "at": [10, 8]
     }
   ]
 }

@@ -1049,4 +1049,64 @@ const RECIPES: Record<LayeredSound, Recipe> = {
     k.clang(0.32, 900, 0.2, 0.1);
   },
   p_mail_jingle: k => k.chain(0, 0.08, 0.12),
+  // consumables, rings, notes
+  p_use: k => k.whoosh(0, 0.2, 500, 1200, 0.2),
+  p_belt: k => {
+    k.whoosh(0, 0.1, 900, 1800, 0.12); // a pouch flap
+    k.clang(0.06, 2200, 0.06, 0.05);
+  },
+  p_throw: k => {
+    k.whoosh(0, 0.28, 300, 1100, 0.45); // the arm
+    k.fire(0.02, 0.35, 0.12, 1.2); // the lit rag
+  },
+  p_throw_knife: k => {
+    k.whoosh(0, 0.16, 1200, 3200, 0.35);
+    k.clang(0.01, 3400, 0.05, 0.04);
+  },
+  p_eat: k => {
+    for (let i = 0; i < 3; i++) {
+      k.debris(0.05 + i * 0.16, 0.08, 0.35); // crunch, crunch, crunch
+      k.pop(0.05 + i * 0.16, 260, 0.12);
+    }
+    k.breath(0.55, 0.3, 0.12, false);
+  },
+  p_incense: k => {
+    k.pop(0, 1800, 0.12); // the match
+    k.fire(0.02, 0.25, 0.14, 1.4);
+    k.breath(0.15, 1.0, 0.07, false); // smoke rising
+    k.swell(0.2, 0.9, 587, 0.04);
+  },
+  p_cartridge: k => {
+    k.slice(0, 0.06, 0.12); // bite the paper
+    k.debris(0.12, 0.2, 0.1); // pour
+    k.clang(0.38, 700, 0.12, 0.18); // ram
+    k.clang(0.5, 1600, 0.1, 0.1); // click
+  },
+  p_oil: k => {
+    k.splash(0, 0.25, 0.12);
+    k.sizzle(0.15, 0.6, 0.18); // it bites the steel
+    k.fire(0.2, 0.5, 0.1, 1.3);
+  },
+  p_smoke: k => {
+    k.pop(0, 400, 0.25); // crushed underfoot
+    k.whoosh(0.02, 0.9, 200, 700, 0.35, 0.3); // a billow of grey
+    k.breath(0.1, 0.9, 0.08, false);
+  },
+  p_drink_grog: k => {
+    k.bubbles(0, 6, 0.28, true);
+    k.voice(0.6, 0.35, 150, 110, 'ah', 0.16, 0.8); // a hoarse "ahh"
+  },
+  p_candle: k => {
+    k.snuff(0, 0.15);
+    k.swell(0.05, 0.4, 880, 0.05);
+    k.clang(0.1, 2600, 0.2, 0.05); // tallow dropped in the pouch as coin
+  },
+  p_ring: k => {
+    k.clang(0, 2800, 0.35, 0.1);
+    k.bell(0.02, 1760, 0.6, 0.04);
+  },
+  p_paper: k => {
+    k.whoosh(0, 0.18, 1800, 4000, 0.12);
+    k.whoosh(0.2, 0.14, 2200, 4500, 0.08);
+  },
 };

@@ -23,6 +23,10 @@ export class UIScene extends Phaser.Scene {
   private slotIcons: Phaser.GameObjects.Sprite[] = [];
   private ammoText!: Phaser.GameObjects.BitmapText;
   private shieldIcon!: Phaser.GameObjects.Sprite;
+  private beltIcon!: Phaser.GameObjects.Image;
+  private beltText!: Phaser.GameObjects.BitmapText;
+  private beltKey!: Phaser.GameObjects.BitmapText;
+  private buffIcons: Phaser.GameObjects.Image[] = [];
   private prompt!: Phaser.GameObjects.BitmapText;
   private phialIcons: Phaser.GameObjects.Sprite[] = [];
   private tallowIcon!: Phaser.GameObjects.Sprite;
@@ -66,6 +70,9 @@ export class UIScene extends Phaser.Scene {
     this.err = this.add.bitmapText(4, 4, 'pixel', '').setTint(hexToInt(DATA.palette.blood2)).setDepth(30);
     for (let i = 0; i < 2; i++) this.slotIcons.push(this.add.sprite(0, 0, '__DEFAULT').setOrigin(0.5).setDepth(2));
     this.shieldIcon = this.add.sprite(0, 0, '__DEFAULT').setOrigin(0.5).setDepth(2);
+    this.beltIcon = this.add.image(0, 0, 'icons', 0).setOrigin(0, 0).setDepth(2);
+    this.beltText = this.add.bitmapText(0, 0, 'pixel', '').setTint(hexToInt(DATA.palette.wax2)).setDepth(3);
+    this.beltKey = this.add.bitmapText(0, 0, 'pixel', '').setTint(hexToInt(DATA.palette.stone3)).setDepth(3);
     this.ammoText = this.add.bitmapText(0, 0, 'pixel', '').setDepth(2);
     this.prompt = this.add.bitmapText(0, 0, 'pixel', '').setTint(hexToInt(DATA.palette.wax2)).setDepth(2);
     this.tallowIcon = this.add.sprite(0, 0, 'tallow_icon', 0).setOrigin(0, 0).setDepth(2);
@@ -110,7 +117,7 @@ export class UIScene extends Phaser.Scene {
     const fb = DATA.juice.hitFeedback;
     const dt = this.game.loop.delta;
     this.hpTrail.update(p.hp, p.maxHp, dt, fb.trailHoldMs, fb.trailDrainPerSec);
-    const hpW = Math.round(DATA.player.maxHp * hud.hpPxPerPoint);
+    const hpW = Math.round(p.maxHp * hud.hpPxPerPoint); // a Parish Signet lengthens the bar
     bar(hud.y, hpW, hud.hpHeight, p.hp / p.maxHp, pal.blood2, this.hpTrail.value / p.maxHp);
     this.drawVignette();
     const stW = Math.round(p.stamina.max * hud.staminaPxPerPoint);
@@ -149,6 +156,8 @@ export class UIScene extends Phaser.Scene {
     }
 
     this.drawPhials(stY + hud.staminaHeight + 3);
+    this.drawBuffs(stY + hud.staminaHeight + 13);
+    this.drawBelt();
     this.drawTallow();
     this.drawLoadout();
     this.drawPrompt();
@@ -231,6 +240,53 @@ export class UIScene extends Phaser.Scene {
       s.setVisible(i < p.max);
       s.setFrame(i < p.charges ? 0 : 1).setPosition(DATA.hud.x + i * 8, y);
     });
+  }
+
+  /** Timed effects under the phials: each one's icon with a bar that drains as it wears off. */
+  private drawBuffs(y: number) {
+    const p = this.gs.player;
+    const pal = DATA.palette;
+    const n = p.buffs.length + (p.regen ? 1 : 0);
+    while (this.buffIcons.length < n) this.buffIcons.push(this.add.image(0, 0, 'icons', 0).setOrigin(0, 0).setScale(0.625).setDepth(2));
+    this.buffIcons.forEach((s, i) => s.setVisible(i < n));
+    const items: { id: string; frac: number; colour: string }[] = p.buffs.map(b => {
+      const u = DATA.consumables[b.id]?.use;
+      return { id: b.id, frac: b.ticks / b.total, colour: u?.type === 'buff' ? u.colour : 'wax2' };
+    });
+    if (p.regen) items.push({ id: p.regen.id, frac: p.regen.left / p.regen.total, colour: 'flame2' });
+    items.forEach((b, i) => {
+      const x = DATA.hud.x + i * 13;
+      const blink = b.frac < 0.15 && Math.floor(this.time.now / 200) % 2 === 0; // about to wear off
+      this.buffIcons[i].setFrame(DATA.consumables[b.id]?.icon ?? 0).setPosition(x, y).setAlpha(blink ? 0.4 : 1);
+      this.g.fillStyle(hexToInt(pal.dark2), 1).fillRect(x, y + 11, 10, 1);
+      this.g.fillStyle(hexToInt(pal[b.colour] ?? pal.wax2), 1).fillRect(x, y + 11, Math.max(1, Math.round(10 * b.frac)), 1);
+    });
+  }
+
+  /** Bottom-left: the quick-use belt (C uses, X cycles) and how many you carry. */
+  private drawBelt() {
+    const p = this.gs.player;
+    const pal = DATA.palette;
+    const g = this.g;
+    const H = DATA.game.height;
+    const size = 20;
+    const x = 8;
+    const y = H - 8 - size;
+    const id = p.belt && p.count(p.belt) > 0 ? p.belt : null;
+    const carried = this.gs.gear || this.gs.menu ? 0 : p.carried.length; // hidden under the menus
+    this.beltIcon.setVisible(!!id);
+    this.beltText.setVisible(!!id);
+    this.beltKey.setVisible(carried > 0);
+    if (!carried) return;
+    g.fillStyle(hexToInt(pal.ink), 0.75).fillRect(x, y, size, size);
+    g.fillStyle(hexToInt(p.stateName === 'useItem' ? pal.flame2 : pal.stone2), 1);
+    g.fillRect(x, y, size, 1).fillRect(x, y + size - 1, size, 1).fillRect(x, y, 1, size).fillRect(x + size - 1, y, 1, size);
+    // a tick for each other kind carried, so you know X has somewhere to go
+    for (let i = 1; i < Math.min(carried, 6); i++) g.fillStyle(hexToInt(pal.stone3), 1).fillRect(x + size + 2, y + size - i * 3, 2, 2);
+    if (!id) return;
+    this.beltIcon.setFrame(DATA.consumables[id].icon).setPosition(x + 2, y + 2);
+    this.beltText.setText(String(p.count(id))).setPosition(x + size - this.beltText.width, y + size - 6);
+    this.beltKey.setText(this.gs.controls.device === 'pad' ? 'R3' : 'C').setPosition(x + 1, y - 9);
   }
 
   /** Top-right: carried Tallow; the number rolls toward the real value. */

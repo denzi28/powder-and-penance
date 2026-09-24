@@ -1,0 +1,10 @@
+{
+  "id": "ring_steady_breath",
+  "name": "Band of Steady Breath",
+  "icon": 37,
+  "effect": "+25 max stamina",
+  "mods": {
+    "stamina": 25
+  },
+  "description": "The Belfry Brute wore it on a thong round its neck, too small for any finger it had left. It was a bell-ringer's once: they learned to breathe with the peal."
+}

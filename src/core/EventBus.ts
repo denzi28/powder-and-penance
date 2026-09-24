@@ -46,6 +46,10 @@ export interface GameEvents {
   weaponDropped: { id: string; x: number; y: number };
   /** A lobbed projectile bursts (area damage already applied). */
   blast: { x: number; y: number; radius: number; sfx: string };
+  /** The player used a consumable (its effect has already applied). */
+  itemUsed: { id: string; x: number; y: number };
+  /** A consumable's timed effect wore off. */
+  buffEnded: { id: string };
   /** A thrown strike releases its projectile (throw sound). */
   thrown: { actor: Actor; strike: StrikeDef };
   /** A summoning strike goes off: the scene spawns the summoned enemies around the caster. */

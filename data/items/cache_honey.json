@@ -1,0 +1,11 @@
+{
+  "id": "cache_honey",
+  "name": "Wild Honeycomb x2",
+  "icon": 28,
+  "description": "From the hives by the old orchard wall. The bees there never learned to fear smoke, and the honey tastes faintly of it.",
+  "effect": {
+    "type": "consumable",
+    "id": "honeycomb",
+    "count": 2
+  }
+}

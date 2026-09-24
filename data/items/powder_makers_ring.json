@@ -1,0 +1,10 @@
+{
+  "id": "powder_makers_ring",
+  "name": "Powder-Maker's Ring",
+  "icon": 45,
+  "description": "Stained black at the knuckle from years of grinding charcoal. The powder-makers trusted their hands more than their saints.",
+  "effect": {
+    "type": "ring",
+    "id": "powder_makers_ring"
+  }
+}

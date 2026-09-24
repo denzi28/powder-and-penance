@@ -1,0 +1,10 @@
+{
+  "id": "ring_last_candle",
+  "name": "Ring of the Last Candle",
+  "icon": 42,
+  "description": "Given to the last watchman of the night, who must not let the flame go out. They burn brightest at the end; everyone does.",
+  "effect": {
+    "type": "ring",
+    "id": "ring_last_candle"
+  }
+}

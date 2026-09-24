@@ -262,6 +262,12 @@
       "type": "prop",
       "kind": "pot",
       "at": [1, 7]
+    },
+    {
+      "type": "item",
+      "id": "chest_powder_ring",
+      "item": "powder_makers_ring",
+      "at": [10, 1]
     }
   ]
 }

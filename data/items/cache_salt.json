@@ -1,0 +1,11 @@
+{
+  "id": "cache_salt",
+  "name": "Grey Salt Crust x2",
+  "icon": 29,
+  "description": "Scraped from the pans where the mire dries in summer. Rubbed on boot soles, wax and mud won't take hold of you.",
+  "effect": {
+    "type": "consumable",
+    "id": "grey_salt",
+    "count": 2
+  }
+}

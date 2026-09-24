@@ -1,0 +1,10 @@
+{
+  "id": "parish_signet",
+  "name": "Parish Signet",
+  "icon": 38,
+  "description": "Pressed into the wax of every tithe receipt in the parish. Whoever holds it is owed a great deal, and feels it.",
+  "effect": {
+    "type": "ring",
+    "id": "parish_signet"
+  }
+}

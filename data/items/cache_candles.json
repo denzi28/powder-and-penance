@@ -1,0 +1,11 @@
+{
+  "id": "cache_candles",
+  "name": "Pilgrim's Tallow Candle x3",
+  "icon": 36,
+  "description": "Bought at the gate for the shrine inside. The shrines are dark now, but the Chandlers still take it back at weight.",
+  "effect": {
+    "type": "consumable",
+    "id": "tallow_candle",
+    "count": 3
+  }
+}

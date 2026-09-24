@@ -1,0 +1,10 @@
+{
+  "id": "misers_band",
+  "name": "Miser's Band",
+  "icon": 41,
+  "description": "Found on a skeleton that had sewn its coins into its own skin. It was still holding on.",
+  "effect": {
+    "type": "ring",
+    "id": "misers_band"
+  }
+}

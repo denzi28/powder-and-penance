@@ -1,0 +1,11 @@
+{
+  "id": "cache_smoke",
+  "name": "Smoke Pellet x2",
+  "icon": 34,
+  "description": "A poacher's trick: saltpetre, sugar and soot. Crush it underfoot and the gamekeeper sees nothing but grey.",
+  "effect": {
+    "type": "consumable",
+    "id": "smoke_pellet",
+    "count": 2
+  }
+}

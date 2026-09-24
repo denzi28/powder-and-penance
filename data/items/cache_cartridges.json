@@ -1,0 +1,11 @@
+{
+  "id": "cache_cartridges",
+  "name": "Paper Cartridge x4",
+  "icon": 31,
+  "description": "Ball and a measured charge twisted in a scrap of psalter. Bite, pour, ram: a soldier's prayer is three words long.",
+  "effect": {
+    "type": "consumable",
+    "id": "paper_cartridge",
+    "count": 4
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "id": "cache_grog",
+  "name": "Ringer's Grog x2",
+  "icon": 35,
+  "description": "What the bell-ringers drank before the long peal: small beer, pepper and a spoon of gunpowder. You will not fall over. You may not stop.",
+  "effect": {
+    "type": "consumable",
+    "id": "ringers_grog",
+    "count": 2
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "id": "cache_wafers",
+  "name": "Stale Wafer x2",
+  "icon": 33,
+  "description": "Left over from a mass nobody came to. It is still blessed; the priest said blessings do not go stale. He lied about the bread.",
+  "effect": {
+    "type": "consumable",
+    "id": "communion_wafer",
+    "count": 2
+  }
+}

@@ -88,7 +88,13 @@
       "type": "enemy",
       "kind": "bulwark_warden",
       "at": [9, 6],
-      "facing": "W"
+      "facing": "W",
+      "miniboss": {
+        "id": "mb_warden_hesk",
+        "title": "Hesk, the Unrelieved Warden",
+        "drop": "wardens_ward",
+        "hpMult": 1.8
+      }
     },
     {
       "type": "enemy",

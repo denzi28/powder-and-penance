@@ -1,0 +1,18 @@
+{
+  "id": "smoke_pellet",
+  "name": "Smoke Pellet",
+  "icon": 34,
+  "max": 4,
+  "sfx": "p_smoke",
+  "description": "A poacher's trick: saltpetre, sugar and soot. Crush it underfoot and the gamekeeper sees nothing but grey.",
+  "use": {
+    "type": "buff",
+    "ticks": 1200,
+    "label": "IN SMOKE",
+    "colour": "stone3",
+    "lose": true,
+    "mods": {
+      "notice": 0.25
+    }
+  }
+}

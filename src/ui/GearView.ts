@@ -69,11 +69,11 @@ export class GearView {
   }
 
   /** An item row: icon in a small well, name, and a figure on the right. */
-  private row(x: number, y: number, w: number, e: Entry, selected: boolean, label?: string, right?: string) {
+  private row(x: number, y: number, w: number, e: Entry, selected: boolean, label?: string, right?: string, h = label ? 22 : 20) {
     const g = this.g;
     if (selected) {
-      g.fillStyle(this.col('dark2'), 1).fillRect(x - 3, y - 2, w + 6, label ? 22 : 20);
-      g.fillStyle(this.col('flame1'), 1).fillRect(x - 3, y - 2, 1, label ? 22 : 20);
+      g.fillStyle(this.col('dark2'), 1).fillRect(x - 3, y - 2 + Math.floor((22 - h) / 2), w + 6, h);
+      g.fillStyle(this.col('flame1'), 1).fillRect(x - 3, y - 2 + Math.floor((22 - h) / 2), 1, h);
     }
     g.fillStyle(this.col('dark1'), 1).fillRect(x, y, 18, 18);
     this.icon(x + 1, y + 1, e.icon, 1, e.id === null && e.icon === 25 ? 0.8 : 1);
@@ -110,11 +110,12 @@ export class GearView {
   private drawEquip(s: GearScreen, p: Player) {
     const W = DATA.game.width;
     this.text(20, 16, 'EQUIPMENT', 'flame2', 2);
-    // the five slots (while choosing, the one being changed stays highlighted)
+    // the slots (while choosing, the one being changed stays highlighted)
     s.slotRows().forEach((entry, i) => {
       const slot = SLOTS[i];
       const sel = s.choosing ? s.choosing.key === slot.key : s.row === i;
-      this.row(22, 42 + i * 26, 196, entry, sel, slot.label, entry.weight ? entry.weight.toFixed(1) : '-');
+      const ring = slot.key === 'ring0' || slot.key === 'ring1';
+      this.row(22, SLOT_Y + i * SLOT_STEP, 196, entry, sel, slot.label, ring ? '' : entry.weight ? entry.weight.toFixed(1) : '-', SLOT_STEP);
     });
     // right: your standing, or the choices
     const rx = 250;
@@ -132,13 +133,20 @@ export class GearView {
       this.text(rx, 42, 'YOU', 'stone3');
       const absorb = Math.round(p.armourAbsorb * 100);
       const lines = [
-        `HP ${p.hp}/${p.maxHp}`,
+        `HP ${p.hp}/${p.maxHp}   STAMINA ${p.stamina.max}`,
         `ARMOUR TAKES ${absorb}% OFF DAMAGE`,
         `POISE ${p.poise.max}`,
         `ROLL: ${p.loadTier.note.toUpperCase()}`,
         p.loadTier.sprint ? '' : 'CANNOT RUN',
       ].filter(Boolean);
       lines.forEach((l, i) => this.text(rx, 54 + i * 11, l, i === 3 ? TIER_COLOUR[p.loadTier.id] : 'stone4'));
+      // what the rings and any timed effects are doing
+      const on = p.rings.filter((r): r is string => !!r && !!DATA.rings[r]).map(r => DATA.rings[r].effect.toUpperCase());
+      for (const b of p.buffs) {
+        const u = DATA.consumables[b.id]?.use;
+        if (u?.type === 'buff') on.push(`${u.label} ${Math.ceil(b.ticks / DATA.game.tickRate)}S`);
+      }
+      on.slice(0, 5).forEach((l, i) => this.text(rx, 54 + (lines.length + 0.5) * 11 + i * 10, l.slice(0, 32), 'wax1'));
     }
     // bottom: details and the load
     this.g.fillStyle(this.col('stone1'), 1).fillRect(20, 176, W - 40, 1);
@@ -146,7 +154,7 @@ export class GearView {
     this.loadBox(300, 182, W - 322, s);
     this.text(22, DATA.game.height - 18, s.choosing ? 'UP/DOWN CHOOSE   E/ENTER EQUIP   ESC BACK' : 'UP/DOWN SELECT   E/ENTER CHANGE   ESC BACK', 'stone2');
     // a shield can't be used with a two-handed weapon in hand (it still weighs what it weighs)
-    if (p.shieldId && p.lockedSlot !== null) this.text(22 + 23 + 'LEFT HAND'.length * 6 + 6, 42 + 2 * 26, 'UNUSED (TWO-HANDED)', 'blood2');
+    if (p.shieldId && p.lockedSlot !== null) this.text(22 + 23 + 'LEFT HAND'.length * 6 + 6, SLOT_Y + 2 * SLOT_STEP, 'UNUSED (TWO-HANDED)', 'blood2');
   }
 
   private loadBox(x: number, y: number, w: number, s: GearScreen) {
@@ -166,7 +174,7 @@ export class GearView {
       from = to;
       if (from >= 1) break;
     }
-    g.fillStyle(this.col(TIER_COLOUR[loadTierId(L.now)]), 1).fillRect(x, by + 1, Math.round(frac(L.now) * w), 5);
+    g.fillStyle(this.col(TIER_COLOUR[loadTierId(L.now, L.capacity)]), 1).fillRect(x, by + 1, Math.round(frac(L.now) * w), 5);
     if (L.preview !== null && L.preview !== L.now) {
       const a = Math.min(frac(L.now), frac(L.preview));
       const b = Math.max(frac(L.now), frac(L.preview));
@@ -199,9 +207,14 @@ export class GearView {
       const right = e.qty ?? (e.weight !== null ? e.weight.toFixed(1) : '');
       this.row(22, 56 + i * 21, 208, e, first + i === s.index, undefined, right);
     });
-    // details, with a large icon
+    // details, with a large icon (a note is shown for reading instead)
     const e = list[s.index];
-    if (e) {
+    if (e && TABS[s.tab] === 'NOTES') {
+      this.text(250, 56, wrap(e.name.toUpperCase(), 34), 'flame2');
+      const lines = wrapParagraphs(e.description, 34);
+      const room = Math.floor((DATA.game.height - 26 - 72) / 8);
+      this.text(250, 72, lines.slice(0, room).join('\n'), 'wax1');
+    } else if (e) {
       this.g.fillStyle(this.col('dark1'), 1).fillRect(250, 56, 34, 34);
       this.icon(251, 57, e.icon, 2);
       this.text(292, 62, wrap(e.name.toUpperCase(), 26), 'flame2');
@@ -209,11 +222,20 @@ export class GearView {
       else if (e.qty) this.text(292, 80, e.qty, 'stone3');
       this.details(250, 98, 34, e, 14, false);
     }
-    this.text(22, DATA.game.height - 18, 'UP/DOWN SELECT   LEFT/RIGHT TAB   ESC BACK', 'stone2');
+    const onItems = TABS[s.tab] === 'ITEMS' && e?.id && DATA.consumables[e.id];
+    this.text(22, DATA.game.height - 18, onItems ? 'UP/DOWN SELECT   E/ENTER PUT ON BELT   LEFT/RIGHT TAB   ESC BACK' : 'UP/DOWN SELECT   LEFT/RIGHT TAB   ESC BACK', 'stone2');
   }
 }
 
-function loadTierId(load: number) {
-  const f = load / DATA.load.capacity;
+const SLOT_Y = 38;
+const SLOT_STEP = 19;
+
+/** Wrap text that has its own line breaks (paragraphs, verses): each line wrapped on its own. */
+function wrapParagraphs(text: string, cols: number): string[] {
+  return text.split('\n').flatMap(l => (l.trim() ? wrap(l, cols).split('\n') : ['']));
+}
+
+function loadTierId(load: number, capacity: number) {
+  const f = load / capacity;
   return (DATA.load.tiers.find(t => f <= t.upTo + 1e-9) ?? DATA.load.tiers[DATA.load.tiers.length - 1]).id;
 }

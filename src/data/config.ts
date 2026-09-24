@@ -57,6 +57,9 @@ function loadAll(src: Record<string, unknown>) {
     armour: dir(S.ArmourDef, 'armour'),
     load: one(S.LoadCfg, 'config/load'),
     items: dir(S.ItemDef, 'items'),
+    consumables: dir(S.ConsumableDef, 'consumables'),
+    rings: dir(S.RingDef, 'rings'),
+    notes: dir(S.NoteDef, 'notes'),
     props: dir(S.PropDef, 'props'),
     loot: one(S.LootTables, 'loot'),
     enemies: dir(S.EnemyDef, 'enemies'),
@@ -117,6 +120,14 @@ function loadAll(src: Record<string, unknown>) {
           errors.push(`data/rooms/${r.id}.json: unknown decor kind "${String(en.kind)}"`);
         if (en.type === 'weapon' && !data.weapons[String(en.weapon)])
           errors.push(`data/rooms/${r.id}.json: weapon "${en.id}" has unknown weapon "${String(en.weapon)}"`);
+        if (en.type === 'note' && !data.notes[String(en.note)]) errors.push(`data/rooms/${r.id}.json: note has unknown note "${String(en.note)}"`);
+        if (en.type === 'enemy' && en.miniboss !== undefined) {
+          const mb = S.MinibossPlacement.safeParse(en.miniboss);
+          if (!mb.success) errors.push(`data/rooms/${r.id}.json: miniboss:\n${S.formatZod(mb.error)}`);
+          else if (!data.items[mb.data.drop]) errors.push(`data/rooms/${r.id}.json: miniboss "${mb.data.id}" drops unknown item "${mb.data.drop}"`);
+          else if (ids.has(mb.data.id)) errors.push(`data/rooms/${r.id}.json: duplicate entity id "${mb.data.id}"`);
+          else ids.add(mb.data.id);
+        }
         if (en.type === 'shrine' || en.type === 'item' || en.type === 'door' || en.type === 'weapon') {
           if (!en.id) errors.push(`data/rooms/${r.id}.json: ${en.type} needs an "id"`);
           else if (ids.has(en.id)) errors.push(`data/rooms/${r.id}.json: duplicate entity id "${en.id}"`);
@@ -178,9 +189,21 @@ function loadAll(src: Record<string, unknown>) {
     }
     for (const it of Object.values(data.items)) {
       const e = it.effect;
+      if (e.type === 'consumable' && !data.consumables[e.id]) errors.push(`data/items/${it.id}.json: unknown consumable "${e.id}"`);
+      if (e.type === 'ring' && !data.rings[e.id]) errors.push(`data/items/${it.id}.json: unknown ring "${e.id}"`);
       if (e.type !== 'gear') continue;
       const table = e.kind === 'weapon' ? data.weapons : e.kind === 'shield' ? data.shields : data.armour;
       if (!table[e.id]) errors.push(`data/items/${it.id}.json: gear "${e.id}" is not a ${e.kind}`);
+    }
+    for (const [t, table] of Object.entries(data.loot.tables))
+      for (const l of table) if (l.item && !data.consumables[l.item]) errors.push(`data/loot.json: table "${t}" drops unknown consumable "${l.item}"`);
+    for (const e of Object.values(data.enemies) as S.EnemyDef[])
+      if (e.loot && !data.loot.tables[e.loot]) errors.push(`data/enemies/${e.id}.json: unknown loot table "${e.loot}"`);
+    for (const c of Object.values(data.consumables)) {
+      if (!sound(c.sfx)) errors.push(`data/consumables/${c.id}.json: unknown sound "${c.sfx}"`);
+      if (c.use.type === 'throw' && c.use.projectile.lob && !sound(c.use.projectile.lob.sfx))
+        errors.push(`data/consumables/${c.id}.json: unknown sound "${c.use.projectile.lob.sfx}"`);
+      if (c.use.type === 'buff' && !data.palette[c.use.colour]) errors.push(`data/consumables/${c.id}.json: colour "${c.use.colour}" is not a palette colour`);
     }
     for (const w of Object.values(data.weapons))
       for (const id of [w.sounds.draw, w.sounds.hit, w.sounds.shotHit, w.sounds.charge, ...(w.sounds.reload ?? []).map(r => r[1]), w.ranged?.fire.sfx, ...w.light.map(l => l.sfx), w.heavy?.strike.sfx])

@@ -6,6 +6,7 @@
   "hp": 60,
   "poise": { "max": 30, "resetTicks": 90 },
   "tallow": 40,
+  "loot": "crawler",
   "speed": 26,
   "strafeSpeed": 16,
   "accelTicks": 10,

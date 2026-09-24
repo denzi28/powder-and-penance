@@ -1,6 +1,6 @@
 // Player simulation state. No Phaser here: PlayerView renders it, interpolating prev -> current position.
 import { DATA } from '../data/config';
-import type { LoadCfg } from '../data/schemas';
+import type { LoadCfg, Mods } from '../data/schemas';
 import { AnimPlayer } from '../anim/AnimPlayer';
 import { SPRITES } from '../data/assets';
 import { Actor } from '../actors/Actor';
@@ -23,8 +23,28 @@ export interface Ammo {
 
 export class Player extends Actor {
   readonly team = 'player' as const;
-  readonly poise = new Poise(() => ({ ...DATA.player.poise, max: DATA.player.poise.max + this.armourPoise }));
-  readonly stamina = new Stamina(() => DATA.stamina, () => DATA.game.tickRate);
+  // Consumables, rings and timed effects (declared first: stamina and poise read them)
+  /** Consumables carried: id -> how many. */
+  readonly pack = new Map<string, number>();
+  /** The consumable on the quick-use belt (cycled through what you carry). */
+  belt: string | null = null;
+  /** Worn rings (data/rings ids). */
+  readonly rings: [string | null, string | null] = [null, null];
+  /** Timed effects from consumables: ticks left of each. */
+  buffs: { id: string; ticks: number; total: number }[] = [];
+  /** Healing spread over time (honeycomb): HP still to come and HP per tick. */
+  regen: { id: string; left: number; total: number; perTick: number; acc: number } | null = null;
+  /** The consumable being used (useItem state). */
+  using: string | null = null;
+
+  readonly poise = new Poise(() => ({ ...DATA.player.poise, max: DATA.player.poise.max + this.armourPoise + this.mods.poise }));
+  readonly stamina = new Stamina(
+    () => {
+      const m = this.mods;
+      return { ...DATA.stamina, max: DATA.stamina.max + m.stamina, regenPerSec: DATA.stamina.regenPerSec * m.staminaRegen };
+    },
+    () => DATA.game.tickRate,
+  );
   readonly body = new AnimPlayer(SPRITES.player_body.animations);
   readonly legs = new AnimPlayer(SPRITES.player_legs.animations);
   readonly sm: StateMachine<Player>;
@@ -60,7 +80,7 @@ export class Player extends Actor {
   /** Armour worn (data/armour ids). */
   readonly worn: { head: string | null; body: string | null } = { head: null, body: null };
   /** Everything owned (equipped or not). Fists aren't listed: they're always there. */
-  readonly inv: { weapons: string[]; shields: string[]; armour: string[] } = { weapons: [], shields: [], armour: [] };
+  readonly inv: { weapons: string[]; shields: string[]; armour: string[]; rings: string[] } = { weapons: [], shields: [], armour: [], rings: [] };
   readonly ammo = new Map<string, Ammo>();
 
   // Resources
@@ -105,7 +125,7 @@ export class Player extends Actor {
     return this.ctx.input;
   }
   get maxHp() {
-    return DATA.player.maxHp;
+    return DATA.player.maxHp + this.mods.maxHp;
   }
   get collider() {
     return DATA.player.collider;
@@ -148,20 +168,164 @@ export class Player extends Actor {
     return this.armourPieces.reduce((a, p) => a + p.poise, 0);
   }
   override get damageTakenMult() {
-    return 1 - this.armourAbsorb;
+    return (1 - this.armourAbsorb) * this.mods.damageTaken;
+  }
+
+  /** Rings and timed effects together. */
+  get mods(): FullMods {
+    const list: Mods[] = [];
+    for (const r of this.rings) if (r && DATA.rings[r]) list.push(DATA.rings[r].mods);
+    for (const b of this.buffs) {
+      const u = DATA.consumables[b.id]?.use;
+      if (u?.type === 'buff') list.push(u.mods);
+    }
+    return combineMods(list);
+  }
+
+  override damageDealtMult(kind: 'melee' | 'projectile' | 'critical') {
+    const m = this.mods;
+    return m.damage * (kind === 'projectile' ? m.rangedDamage : 1) * (this.hp <= this.maxHp * 0.3 ? m.desperate : 1);
+  }
+
+  /** Wax, mud and spilled pools slow you less when sure-footed. */
+  override terrainMult() {
+    const k = super.terrainMult();
+    return k + (1 - k) * this.mods.sureFooted;
   }
 
   /** Weight of everything equipped: both hands, the shield and armour. */
   get equipLoad() {
     return loadOf({ slots: this.slots, shield: this.shieldId, head: this.worn.head, body: this.worn.body });
   }
+  /** Equip load capacity (rings can raise it). */
+  get capacity() {
+    return Math.round(DATA.load.capacity * this.mods.capacity * 10) / 10;
+  }
   get loadTier() {
-    return loadTier(this.equipLoad);
+    return loadTier(this.equipLoad, this.capacity);
   }
 
   /** The roll as your equip load makes it (see data/config/load.json). */
   rollParams() {
-    return rollFor(this.loadTier);
+    const r = rollFor(this.loadTier);
+    return { ...r, stamina: r.stamina * this.mods.rollCost };
+  }
+
+  // ------------------------------------------------------------------ consumables and rings
+  count(id: string) {
+    return this.pack.get(id) ?? 0;
+  }
+
+  /** Add consumables (up to what can be carried). Returns how many were actually taken. */
+  addItem(id: string, n: number): number {
+    const c = DATA.consumables[id];
+    if (!c) return 0;
+    const took = Math.max(0, Math.min(n, c.max - this.count(id)));
+    if (took) this.pack.set(id, this.count(id) + took);
+    if (!this.belt || !this.count(this.belt)) this.belt = id;
+    return took;
+  }
+
+  /** The consumables you carry, in data order (the belt cycles through these). */
+  get carried(): string[] {
+    return Object.keys(DATA.consumables).filter(id => this.count(id) > 0);
+  }
+
+  /** Next (or previous) carried consumable onto the belt. */
+  cycleBelt(dir = 1) {
+    const list = this.carried;
+    if (!list.length) {
+      this.belt = null;
+      return;
+    }
+    const i = this.belt ? list.indexOf(this.belt) : -1;
+    this.belt = list[(i + dir + list.length) % list.length];
+  }
+
+  /** Put an owned ring on finger i (moving it off the other finger), or take the ring there off. */
+  setRing(i: 0 | 1, id: string | null) {
+    if (id && !this.inv.rings.includes(id)) return;
+    if (id && this.rings[1 - i] === id) this.rings[1 - i] = null;
+    this.rings[i] = id;
+  }
+
+  /**
+   * Use one of the belt's consumable now (the useItem state calls this at the moment it lands). Returns what
+   * happened for the presentation, or null if there was nothing to use.
+   */
+  applyConsumable(id: string): boolean {
+    const c = DATA.consumables[id];
+    if (!c || this.count(id) <= 0) return false;
+    const n = this.count(id) - 1;
+    if (n) this.pack.set(id, n);
+    else {
+      this.pack.delete(id);
+      this.cycleBelt();
+      if (this.belt === id) this.belt = null;
+    }
+    const u = c.use;
+    const ctx = this.ctx;
+    switch (u.type) {
+      case 'throw': {
+        const hand = 8;
+        const x = this.x + Math.cos(this.aimAngle) * hand;
+        const y = this.y + Math.sin(this.aimAngle) * hand;
+        let target: { x: number; y: number } | undefined;
+        if (u.projectile.lob) {
+          // lands where you aim (on the ground), up to a stone's throw away
+          const dx = this.aimX - this.x;
+          const dy = this.aimY - this.y;
+          const k = Math.min(1, THROW_REACH / Math.max(1, Math.hypot(dx, dy)));
+          target = { x: this.x + dx * k, y: this.y + dy * k };
+        }
+        ctx.projectiles.spawn(this, x, y, this.aimAngle, u.projectile, target);
+        break;
+      }
+      case 'regen':
+        this.regen = { id, left: u.amount, total: u.amount, perTick: u.amount / u.ticks, acc: 0 };
+        break;
+      case 'buff': {
+        this.buffs = this.buffs.filter(b => b.id !== id);
+        this.buffs.push({ id, ticks: u.ticks, total: u.ticks });
+        if (u.lose) for (const e of ctx.enemies()) e.loseTrack();
+        break;
+      }
+      case 'reload':
+        for (const wid of new Set(this.slots)) {
+          const r = DATA.weapons[wid]?.ranged;
+          if (!r) continue;
+          const a = this.ammoFor(wid);
+          a.clip = r.clip;
+          a.reserve = Math.min(r.reserveMax, a.reserve + Math.ceil(r.reserveMax * u.reserve));
+        }
+        break;
+      case 'tallow':
+        this.tallow += u.amount;
+        break;
+    }
+    ctx.bus.emit('itemUsed', { id, x: this.x, y: this.y });
+    return true;
+  }
+
+  private tickEffects() {
+    for (const b of this.buffs) b.ticks--;
+    const ended = this.buffs.filter(b => b.ticks <= 0);
+    if (ended.length) {
+      this.buffs = this.buffs.filter(b => b.ticks > 0);
+      for (const b of ended) this.ctx.bus.emit('buffEnded', { id: b.id });
+    }
+    const r = this.regen;
+    if (r && !this.dead) {
+      r.acc += r.perTick;
+      const whole = Math.min(r.left, Math.floor(r.acc));
+      if (whole > 0) {
+        r.acc -= whole;
+        r.left -= whole;
+        this.hp = Math.min(this.maxHp, this.hp + whole);
+      }
+      if (r.left <= 0) this.regen = null;
+    }
+    if (this.hp > this.maxHp) this.hp = this.maxHp;
   }
 
   /** Put gear in the inventory. Returns false if it was already there. */
@@ -234,6 +398,11 @@ export class Player extends Actor {
     this.recoil = Math.max(0, this.recoil - 0.12);
 
     this.stamina.tick();
+    this.tickEffects();
+    if (this.input.consume('cycleItem') && this.carried.length) {
+      this.cycleBelt();
+      this.ctx.bus.emit('sfx', { id: 'p_belt' });
+    }
     this.sm.tick();
     this.applyKnockback();
     this.hyperArmor = this.runner?.hyperArmor ?? 0;
@@ -261,7 +430,7 @@ export class Player extends Actor {
   }
 
   get healAmount() {
-    return DATA.phial.healAmount + this.phials.level * DATA.phial.healPerLevel;
+    return Math.round((DATA.phial.healAmount + this.phials.level * DATA.phial.healPerLevel) * this.mods.heal);
   }
 
   onHit(h: HitInfo) {
@@ -345,6 +514,8 @@ export class Player extends Actor {
 
   /** Shrine rest / respawn: full HP, stamina, phials and ammo. */
   refill() {
+    this.buffs = [];
+    this.regen = null;
     this.hp = this.maxHp;
     this.stamina.refill();
     this.phials.charges = this.phials.max;
@@ -417,9 +588,9 @@ export function loadOf(g: Gear): number {
 }
 
 /** The load tier for a weight: the first whose `upTo` (a fraction of capacity) it fits under. */
-export function loadTier(load: number) {
+export function loadTier(load: number, capacity = DATA.load.capacity) {
   const tiers = DATA.load.tiers;
-  const f = load / DATA.load.capacity;
+  const f = load / capacity;
   return tiers.find(t => f <= t.upTo + 1e-9) ?? tiers[tiers.length - 1];
 }
 
@@ -443,4 +614,29 @@ export function rollFor(tier: LoadCfg['tiers'][number]) {
     moveCancelFrom: totalTicks - (c.totalTicks - c.moveCancelFrom),
     tier: tier.id,
   };
+}
+
+// ------------------------------------------------------------------ modifiers (rings, timed effects)
+/** How far a lobbed throw can land. */
+export const THROW_REACH = 120;
+
+export type FullMods = Required<Mods>;
+
+/** Several sets of modifiers as one: additions add, multipliers multiply, fractions take the largest. */
+export function combineMods(list: readonly Mods[]): FullMods {
+  const m: FullMods = {
+    maxHp: 0, stamina: 0, poise: 0,
+    staminaRegen: 1, rollCost: 1, damage: 1, rangedDamage: 1, desperate: 1, damageTaken: 1, heal: 1, notice: 1, tallowGain: 1, capacity: 1,
+    keepTallow: 0, sureFooted: 0,
+  };
+  for (const x of list) {
+    m.maxHp += x.maxHp ?? 0;
+    m.stamina += x.stamina ?? 0;
+    m.poise += x.poise ?? 0;
+    for (const k of ['staminaRegen', 'rollCost', 'damage', 'rangedDamage', 'desperate', 'damageTaken', 'heal', 'notice', 'tallowGain', 'capacity'] as const)
+      m[k] *= x[k] ?? 1;
+    m.keepTallow = Math.max(m.keepTallow, x.keepTallow ?? 0);
+    m.sureFooted = Math.max(m.sureFooted, x.sureFooted ?? 0);
+  }
+  return m;
 }

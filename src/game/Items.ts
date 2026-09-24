@@ -75,7 +75,27 @@ export function grantItem(gs: GameScene, id: string, itemId: string, x: number, 
         }
       }
       const tier = p.loadTier;
-      what = `${g.name}${on ? ', equipped' : ', added to your pack'}. Weight ${g.weight}; equip load now ${p.equipLoad} of ${DATA.load.capacity} (${tier.label.toLowerCase()}: ${tier.note.toLowerCase()}). Change gear from EQUIPMENT (Esc).`;
+      what = `${g.name}${on ? ', equipped' : ', added to your pack'}. Weight ${g.weight}; equip load now ${p.equipLoad} of ${p.capacity} (${tier.label.toLowerCase()}: ${tier.note.toLowerCase()}). Change gear from EQUIPMENT (Esc).`;
+      break;
+    }
+    case 'consumable': {
+      const c = DATA.consumables[e.id];
+      const took = p.addItem(e.id, e.count);
+      gs.flags.add(`found:${e.id}`);
+      const has = p.count(e.id);
+      what =
+        took > 0
+          ? `${took > 1 ? `${took} x ` : ''}${c.name}: ${useLine(e.id)} You carry ${has} of ${c.max}. ${p.belt === e.id ? 'It is on your belt: C (or R3) uses it, X cycles.' : 'X cycles your belt to it; C uses it.'}`
+          : `You can't carry more ${c.name} (${c.max}).`;
+      break;
+    }
+    case 'ring': {
+      const r = DATA.rings[e.id];
+      if (!p.inv.rings.includes(e.id)) p.inv.rings.push(e.id);
+      const free = p.rings.indexOf(null);
+      if (free >= 0 && !p.rings.includes(e.id)) p.setRing(free as 0 | 1, e.id);
+      const on = p.rings.includes(e.id);
+      what = `A ring: ${r.effect.toLowerCase()} while worn. ${on ? 'You put it on.' : 'Both hands are ringed; swap rings from EQUIPMENT (Esc).'}`;
       break;
     }
     case 'quest':
@@ -83,8 +103,43 @@ export function grantItem(gs: GameScene, id: string, itemId: string, x: number, 
       what = `${e.note} Kept for good, even if you die.`;
       break;
   }
-  gs.showToast(item.name.toUpperCase(), what, item.description);
+  const lore = e.type === 'consumable' ? DATA.consumables[e.id].description : e.type === 'ring' ? DATA.rings[e.id].description : item.description;
+  gs.showToast(item.name.toUpperCase(), what, lore);
   gs.particles.burst(x, y, 10, -Math.PI / 2, 1.6, 12, 60, 'flame2', false); // sparks from the open chest
   gs.bus.emit('sfx', { id: 'item' });
   gs.save();
+}
+
+/** What a consumable does, in one plain sentence with real numbers. */
+export function useLine(id: string): string {
+  const u = DATA.consumables[id].use;
+  const secs = (t: number) => `${Math.round(t / DATA.game.tickRate)}s`;
+  switch (u.type) {
+    case 'throw':
+      return u.projectile.lob
+        ? `Thrown where you aim; bursts for ${u.projectile.damage} damage around it.`
+        : `Thrown straight where you aim for ${u.projectile.damage} damage.`;
+    case 'regen':
+      return `Heals ${u.amount} HP over ${secs(u.ticks)}.`;
+    case 'buff':
+      return `${buffLine(u.mods, u.lose)} for ${secs(u.ticks)}.`;
+    case 'reload':
+      return `Loads every gun you carry at once, and adds ${Math.round(u.reserve * 100)}% of its spare shots.`;
+    case 'tallow':
+      return `Turn it into ${u.amount} Tallow.`;
+  }
+}
+
+function buffLine(m: import('../data/schemas').Mods, lose: boolean): string {
+  const pct = (x: number) => `${Math.round(Math.abs(x - 1) * 100)}%`;
+  const parts: string[] = [];
+  if (lose) parts.push('enemies hunting you lose you');
+  if (m.notice) parts.push(`you are noticed ${pct(m.notice)} slower`);
+  if (m.sureFooted) parts.push('wax, mud and spilled pools no longer slow you');
+  if (m.damageTaken) parts.push(`you take ${pct(m.damageTaken)} less damage`);
+  if (m.damage) parts.push(`your hits deal ${pct(m.damage)} more damage`);
+  if (m.staminaRegen) parts.push(`stamina comes back ${pct(m.staminaRegen)} faster`);
+  if (m.poise) parts.push(`+${m.poise} poise, so you are hard to stagger`);
+  const s = parts.join(', ');
+  return s.charAt(0).toUpperCase() + s.slice(1);
 }

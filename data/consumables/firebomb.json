@@ -1,0 +1,28 @@
+{
+  "id": "firebomb",
+  "name": "Firebomb",
+  "icon": 26,
+  "max": 6,
+  "sfx": "p_throw",
+  "description": "A clay pot of lamp oil stoppered with a rag. The Order calls it heresy when you throw one, and justice when they do.",
+  "use": {
+    "type": "throw",
+    "projectile": {
+      "sprite": "firepot",
+      "speed": 1,
+      "range": 1,
+      "damage": 38,
+      "poise": 40,
+      "knockback": 150,
+      "hitstop": 4,
+      "shake": 0.3,
+      "radius": 3,
+      "lob": {
+        "flightTicks": 30,
+        "arcHeight": 26,
+        "blastRadius": 24,
+        "sfx": "e_firepot_blast"
+      }
+    }
+  }
+}
