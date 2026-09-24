@@ -104,6 +104,13 @@ export interface TileSet {
   rock?: number[];
   /** Optional soft wall shadows drawn over the floor: 8 tiles by which sides are closed (N=1, E=2, W=4). */
   shade?: number[];
+  /**
+   * Optional soft edges, one set per floor variant: `fringe_floor_grass` is 16 tiles drawn over the floor
+   * cells that border grass (index = mask of the grass sides, N=1 E=2 S=4 W=8), so grass creeps over the
+   * ground next to it instead of ending in a square edge. Index 0 is never drawn.
+   * Sets are listed top layer first: a variant's edge spreads over the variants listed after it and over
+   * floors that have no fringe, never over one listed before it (wax pools lie on the grass, not under it).
+   */
   [variant: string]: number[] | undefined;
 }
 export interface PlacedTile {
@@ -119,8 +126,12 @@ export interface PlacedTile {
  * Cap tiles are picked by a 4-bit mask of which sides border open floor (N=1, E=2, S=4, W=8).
  * Void (outside every room) is filled with solid rock, which walls merge into seamlessly.
  * With a `shade` set, floor cells next to walls also get a shadow tile (returned as `shade`, drawn over the floor).
+ * With `fringe_<variant>` sets, floor cells bordering that variant get its edge drawn over them (`fringe`).
  */
-export function autotile(g: TileGrid, ts: TileSet): { statics: PlacedTile[]; overhang: PlacedTile[]; shade: PlacedTile[] } {
+export function autotile(
+  g: TileGrid,
+  ts: TileSet,
+): { statics: PlacedTile[]; overhang: PlacedTile[]; shade: PlacedTile[]; fringe: PlacedTile[] } {
   const wall = (x: number, y: number) => g.get(x, y) === Cell.Wall;
   const floor = (x: number, y: number) => g.isGround(x, y);
   const front = (x: number, y: number) => wall(x, y) && floor(x, y + 1);
@@ -134,10 +145,26 @@ export function autotile(g: TileGrid, ts: TileSet): { statics: PlacedTile[]; ove
   const statics: PlacedTile[] = [];
   const overhang: PlacedTile[] = [];
   const shade: PlacedTile[] = [];
+  const fringe: PlacedTile[] = [];
+  const fringes = Object.keys(ts)
+    .filter(k => k.startsWith('fringe_'))
+    .map(k => [k.slice('fringe_'.length), ts[k]!] as const);
+  const edgeOf = (x: number, y: number) => {
+    const own = g.variant(x, y);
+    for (const [v, list] of fringes) {
+      if (v === own) return undefined; // only layers above this cell's own may spread over it
+      const is = (x2: number, y2: number) => floor(x2, y2) && g.variant(x2, y2) === v;
+      const m = (is(x, y - 1) ? 1 : 0) | (is(x + 1, y) ? 2 : 0) | (is(x, y + 1) ? 4 : 0) | (is(x - 1, y) ? 8 : 0);
+      if (m) return list[m];
+    }
+    return undefined;
+  };
   for (let y = g.oy; y < g.oy + g.h; y++) {
     for (let x = g.ox; x < g.ox + g.w; x++) {
       if (floor(x, y)) {
         statics.push({ tx: x, ty: y, index: pick(ts[g.variant(x, y)] ?? ts.floor, x, y) });
+        const edge = fringes.length ? edgeOf(x, y) : undefined;
+        if (edge !== undefined) fringe.push({ tx: x, ty: y, index: edge });
         if (front(x, y + 1)) overhang.push({ tx: x, ty: y, index: ts.wall_cap[mask(x, y)] });
         else if (ts.shade) {
           const m = (closed(x, y - 1) ? 1 : 0) | (closed(x + 1, y) ? 2 : 0) | (closed(x - 1, y) ? 4 : 0);
@@ -152,5 +179,5 @@ export function autotile(g: TileGrid, ts: TileSet): { statics: PlacedTile[]; ove
       }
     }
   }
-  return { statics, overhang, shade };
+  return { statics, overhang, shade, fringe };
 }

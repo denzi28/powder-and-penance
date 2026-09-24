@@ -15,7 +15,7 @@ export class WorldView {
   build(grid: TileGrid, tileset: string) {
     this.destroy();
     const tiles = this.lib.manifest(tileset).tiles as unknown as TileSet;
-    const { statics, overhang, shade } = autotile(grid, tiles);
+    const { statics, overhang, shade, fringe } = autotile(grid, tiles);
 
     const map = this.scene.make.tilemap({ tileWidth: TILE, tileHeight: TILE, width: grid.w, height: grid.h });
     const ts = map.addTilesetImage(tileset, tileset, TILE, TILE, 0, 0);
@@ -24,12 +24,16 @@ export class WorldView {
     if (!layer) throw new Error('Failed to create tile layer');
     for (const t of statics) layer.putTileAt(t.index, t.tx - grid.ox, t.ty - grid.oy);
     layer.setDepth(DEPTH.floor);
-    if (shade.length) {
-      const shadeLayer = map.createBlankLayer('shade', ts, grid.ox * TILE, grid.oy * TILE);
-      if (!shadeLayer) throw new Error('Failed to create shade layer');
-      for (const t of shade) shadeLayer.putTileAt(t.index, t.tx - grid.ox, t.ty - grid.oy);
-      shadeLayer.setDepth(DEPTH.floor + 0.5);
-    }
+    // Overlays on the floor: soft edges between floor kinds, then wall shadows over everything.
+    const overlay = (name: string, placed: typeof statics, depth: number) => {
+      if (!placed.length) return;
+      const l = map.createBlankLayer(name, ts, grid.ox * TILE, grid.oy * TILE);
+      if (!l) throw new Error(`Failed to create ${name} layer`);
+      for (const t of placed) l.putTileAt(t.index, t.tx - grid.ox, t.ty - grid.oy);
+      l.setDepth(depth);
+    };
+    overlay('fringe', fringe, DEPTH.floor + 0.25);
+    overlay('shade', shade, DEPTH.floor + 0.5);
     this.map = map;
 
     // Tiles listed under `glow` (candle niches) cast a flickering warm light over the wall and floor.

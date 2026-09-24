@@ -59,6 +59,22 @@ describe('autotile', () => {
     expect(shadeAt(2, 3)).toBe(200 + 1); // below the pillar's face
     expect(shadeAt(2, 1)).toBeUndefined(); // under the pillar's cap: the overhang covers it
   });
+  it('spreads fringes only over the layers listed after them', () => {
+    const pond = RoomData.parse({
+      id: 'p',
+      origin: [0, 0],
+      legend: { '.': 'floor', ',': 'floor_grass', '~': 'floor_wax' },
+      tiles: ['..,', '.~,', '...'],
+    });
+    const fr = (i: number) => Array.from({ length: 16 }, (_, m) => i * 100 + m);
+    const { fringe } = autotile(buildGrid([pond]), { ...ts, fringe_floor_wax: fr(3), fringe_floor_grass: fr(4) });
+    const edge = (x: number, y: number) => fringe.find(t => t.tx === x && t.ty === y)?.index;
+    expect(edge(1, 0)).toBe(300 + 4); // wax to the south and grass to the east: the top layer (wax) wins
+    expect(edge(2, 1)).toBe(300 + 8); // grass east of the wax: the wax spreads over it
+    expect(edge(1, 1)).toBeUndefined(); // the wax itself: grass never spreads over it
+    expect(edge(1, 2)).toBe(300 + 1); // wax to the north
+    expect(edge(2, 2)).toBe(400 + 1); // grass to the north only
+  });
 });
 
 describe('moveBox', () => {

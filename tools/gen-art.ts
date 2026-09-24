@@ -1806,93 +1806,234 @@ function bonesDeath(c: Img, f: number) {
 function genWorks() {
   const T = 16;
   // ---- tileset: soot-black flagstones, iron grates, tallow spills, soot brick walls with iron tops
-  const img = new Img(T * 8, T * 4);
-  const at = (idx: number) => [(idx % 8) * T, Math.floor(idx / 8) * T] as const;
+  const img = new Img(T * 8, T * 8);
+  const at = tileAt;
   const speck = (ox: number, oy: number, r: () => number, n: number, col: RGBA) => {
     for (let i = 0; i < n; i++) img.set(ox + Math.floor(r() * 16), oy + Math.floor(r() * 16), col);
   };
-  for (let v = 0; v < 4; v++) {
-    const [ox, oy] = at(v);
-    const r = rng(3000 + v);
-    img.rect(ox, oy, T, T, P.stone1);
-    img.hline(ox, oy + 15, T, P.dark1);
-    img.vline(ox + 15, oy, T, P.dark1);
-    if (v % 2) img.vline(ox + 7, oy, 15, P.dark1);
-    speck(ox, oy, r, 12, P.dark2);
-    speck(ox, oy, r, 4, P.ink);
-    if (v === 3) img.ellipse(ox + 8, oy + 8, 4, 2, P.dark2); // soot stain
-  }
+  const WK = {
+    soot: mix(P.stone1, P.dark2, 0.75),
+    brick0: hex('#2a1c1c'),
+    brick1: mix(P.wood1, P.dark2, 0.45),
+    brick2: mix(P.wood1, P.dark2, 0.15),
+    brick3: hex('#80523a'),
+    iron0: hex('#2b2d35'),
+    iron1: hex('#4a4f5c'),
+    iron2: P.steel1,
+    iron3: P.steel2,
+    grease: mix(P.stone1, P.wax1, 0.28),
+  };
+  const sootStone: SlabPal = { base: WK.soot, mortar: mix(P.dark1, P.ink, 0.5), hi: mix(WK.soot, P.stone2, 0.55), lo: mix(P.dark2, P.dark1, 0.5) };
+
+  // 0-3, 40-41 floor: soot-blackened flagstones
+  const floor = (idx: number, v: number) => {
+    const [ox, oy] = at(idx);
+    const r = rng(3000 + idx);
+    switch (v) {
+      case 0:
+      case 1:
+        flagstone(img, ox, oy, 0, 0, 16, 16, r, sootStone, v ? -0.3 : 0.1);
+        break;
+      case 2:
+        flagstone(img, ox, oy, 0, 0, 16, 8, r, sootStone, 0.2);
+        flagstone(img, ox, oy, 0, 8, 9, 8, r, sootStone, -0.2);
+        flagstone(img, ox, oy, 9, 8, 7, 8, r, sootStone);
+        break;
+      case 3: // soot stain
+        flagstone(img, ox, oy, 0, 0, 16, 16, r, sootStone);
+        img.ellipse(ox + 8, oy + 9, 5, 3, mix(WK.soot, P.dark1, 0.5));
+        img.ellipse(ox + 8, oy + 9, 3, 1.8, mix(WK.soot, P.dark1, 0.8));
+        break;
+      case 4: // cracked
+        flagstone(img, ox, oy, 0, 0, 16, 16, r, sootStone, -0.1);
+        line(img, ox + 3, oy + 2, ox + 7, oy + 8, sootStone.mortar);
+        line(img, ox + 7, oy + 8, ox + 6, oy + 14, sootStone.mortar);
+        line(img, ox + 7, oy + 8, ox + 12, oy + 10, sootStone.mortar);
+        break;
+      case 5: // a round iron drain cover
+        flagstone(img, ox, oy, 0, 0, 16, 16, r, sootStone, 0.05);
+        img.disc(ox + 8, oy + 8, 4, WK.iron0);
+        img.disc(ox + 8, oy + 8, 3.2, WK.iron1);
+        for (const y of [6, 8, 10]) img.hline(ox + 6, oy + y, 4, WK.iron0);
+        img.set(ox + 6, oy + 5, WK.iron2);
+        break;
+    }
+  };
+  [0, 1, 2, 3].forEach(v => floor(v, v === 3 ? 3 : v));
+  floor(40, 4);
+  floor(41, 5);
+
+  // 4-5 iron grate over the drains; one glows from the fires below
   for (const v of [4, 5]) {
-    // iron grate over a dark drain
     const [ox, oy] = at(v);
     img.rect(ox, oy, T, T, P.ink);
-    for (let x = 1; x < T; x += 4) img.vline(ox + x, oy, T, P.steel1);
-    img.hline(ox, oy, T, P.stone2);
-    img.hline(ox, oy + 8, T, P.stone2);
-    if (v === 5) img.set(ox + 6, oy + 11, P.ember); // a glow from below
+    if (v === 5) {
+      img.ellipse(ox + 8, oy + 10, 6, 4, mix(P.ink, P.ember, 0.45));
+      img.ellipse(ox + 8, oy + 10, 3, 2, mix(P.ember, P.flame1, 0.4));
+    }
+    for (let x = 1; x < T; x += 4) {
+      img.vline(ox + x, oy, T, WK.iron1);
+      img.vline(ox + x + 1, oy, T, WK.iron0);
+      img.set(ox + x, oy + 1, WK.iron2);
+    }
+    for (const y of [0, 8]) {
+      img.hline(ox, oy + y, T, WK.iron2);
+      img.hline(ox, oy + y + 1, T, WK.iron0);
+    }
   }
+  // 6-7 rock: black, with the odd ember still glowing in the slag
   for (const idx of [6, 7]) {
     const [ox, oy] = at(idx);
     const r = rng(3100 + idx);
     img.rect(ox, oy, T, T, P.ink);
-    speck(ox, oy, r, 6, P.dark1);
-    if (idx === 7) img.set(ox + 9, oy + 5, P.ember);
+    for (let i = 0; i < 3; i++) img.ellipse(ox + 3 + r() * 10, oy + 3 + r() * 10, 1.5 + r() * 2, 1 + r() * 1.5, mix(P.ink, P.dark1, 0.6));
+    speck(ox, oy, r, 5, P.dark1);
+    if (idx === 7) {
+      img.set(ox + 9, oy + 5, P.ember);
+      img.set(ox + 3, oy + 12, mix(P.ember, P.ink, 0.5));
+    }
   }
-  for (const [idx, v] of [[8, 0], [9, 1]]) {
-    // soot brick
-    const [ox, oy] = at(idx);
-    const r = rng(3200 + idx);
-    img.rect(ox, oy, T, T, P.wood1);
-    for (const y of [3, 7, 11]) img.hline(ox, oy + y, T, P.dark2);
-    for (const [x, y, h] of [[5, 0, 3], [13, 0, 3], [1, 4, 3], [9, 4, 3], [5, 8, 3], [13, 8, 3]]) img.vline(ox + x + v * 2, oy + y, h, P.dark2);
-    speck(ox, oy, r, 6, P.dark1);
-    speck(ox, oy, r, 2, P.ember);
-    img.hline(ox, oy, T, P.steel1);
-    img.rect(ox, oy + 13, T, 3, P.dark1);
-  }
+  // 10-11 tallow spilled on the stones: a flat, faint, greasy sheen across the whole tile (no blob shapes, which
+  // would read as Vat Crawlers)
   for (const v of [10, 11]) {
-    // tallow spilled on the stones: a flat, faint, greasy sheen across the whole tile (no blob shapes, which
-    // would read as Vat Crawlers)
     const [ox, oy] = at(v);
     const r = rng(3300 + v);
-    img.rect(ox, oy, T, T, mix(P.stone1, P.wax1, 0.28));
-    img.hline(ox, oy + 15, T, mix(P.stone1, P.dark1, 0.6));
+    img.rect(ox, oy, T, T, WK.grease);
     speck(ox, oy, r, 7, mix(P.stone1, P.wax2, 0.5)); // glints of grease (dots, so big spills don't stripe)
-    speck(ox, oy, r, 5, P.dark2);
+    speck(ox, oy, r, 5, mix(WK.grease, P.dark2, 0.5));
+    img.hline(ox + 2 + r() * 6, oy + 4 + r() * 4, 3, mix(WK.grease, P.wax2, 0.35)); // sheen
+    img.hline(ox + 6 + r() * 6, oy + 11 + r() * 3, 2, mix(WK.grease, P.wax2, 0.35));
   }
+  // 12-13 planks: old, dark boards
   for (const v of [12, 13]) {
     const [ox, oy] = at(v);
     const r = rng(3400 + v);
     img.rect(ox, oy, T, T, P.wood1);
-    for (const y of [0, 4, 8, 12]) img.hline(ox, oy + y, T, P.dark2);
-    speck(ox, oy, r, 5, P.wood2);
+    for (let b = 0; b < 4; b++) {
+      const y = oy + b * 4;
+      const c = [P.wood1, mix(P.wood1, P.dark2, 0.35), mix(P.wood1, P.wood2, 0.3), mix(P.wood1, P.dark2, 0.15)][(b + v) % 4];
+      img.rect(ox, y, T, 4, c);
+      img.hline(ox, y, T, mix(c, P.wood2, 0.45));
+      img.hline(ox, y + 3, T, P.dark1);
+      img.hline(ox + r() * 10, y + 1 + Math.floor(r() * 2), 4, mix(c, P.dark2, 0.5));
+      const j = (5 + b * 6 + v * 5) % 16;
+      img.vline(ox + j, y, 3, P.dark1);
+      img.set(ox + j + 1, y + 1, WK.iron2);
+    }
   }
+
+  // 8, 9, 14, 15 wall front: soot brick in running bond under an iron band
+  const front = (idx: number, v: number) => {
+    const [ox, oy] = at(idx);
+    const r = rng(3200 + idx);
+    img.rect(ox, oy, T, T, WK.brick0);
+    for (let row = 0; row < 4; row++) {
+      const y = oy + 2 + row * 3;
+      const off = row % 2 ? 4 : 0;
+      for (let x0 = -off; x0 < T; x0 += 8) {
+        const tone = r();
+        // soot darkens the bricks toward the top of the wall
+        const c = mix(tone < 0.3 ? WK.brick1 : WK.brick2, WK.brick0, Math.max(0, 0.35 - row * 0.12));
+        const x = Math.max(0, x0);
+        const w = Math.min(x0 + 7, T) - x;
+        if (w <= 0) continue;
+        img.rect(ox + x, y, w, 2, c);
+        img.hline(ox + x, y, w, mix(c, WK.brick3, 0.45)); // lit top
+        if (r() < 0.4) img.set(ox + x + r() * w, y + 1, mix(c, WK.brick0, 0.6));
+      }
+    }
+    img.hline(ox, oy, T, WK.iron2); // iron band along the top
+    img.hline(ox, oy + 1, T, WK.iron0);
+    for (const x of [3, 11]) img.set(ox + x, oy, WK.iron3);
+    img.hline(ox, oy + 14, T, P.dark1);
+    img.hline(ox, oy + 15, T, P.ink);
+    if (v === 1) {
+      // soot running down from the top
+      for (const [x, len] of [[5, 9], [6, 12], [7, 6], [12, 8]]) for (let y = 2; y < 2 + len; y++) if (r() < 0.8) img.set(ox + x, oy + y, mix(WK.brick0, P.ink, 0.4));
+    }
+    if (v === 2) {
+      // an iron pipe down the wall
+      img.vline(ox + 10, oy + 1, 14, WK.iron1);
+      img.vline(ox + 11, oy + 1, 14, WK.iron0);
+      img.vline(ox + 9, oy + 1, 14, WK.iron2);
+      for (const y of [4, 11]) {
+        img.hline(ox + 8, oy + y, 5, WK.iron2);
+        img.hline(ox + 8, oy + y + 1, 5, WK.iron0);
+      }
+    }
+    if (v === 3) {
+      // a furnace vent: a small iron hatch with fire behind the bars
+      img.rect(ox + 4, oy + 5, 8, 7, WK.iron0);
+      img.rect(ox + 5, oy + 6, 6, 5, P.ember);
+      img.rect(ox + 6, oy + 8, 4, 3, P.flame1);
+      img.hline(ox + 7, oy + 10, 2, P.flame2);
+      for (const x of [6, 8, 10]) img.vline(ox + x, oy + 6, 5, WK.iron1);
+      img.hline(ox + 4, oy + 5, 8, WK.iron2);
+      img.hline(ox + 4, oy + 12, 8, WK.iron1);
+    }
+  };
+  front(8, 0);
+  front(9, 1);
+  front(14, 2);
+  front(15, 3);
+
+  // 16-31 wall tops: dark iron plates, riveted along the edges open to the room
   for (let mask = 0; mask < 16; mask++) {
     const [ox, oy] = at(16 + mask);
     const r = rng(3500 + mask);
     img.rect(ox, oy, T, T, P.dark1);
-    speck(ox, oy, r, 5, P.ink);
-    if (mask & 1) img.hline(ox, oy, T, P.steel1);
-    if (mask & 2) img.vline(ox + 15, oy, T, P.steel1);
-    if (mask & 4) {
-      img.hline(ox, oy + 14, T, P.steel1);
-      img.hline(ox, oy + 15, T, P.stone1);
-      for (const x of [3, 11]) img.set(ox + x, oy + 14, P.ember); // rivets
+    for (const [x, y, w, h] of [[0, 0, 8, 8], [8, 0, 8, 8], [0, 8, 8, 8], [8, 8, 8, 8]]) {
+      img.hline(ox + x, oy + y, w, P.ink);
+      img.vline(ox + x, oy + y, h, P.ink);
+      img.hline(ox + x + 1, oy + y + 1, w - 2, mix(P.dark1, WK.iron0, 0.6));
     }
-    if (mask & 8) img.vline(ox, oy, T, P.steel1);
+    speck(ox, oy, r, 4, P.ink);
+    const N = mask & 1, E = mask & 2, S = mask & 4, Wt = mask & 8;
+    if (N) {
+      img.hline(ox, oy, T, WK.iron3);
+      img.hline(ox, oy + 1, T, WK.iron2);
+      img.hline(ox, oy + 2, T, WK.iron0);
+      for (const x of [3, 11]) img.set(ox + x, oy + 1, WK.iron3);
+    }
+    if (S) {
+      img.hline(ox, oy + 13, T, WK.iron0);
+      img.hline(ox, oy + 14, T, WK.iron2);
+      img.hline(ox, oy + 15, T, WK.iron1);
+      for (const x of [3, 11]) img.set(ox + x, oy + 14, WK.iron3); // rivets
+    }
+    if (Wt) {
+      img.vline(ox, oy, T, WK.iron3);
+      img.vline(ox + 1, oy, T, WK.iron2);
+    }
+    if (E) {
+      img.vline(ox + 15, oy, T, WK.iron1);
+      img.vline(ox + 14, oy, T, WK.iron2);
+    }
   }
+
+  shadeTiles(img, 32, 1);
+  // 48-63: grease seeping over the stones beside a spill
+  fringeTiles(48, 3, 3600, (x, y, d, r) => {
+    if (d > 0.6 && r() < 0.5) return;
+    img.set(x, y, d < 0.5 ? WK.grease : mix(WK.grease, WK.soot, 0.45));
+    if (r() < 0.08) img.set(x, y, mix(P.stone1, P.wax2, 0.5));
+  });
+
   sheet('tiles_works', img, {
     cell: [T, T],
     pivot: [0, 0],
     layer: 'tiles',
     tiles: {
-      floor: [0, 0, 0, 1, 1, 2, 3],
-      floor_grate: [4, 4, 5],
+      floor: [...Array(20).fill(0), ...Array(18).fill(1), ...Array(6).fill(2), 3, 40, 40, 41], // stains, cracks, drains: rare
+      floor_grate: [4, 4, 4, 4, 5],
       floor_grease: [10, 11],
       floor_plank: [12, 13],
-      wall_front: [8, 8, 9],
+      wall_front: [8, 8, 8, 8, 9, 8, 14, 8, 9, 15],
       wall_cap: Array.from({ length: 16 }, (_, i) => 16 + i),
       rock: [6, 6, 7],
+      shade: Array.from({ length: 8 }, (_, i) => 32 + i),
+      fringe_floor_grease: Array.from({ length: 16 }, (_, i) => 48 + i),
+      glow: [15, 5],
     },
   });
 
@@ -2395,103 +2536,241 @@ function matronDeath(c: Img, f: number) {
 
 function genMire() {
   const T = 16;
-  const img = new Img(T * 8, T * 4);
-  const at = (idx: number) => [(idx % 8) * T, Math.floor(idx / 8) * T] as const;
-  const speck = (ox: number, oy: number, r: () => number, n: number, col: RGBA) => {
-    for (let i = 0; i < n; i++) img.set(ox + Math.floor(r() * 16), oy + Math.floor(r() * 16), col);
+  const img = new Img(T * 8, T * 10);
+  const at = tileAt;
+  const speck = (ox: number, oy: number, r: () => number, n: number, col: RGBA, m = 0) => {
+    for (let i = 0; i < n; i++) img.set(ox + m + Math.floor(r() * (16 - m * 2)), oy + m + Math.floor(r() * (16 - m * 2)), col);
   };
-  const mud = mix(P.wood1, P.dark2, 0.55);
+  const M = {
+    mud: mix(P.wood1, P.dark2, 0.55),
+    mudDark: mix(P.wood1, P.dark1, 0.75),
+    mudLight: mix(P.wood1, P.dark2, 0.2),
+    wet: mix(mix(P.wood1, P.dark2, 0.55), P.teal3, 0.35),
+    earth: mix(P.wood1, P.dark2, 0.35),
+    root: mix(P.wax1, P.wood1, 0.35),
+    grass0: mix(P.moss1, P.dark2, 0.55),
+    grass1: mix(P.moss1, P.dark2, 0.25),
+    grass2: P.moss1,
+    grass3: mix(P.moss2, P.teal2, 0.3),
+    wax: mix(P.wax1, P.wood1, 0.38),
+    waxDark: mix(P.wax1, P.wood1, 0.58),
+    waxHi: mix(P.wax1, P.wax2, 0.3),
+    water: P.ink,
+  };
+  /** A small shine on wet ground: two lit pixels over a darker dip. */
+  const shine = (x: number, y: number) => {
+    img.hline(x, y + 1, 3, M.mudDark);
+    img.hline(x, y, 2, M.wet);
+  };
+  // 0-3 wet mud: dark, glistening here and there
   for (let v = 0; v < 4; v++) {
-    // wet mud
     const [ox, oy] = at(v);
     const r = rng(4000 + v);
-    img.rect(ox, oy, T, T, mud);
-    speck(ox, oy, r, 12, P.dark1);
-    speck(ox, oy, r, 6, P.wood1);
-    if (v === 2) img.ellipse(ox + 8, oy + 9, 3, 1.5, P.teal1); // a puddle
-    if (v === 3) for (const x of [4, 9, 12]) img.vline(ox + x, oy + 10, 3, P.moss1); // a few blades
-  }
-  for (const v of [4, 5]) {
-    // swamp grass
-    const [ox, oy] = at(v);
-    const r = rng(4100 + v);
-    img.rect(ox, oy, T, T, mix(P.moss1, P.dark2, 0.4));
-    for (let i = 0; i < 10; i++) {
-      const x = ox + Math.floor(r() * 15);
-      const y = oy + 2 + Math.floor(r() * 13);
-      img.vline(x, y, 2, i % 3 ? P.moss1 : P.teal2);
+    img.rect(ox, oy, T, T, M.mud);
+    speck(ox, oy, r, 12, M.mudDark);
+    speck(ox, oy, r, 6, M.mudLight);
+    for (let i = 0; i < 2; i++) shine(ox + 1 + r() * 11, oy + 1 + r() * 12);
+    if (v === 2) {
+      // a puddle holding a little sky
+      img.ellipse(ox + 8, oy + 9, 3.5, 1.8, P.teal1);
+      img.hline(ox + 6, oy + 8, 2, P.teal2);
+      img.hline(ox + 5, oy + 11, 6, M.mudLight);
+    }
+    if (v === 3) for (const x of [4, 9, 12]) {
+      img.vline(ox + x, oy + 10, 3, M.grass2);
+      img.set(ox + x, oy + 10, M.grass3);
     }
   }
-  for (const idx of [6, 7]) {
-    // black water outside the paths, faint ripples
+  // 4-5, 42-43 swamp grass: tall dark blades over sodden turf
+  const swampGrass = (idx: number, seed: number) => {
+    const [ox, oy] = at(idx);
+    const r = rng(seed);
+    img.rect(ox, oy, T, T, M.grass1);
+    speck(ox, oy, r, 6, M.grass0);
+    for (let i = 0; i < 5; i++) {
+      const x = ox + 1 + Math.floor(r() * 14);
+      const y = oy + 4 + Math.floor(r() * 11);
+      const h = 2 + Math.floor(r() * 3);
+      img.set(x, y, M.grass0);
+      img.vline(x, y - h, h, i % 4 ? M.grass2 : mix(M.grass2, P.teal2, 0.5));
+      img.set(x + (r() < 0.5 ? -1 : 1), y - h, M.grass3); // tip bending
+    }
+  };
+  swampGrass(4, 4100);
+  swampGrass(5, 4101);
+  swampGrass(42, 4102);
+  swampGrass(43, 4103);
+  // 6-7, 44 black water outside the paths: faint ripples, the odd lily pad
+  for (const idx of [6, 7, 44]) {
     const [ox, oy] = at(idx);
     const r = rng(4200 + idx);
-    img.rect(ox, oy, T, T, P.ink);
-    for (let i = 0; i < 2; i++) img.hline(ox + Math.floor(r() * 10), oy + Math.floor(r() * 14) + 1, 4, P.teal1);
-  }
-  for (const [idx, v] of [[8, 0], [9, 1]]) {
-    // bank of earth held together by roots
-    const [ox, oy] = at(idx);
-    const r = rng(4300 + idx);
-    img.rect(ox, oy, T, T, P.wood1);
-    speck(ox, oy, r, 8, P.dark2);
-    line(img, ox + 2, oy + 1, ox + 5 + v * 3, oy + 12, P.wax1); // pale roots
-    line(img, ox + 11, oy + 2, ox + 9, oy + 13, mix(P.wax1, P.wood1, 0.5));
-    img.hline(ox, oy, T, P.moss1);
-    img.rect(ox, oy + 14, T, 2, P.dark1);
-  }
-  for (const v of [10, 11]) {
-    // WAX POOL: thick pale wax, clearly different from the mud, glossy highlights (it slows you)
-    const [ox, oy] = at(v);
-    const r = rng(4400 + v);
-    const wax = mix(P.wax1, P.wood1, 0.38); // dull, old wax: clearly paler than the mud, not glaring
-    img.rect(ox, oy, T, T, wax);
-    speck(ox, oy, r, 8, mix(wax, P.wood1, 0.3));
-    img.hline(ox + 2 + Math.floor(r() * 6), oy + 4 + Math.floor(r() * 3), 3, mix(P.wax1, wax, 0.3)); // sheen
-    img.hline(ox + 7 + Math.floor(r() * 5), oy + 11 + Math.floor(r() * 3), 2, mix(P.wax1, wax, 0.3));
-    if (v === 11) {
-      img.disc(ox + 11, oy + 5, 1.3, mix(P.wax1, wax, 0.4)); // a bubble
-      img.set(ox + 11, oy + 4, P.wax2);
+    img.rect(ox, oy, T, T, M.water);
+    for (let i = 0; i < 2; i++) {
+      const x = ox + 2 + Math.floor(r() * 9);
+      const y = oy + 2 + Math.floor(r() * 12);
+      img.hline(x, y, 4, P.teal1);
+      img.set(x + 1, y, mix(P.teal1, P.teal2, 0.6));
+      img.hline(x + 1, y + 1, 2, mix(P.ink, P.teal1, 0.5));
+    }
+    if (idx === 44) {
+      img.ellipse(ox + 9, oy + 9, 2.5, 1.5, P.moss1);
+      img.set(ox + 8, oy + 8, P.moss2);
+      img.set(ox + 10, oy + 9, P.ink); // the notch in the pad
     }
   }
+  // 8-9, 40-41 bank of earth held together by pale roots, moss hanging over the lip
+  const bank = (idx: number, v: number) => {
+    const [ox, oy] = at(idx);
+    const r = rng(4300 + idx);
+    img.rect(ox, oy, T, T, M.earth);
+    for (const [y, c] of [[5, M.mud], [10, M.mudDark]] as const) img.rect(ox, oy + y, T, 3, c);
+    speck(ox, oy + 2, r, 10, M.mudDark);
+    speck(ox, oy + 2, r, 4, M.mudLight);
+    // pale roots, a different tangle on every bank tile
+    const rootA = mix(M.root, M.earth, 0.35);
+    const x0 = 1 + Math.floor(r() * 5);
+    line(img, ox + x0, oy + 2, ox + x0 + 1 + Math.floor(r() * 3), oy + 7 + Math.floor(r() * 5), rootA);
+    if (r() < 0.6) {
+      const x1 = 9 + Math.floor(r() * 5);
+      line(img, ox + x1, oy + 2, ox + x1 - 1 - Math.floor(r() * 3), oy + 6 + Math.floor(r() * 4), mix(M.root, M.earth, 0.6));
+    }
+    img.hline(ox, oy + 14, T, P.dark1);
+    img.hline(ox, oy + 15, T, P.ink);
+    // moss lip, drooping over the edge
+    img.hline(ox, oy, T, P.moss2);
+    img.hline(ox, oy + 1, T, P.moss1);
+    for (let x = 0; x < T; x++) if (r() < 0.4) img.vline(ox + x, oy + 2, 1 + Math.floor(r() * 3), r() < 0.6 ? P.moss1 : M.grass0);
+    if (v === 2) {
+      // a stone angel's broken wing half-buried in the bank
+      img.ellipse(ox + 10, oy + 9, 3, 2, P.stone1);
+      img.hline(ox + 8, oy + 8, 4, P.stone3);
+      img.set(ox + 8, oy + 9, P.stone2);
+    }
+    if (v === 3) {
+      // drowned-candle offerings on a root ledge
+      img.hline(ox + 4, oy + 10, 9, M.root);
+      img.hline(ox + 4, oy + 11, 9, M.mudDark);
+      for (const [x, h] of [[6, 3], [9, 4], [11, 2]]) {
+        img.vline(ox + x, oy + 10 - h, h, P.wax2);
+        img.set(ox + x, oy + 9, P.wax1);
+        img.set(ox + x, oy + 9 - h, P.flame2);
+        img.set(ox + x, oy + 8 - h, mix(P.flame1, M.earth, 0.4));
+      }
+    }
+  };
+  bank(8, 0);
+  bank(9, 1);
+  bank(40, 2);
+  bank(41, 3);
+  bank(45, 0);
+  bank(46, 1);
+  // 10-13 WAX POOL: thick old wax, clearly paler than the mud, with a wrinkled skin and a dull sheen (it slows you)
+  for (let v = 0; v < 4; v++) {
+    const [ox, oy] = at(10 + v);
+    const r = rng(4400 + v);
+    img.rect(ox, oy, T, T, M.wax);
+    speck(ox, oy, r, 5, mix(M.wax, M.waxDark, 0.35));
+    // skin wrinkles: short curved folds, dark underneath, lit on top
+    const fold = mix(M.wax, M.waxHi, 0.35);
+    const crease = mix(M.wax, M.waxDark, 0.3);
+    for (let i = 0; i < (v === 0 ? 0 : 1); i++) {
+      const x = ox + 1 + Math.floor(r() * 10);
+      const y = oy + 2 + Math.floor(r() * 11);
+      const w = 3 + Math.floor(r() * 3);
+      img.hline(x, y, w, fold);
+      img.hline(x + 1, y + 1, w - 1, crease);
+      img.set(x + w, y + 1, crease);
+    }
+    if (v === 1) {
+      img.disc(ox + 11, oy + 5, 1.4, M.waxDark); // a bubble
+      img.set(ox + 11, oy + 4, P.wax2);
+      img.set(ox + 10, oy + 5, M.waxHi);
+    }
+    if (v === 2) img.set(ox + 5, oy + 11, M.waxDark); // a popped bubble
+  }
+  // 14-15 sunken flagstones (the drowned chapel): stones gone green, water standing in the joints
+  const drowned: SlabPal = { base: mix(P.stone1, P.teal1, 0.3), mortar: mix(P.ink, P.teal1, 0.45), hi: mix(P.stone2, P.teal2, 0.3), lo: P.dark1 };
   for (const v of [14, 15]) {
-    // sunken flagstones (the drowned chapel)
     const [ox, oy] = at(v);
     const r = rng(4500 + v);
-    img.rect(ox, oy, T, T, mix(P.stone1, P.teal1, 0.3));
-    img.hline(ox, oy + 7, T, P.dark1);
-    img.hline(ox, oy + 15, T, P.dark1);
-    img.vline(ox + (v === 14 ? 6 : 10), oy, 7, P.dark1);
-    img.vline(ox + (v === 14 ? 11 : 3), oy + 8, 7, P.dark1);
-    speck(ox, oy, r, 4, P.moss1);
+    if (v === 14) {
+      flagstone(img, ox, oy, 0, 0, 16, 8, r, drowned, 0.1);
+      flagstone(img, ox, oy, 0, 8, 7, 8, r, drowned, -0.2);
+      flagstone(img, ox, oy, 7, 8, 9, 8, r, drowned);
+    } else {
+      flagstone(img, ox, oy, 0, 0, 10, 16, r, drowned, -0.1);
+      flagstone(img, ox, oy, 10, 0, 6, 9, r, drowned, 0.2);
+      flagstone(img, ox, oy, 10, 9, 6, 7, r, drowned);
+    }
+    for (let i = 0; i < 4; i++) img.set(ox + r() * 16, oy + (r() < 0.5 ? 0 : 8), P.moss1); // moss in the joints
   }
+  // 16-31 bank tops: tangled roots and reeds, dark; a mossy rim where the bank meets the path
   for (let mask = 0; mask < 16; mask++) {
-    // bank tops: tangled roots and reeds, dark
     const [ox, oy] = at(16 + mask);
     const r = rng(4600 + mask);
     img.rect(ox, oy, T, T, mix(P.dark1, P.teal1, 0.3));
-    for (let i = 0; i < 5; i++) line(img, ox + Math.floor(r() * 16), oy + Math.floor(r() * 16), ox + Math.floor(r() * 16), oy + Math.floor(r() * 16), P.dark2);
-    speck(ox, oy, r, 4, P.moss1);
-    if (mask & 1) img.hline(ox, oy, T, P.moss1);
-    if (mask & 2) img.vline(ox + 15, oy, T, P.moss1);
-    if (mask & 4) {
-      img.hline(ox, oy + 14, T, P.moss1);
-      img.hline(ox, oy + 15, T, P.dark2);
+    for (let i = 0; i < 3; i++) {
+      const x0 = ox + 1 + r() * 14, y0 = oy + 1 + r() * 14;
+      const x1 = ox + 1 + r() * 14, y1 = oy + 1 + r() * 14;
+      line(img, x0, y0 + 1, x1, y1 + 1, mix(P.ink, P.dark1, 0.5));
+      line(img, x0, y0, x1, y1, i ? mix(P.dark2, P.dark1, 0.4) : mix(M.root, P.dark2, 0.65)); // roots over roots
     }
-    if (mask & 8) img.vline(ox, oy, T, P.moss1);
+    for (let i = 0; i < 3; i++) {
+      // reeds
+      const x = ox + 3 + Math.floor(r() * 10);
+      const y = oy + 4 + Math.floor(r() * 8);
+      img.vline(x, y, 3, M.grass2);
+      img.set(x, y, M.grass3);
+      img.set(x + 1, y + 2, M.grass0);
+    }
+    const N = mask & 1, E = mask & 2, S = mask & 4, W = mask & 8;
+    if (N) {
+      img.hline(ox, oy, T, P.moss2);
+      img.hline(ox, oy + 1, T, P.moss1);
+    }
+    if (S) {
+      img.hline(ox, oy + 14, T, P.moss1);
+      img.hline(ox, oy + 15, T, P.moss2);
+    }
+    if (W) {
+      img.vline(ox, oy, T, P.moss2);
+      img.vline(ox + 1, oy, T, P.moss1);
+    }
+    if (E) {
+      img.vline(ox + 15, oy, T, P.moss1);
+      img.vline(ox + 14, oy, T, mix(P.moss1, P.dark1, 0.4));
+    }
   }
+
+  shadeTiles(img, 32, 1);
+  // 48-63: the wax pool's rounded lip spreading onto the mud, with a wet dark rim around it
+  fringeTiles(48, 4, 4700, (x, y, d, r) => {
+    if (d < 0.55) img.set(x, y, d < 0.2 && r() < 0.15 ? M.waxHi : M.wax);
+    else if (d < 0.8) img.set(x, y, M.waxDark);
+    else img.set(x, y, M.mudDark);
+  });
+  // 64-79: swamp grass creeping over the mud
+  fringeTiles(64, 4, 4800, (x, y, d, r) => {
+    if (d > 0.7 ? r() < 0.55 : r() < 0.15) return;
+    img.set(x, y, d < 0.35 ? M.grass1 : r() < 0.5 ? M.grass2 : M.grass0);
+  });
+
   sheet('tiles_mire', img, {
     cell: [T, T],
     pivot: [0, 0],
     layer: 'tiles',
     tiles: {
-      floor: [0, 0, 0, 1, 1, 2, 3],
-      floor_grass: [4, 5],
-      floor_wax: [10, 10, 11],
+      floor: [0, 0, 0, 0, 1, 1, 1, 2, 3],
+      floor_grass: [4, 5, 42, 43],
+      floor_wax: [10, 10, 10, 11, 12, 13],
       floor_stone: [14, 15],
-      wall_front: [8, 8, 9],
+      wall_front: [8, 9, 45, 46, 8, 9, 45, 46, 40, 8, 9, 45, 46, 41],
       wall_cap: Array.from({ length: 16 }, (_, i) => 16 + i),
-      rock: [6, 6, 7],
+      rock: [6, 6, 7, 6, 44],
+      shade: Array.from({ length: 8 }, (_, i) => 32 + i),
+      fringe_floor_wax: Array.from({ length: 16 }, (_, i) => 48 + i),
+      fringe_floor_grass: Array.from({ length: 16 }, (_, i) => 64 + i),
+      glow: [41],
     },
   });
 
@@ -2979,6 +3258,78 @@ function genWorldBits() {
 }
 
 // ---------------------------------------------------------------- tiles
+// ---------------------------------------------------------------- shared tileset helpers
+/** Top-left pixel of tile `idx` in an 8-column, 16 px tileset. */
+const tileAt = (idx: number) => [(idx % 8) * 16, Math.floor(idx / 8) * 16] as const;
+
+/** Blend `col` over whatever is already at (x, y), keeping transparency (for overlay tiles). */
+function over(img: Img, x: number, y: number, col: RGBA, a: number) {
+  const i = (Math.floor(y) * img.w + Math.floor(x)) * 4;
+  const prev = img.px[i + 3] / 255;
+  const out = 1 - (1 - prev) * (1 - a / 255);
+  if (!prev) return img.set(x, y, withAlpha(col, Math.round(a)));
+  const k = a / 255 / out;
+  const old: RGBA = [img.px[i], img.px[i + 1], img.px[i + 2], 255];
+  img.set(x, y, withAlpha(mix(old, col, k), Math.round(out * 255)));
+}
+
+/** 8 wall-shadow overlay tiles from index `start` (mask of closed sides N=1 E=2 W=4). `k` scales the darkness. */
+function shadeTiles(img: Img, start: number, k: number) {
+  for (let m = 1; m < 8; m++) {
+    const [ox, oy] = tileAt(start + m);
+    if (m & 1) [120, 80, 50, 26, 10].forEach((a, y) => { for (let x = 0; x < 16; x++) over(img, ox + x, oy + y, P.ink, a * k); });
+    if (m & 2) [70, 40, 16].forEach((a, x) => { for (let y = 0; y < 16; y++) over(img, ox + 15 - x, oy + y, P.ink, a * k); });
+    if (m & 4) [90, 55, 28, 10].forEach((a, x) => { for (let y = 0; y < 16; y++) over(img, ox + x, oy + y, P.ink, a * k); });
+  }
+}
+
+type Side = 'N' | 'E' | 'S' | 'W';
+/**
+ * 16 soft-edge overlay tiles from index `start` (mask of neighbouring sides that hold the variant: N=1 E=2 S=4 W=8).
+ * `edge(x, y, depth)` is called for every pixel within `reach` of a marked side; `depth` is 0 at the border.
+ * The reach wobbles along the edge (but is the same at both ends of each side, so neighbours line up).
+ */
+function fringeTiles(start: number, reach: number, seed: number, edge: (x: number, y: number, depth: number, r: () => number) => void) {
+  for (let m = 1; m < 16; m++) {
+    const [ox, oy] = tileAt(start + m);
+    const r = rng(seed + m);
+    const sides: [Side, number][] = [['N', 1], ['E', 2], ['S', 4], ['W', 8]];
+    for (const [side, bit] of sides) {
+      if (!(m & bit)) continue;
+      const wob = [r(), r(), r()];
+      for (let t = 0; t < 16; t++) {
+        // wobble: zero at both ends, bulging in between
+        const env = Math.sin((t / 15) * Math.PI);
+        const len = Math.max(1, Math.round(reach * (0.55 + 0.45 * env * (0.6 + 0.4 * Math.sin(t * 0.9 + wob[0] * 6)) + (wob[1] - 0.5) * env)));
+        for (let d = 0; d < len; d++) {
+          const [x, y] = side === 'N' ? [t, d] : side === 'S' ? [t, 15 - d] : side === 'W' ? [d, t] : [15 - d, t];
+          edge(ox + x, oy + y, d / len, r);
+        }
+      }
+    }
+  }
+}
+
+interface SlabPal {
+  base: RGBA;
+  mortar: RGBA;
+  hi: RGBA;
+  lo: RGBA;
+}
+/** A flagstone filling [x, y, w, h] of a tile, its mortar joint along its top and left edges (lit from the top left). */
+function flagstone(img: Img, ox: number, oy: number, x: number, y: number, w: number, h: number, r: () => number, p: SlabPal, tone = 0) {
+  const base = tone < 0 ? mix(p.base, p.lo, -tone) : mix(p.base, p.hi, tone);
+  img.rect(ox + x, oy + y, w, h, base);
+  img.hline(ox + x, oy + y, w, p.mortar);
+  img.vline(ox + x, oy + y, h, p.mortar);
+  img.hline(ox + x + 2, oy + y + 1, w - 4, mix(base, p.hi, 0.5));
+  img.vline(ox + x + 1, oy + y + 2, h - 4, mix(base, p.hi, 0.3));
+  img.hline(ox + x + 1, oy + y + h - 1, w - 1, mix(base, p.mortar, 0.35));
+  for (let i = 0; i < (w * h) / 22; i++)
+    img.set(ox + x + 2 + r() * (w - 4), oy + y + 2 + r() * (h - 4), r() < 0.6 ? mix(base, p.lo, 0.6) : mix(base, p.hi, 0.45));
+  if (r() < 0.3) img.set(ox + x + w - 1, oy + y + h - 1, p.mortar);
+}
+
 // ---------------------------------------------------------------- Abbey tileset
 // Light comes from the top left: slab and block edges facing up/left catch a highlight, edges facing
 // down/right fall into shadow. Everything shares the palette's cool abbey-stone ramp plus a few in-betweens.
@@ -3239,19 +3590,7 @@ function genTiles() {
     if (S && E) img.set(ox + 15, oy + 15, P.stone2);
   }
 
-  // Shade: a soft shadow on the floor along walls (N=1 E=2 W=4 closed). Drawn over the floor layer.
-  const shade = (x: number, y: number, a: number) => {
-    const i = (y * img.w + x) * 4;
-    const prev = img.px[i + 3] ? img.px[i + 3] / 255 : 0;
-    const alpha = 1 - (1 - prev) * (1 - a / 255);
-    img.set(x, y, withAlpha(P.ink, Math.round(alpha * 255)));
-  };
-  for (let m = 1; m < 8; m++) {
-    const [ox, oy] = at(32 + m);
-    if (m & 1) [120, 80, 50, 26, 10].forEach((a, y) => { for (let x = 0; x < T; x++) shade(ox + x, oy + y, a); });
-    if (m & 2) [70, 40, 16].forEach((a, x) => { for (let y = 0; y < T; y++) shade(ox + 15 - x, oy + y, a); });
-    if (m & 4) [90, 55, 28, 10].forEach((a, x) => { for (let y = 0; y < T; y++) shade(ox + x, oy + y, a); });
-  }
+  shadeTiles(img, 32, 1);
 
   sheet('tiles', img, {
     cell: [T, T],
@@ -3726,122 +4065,263 @@ function genChest() {
 // Dirt floor, grass, a packed cart road, earth cliffs with grassy tops, and dark forest outside the ravine.
 function genRoadTiles() {
   const T = 16;
-  const img = new Img(T * 8, T * 4);
-  const at = (idx: number) => [(idx % 8) * T, Math.floor(idx / 8) * T] as const;
-  const speck = (ox: number, oy: number, r: () => number, n: number, c: RGBA) => {
-    for (let i = 0; i < n; i++) img.set(ox + Math.floor(r() * 16), oy + Math.floor(r() * 16), c);
+  const img = new Img(T * 8, T * 10);
+  const at = tileAt;
+  const E = {
+    d0: hex('#2c1f1b'),
+    d1: mix(P.wood1, P.dark2, 0.2),
+    d2: P.wood1,
+    d3: hex('#6d4a33'),
+    d4: P.wood2,
+    d5: hex('#9b7550'),
+    g0: hex('#1f2e1d'),
+    g1: P.moss1,
+    g2: P.moss2,
+    g3: hex('#7f9f55'),
+    g4: hex('#a2bd6c'),
+    leaf0: hex('#0d1c1d'),
+  };
+  const speck = (ox: number, oy: number, r: () => number, n: number, c: RGBA, m = 0) => {
+    for (let i = 0; i < n; i++) img.set(ox + m + Math.floor(r() * (16 - m * 2)), oy + m + Math.floor(r() * (16 - m * 2)), c);
+  };
+  /** A small clod or stone, lit from the top left. */
+  const clod = (x: number, y: number, w: number, base: RGBA, hi: RGBA, lo: RGBA) => {
+    img.rect(x, y, w, 2, base);
+    img.set(x, y, hi);
+    img.hline(x, y + 2, w, lo);
+  };
+  /** A tuft of grass blades rooted at (x, y). */
+  const tuft = (x: number, y: number, r: () => number, tall = 3) => {
+    img.set(x, y, E.g0);
+    img.set(x + 1, y, E.g0);
+    const blades: [number, number][] = [[0, tall], [1, tall - 1], [-1, tall - 2], [2, tall - 2]];
+    for (const [dx, h] of blades) {
+      if (h <= 0 || r() < 0.2) continue;
+      img.vline(x + dx, y - h, h, E.g2);
+      img.set(x + dx, y - h, E.g3);
+    }
   };
 
-  // 0-3 dirt
+  // 0-3 dirt: dusk-brown earth, clods and pebbles
   for (let v = 0; v < 4; v++) {
     const [ox, oy] = at(v);
     const r = rng(2000 + v);
-    img.rect(ox, oy, T, T, P.wood1);
-    speck(ox, oy, r, 14, P.dark2);
-    speck(ox, oy, r, 8, P.wood2);
-    if (v === 2) for (const [x, y] of [[4, 6], [5, 6], [11, 11]]) img.rect(ox + x, oy + y, 2, 1, P.stone2); // pebbles
-    if (v === 3) img.ellipse(ox + 8, oy + 9, 3, 1.5, P.dark2); // puddle stain
-  }
-  // 4-5 grass
-  for (const v of [4, 5]) {
-    const [ox, oy] = at(v);
-    const r = rng(2100 + v);
-    img.rect(ox, oy, T, T, P.moss1);
-    speck(ox, oy, r, 10, P.teal1);
-    for (let i = 0; i < 9; i++) {
-      const x = ox + Math.floor(r() * 15);
-      const y = oy + 1 + Math.floor(r() * 14);
-      img.set(x, y, P.moss2);
-      img.set(x + 1, y - 1, P.moss2);
+    img.rect(ox, oy, T, T, E.d2);
+    speck(ox, oy, r, 16, E.d1);
+    speck(ox, oy, r, 8, E.d3);
+    speck(ox, oy, r, 4, E.d0, 1);
+    for (let i = 0; i < 2 + v; i++) clod(ox + 1 + r() * 12, oy + 1 + r() * 12, 2, E.d3, E.d4, E.d1);
+    if (v === 1) clod(ox + 9, oy + 5, 2, P.stone2, P.stone3, E.d0); // pebble
+    if (v === 2) {
+      clod(ox + 4, oy + 9, 3, P.stone2, P.stone3, E.d0);
+      img.set(ox + 11, oy + 3, P.stone3);
     }
-    if (v === 5) for (const [x, y] of [[5, 5], [11, 10]]) img.set(ox + x, oy + y, P.wax1); // tiny flowers
+    if (v === 3) {
+      img.set(ox + 6, oy + 6, E.g1); // a stray blade
+      img.set(ox + 6, oy + 5, E.g2);
+      line(img, ox + 9, oy + 11, ox + 13, oy + 12, E.d0); // a dead twig
+      img.set(ox + 9, oy + 11, E.d3);
+    }
   }
-  // 6-7 forest outside the ravine: near-black canopy
-  for (const idx of [6, 7]) {
+  // 4-7 grass: tufts over dark turf, a few pale flowers
+  for (let v = 0; v < 4; v++) {
+    const [ox, oy] = at(4 + v);
+    const r = rng(2100 + v);
+    img.rect(ox, oy, T, T, E.g1);
+    speck(ox, oy, r, 10, E.g0);
+    speck(ox, oy, r, 6, mix(E.g1, E.g2, 0.5));
+    for (let i = 0; i < 5; i++) tuft(ox + 1 + r() * 13, oy + 4 + r() * 11, r, 2 + Math.floor(r() * 2));
+    if (v === 2) for (const [x, y] of [[4, 5], [11, 11]]) {
+      img.set(ox + x, oy + y, P.wax2);
+      img.set(ox + x, oy + y + 1, E.g0);
+    }
+    if (v === 3) {
+      img.set(ox + 9, oy + 6, P.flame2);
+      img.set(ox + 9, oy + 7, E.g0);
+    }
+  }
+  // 8-9, 47 forest outside the ravine: dense dark brush, the same growth as the cliff tops
+  const brush = (ox: number, oy: number, r: () => number, n: number, bg: RGBA) => {
+    img.rect(ox, oy, T, T, bg);
+    speck(ox, oy, r, 6, E.leaf0);
+    for (let i = 0; i < n; i++) {
+      const cx = ox + 4 + r() * 8;
+      const cy = oy + 4 + r() * 7;
+      const rad = 2 + r() * 1.2;
+      img.disc(cx, cy + 0.7, rad, E.leaf0);
+      img.disc(cx, cy, rad, mix(P.teal1, E.g1, 0.4));
+      img.set(cx - 1, cy - 1, E.g1);
+    }
+  };
+  for (const idx of [8, 9, 47]) {
     const [ox, oy] = at(idx);
-    const r = rng(2200 + idx);
-    img.rect(ox, oy, T, T, P.ink);
-    for (let i = 0; i < 3; i++) img.ellipse(ox + 2 + r() * 12, oy + 2 + r() * 12, 2 + r() * 2, 1.5 + r(), P.teal1);
-    speck(ox, oy, r, 4, P.dark1);
+    brush(ox, oy, rng(2200 + idx), idx === 9 ? 2 : 3, mix(P.dark1, P.ink, 0.5));
   }
-  // 8-9 cliff face: layered earth with roots, grass lip on top
-  for (const [idx, v] of [[8, 0], [9, 1]]) {
+  // 10-13 cart road: packed pale earth, worn smooth (no ruts: roads run every way through the hub)
+  for (let v = 0; v < 4; v++) {
+    const [ox, oy] = at(10 + v);
+    const r = rng(2400 + v);
+    img.rect(ox, oy, T, T, E.d4);
+    speck(ox, oy, r, 9, E.d3);
+    speck(ox, oy, r, 6, mix(E.d4, E.d5, 0.6));
+    for (let i = 0; i < 2; i++) {
+      // worn, flattened patches
+      const x = ox + 2 + r() * 9;
+      const y = oy + 2 + r() * 11;
+      img.hline(x, y, 3 + r() * 3, mix(E.d4, E.d5, 0.4));
+    }
+    if (v === 1) clod(ox + 6, oy + 6, 2, P.stone2, P.stone3, E.d3);
+    if (v === 2) {
+      img.set(ox + 4, oy + 11, P.stone3);
+      img.set(ox + 11, oy + 4, P.stone2);
+      img.set(ox + 12, oy + 4, E.d3);
+    }
+    if (v === 3) {
+      // a hoof print and a shallow puddle stain
+      img.hline(ox + 5, oy + 5, 2, E.d3);
+      img.set(ox + 4, oy + 6, E.d3);
+      img.set(ox + 7, oy + 6, E.d3);
+      img.ellipse(ox + 10, oy + 11, 2.5, 1.2, mix(E.d4, E.d3, 0.6));
+    }
+  }
+  // 14-15, 46 wooden planks (inside buildings): boards with grain, gaps and nails
+  const planks = (idx: number, v: number) => {
+    const [ox, oy] = at(idx);
+    const r = rng(2600 + idx);
+    img.rect(ox, oy, T, T, E.d4);
+    for (let b = 0; b < 4; b++) {
+      const y = oy + b * 4;
+      const tone = [0, -0.2, 0.15, -0.1][(b + v) % 4];
+      const c = tone < 0 ? mix(E.d4, E.d3, -tone * 2) : mix(E.d4, E.d5, tone);
+      img.rect(ox, y, T, 4, c);
+      img.hline(ox, y, T, mix(c, E.d5, 0.5)); // lit top edge
+      img.hline(ox, y + 3, T, E.d1); // gap
+      for (let i = 0; i < 2; i++) img.hline(ox + r() * 10, y + 1 + Math.floor(r() * 2), 3 + r() * 3, mix(c, E.d3, 0.6)); // grain
+      const joint = (3 + b * 5 + v * 7) % 16;
+      img.vline(ox + joint, y, 3, E.d1);
+      img.set(ox + joint + 1, y + 1, P.stone3); // nail
+    }
+  };
+  planks(14, 0);
+  planks(15, 1);
+  planks(46, 2);
+  // 44-45 flagstones (the chapel floor), warmer than the Abbey's
+  const warmStone: SlabPal = { base: mix(P.stone2, P.wood1, 0.18), mortar: mix(P.dark2, P.wood1, 0.3), hi: P.stone3, lo: P.stone1 };
+  {
+    const [ox, oy] = at(44);
+    const r = rng(2700);
+    flagstone(img, ox, oy, 0, 0, 16, 9, r, warmStone, 0.1);
+    flagstone(img, ox, oy, 0, 9, 7, 7, r, warmStone, -0.2);
+    flagstone(img, ox, oy, 7, 9, 9, 7, r, warmStone);
+  }
+  {
+    const [ox, oy] = at(45);
+    const r = rng(2701);
+    flagstone(img, ox, oy, 0, 0, 10, 16, r, warmStone, -0.1);
+    flagstone(img, ox, oy, 10, 0, 6, 8, r, warmStone, 0.2);
+    flagstone(img, ox, oy, 10, 8, 6, 8, r, warmStone);
+  }
+
+  // 40-43 cliff face: a grass lip hanging over bands of earth, stones and roots in it
+  const cliff = (idx: number, v: number) => {
     const [ox, oy] = at(idx);
     const r = rng(2300 + idx);
-    img.rect(ox, oy, T, T, P.wood1);
-    img.rect(ox, oy + 5, T, 3, P.dark2);
-    img.rect(ox, oy + 10, T, 2, P.dark2);
-    speck(ox, oy, r, 8, P.wood2);
-    img.hline(ox, oy, T, P.moss2);
-    for (let x = 0; x < T; x += 3) img.set(ox + x + (v ? 1 : 0), oy + 1, P.moss1); // grass hanging over the lip
-    if (v === 1) line(img, ox + 4, oy + 2, ox + 6, oy + 9, P.dark1); // root
-    img.hline(ox, oy + 13, T, P.dark2);
-    img.rect(ox, oy + 14, T, 2, P.dark1);
-  }
-  // 10-11 cart road: packed lighter earth with two wheel ruts
-  for (const v of [10, 11]) {
-    const [ox, oy] = at(v);
-    const r = rng(2400 + v);
-    img.rect(ox, oy, T, T, P.wood2);
-    speck(ox, oy, r, 10, P.wood1);
-    img.hline(ox, oy + 4, T, P.wood1);
-    img.hline(ox, oy + 11, T, P.wood1);
-    if (v === 11) img.set(ox + 7, oy + 8, P.stone3);
-  }
-  // 12-13 wooden planks (inside buildings)
-  for (const v of [12, 13]) {
-    const [ox, oy] = at(v);
-    const r = rng(2600 + v);
-    img.rect(ox, oy, T, T, P.wood2);
-    for (const y of [0, 4, 8, 12]) img.hline(ox, oy + y, T, P.wood1);
-    for (const [x, y] of [[5, 1], [12, 5], [3, 9], [9, 13]]) img.vline(ox + x + (v === 13 ? 2 : 0), oy + y, 3, P.wood1);
-    speck(ox, oy, r, 4, P.dark2);
-  }
-  // 14-15 flagstones (chapel floor)
-  for (const v of [14, 15]) {
-    const [ox, oy] = at(v);
-    const r = rng(2700 + v);
-    img.rect(ox, oy, T, T, P.stone2);
-    img.hline(ox, oy + 7, T, P.stone1);
-    img.hline(ox, oy + 15, T, P.stone1);
-    img.vline(ox + (v === 14 ? 6 : 10), oy, 7, P.stone1);
-    img.vline(ox + (v === 14 ? 11 : 3), oy + 8, 7, P.stone1);
-    speck(ox, oy, r, 6, P.stone3);
-  }
-  // 16-31 cliff tops: dark brush and treetops (clearly not walkable), rim = grass edge on open sides
+    const bands: [number, number, RGBA][] = [[2, 4, E.d3], [6, 3, E.d2], [9, 3, E.d3], [12, 2, E.d1]];
+    for (const [y, h, c] of bands) {
+      img.rect(ox, oy + y, T, h, c);
+      img.hline(ox, oy + y, T, mix(c, E.d5, 0.35)); // each band's lit top
+    }
+    speck(ox, oy + 2, r, 10, E.d1);
+    for (let i = 0; i < 4; i++) img.set(ox + r() * 16, oy + 3 + r() * 10, E.d4);
+    img.rect(ox, oy + 14, T, 1, E.d0);
+    img.rect(ox, oy + 15, T, 1, mix(E.d0, P.ink, 0.5));
+    // grass lip, with blades hanging over the edge
+    img.hline(ox, oy, T, E.g3);
+    img.hline(ox, oy + 1, T, E.g1);
+    for (let x = 0; x < T; x++) if (r() < 0.45) img.vline(ox + x, oy + 2, 1 + Math.floor(r() * 2), r() < 0.5 ? E.g1 : E.g0);
+    if (v === 1) {
+      line(img, ox + 4, oy + 2, ox + 6, oy + 10, E.d0); // roots
+      line(img, ox + 6, oy + 10, ox + 5, oy + 13, E.d0);
+      line(img, ox + 11, oy + 3, ox + 12, oy + 8, E.d1);
+      img.set(ox + 5, oy + 5, E.d4);
+    }
+    if (v === 2) {
+      img.ellipse(ox + 9, oy + 9, 3, 2, P.stone1); // a boulder bedded in the earth
+      img.ellipse(ox + 8.5, oy + 8.5, 2.2, 1.3, P.stone2);
+      img.set(ox + 7, oy + 8, P.stone3);
+    }
+    if (v === 3) {
+      // an iron hook with a lantern hung on it
+      img.hline(ox + 6, oy + 4, 4, E.d0);
+      img.vline(ox + 9, oy + 4, 2, E.d0);
+      img.rect(ox + 8, oy + 6, 3, 4, E.d0);
+      img.set(ox + 9, oy + 7, P.flame2);
+      img.set(ox + 9, oy + 8, P.flame1);
+      img.hline(ox + 8, oy + 10, 3, E.d0);
+    }
+  };
+  cliff(40, 0);
+  cliff(41, 1);
+  cliff(42, 2);
+  cliff(43, 3);
+
+  // 16-31 cliff tops: thick brush (clearly not walkable), a grass rim on the sides open to the path
   for (let mask = 0; mask < 16; mask++) {
     const [ox, oy] = at(16 + mask);
     const r = rng(2500 + mask);
-    img.rect(ox, oy, T, T, P.dark1);
-    for (let i = 0; i < 4; i++) {
-      const cx = ox + 2 + r() * 12;
-      const cy = oy + 2 + r() * 12;
-      img.ellipse(cx, cy, 2.5 + r() * 2, 2 + r() * 1.5, P.teal1);
-      img.set(cx - 1, cy - 1, P.moss1);
+    brush(ox, oy, r, 4, P.dark1);
+    const N = mask & 1, Ea = mask & 2, S = mask & 4, W = mask & 8;
+    if (N) {
+      img.hline(ox, oy, T, E.g3);
+      img.hline(ox, oy + 1, T, E.g2);
+      for (let x = 0; x < T; x += 2) img.set(ox + x + (r() < 0.5 ? 1 : 0), oy + 2, E.g1);
     }
-    speck(ox, oy, r, 3, P.moss1);
-    if (mask & 1) img.hline(ox, oy, T, P.moss2);
-    if (mask & 2) img.vline(ox + 15, oy, T, P.moss2);
-    if (mask & 4) {
-      img.hline(ox, oy + 14, T, P.moss2);
-      img.hline(ox, oy + 15, T, P.dark2);
+    if (S) {
+      img.hline(ox, oy + 14, T, E.g2);
+      img.hline(ox, oy + 15, T, E.g3);
+      for (let x = 0; x < T; x += 2) img.set(ox + x + (r() < 0.5 ? 1 : 0), oy + 13, E.g1);
     }
-    if (mask & 8) img.vline(ox, oy, T, P.moss2);
+    if (W) {
+      img.vline(ox, oy, T, E.g3);
+      img.vline(ox + 1, oy, T, E.g2);
+    }
+    if (Ea) {
+      img.vline(ox + 15, oy, T, E.g1);
+      img.vline(ox + 14, oy, T, E.g2);
+    }
   }
+
+  shadeTiles(img, 32, 0.9);
+  // 48-63: grass creeping over the ground beside it
+  fringeTiles(48, 4, 2800, (x, y, d, r) => {
+    if (d > 0.75 ? r() < 0.55 : r() < 0.12) return; // ragged edge
+    img.set(x, y, d < 0.3 ? E.g1 : r() < 0.5 ? E.g2 : E.g1);
+    if (r() < 0.12) img.set(x, y, E.g3);
+  });
+
+  // 64-79: the pale road's packed edge spreading into the dirt beside it
+  fringeTiles(64, 3, 2900, (x, y, d, r) => {
+    if (d > 0.6 && r() < 0.5) return;
+    img.set(x, y, d < 0.4 ? mix(E.d4, E.d3, 0.3) : mix(E.d3, E.d4, 0.4));
+  });
 
   sheet('tiles_road', img, {
     cell: [T, T],
     pivot: [0, 0],
     layer: 'tiles',
     tiles: {
-      floor: [0, 0, 0, 0, 1, 1, 2, 3],
-      floor_grass: [4, 4, 5],
-      floor_road: [10, 10, 10, 11],
-      floor_plank: [12, 12, 13],
-      floor_stone: [14, 15],
-      wall_front: [8, 8, 9],
+      floor: [0, 0, 0, 0, 1, 1, 1, 2, 3],
+      floor_grass: [4, 4, 5, 5, 6, 7],
+      floor_road: [10, 10, 10, 10, 11, 12, 13],
+      floor_plank: [14, 15, 46],
+      floor_stone: [44, 45],
+      wall_front: [40, 40, 40, 41, 41, 42, 40, 40, 41, 43],
       wall_cap: Array.from({ length: 16 }, (_, i) => 16 + i),
-      rock: [6, 6, 7],
+      rock: [8, 9, 47],
+      shade: Array.from({ length: 8 }, (_, i) => 32 + i),
+      fringe_floor_grass: Array.from({ length: 16 }, (_, i) => 48 + i),
+      fringe_floor_road: Array.from({ length: 16 }, (_, i) => 64 + i),
+      glow: [43],
     },
   });
 }

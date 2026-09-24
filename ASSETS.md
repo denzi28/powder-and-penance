@@ -210,7 +210,7 @@ Portrait frame 3 is the Tollwarden.
 ### The Waxmire
 | Sheet | Cell | Notes |
 |---|---|---|
-| `tiles_mire` | 16×16 | Floors: `floor` (wet mud), `floor_grass` (4–5), **`floor_wax`** (10–11, dull pale wax: slows movement), `floor_stone` (sunken flagstones, 14–15). Earth banks bound with pale roots; tangled root tops; black water outside. |
+| `tiles_mire` | 16×16 | Floors: `floor` (wet mud with a shine here and there), `floor_grass` (swamp grass), **`floor_wax`** (dull pale wax with a wrinkled skin: slows movement), `floor_stone` (sunken, greened flagstones). Earth banks with pale roots and hanging moss (one with lit candle offerings: `glow`); tangled root and reed tops; black water outside. Fringes: wax pools spread a rounded lip over the grass and mud; grass frays onto the mud. |
 | `decor_mire` | 64×64, pivot 32,62 | 0 `gravestone`, 1 `grave_cross`, 2 `reeds` (tall: hide in them), 3 `root_tangle` (2 tiles, tall), 4 `stone_angel` (tall), 5 `coffin` (flat), 6 `drowned_candles` (flat), 7 `dead_willow` (tall), 8 `sunken_bell` |
 | `drowned_pilgrim` | 32×32 | `idle`, `walk`, **`rise`** (up out of the wax, drawn cut off at the surface line), `claw`, `stagger`, `death` |
 | `mire_lantern` | 32×32 | `idle` (bobbing), `walk`, `stagger`, `death` (the cage falls and breaks). Its light cone is drawn at runtime. |
@@ -236,7 +236,7 @@ Spilled wax (`strike.pools`) is drawn at runtime, not from a sheet.
 ### Tallow Works
 | Sheet | Cell | Notes |
 |---|---|---|
-| `tiles_works` | 16×16 | Same index layout as `tiles`. Floors: `floor` (soot flagstones), `floor_grate` (4–5), `floor_grease` (spilled tallow; 10–11), `floor_plank` (12–13). Soot-brick walls, iron-topped caps, black rock. |
+| `tiles_works` | 16×16 | Floors: `floor` (soot-black flagstones; rare cracks, stains and drain covers), `floor_grate` (iron over the drains; one in five glows from the fires below: `glow`), `floor_grease` (spilled tallow: a flat sheen, never blob-shaped, so it can't be mistaken for a Vat Crawler), `floor_plank`. Soot brick in running bond under an iron band, with soot runs, pipes and furnace vents (`glow`); riveted iron wall tops; black slag rock. Fringe: grease seeps onto the stones around a spill. |
 | `decor_works` | 64×64, pivot 32,62 | 0 `vat` (3 tiles, tall), 1 `hook_chain` (hangs, no footprint), 2 `cage`, 3 `tallow_stack` (tall), 4 `furnace` (tall), 5 `pipe` (tall), 6 `robe_rack`, 7 `desk`, 8 `lift_cage` (flat, anchor + east), 9 `chain_heap`, 10 `tallow_cart`, 11 `toll_booth` |
 | `renderer` | 32×32 | Animations: `idle`, `walk`, `throw`, `swipe`, `stagger`, `death`. Weapon `renderer_hook` (40×9, a chain and hook; the throw's `reach` slides it out). |
 | `vat_crawler`, `vat_spawn` | 32×32 | The same blob at two sizes: `idle`, `walk`, `engulf`, `stagger`, `death` |
@@ -253,7 +253,7 @@ Each area picks its tileset in `data/areas.json`. Autotiling only reads the mani
 | Sheet | Area | Floor variants |
 |---|---|---|
 | `tiles` | abbey, test | `floor` (stone), `floor_moss` |
-| `tiles_road` | road, hub | `floor` (dirt), `floor_grass`, `floor_road` (cart ruts; 10–11), `floor_plank` (12–13), `floor_stone` (flagstones; 14–15). Walls are earth cliffs; caps are dark brush; rock is forest. |
+| `tiles_road` | road, hub | `floor` (dirt with clods and pebbles), `floor_grass` (tufts, the odd pale flower), `floor_road` (packed pale earth, no ruts, so it works running any way), `floor_plank` (boards with grain and nails), `floor_stone` (warm flagstones). Walls are earth cliffs under a grass lip (some with a hung lantern: `glow`); caps and rock are dark brush. Fringes: grass frays onto the ground beside it; the road's packed edge spreads into the dirt. |
 
 ### Decor (`decor_hub`: 64×64 cells, pivot 32,62)
 Two-tile pieces cover the anchor tile and the one west of it; three-tile pieces cover one tile each side.
@@ -320,6 +320,7 @@ The manifest's `tiles` block maps tile kinds to sheet indices (index = row × 8 
 | `wall_cap` | 16–31 | Top of a wall. **Index = 16 + edge mask**, where the mask bits say which sides are open: N=1, E=2, S=4, W=8. Draw a rim on the open sides. |
 | `shade` (optional) | 32–39 | Soft wall shadow drawn over the floor. **Index = 32 + mask** of the floor cell's closed sides: N=1, E=2, W=4 (32 itself is never drawn). Semi-transparent black. |
 | `glow` (optional) | 14 | Tiles that give off light: each gets a flickering `light_glow` added on top (the candle niche). |
+| `fringe_<variant>` (optional) | 16 each | Soft edge of a floor variant, drawn over the floor cells that border it. **Index = mask** of the sides where that variant is (N=1, E=2, S=4, W=8; mask 0 is never drawn). List the fringe sets top layer first: a variant spreads over the ones listed after it and over floors without a fringe, never over one listed before it. The abbey has none; see the other tilesets. |
 
 **Lighting:** light comes from the top left. Edges facing up or left catch a highlight; edges facing down or right fall into shadow. `light_glow` (fx, 56×56, pivot at its centre) is stepped rings of warm colour with a thin dithered band between steps, drawn with additive blending.
 
