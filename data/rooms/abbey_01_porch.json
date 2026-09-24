@@ -42,7 +42,10 @@
       "type": "exit",
       "id": "abbey_to_hub",
       "at": [10, 0],
-      "to": { "area": "hub", "spawn": "from_abbey" }
+      "to": {
+        "area": "hub",
+        "spawn": "from_abbey"
+      }
     },
     {
       "type": "spawn",
@@ -109,6 +112,67 @@
       "type": "decor",
       "kind": "rubble",
       "at": [17, 3]
+    },
+    {
+      "type": "npc",
+      "id": "hobb",
+      "npc": "hobb",
+      "at": [2, 8],
+      "talk": "hobb",
+      "routine": [
+        {
+          "at": [2, 8],
+          "do": "sit",
+          "ticks": 600,
+          "face": 1
+        },
+        {
+          "at": [2, 8],
+          "do": "work",
+          "ticks": 90,
+          "face": 1
+        }
+      ]
+    },
+    {
+      "type": "npc",
+      "id": "cuthwin",
+      "npc": "cuthwin",
+      "at": [5, 9],
+      "talk": "cuthwin",
+      "routine": [
+        {
+          "at": [5, 9],
+          "do": "work",
+          "ticks": 300,
+          "face": 1
+        },
+        {
+          "at": [10, 8],
+          "do": "work",
+          "ticks": 300,
+          "face": -1
+        },
+        {
+          "at": [17, 7],
+          "do": "work",
+          "ticks": 300,
+          "face": 1
+        },
+        {
+          "at": [11, 12],
+          "do": "work",
+          "ticks": 300,
+          "face": -1,
+          "via": [[16, 12]]
+        },
+        {
+          "at": [4, 11],
+          "do": "work",
+          "ticks": 240,
+          "face": 1
+        }
+      ]
     }
   ]
 }

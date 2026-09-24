@@ -173,12 +173,13 @@ export class Chatter {
     }
     this.text.setText(typed);
     const x = Math.round(n.x - w / 2);
-    const y = Math.round(n.y - 34 - h);
+    const top = this.box.scene.cameras.main.worldView.y + 2;
+    const y = Math.round(Math.max(top, n.y - 34 - h)); // keep the bubble on screen
     this.box.clear();
     this.box.fillStyle(0x140f14, 0.88).fillRect(x, y, w, h);
     this.box.lineStyle(1, 0xa39eb0, 1).strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
-    this.box.fillStyle(0x140f14, 0.88).fillTriangle(n.x - 3, y + h, n.x + 3, y + h, n.x, y + h + 4); // tail
-    this.box.lineStyle(1, 0xa39eb0, 1).lineBetween(n.x - 3, y + h, n.x, y + h + 3).lineBetween(n.x + 3, y + h, n.x, y + h + 3);
+    if (y + h < n.y - 30) this.box.fillStyle(0x140f14, 0.88).fillTriangle(n.x - 3, y + h, n.x + 3, y + h, n.x, y + h + 4); // tail
+    if (y + h < n.y - 30) this.box.lineStyle(1, 0xa39eb0, 1).lineBetween(n.x - 3, y + h, n.x, y + h + 3).lineBetween(n.x + 3, y + h, n.x, y + h + 3);
     this.box.setVisible(true);
     this.text.setPosition(x + 3, y + 3).setVisible(true);
   }

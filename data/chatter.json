@@ -232,6 +232,108 @@
         ["jost", "The bell's stopped. Listen, Ulla. Just the fire."],
         ["ulla", "I'd forgotten what the fire sounded like."]
       ]
+    },
+    {
+      "id": "lome_names",
+      "who": ["lome"],
+      "lines": [
+        ["lome", "Aldith. Brother Col. The weaver's girl..."],
+        ["lome", "...and the one with the limp. I never got his name."]
+      ]
+    },
+    {
+      "id": "lome_wind",
+      "who": ["lome"],
+      "lines": [
+        ["lome", "Easy, little flame. The wind's only passing."]
+      ]
+    },
+    {
+      "id": "lome_count",
+      "who": ["lome"],
+      "lines": [
+        ["lome", "Sixty-one. Sixty-two... no. Sixty-one. One went out."]
+      ]
+    },
+    {
+      "id": "wenna_bite",
+      "who": ["wenna"],
+      "lines": [
+        ["wenna", "Come on, you slippery old bishop. Bite."]
+      ]
+    },
+    {
+      "id": "wenna_hum",
+      "who": ["wenna"],
+      "lines": [
+        ["wenna", "Hmm-hm-hmm... no. Not that song. Not in here."]
+      ]
+    },
+    {
+      "id": "wenna_pray",
+      "who": ["wenna"],
+      "lines": [
+        ["wenna", "One for the catch. One for my mother. One for whatever's under the bath."]
+      ]
+    },
+    {
+      "id": "fennick_sums",
+      "who": ["fennick"],
+      "lines": [
+        ["fennick", "Forty stone received, forty stone rendered. Balanced."],
+        ["fennick", "Balanced. Balanced. Always balanced."]
+      ]
+    },
+    {
+      "id": "fennick_door",
+      "who": ["fennick"],
+      "lines": [
+        ["fennick", "Was that the lift? No. No, just the pipes."]
+      ]
+    },
+    {
+      "id": "fennick_ink",
+      "who": ["fennick"],
+      "lines": [
+        ["fennick", "Nearly out of ink. I could write in tallow, I suppose. There's enough."]
+      ]
+    },
+    {
+      "id": "bread",
+      "who": ["cuthwin",  "hobb"],
+      "lines": [
+        ["cuthwin", "I saved you the heel of the loaf, Hobb."],
+        ["hobb", "The heel! The Prior eats the middle, does he?"],
+        ["cuthwin", "The Prior doesn't eat any more."]
+      ]
+    },
+    {
+      "id": "sweeping",
+      "who": ["hobb",  "cuthwin"],
+      "lines": [
+        ["hobb", "You missed a bit, brother."],
+        ["cuthwin", "It's wax, Hobb. It'll be back by dark."],
+        ["hobb", "Then you'll have missed it twice."]
+      ]
+    },
+    {
+      "id": "ringing",
+      "who": ["cuthwin",  "hobb"],
+      "when": "!boss:chandler",
+      "lines": [
+        ["cuthwin", "Did you hear the bell last night? It rang thirteen."],
+        ["hobb", "It rings what it likes now. Don't count, lad."]
+      ]
+    },
+    {
+      "id": "quiet_bell",
+      "who": ["hobb",  "cuthwin"],
+      "when": "boss:chandler",
+      "lines": [
+        ["hobb", "Forty years I rang her. I never heard her stop."],
+        ["cuthwin", "Does it sound strange? The quiet?"],
+        ["hobb", "It sounds like I can sleep."]
+      ]
     }
   ]
 }

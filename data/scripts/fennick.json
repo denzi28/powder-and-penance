@@ -1,0 +1,41 @@
+{
+  "id": "fennick",
+  "steps": [
+    {
+      "if": "!fennick_met",
+      "then": [
+        { "say": "Ah! Don't. I'm only the clerk. Fennick. Clerk of Receipts. I write down what comes in.", "who": "fennick" },
+        { "say": "Carts come in. Tallow goes out. The numbers balance. They always balance. That's what worries me.", "who": "fennick" },
+        { "set": "fennick_met" }
+      ]
+    },
+    {
+      "menu": [
+        {
+          "text": "What comes in?",
+          "do": [
+            { "say": "The ledger says 'raw material'. Twelve carts a week. By weight. Every one of them wearing a pilgrim's robe.", "who": "fennick" },
+            { "say": "I didn't ask. A clerk doesn't ask. A clerk writes it down neatly.", "who": "fennick" }
+          ]
+        },
+        {
+          "text": "Why stay?",
+          "do": [
+            { "say": "Someone has to keep the accounts. If I stop, it will all have happened without anyone writing it down.", "who": "fennick" }
+          ]
+        },
+        {
+          "text": "Leave",
+          "end": true,
+          "do": [
+            {
+              "if": "boss:mother_tallow",
+              "then": [{ "say": "The furnaces are cooling. I've drawn a line under the last page. Somebody ought to read it.", "who": "fennick" }],
+              "else": [{ "say": "Close the door behind you. Quietly. She listens for doors.", "who": "fennick" }]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

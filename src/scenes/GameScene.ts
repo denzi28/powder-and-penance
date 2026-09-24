@@ -45,6 +45,7 @@ import { FloatingText } from '../render/FloatingText';
 import { ProjectileView } from '../render/ProjectileView';
 import { EnemyBars } from '../render/EnemyBars';
 import { LightCones } from '../render/LightCones';
+import { Ambience } from '../world/Ambience';
 import { Sfx } from '../audio/Sfx';
 import { SaveSystem, type SaveData } from '../save/SaveSystem';
 import { MenuNav, type Menu } from '../ui/Menu';
@@ -93,6 +94,7 @@ export class GameScene extends Phaser.Scene {
   doors!: Doors;
   props!: Props;
   decor!: Decor;
+  ambience!: Ambience;
   npcs!: Npcs;
   chatter!: Chatter;
   /** Dialogue and cutscenes (data/scripts): pauses the world while a script runs. */
@@ -209,6 +211,7 @@ export class GameScene extends Phaser.Scene {
     this.doors = new Doors(this.lib);
     this.props = new Props(this.lib);
     this.decor = new Decor(this.lib);
+    this.ambience = new Ambience(this, this.lib);
     this.npcs = new Npcs(this.lib);
     this.chatter = new Chatter(this, this.npcs, this.bus);
     this.npcs.onWorkStroke = n => {
@@ -742,6 +745,7 @@ export class GameScene extends Phaser.Scene {
     const still = !!(this.menu || this.mapOpen || this.story.active || this.warp);
     this.npcs.update(delta, this.player, still);
     this.chatter.update(delta, this.player, this.flags, still);
+    this.ambience.update(delta, this.player, this.cameras.main.worldView, still || !!this.hitstop);
     this.arena.update(delta);
     // A script can point the camera elsewhere (cutscenes); otherwise it follows the player.
     const focus = this.story.cameraPoint;
@@ -906,6 +910,7 @@ export class GameScene extends Phaser.Scene {
     this.grid = buildGrid(this.rooms);
     markObstacles(this.grid, this.rooms, this.brokenWall);
     this.decor.build(this.rooms);
+    this.ambience.build(this.rooms, this.grid, this.area);
     this.worldView.build(this.grid, DATA.areas.areas[this.area].tileset);
     this.racks.build(this.rooms);
     this.shrines.build(this.rooms, id => this.flags.has(`shrine:${id}`), this.flags);

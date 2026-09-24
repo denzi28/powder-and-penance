@@ -1,0 +1,41 @@
+{
+  "id": "cuthwin",
+  "steps": [
+    {
+      "if": "!cuthwin_met",
+      "then": [
+        { "say": "Oh! A visitor. Brother Cuthwin, novice. I sweep the porch. The Prior says a clean porch is a clean soul.", "who": "cuthwin" },
+        { "say": "The wax keeps dripping, though. I sweep it and it's back by morning. Maybe my soul's the problem.", "who": "cuthwin" },
+        { "set": "cuthwin_met" }
+      ]
+    },
+    {
+      "menu": [
+        {
+          "text": "The Abbey?",
+          "do": [
+            { "say": "The brothers inside don't talk much any more. They just stand where they stood and burn.", "who": "cuthwin" },
+            { "say": "I'm not allowed past the courtyard yet. I'm starting to think that's a mercy.", "who": "cuthwin" }
+          ]
+        },
+        {
+          "text": "The old man?",
+          "do": [
+            { "say": "Hobb. He was a bell-ringer, once. Now he rings his bowl. I give him my bread. Don't tell the Prior.", "who": "cuthwin" }
+          ]
+        },
+        {
+          "text": "Leave",
+          "end": true,
+          "do": [
+            {
+              "if": "boss:chandler",
+              "then": [{ "say": "It's stopped dripping. For the first time since I came. I don't know what to sweep.", "who": "cuthwin" }],
+              "else": [{ "say": "Wipe your feet. Please. I've only just done there.", "who": "cuthwin" }]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "id": "wenna",
+  "steps": [
+    {
+      "if": "!wenna_met",
+      "then": [
+        { "say": "Shh. You'll scare the eels. Wenna. My family's fished the Mire since it was water.", "who": "wenna" },
+        { "say": "Now it's wax. The eels don't care. They just got slower and fatter, like the rest of us.", "who": "wenna" },
+        { "set": "wenna_met" }
+      ]
+    },
+    {
+      "menu": [
+        {
+          "text": "Eels, in wax?",
+          "do": [
+            { "say": "Taste of tallow and bad dreams. Roast them long enough and they light themselves.", "who": "wenna" }
+          ]
+        },
+        {
+          "text": "The lanterns out there?",
+          "do": [
+            { "say": "The Lanterns walk the paths and look for anyone out of place. Keep to the dark behind their backs.", "who": "wenna" },
+            { "say": "If one sees you, don't run toward the water. That's where they want you.", "who": "wenna" }
+          ]
+        },
+        {
+          "text": "Leave",
+          "end": true,
+          "do": [
+            {
+              "if": "boss:mire_matron",
+              "then": [{ "say": "The singing's stopped. The eels are biting again. Don't know which I miss.", "who": "wenna" }],
+              "else": [{ "say": "If you hear singing from the bath, walk the other way. I mean it.", "who": "wenna" }]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

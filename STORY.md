@@ -39,6 +39,11 @@ The map is in [WORLD.md](WORLD.md).
 | **Old Agnes** | Hub | A pilgrim who kneels at the shrine, and at the graves in the south-west yard. Remembers when the Wick burned bright. |
 | **Ulla** | Hub | A pilgrim wife from the coast who keeps the west camp's fire going. Talks about the graves and why they stay. |
 | **Jost** | Hub | Ulla's husband, an old pilgrim with a scallop shell whose knees won't take the road home. Points the way to the Abbey. |
+| **Brother Lome** | Hill of Candles | A hermit who keeps the pilgrims' candle cairns lit, reciting their names. |
+| **Wenna** | Drowned Chapel (Mire) | A mire-woman who fishes the chapel's wax pools for eels. Warns about the Lanterns and the singing in the bath. |
+| **Fennick** | Foreman's Office (Works) | The Works' last clerk, still keeping the ledger, and the only one who wrote down what the carts brought in. |
+| **Brother Cuthwin** | Abbey Porch | A novice who sweeps the dripping wax from the porch every day. |
+| **Old Hobb** | Abbey Porch | A beggar and former bell-ringer who counts everyone going in. |
 | **The Tollwarden** | Abbey Gatehouse | Speaks before the fight: "Toll is paid in tallow, pilgrim. And tallow is paid in you." |
 | **Mother Tallow** | Works | Wordless. Hums a work song. |
 | **Mire Matron** | Waxmire | Sings; asks if you've come to be born again |
@@ -106,7 +111,7 @@ Everything is data; the game hot-reloads it and checks every reference when it l
 { "id": "anselm", "who": ["tomas", "maudlin"], "when": "boss:tollwarden",
   "lines": [["tomas", "They say the Tollwarden fell. Old Anselm."], ["maudlin", "He kept a count of every one he sent down."]] }
 ```
-- `who` are placement ids; they must all be present and within `range` px (default 80) of the first.
+- `who` are placement ids; they must all be present and within `range` px (default 80) of the first. A single `who` makes someone mutter to themselves.
 - `when` ties the talk to the story. A chat isn't repeated until the others have been heard.
 - They pause what they're doing and face each other while they talk. Talking to one of them yourself interrupts it.
 - Lines are short (90 characters at most): they sit in a bubble over the speaker's head.

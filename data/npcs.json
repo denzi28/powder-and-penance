@@ -12,6 +12,11 @@
     "bede": { "name": "Bede", "sprite": "npc_bede", "portrait": 8, "voice": { "sfx": "voice_low", "pitch": 0.75, "every": 3 }, "workSfx": "break_wood" },
     "agnes": { "name": "Old Agnes", "sprite": "npc_agnes", "portrait": 9, "voice": { "sfx": "voice_soft", "pitch": 1.0, "every": 3, "volume": 0.8 } },
     "ulla": { "name": "Ulla", "sprite": "npc_ulla", "portrait": 10, "voice": { "sfx": "voice", "pitch": 1.2, "every": 2, "volume": 0.9 } },
-    "jost": { "name": "Jost", "sprite": "npc_jost", "portrait": 11, "voice": { "sfx": "voice_low", "pitch": 0.9, "every": 3, "volume": 0.85 } }
+    "jost": { "name": "Jost", "sprite": "npc_jost", "portrait": 11, "voice": { "sfx": "voice_low", "pitch": 0.9, "every": 3, "volume": 0.85 } },
+    "lome": { "name": "Brother Lome", "sprite": "npc_lome", "portrait": 12, "voice": { "sfx": "voice_low", "pitch": 0.8, "every": 3 } },
+    "wenna": { "name": "Wenna", "sprite": "npc_wenna", "portrait": 13, "voice": { "sfx": "voice", "pitch": 1.05, "every": 2 } },
+    "fennick": { "name": "Fennick", "sprite": "npc_fennick", "portrait": 14, "voice": { "sfx": "voice", "pitch": 1.3, "every": 2 } },
+    "cuthwin": { "name": "Brother Cuthwin", "sprite": "npc_cuthwin", "portrait": 15, "voice": { "sfx": "voice", "pitch": 1.25, "every": 2 } },
+    "hobb": { "name": "Old Hobb", "sprite": "npc_hobb", "portrait": 16, "voice": { "sfx": "voice_low", "pitch": 0.85, "every": 3 } }
   }
 }

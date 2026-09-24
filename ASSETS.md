@@ -280,6 +280,14 @@ Static scenery, referenced by `data/decor.json`, which picks a sheet and frame a
 | 2 | `guard_dead` (flat) | 6 | `signpost` |
 | 3 | `boulder` | 7 | `candle_cairn` |
 
+### Ambient life (`critters`: 16×16 cells, pivot 8,14, facing right) and `data/ambience.json`
+The critters sheet holds small animals that wander rooms and flee from the player (`src/world/Ambience.ts`):
+0-3 rat (idle, sniff, run a/b), 4-7 crow (idle, peck, fly a/b), 8-11 frog (sit, croak, hop a/b), 12-13 moth, 14-17 cat (sit, tail flick, walk a/b), 18-19 bat (wings up/down).
+
+`data/ambience.json` brings the scenery to life. Nothing in it affects play.
+- `decor.<kind>`: flame points in px from the decor anchor (`at`), plus optional `glow` (light scale), `flicker` (dancing flame tips, on by default), `smoke` / `embers` / `steam` (per second; `steamAt` for where steam rises) and `moths`.
+- `areas.<area>`: `air` (`ash`, `dust`, `soot`, `fireflies`, `mist`, `leaves`, each with a `count` in view), `critters` (`kind`, `perRoom` [min, max], optional `on` floor kinds and `rooms`), `bubbles` (floor kinds that bubble) and `drips` (drops from the ceiling per second).
+
 ### Abbey enemies (single-layer sheets, dirs S SE E NE N)
 | Sheet | Cell | Pivot | Animations |
 |---|---|---|---|

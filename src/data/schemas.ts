@@ -683,6 +683,42 @@ export const ChatDef = z.object({
   lines: z.array(z.tuple([z.string(), z.string().max(90)])).min(1),
 });
 export const Chatter = z.object({ chats: z.array(ChatDef) });
+
+// ---- Ambient life (data/ambience.json): flames, smoke, critters and air, per decor kind and per area ----
+const Px = z.tuple([int, int]);
+export const AmbientDecor = z.object({
+  /** Flame points, in px from the decor's anchor (bottom centre of its tile). */
+  at: z.array(Px).min(1),
+  /** Warm light over each flame (scale of the glow). */
+  glow: z.number().min(0).max(3).optional(),
+  /** Dancing flame tips. */
+  flicker: z.boolean().default(true),
+  /** Puffs / sparks per second from the flames. */
+  smoke: z.number().min(0).optional(),
+  embers: z.number().min(0).optional(),
+  steam: z.number().min(0).optional(),
+  /** Where steam rises from (else the flame points). */
+  steamAt: z.array(Px).optional(),
+  /** Moths fluttering round the first flame. */
+  moths: int.min(0).max(6).optional(),
+});
+export const CRITTERS = ['rat', 'crow', 'frog', 'cat', 'bat'] as const;
+export const AIR_FX = ['ash', 'dust', 'fireflies', 'soot', 'mist', 'leaves'] as const;
+export const AmbientArea = z.object({
+  /** Things drifting in the air over the view. */
+  air: z.array(z.object({ fx: z.enum(AIR_FX), count: int.min(1).max(80) })).default([]),
+  /** Small animals per room: [min, max]. `on`: only on these floor kinds; `rooms`: only in these rooms. */
+  critters: z
+    .array(z.object({ kind: z.enum(CRITTERS), perRoom: z.tuple([int.min(0), int.min(0)]), on: z.array(z.string()).optional(), rooms: z.array(z.string()).optional() }))
+    .default([]),
+  /** Floor kinds that bubble now and then. */
+  bubbles: z.array(z.string()).default([]),
+  /** Drops falling from the dark ceiling, per second, in view. */
+  drips: z.number().min(0).default(0),
+});
+export const Ambience = z.object({ decor: z.record(AmbientDecor), areas: z.record(AmbientArea) });
+export type AmbientDecor = z.infer<typeof AmbientDecor>;
+export type AmbientArea = z.infer<typeof AmbientArea>;
 export type ChatDef = z.infer<typeof ChatDef>;
 export const RoomData = z
   .object({

@@ -1,0 +1,54 @@
+{
+  "decor": {
+    "campfire": { "at": [[0, -14]], "glow": 1.2, "smoke": 1.2, "embers": 2.5 },
+    "candle_cairn": { "at": [[-1, -24], [-5, -18], [4, -16], [-8, -11]], "glow": 0.55, "smoke": 0.3 },
+    "lantern_post": { "at": [[6, -27]], "glow": 0.8, "moths": 2 },
+    "altar": { "at": [[11, -27], [-12, -26], [6, -25], [-8, -24], [-4, -23]], "glow": 0.45 },
+    "great_altar": { "at": [[-5, -29], [-21, -24], [18, -24], [-16, -22]], "glow": 0.5 },
+    "candelabrum": { "at": [[-1, -39], [-7, -36], [5, -36]], "glow": 0.7, "moths": 1 },
+    "candle_stand": { "at": [[-1, -31]], "glow": 0.6 },
+    "drowned_candles": { "at": [[-4, -10], [2, -9]], "glow": 0.55 },
+    "desk": { "at": [[2, -16]], "glow": 0.5 },
+    "lectern": { "at": [[8, -23]], "glow": 0.45 },
+    "writing_desk": { "at": [[-20, -24]], "glow": 0.45 },
+    "bone_pile": { "at": [[0, -25]], "glow": 0.4 },
+    "saint_statue": { "at": [[6, -44]], "glow": 0.4 },
+    "toll_booth": { "at": [[10, -28]], "glow": 0.6, "moths": 1 },
+    "furnace": { "at": [[-8, -9]], "glow": 1.3, "embers": 3, "flicker": false },
+    "vat": { "at": [[0, -5]], "glow": 0.6, "flicker": false, "steam": 2.5, "steamAt": [[-14, -34], [0, -36], [14, -34]] }
+  },
+  "areas": {
+    "road": {
+      "air": [{ "fx": "ash", "count": 26 }, { "fx": "leaves", "count": 4 }],
+      "critters": [{ "kind": "crow", "perRoom": [1, 3], "on": ["floor_grass", "floor_road"] }, { "kind": "rat", "perRoom": [0, 1] }]
+    },
+    "hub": {
+      "air": [{ "fx": "ash", "count": 14 }, { "fx": "leaves", "count": 3 }],
+      "critters": [
+        { "kind": "crow", "perRoom": [2, 3], "on": ["floor_grass"], "rooms": ["hub_01_yard"] },
+        { "kind": "cat", "perRoom": [1, 1], "rooms": ["hub_01_yard"] },
+        { "kind": "rat", "perRoom": [0, 1], "rooms": ["hub_02_chapel"] }
+      ]
+    },
+    "mire": {
+      "air": [{ "fx": "fireflies", "count": 16 }, { "fx": "mist", "count": 7 }],
+      "critters": [{ "kind": "frog", "perRoom": [1, 3], "on": ["floor_grass", "floor_stone", "floor"] }],
+      "bubbles": ["floor_wax"]
+    },
+    "works": {
+      "air": [{ "fx": "soot", "count": 30 }],
+      "critters": [{ "kind": "rat", "perRoom": [1, 3] }],
+      "bubbles": ["floor_grease"],
+      "drips": 0.5
+    },
+    "abbey": {
+      "air": [{ "fx": "dust", "count": 22 }],
+      "critters": [
+        { "kind": "rat", "perRoom": [0, 2] },
+        { "kind": "crow", "perRoom": [1, 2], "on": ["floor_moss"], "rooms": ["abbey_02_courtyard", "abbey_03_cloister"] },
+        { "kind": "bat", "perRoom": [1, 1], "rooms": ["abbey_04_bell_passage", "abbey_05_crypt_stair", "abbey_06_ossuary", "abbey_10_undercroft", "abbey_12_nave"] }
+      ],
+      "drips": 1.2
+    }
+  }
+}

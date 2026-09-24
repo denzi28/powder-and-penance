@@ -66,6 +66,41 @@
       "type": "prop",
       "kind": "candles",
       "at": [10, 8]
+    },
+    {
+      "type": "npc",
+      "id": "fennick",
+      "npc": "fennick",
+      "at": [4, 6],
+      "talk": "fennick",
+      "routine": [
+        {
+          "at": [4, 6],
+          "do": "work",
+          "ticks": 720,
+          "face": 1
+        },
+        {
+          "via": [[6, 5]],
+          "at": [11, 2],
+          "do": "idle",
+          "ticks": 300,
+          "face": 1
+        },
+        {
+          "at": [11, 5],
+          "do": "idle",
+          "ticks": 240,
+          "face": 1
+        },
+        {
+          "via": [[6, 5]],
+          "at": [4, 6],
+          "do": "work",
+          "ticks": 10,
+          "face": 1
+        }
+      ]
     }
   ]
 }

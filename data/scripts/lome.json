@@ -1,0 +1,35 @@
+{
+  "id": "lome",
+  "steps": [
+    {
+      "if": "!lome_met",
+      "then": [
+        { "say": "Mind the cairns. Every candle here is someone's name. I'm Lome. I keep them lit.", "who": "lome" },
+        { "say": "Pilgrims leave one on the way up. If it's still burning when they come down, they were forgiven. That's the story.", "who": "lome" },
+        { "set": "lome_met" }
+      ]
+    },
+    {
+      "menu": [
+        {
+          "text": "Do they come back down?",
+          "do": [
+            { "say": "Not lately. Not for years. I light them anyway. Somebody should be expecting them.", "who": "lome" }
+          ]
+        },
+        {
+          "text": "The Abbey?",
+          "do": [
+            { "say": "Up the hill, past the porch. They ring the bell at dusk and the whole hill shivers.", "who": "lome" },
+            {
+              "if": "boss:chandler",
+              "then": [{ "say": "Or they did. It's quiet now. The flames stand straight when it's quiet.", "who": "lome" }],
+              "else": [{ "say": "Don't let them give you a candle of your own. It's harder to leave, holding one.", "who": "lome" }]
+            }
+          ]
+        },
+        { "text": "Leave", "end": true, "do": [{ "say": "I'll light one for you. No charge. It's not as if you're dead.", "who": "lome" }] }
+      ]
+    }
+  ]
+}

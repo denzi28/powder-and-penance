@@ -134,6 +134,53 @@
       "type": "spawn",
       "id": "from_hub",
       "at": [10, 1]
+    },
+    {
+      "type": "npc",
+      "id": "lome",
+      "npc": "lome",
+      "at": [10, 13],
+      "talk": "lome",
+      "routine": [
+        {
+          "at": [10, 13],
+          "do": "work",
+          "ticks": 360,
+          "face": -1
+        },
+        {
+          "at": [11, 14],
+          "do": "work",
+          "ticks": 300,
+          "face": 1
+        },
+        {
+          "via": [[11, 13], [16, 13]],
+          "at": [16, 12],
+          "do": "work",
+          "ticks": 300,
+          "face": -1
+        },
+        {
+          "at": [19, 12],
+          "do": "work",
+          "ticks": 300,
+          "face": -1
+        },
+        {
+          "via": [[19, 11]],
+          "at": [18, 10],
+          "do": "idle",
+          "ticks": 420,
+          "face": -1
+        },
+        {
+          "via": [[16, 13], [11, 13]],
+          "at": [10, 13],
+          "do": "idle",
+          "ticks": 30
+        }
+      ]
     }
   ]
 }

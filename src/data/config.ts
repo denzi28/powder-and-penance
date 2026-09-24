@@ -63,6 +63,7 @@ function loadAll(src: Record<string, unknown>) {
     decor: one(S.DecorTable, 'decor'),
     npcs: one(S.Npcs, 'npcs'),
     chatter: one(S.Chatter, 'chatter'),
+    ambience: one(S.Ambience, 'ambience'),
     terrain: one(S.Terrain, 'terrain'),
     scripts: dir(S.ScriptDef, 'scripts'),
   };
@@ -139,6 +140,12 @@ function loadAll(src: Record<string, unknown>) {
         if (en.type === 'shield_rack' && en.shield !== null && !data.shields[String(en.shield)])
           errors.push(`data/rooms/${r.id}.json: shield_rack has unknown shield "${String(en.shield)}"`);
       }
+    }
+    for (const k of Object.keys(data.ambience.decor)) if (!data.decor.decor[k]) errors.push(`data/ambience.json: unknown decor kind "${k}"`);
+    for (const [a, amb] of Object.entries(data.ambience.areas)) {
+      if (!data.areas.areas[a]) errors.push(`data/ambience.json: unknown area "${a}"`);
+      for (const c of amb.critters)
+        for (const r of c.rooms ?? []) if (data.rooms[r]?.area !== a) errors.push(`data/ambience.json: ${a} ${c.kind}: room "${r}" is not in that area`);
     }
     errors.push(...checkStory(data));
     if (!data.rooms[data.game.startRoom])

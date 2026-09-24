@@ -4173,7 +4173,7 @@ function line(img: Img, x0: number, y0: number, x1: number, y1: number, c: RGBA)
 
 
 /** Head-and-shoulders portraits for the dialogue box, drawn at double detail. */
-function drawPortrait(c: Img, who: 'oskar' | 'maudlin' | 'pip' | 'tollwarden' | 'matron' | 'chandler' | 'tomas' | 'hedda' | 'bede' | 'agnes' | 'ulla' | 'jost') {
+function drawPortrait(c: Img, who: 'oskar' | 'maudlin' | 'pip' | 'tollwarden' | 'matron' | 'chandler' | 'tomas' | 'hedda' | 'bede' | 'agnes' | 'ulla' | 'jost' | 'lome' | 'wenna' | 'fennick' | 'cuthwin' | 'hobb') {
   c.rect(0, 0, 32, 32, P.dark1);
   const skin = mix(P.wax1, P.wood2, 0.35);
   const oldSkin = mix(P.wax1, P.stone3, 0.3);
@@ -4241,6 +4241,54 @@ function drawPortrait(c: Img, who: 'oskar' | 'maudlin' | 'pip' | 'tollwarden' | 
     face(10, 8, 12, 14, oldSkin);
     for (let y = 16; y < 24; y++) c.hline(11 + Math.floor((y - 16) / 3), y, 10 - Math.floor((y - 16) / 3) * 2, mix(P.stone4, P.wax1, 0.3));
     c.rect(6, 26, 3, 3, P.wax2); // scallop
+  } else if (who === 'lome') {
+    // the hermit: a brown hood, a grey beard, a candle stub glowing below his chin
+    c.rect(3, 24, 26, 8, mix(P.wood1, P.stone1, 0.3));
+    c.rect(5, 2, 22, 22, mix(P.wood1, P.ink, 0.3)); // hood
+    face(10, 8, 12, 14, oldSkin);
+    for (let y = 16; y < 25; y++) c.hline(11 + Math.floor((y - 16) / 3), y, 10 - Math.floor((y - 16) / 3) * 2, P.stone3);
+    c.vline(24, 25, 5, P.wax2);
+    c.set(24, 24, P.flame2);
+    c.set(24, 23, P.flame1);
+  } else if (who === 'wenna') {
+    // the mire-woman: dark hair plastered down, a green shawl, a wry mouth
+    c.rect(3, 24, 26, 8, P.moss1);
+    c.rect(6, 4, 20, 14, mix(P.dark2, P.moss1, 0.3)); // hair
+    face(9, 8, 14, 15, mix(skin, P.moss2, 0.15));
+    c.hline(14, 19, 5, P.blood1);
+    c.set(19, 18, P.blood1);
+    c.vline(7, 8, 14, mix(P.dark2, P.moss1, 0.3));
+    c.vline(24, 8, 14, mix(P.dark2, P.moss1, 0.3));
+  } else if (who === 'fennick') {
+    // the clerk: bald and pale, round spectacles, a white collar under a black coat
+    c.rect(3, 24, 26, 8, P.dark1);
+    c.rect(12, 23, 8, 3, P.wax1);
+    face(9, 6, 14, 17, mix(P.wax2, P.wax1, 0.5));
+    for (const x of [10, 17]) {
+      c.rect(x, 10, 5, 4, P.stone2); // round rims
+      c.rect(x + 1, 11, 3, 2, mix(P.wax2, P.teal3, 0.3)); // lenses
+      c.set(x + 2, 12, P.ink);
+      c.set(x + 1, 11, P.white);
+    }
+    c.hline(15, 11, 2, P.stone2);
+    c.hline(13, 19, 6, mix(P.wax1, P.blood1, 0.4)); // thin lips
+  } else if (who === 'cuthwin') {
+    // the novice: young, a tonsure ringed with ginger hair, a nervous look
+    c.rect(3, 24, 26, 8, mix(P.stone3, P.wood2, 0.35));
+    face(9, 7, 14, 16, mix(P.wax2, P.wax1, 0.5));
+    c.rect(8, 4, 16, 4, mix(P.wood1, P.flame1, 0.25)); // hair ring
+    c.rect(12, 4, 8, 2, mix(P.wax2, P.wax1, 0.5)); // the tonsure
+    c.set(12, 16, mix(P.wax1, P.blood1, 0.4)); // freckles
+    c.set(19, 16, mix(P.wax1, P.blood1, 0.4));
+  } else if (who === 'hobb') {
+    // the beggar: a battered teal cap, a stubbled grey face, one eye screwed shut
+    c.rect(2, 24, 28, 8, P.wood1);
+    face(9, 8, 14, 15, oldSkin);
+    c.hline(18, 11, 3, oldSkin); // the shut eye
+    c.hline(18, 12, 3, P.ink);
+    for (let y = 17; y < 23; y++) for (let x = 10; x < 22; x += 3) if ((x * 7 + y * 5) % 4 === 0) c.set(x + (y % 3), y, mix(P.stone3, P.wood1, 0.3)); // stubble
+    c.rect(7, 4, 18, 5, mix(P.teal1, P.ink, 0.3)); // cap
+    c.hline(6, 8, 21, mix(P.teal1, P.ink, 0.5));
   } else if (who === 'chandler') {
     c.rect(3, 24, 26, 8, P.wax2); // chasuble
     c.hline(3, 24, 26, P.flame1);
@@ -4337,7 +4385,7 @@ function drawPortrait(c: Img, who: 'oskar' | 'maudlin' | 'pip' | 'tollwarden' | 
 
 function genNpcs() {
   genTownsfolk();
-  const who = ['oskar', 'maudlin', 'pip', 'tollwarden', 'matron', 'chandler', 'tomas', 'hedda', 'bede', 'agnes', 'ulla', 'jost'] as const;
+  const who = ['oskar', 'maudlin', 'pip', 'tollwarden', 'matron', 'chandler', 'tomas', 'hedda', 'bede', 'agnes', 'ulla', 'jost', 'lome', 'wenna', 'fennick', 'cuthwin', 'hobb'] as const;
   const portraits = new Img(32 * who.length, 32);
   who.forEach((w, i) => {
     const c = new Img(32, 32);
@@ -7077,6 +7125,270 @@ function genTownsfolk() {
       return { r: [g.cx + 7, g.waist - 2] };
     },
   });
+
+  // ---- keepers of the safe places out in the world
+  // Brother Lome: a hermit in a patched brown habit who keeps the candle cairns on the Hill of Candles lit.
+  villagerSheet('npc_lome', {
+    cloth: { c0: mix(P.wood1, P.ink, 0.45), c1: mix(P.wood1, P.stone1, 0.3), c2: mix(P.wood2, P.stone2, 0.4), c3: mix(P.wood2, P.wax1, 0.3) },
+    long: true, legs: P.dark2, skin: oldSkin, head: 'hood', headCol: mix(P.wood1, P.ink, 0.3), beard: P.stone3,
+    job: (c, f, g) => {
+      c.set(g.cx - 3, g.waist + 3, P.wax1); // a patch
+      c.set(g.cx - 2, g.waist + 4, P.wax1);
+      if (f.kind === 'work') {
+        // stooping to set a candle and light it
+        const r: [number, number] = [g.cx + 7, g.waist + 3];
+        c.vline(r[0] + 1, r[1] - 3, 3, P.wax2);
+        c.set(r[0] + 1, r[1] - 4, f.k ? P.flame2 : P.ember);
+        if (f.k) c.set(r[0] + 1, r[1] - 5, P.flame1);
+        return { r, l: [g.cx + 4, g.waist + 1] };
+      }
+      // a basket of candle stubs on his arm
+      c.rect(g.cx - 8, g.waist, 4, 3, P.wood2);
+      c.hline(g.cx - 8, g.waist, 4, P.wood1);
+      c.set(g.cx - 7, g.waist - 1, P.wax2);
+      c.set(g.cx - 5, g.waist - 1, P.wax1);
+      return { l: [g.cx - 6, g.waist - 1] };
+    },
+  });
+  // Wenna: a mire-woman in a moss-green shawl who fishes the chapel's wax pools for eels with a long rod.
+  villagerSheet('npc_wenna', {
+    cloth: moss, long: true, legs: P.dark2, skin: mix(skin, P.moss2, 0.15), head: 'hair', headCol: mix(P.dark2, P.moss1, 0.3),
+    job: (c, f, g) => {
+      c.rect(g.cx - 6, g.waist + 3, 3, 3, mix(P.wood1, P.moss1, 0.3)); // a creel at her hip
+      if (f.kind === 'work' || f.kind === 'sit') {
+        // the rod out over the water, the line bobbing
+        const r: [number, number] = [g.cx + 5, g.waist - 1];
+        const tip: [number, number] = [r[0] + 10, r[1] - 9];
+        line(c, r[0] - 1, r[1] + 2, tip[0], tip[1], P.wood2);
+        const bob = f.kind === 'work' ? f.k : 0;
+        for (let y = tip[1] + 1; y < g.feet - 1 + bob; y++) c.set(tip[0], y, withAlpha(P.stone4, 170));
+        c.set(tip[0], g.feet - 1 + bob, P.blood2); // the float
+        return { r, l: [g.cx + 3, g.waist + 1] };
+      }
+    },
+  });
+  // Fennick: the Works' last clerk, bald, in a black coat and spectacles, still keeping the ledger.
+  villagerSheet('npc_fennick', {
+    cloth: black, long: true, legs: P.dark2, skin: pale, head: 'bald', headCol: pale,
+    job: (c, f, g) => {
+      const ey = g.top + 3;
+      c.set(g.cx - 1, ey - 1, P.wax2); // spectacles glint
+      c.set(g.cx + 2, ey - 1, P.wax2);
+      c.hline(g.cx - 3, g.body + 1, 6, P.wax1); // a collar
+      if (f.kind === 'work') {
+        // writing: the ledger held open, the quill scratching
+        c.rect(g.cx - 4, g.waist - 3, 7, 4, P.wax1);
+        c.vline(g.cx - 1, g.waist - 3, 4, P.stone3);
+        c.set(g.cx - 3 + f.k * 2, g.waist - 1, P.ink);
+        const r: [number, number] = [g.cx + 1 + f.k, g.waist - 2];
+        line(c, r[0], r[1], r[0] + 3, r[1] - 5, P.wax2); // the quill
+        return { r, l: [g.cx - 5, g.waist - 1] };
+      }
+      c.rect(g.cx - 8, g.waist - 1, 3, 5, P.blood1); // the ledger under his arm
+      c.vline(g.cx - 8, g.waist - 1, 5, P.blood2);
+      return { l: [g.cx - 6, g.waist] };
+    },
+  });
+  // Brother Cuthwin: a young novice with a tonsure in an undyed habit, forever sweeping the Abbey porch.
+  villagerSheet('npc_cuthwin', {
+    cloth: { c0: mix(P.stone2, P.wood1, 0.4), c1: mix(P.stone3, P.wood2, 0.35), c2: mix(P.stone3, P.wax1, 0.35), c3: mix(P.stone4, P.wax1, 0.4) },
+    long: true, legs: P.dark2, skin: pale, head: 'hair', headCol: mix(P.wood1, P.flame1, 0.25),
+    job: (c, f, g) => {
+      c.set(g.cx, g.top, pale); // the tonsure
+      c.set(g.cx - 1, g.top, pale);
+      c.hline(g.cx - 1, g.waist, 3, P.wood1); // a rope belt
+      c.vline(g.cx + 1, g.waist + 1, 3, P.wood1);
+      if (f.kind === 'walk' || f.kind === 'idle' || f.kind === 'talk') {
+        // the broom carried upright
+        c.vline(g.cx + 7, g.body - 3, g.feet - g.body + 1, P.wood2);
+        c.rect(g.cx + 6, g.feet - 3, 3, 3, P.flame1);
+        return { r: [g.cx + 6, g.waist] };
+      }
+      if (f.kind === 'work') {
+        // sweeping: the broom head swings across the floor
+        const sw = f.k ? 4 : -2;
+        const r: [number, number] = [g.cx + 3, g.waist];
+        line(c, r[0], r[1] - 4, g.cx + 6 + sw, g.feet - 2, P.wood2);
+        c.rect(g.cx + 4 + sw, g.feet - 2, 5, 2, P.flame1);
+        c.hline(g.cx + 4 + sw, g.feet, 5, mix(P.flame1, P.wood1, 0.5));
+        if (f.k) c.set(g.cx + 11, g.feet - 1, P.stone3); // dust
+        return { r, l: [g.cx + 1, g.waist - 3] };
+      }
+    },
+  });
+  // Old Hobb: a beggar in rags and a battered cap who sits by the Abbey porch with a bowl.
+  villagerSheet('npc_hobb', {
+    cloth: rags, long: false, legs: mix(P.dark2, P.wood1, 0.3), skin: oldSkin, head: 'cap', headCol: mix(P.teal1, P.ink, 0.3), beard: mix(P.stone3, P.wood1, 0.3),
+    job: (c, f, g) => {
+      c.set(g.cx + 2, g.waist - 3, P.wax1); // a hole in his coat
+      if (f.kind === 'work' || f.kind === 'sit') {
+        // the bowl held out (rattled when he works)
+        const up = f.kind === 'work' ? f.k : 0;
+        const r: [number, number] = [g.cx + 6, g.waist - up];
+        c.rect(r[0], r[1] - 2, 4, 2, P.wood2);
+        c.hline(r[0] - 1, r[1] - 2, 6, P.wood1);
+        if (up) c.set(r[0] + 2, r[1] - 3, P.flame2); // a coin jumps
+        return { r };
+      }
+      c.vline(g.cx + 7, g.waist - 3, g.feet - g.waist + 3, P.wood1); // a crutch
+      c.hline(g.cx + 6, g.waist - 3, 3, P.wood1);
+      return { r: [g.cx + 7, g.waist - 2] };
+    },
+  });
+}
+
+// ---------------------------------------------------------------- critters (16x16 cells, pivot 8,14; facing right)
+// Small life that wanders the world and flees from the player (world/Ambience.ts):
+// 0-3 rat (idle, sniff, run a/b), 4-7 crow (idle, peck, fly a/b), 8-11 frog (sit, croak, hop a/b),
+// 12-13 moth (wings up/down), 14-17 cat (sit, tail flick, walk a/b), 18-19 bat (wings up/down).
+function genCritters() {
+  const N = 20;
+  const img = new Img(16 * N, 16);
+  const cell = (i: number, draw: (c: Img) => void, shadow = true) => {
+    const c = new Img(16, 16);
+    if (shadow) c.ellipse(8, 14.5, 4, 1, withAlpha(P.ink, 70));
+    draw(c);
+    c.outline(P.ink);
+    img.blit(c, i * 16, 0);
+  };
+  const fur = { c0: mix(P.stone1, P.wood1, 0.5), c1: mix(P.stone2, P.wood1, 0.4), c2: mix(P.stone3, P.wood2, 0.4) };
+  // rat: a low grey-brown body, pink tail and nose
+  const rat = (c: Img, k: 'idle' | 'sniff' | 'runA' | 'runB') => {
+    const up = k === 'sniff' ? 1 : 0;
+    const stretch = k === 'runA' ? 1 : k === 'runB' ? -1 : 0;
+    c.ellipse(7, 12, 3.5 + stretch * 0.5, 2, fur.c1);
+    c.hline(5, 10, 4, fur.c2);
+    c.disc(11 + stretch, 11 - up, 1.6, fur.c1); // head
+    c.set(13 + stretch, 11 - up, mix(P.blood1, P.wax1, 0.5)); // nose
+    c.set(11 + stretch, 9 - up, mix(P.blood1, P.wax1, 0.4)); // ear
+    c.set(11 + stretch, 10 - up, P.ink); // eye
+    line(c, 3, 12, 1, 13 - (k === 'runB' ? 1 : 0), mix(P.blood1, P.wax1, 0.45)); // tail
+    c.set(0, 12 + (k === 'runA' ? 1 : 0), mix(P.blood1, P.wax1, 0.45));
+    const legs = k === 'runA' ? [5, 10] : k === 'runB' ? [7, 8] : [5, 9];
+    for (const x of legs) c.set(x, 14, fur.c0);
+  };
+  cell(0, c => rat(c, 'idle'));
+  cell(1, c => rat(c, 'sniff'));
+  cell(2, c => rat(c, 'runA'));
+  cell(3, c => rat(c, 'runB'));
+  // crow: black with a blue-grey sheen, a dark beak
+  const crowBody = (c: Img, peck: boolean) => {
+    c.ellipse(7, 10, 3, 2.5, P.dark1);
+    c.hline(5, 9, 4, P.stone1);
+    line(c, 3, 10, 1, 12, P.dark1); // tail
+    const hx = peck ? 11 : 10, hy = peck ? 11 : 7;
+    c.disc(hx, hy, 1.6, P.dark1);
+    c.set(hx, hy - 1, P.stone1);
+    c.set(hx + 2, hy, P.stone2); // beak
+    if (!peck) c.set(hx + 3, hy, P.stone2);
+    c.set(hx, hy, P.flame2); // a bright eye
+    for (const x of [6, 8]) c.vline(x, 12, 2, P.stone2);
+  };
+  cell(4, c => crowBody(c, false));
+  cell(5, c => crowBody(c, true));
+  const crowFly = (c: Img, up: boolean) => {
+    c.ellipse(8, 7, 3, 1.6, P.dark1);
+    c.disc(11, 6, 1.4, P.dark1);
+    c.set(13, 6, P.stone2);
+    line(c, 5, 7, 3, 8, P.dark1);
+    if (up) {
+      line(c, 7, 6, 4, 1, P.dark1);
+      line(c, 8, 6, 6, 1, P.stone1);
+    } else {
+      line(c, 7, 8, 4, 12, P.dark1);
+      line(c, 8, 8, 7, 12, P.stone1);
+    }
+  };
+  cell(6, c => crowFly(c, true), false);
+  cell(7, c => crowFly(c, false), false);
+  // frog: squat and mottled green, a pale throat that swells when it croaks
+  const frog = (c: Img, k: 'sit' | 'croak' | 'hopA' | 'hopB') => {
+    const lift = k === 'hopA' ? 3 : k === 'hopB' ? 1 : 0;
+    const g0 = mix(P.moss1, P.ink, 0.2);
+    c.ellipse(8, 12 - lift, 3, 2, P.moss1);
+    c.set(7, 11 - lift, P.moss2);
+    c.set(9, 12 - lift, g0);
+    c.set(10, 10 - lift, P.moss2); // eye bump
+    c.set(10, 10 - lift, P.flame2);
+    if (k === 'croak') c.disc(11, 13, 1.5, mix(P.wax1, P.moss2, 0.3));
+    if (k === 'hopA') {
+      line(c, 6, 13 - lift, 4, 13, g0); // legs trailing
+    } else if (k === 'hopB') {
+      line(c, 10, 13 - lift, 12, 14, g0);
+    } else {
+      c.hline(5, 14, 2, g0);
+      c.hline(9, 14, 2, g0);
+    }
+  };
+  cell(8, c => frog(c, 'sit'));
+  cell(9, c => frog(c, 'croak'));
+  cell(10, c => frog(c, 'hopA'));
+  cell(11, c => frog(c, 'hopB'));
+  // moth: a pale dusty speck with two wings
+  cell(12, c => {
+    c.set(8, 8, P.wood1);
+    c.set(7, 7, P.wax1);
+    c.set(9, 7, P.wax1);
+    c.set(6, 6, P.wax2);
+    c.set(10, 6, P.wax2);
+  }, false);
+  cell(13, c => {
+    c.set(8, 8, P.wood1);
+    c.hline(6, 8, 2, P.wax1);
+    c.hline(9, 8, 2, P.wax1);
+  }, false);
+  // cat: a thin tabby
+  const tabby = { c0: mix(P.wood1, P.ink, 0.3), c1: mix(P.wood2, P.flame1, 0.25), c2: mix(P.wood2, P.wax1, 0.35) };
+  const catSit = (c: Img, flick: boolean) => {
+    c.ellipse(7, 11, 3, 3, tabby.c1);
+    c.vline(6, 9, 4, tabby.c0); // stripes
+    c.disc(9, 6, 2.2, tabby.c1);
+    c.set(8, 4, tabby.c1);
+    c.set(8, 3, tabby.c0);
+    c.set(10, 4, tabby.c1);
+    c.set(10, 3, tabby.c0);
+    c.set(10, 6, P.moss2);
+    c.set(8, 6, P.moss2);
+    c.hline(8, 13, 3, tabby.c2);
+    if (flick) line(c, 4, 13, 2, 10, tabby.c1);
+    else line(c, 4, 13, 1, 13, tabby.c1);
+  };
+  cell(14, c => catSit(c, false));
+  cell(15, c => catSit(c, true));
+  const catWalk = (c: Img, a: boolean) => {
+    c.ellipse(7, 10, 4, 2, tabby.c1);
+    c.vline(6, 9, 2, tabby.c0);
+    c.vline(8, 9, 2, tabby.c0);
+    c.disc(12, 8, 2, tabby.c1);
+    c.set(11, 6, tabby.c0);
+    c.set(13, 6, tabby.c0);
+    c.set(13, 8, P.moss2);
+    line(c, 3, 9, 1, 6, tabby.c1);
+    for (const x of a ? [4, 10] : [6, 8]) c.vline(x, 12, 2, tabby.c0);
+  };
+  cell(16, c => catWalk(c, true));
+  cell(17, c => catWalk(c, false));
+  // bat: leathery wings
+  const bat = (c: Img, up: boolean) => {
+    c.ellipse(8, 7, 1.5, 2, P.dark2);
+    c.set(7, 5, P.dark2);
+    c.set(9, 5, P.dark2);
+    c.set(8, 6, P.blood1);
+    if (up) {
+      line(c, 7, 7, 3, 3, P.dark2);
+      line(c, 9, 7, 13, 3, P.dark2);
+      line(c, 6, 6, 3, 5, P.dark1);
+      line(c, 10, 6, 13, 5, P.dark1);
+    } else {
+      line(c, 7, 7, 3, 10, P.dark2);
+      line(c, 9, 7, 13, 10, P.dark2);
+      c.set(4, 9, P.dark1);
+      c.set(12, 9, P.dark1);
+    }
+  };
+  cell(18, c => bat(c, true), false);
+  cell(19, c => bat(c, false), false);
+  sheet('critters', img, { cell: [16, 16], pivot: [8, 14], layer: 'single' });
 }
 
 // ---------------------------------------------------------------- font (original 5x7, ASCII 32..126, 16 per row)
@@ -7184,6 +7496,7 @@ genNaveDecor();
 genAbbeyDecor();
 genChest();
 genNpcs();
+genCritters();
 genTollwarden();
 genWorks();
 genMire();

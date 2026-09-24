@@ -62,6 +62,39 @@
       "type": "decor",
       "kind": "drowned_candles",
       "at": [4, 11]
+    },
+    {
+      "type": "npc",
+      "id": "wenna",
+      "npc": "wenna",
+      "at": [6, 10],
+      "talk": "wenna",
+      "routine": [
+        {
+          "at": [6, 10],
+          "do": "work",
+          "ticks": 900,
+          "face": -1
+        },
+        {
+          "at": [10, 11],
+          "do": "work",
+          "ticks": 700,
+          "face": 1
+        },
+        {
+          "at": [8, 6],
+          "do": "kneel",
+          "ticks": 360,
+          "face": 1
+        },
+        {
+          "at": [6, 10],
+          "do": "work",
+          "ticks": 10,
+          "face": -1
+        }
+      ]
     }
   ]
 }

@@ -1,0 +1,31 @@
+{
+  "id": "hobb",
+  "steps": [
+    {
+      "if": "!hobb_met",
+      "then": [
+        { "say": "Spare a coin for an old ringer? No? Spare a minute, then. Those are cheaper. Hobb.", "who": "hobb" },
+        { "say": "Forty years I pulled the great bell. Then the bell started ringing without me. I took the hint.", "who": "hobb" },
+        { "set": "hobb_met" }
+      ]
+    },
+    {
+      "menu": [
+        {
+          "text": "The bell?",
+          "do": [
+            { "say": "It calls them in at dusk. Pilgrims, monks, rats. Everything with a wick in it walks toward that sound.", "who": "hobb" },
+            { "say": "Stuff your ears with wax if you go up. Ha. Wax. There's plenty.", "who": "hobb" }
+          ]
+        },
+        {
+          "text": "Why sit here?",
+          "do": [
+            { "say": "Best seat on the hill. Everyone goes in past me. I like to know who.", "who": "hobb" }
+          ]
+        },
+        { "text": "Leave", "end": true, "do": [{ "say": "Go on, then. I'll count you on the way out. If.", "who": "hobb" }] }
+      ]
+    }
+  ]
+}
