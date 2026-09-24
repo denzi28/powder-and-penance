@@ -10,6 +10,8 @@ import { SLOTS, TABS, gradeText, type Entry, type GearScreen } from './GearScree
 import type { Player } from '../player/Player';
 import { STATS, levelCost } from '../player/Player';
 import { weaponDamage, type AnyServiceScreen, type LevelUpScreen, type ShopScreen, type SmithScreen } from './ServiceScreens';
+import { CONTROL_ROWS, SETTING_ROWS, keysText, padText, type AnyOptionsScreen, type ControlsScreen, type SettingsScreen } from './OptionsScreens';
+import { SETTINGS } from '../game/Settings';
 
 const TIER_COLOUR: Record<string, string> = { light: 'moss2', medium: 'flame2', heavy: 'ember', over: 'blood2' };
 
@@ -52,7 +54,7 @@ export class GearView {
     return hexToInt(DATA.palette[name]);
   }
 
-  draw(screen: GearScreen | AnyServiceScreen | null, p: Player) {
+  draw(screen: GearScreen | AnyServiceScreen | AnyOptionsScreen | null, p: Player) {
     this.g.clear();
     this.nText = 0;
     this.nIcon = 0;
@@ -67,6 +69,8 @@ export class GearView {
       else if (screen.kind === 'inventory') this.drawInventory(screen);
       else if (screen.kind === 'levelup') this.drawLevelUp(screen, p);
       else if (screen.kind === 'shop') this.drawShop(screen, p);
+      else if (screen.kind === 'controls') this.drawControls(screen as ControlsScreen);
+      else if (screen.kind === 'settings') this.drawSettings(screen as SettingsScreen);
       else this.drawSmith(screen as SmithScreen, p);
     }
     for (let i = this.nText; i < this.texts.length; i++) this.texts[i].setVisible(false);
@@ -159,6 +163,55 @@ export class GearView {
     this.details(22, 182, 44, s.selected(), 5);
     this.loadBox(300, 182, W - 322, s);
     this.text(22, DATA.game.height - 18, s.choosing ? 'UP/DOWN CHOOSE   E/ENTER EQUIP   ESC BACK' : 'UP/DOWN SELECT   E/ENTER CHANGE   ESC BACK', 'stone2');
+  }
+
+  // ------------------------------------------------------------------ controls and settings
+  private drawControls(s: ControlsScreen) {
+    const W = DATA.game.width;
+    const H = DATA.game.height;
+    this.text(20, 16, 'CONTROLS', 'flame2', 2);
+    this.text(W - 22 - 'KEYBOARD / MOUSE     GAMEPAD'.length * 6, 22, 'KEYBOARD / MOUSE     GAMEPAD', 'stone3');
+    const rows = [...CONTROL_ROWS.map(r => ({ label: r.label, keys: keysText(r.action), pad: padText(r.action) })), { label: 'RESET ALL KEYS TO DEFAULT', keys: '', pad: '' }];
+    const max = 15;
+    const first = Math.max(0, Math.min(s.index - 7, rows.length - max));
+    rows.slice(first, first + max).forEach((r, i) => {
+      const y = 40 + i * 12;
+      const sel = first + i === s.index;
+      if (sel) this.g.fillStyle(this.col('dark2'), 1).fillRect(18, y - 2, W - 36, 11);
+      this.text(22, y, r.label, sel ? 'wax2' : 'stone4');
+      const keys = sel && s.waiting ? 'PRESS A KEY...' : r.keys;
+      this.text(250, y, keys.slice(0, 22), sel && s.waiting ? 'flame2' : 'wax1');
+      this.text(W - 22 - r.pad.length * 6, y, r.pad, 'stone3');
+    });
+    if (first > 0) this.text(12, 40, '^', 'stone3');
+    if (first + max < rows.length) this.text(12, 40 + (max - 1) * 12, 'v', 'stone3');
+    if (s.message) this.text(22, H - 30, s.message.toUpperCase(), 'moss2');
+    this.text(22, H - 18, s.waiting ? 'PRESS THE NEW KEY OR MOUSE BUTTON   ESC CANCEL' : 'UP/DOWN SELECT   E/ENTER REBIND   ESC BACK', 'stone2');
+  }
+
+  private drawSettings(s: SettingsScreen) {
+    const W = DATA.game.width;
+    const H = DATA.game.height;
+    this.text(20, 16, 'SETTINGS', 'flame2', 2);
+    SETTING_ROWS.forEach((r, i) => {
+      const y = 50 + i * 24;
+      const sel = s.index === i;
+      if (sel) {
+        this.g.fillStyle(this.col('dark2'), 1).fillRect(18, y - 5, W - 36, 18);
+        this.g.fillStyle(this.col('flame1'), 1).fillRect(18, y - 5, 1, 18);
+      }
+      this.text(26, y, r.label, sel ? 'wax2' : 'stone4');
+      const v = SETTINGS[r.key];
+      const bx = 200;
+      const bw = 200;
+      this.g.fillStyle(this.col('dark1'), 1).fillRect(bx, y, bw, 7);
+      this.g.fillStyle(this.col(sel ? 'flame2' : 'stone3'), 1).fillRect(bx, y + 1, Math.round(bw * v), 5);
+      for (let t = 1; t < 10; t++) this.g.fillStyle(this.col('ink'), 1).fillRect(bx + Math.round((bw * t) / 10), y + 1, 1, 5);
+      const pct = v === 0 ? 'OFF' : `${Math.round(v * 100)}%`;
+      this.text(bx + bw + 10, y, pct, sel ? 'wax2' : 'stone4');
+    });
+    this.text(26, 50 + SETTING_ROWS.length * 24 + 6, 'KEYS ARE CHANGED UNDER CONTROLS.', 'stone3');
+    this.text(22, H - 18, 'UP/DOWN SELECT   LEFT/RIGHT CHANGE   ESC BACK', 'stone2');
   }
 
   // ------------------------------------------------------------------ the townsfolk's screens

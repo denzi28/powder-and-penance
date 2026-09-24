@@ -2,17 +2,18 @@
 // actions via data/config/input.json. Sampled once per gameplay tick so presses are never lost between ticks.
 import type { InputCfg } from '../data/schemas';
 import { radialDeadzone } from '../core/math';
+import { keysFor } from '../game/Settings';
 
 export const ACTIONS = [
   'moveUp', 'moveDown', 'moveLeft', 'moveRight',
-  'light', 'heavy', 'block', 'roll', 'sprint', 'heal', 'useItem', 'cycleItem', 'reload', 'interact', 'drop', 'pause', 'map',
+  'light', 'heavy', 'block', 'roll', 'sprint', 'heal', 'useItem', 'cycleItem', 'reload', 'interact', 'drop', 'swap', 'pause', 'map',
   'confirm', 'back',
 ] as const;
 export type Action = (typeof ACTIONS)[number];
 export type Device = 'kbm' | 'pad';
 
 /** Actions that queue for `bufferTicks` if pressed while the player can't act yet. */
-const BUFFERED: ReadonlySet<Action> = new Set<Action>(['light', 'heavy', 'block', 'roll', 'heal', 'useItem', 'cycleItem', 'reload', 'interact', 'drop']);
+const BUFFERED: ReadonlySet<Action> = new Set<Action>(['light', 'heavy', 'block', 'roll', 'heal', 'useItem', 'cycleItem', 'reload', 'interact', 'swap']);
 const ALWAYS_PREVENT = new Set(['Tab', 'Space', 'Backspace', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
   'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10']);
 
@@ -35,12 +36,16 @@ export class Input {
   private bufferedAt = new Map<Action, number>();
   private mouseMoved = false;
   private cleanup: (() => void) | null = null;
+  private rawPress: string | null = null;
 
   constructor(private cfg: () => InputCfg) {}
 
   attach(canvas: HTMLElement) {
     if (this.cleanup) return; // already attached (shared across scenes)
-    const press = (code: string) => this.presses.set(code, (this.presses.get(code) ?? 0) + 1);
+    const press = (code: string) => {
+      this.presses.set(code, (this.presses.get(code) ?? 0) + 1);
+      this.rawPress = code;
+    };
     const kd = (e: KeyboardEvent) => {
       if (ALWAYS_PREVENT.has(e.code) || this.isBound(e.code)) e.preventDefault();
       if (e.repeat) return;
@@ -99,7 +104,7 @@ export class Input {
     let kbmActive = this.mouseMoved;
     this.mouseMoved = false;
     for (const a of ACTIONS) {
-      for (const code of cfg.keyboard[a] ?? []) {
+      for (const code of keysFor(a, cfg.keyboard)) {
         if (this.down.has(code)) this.heldNow.add(a);
         if ((this.presses.get(code) ?? 0) > (this.seen.get(code) ?? 0)) {
           this.pressedNow.add(a);
@@ -177,8 +182,15 @@ export class Input {
   }
 
   private isBound(code: string) {
-    for (const codes of Object.values(this.cfg().keyboard)) if (codes.includes(code)) return true;
+    for (const a of ACTIONS) if (keysFor(a, this.cfg().keyboard).includes(code)) return true;
     return false;
+  }
+
+  /** The last key or mouse button pressed since the previous call (for rebinding), or null. */
+  takeRawPress(): string | null {
+    const c = this.rawPress;
+    this.rawPress = null;
+    return c;
   }
 }
 

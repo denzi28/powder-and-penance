@@ -52,6 +52,7 @@ import { AmbientAudio } from '../audio/Ambient';
 import { BossSfx } from '../audio/BossSfx';
 import { GearScreen } from '../ui/GearScreen';
 import { LevelUpScreen, ShopScreen, SmithScreen, type AnyServiceScreen } from '../ui/ServiceScreens';
+import { ControlsScreen, SettingsScreen, type AnyOptionsScreen } from '../ui/OptionsScreens';
 import { BossMusic, ExploreMusic } from '../audio/Music';
 import { SaveSystem, type SaveData } from '../save/SaveSystem';
 import { MenuNav, type Menu } from '../ui/Menu';
@@ -154,7 +155,7 @@ export class GameScene extends Phaser.Scene {
   /** Large map open (M): the world is paused. */
   mapOpen = false;
   /** Equipment / inventory screen (from the pause menu): the world is paused. */
-  gear: GearScreen | AnyServiceScreen | null = null;
+  gear: GearScreen | AnyServiceScreen | AnyOptionsScreen | null = null;
   /** A townsperson's screen to open when the conversation ends (script step "open"). */
   pendingScreen: 'levelup' | 'shop' | 'smith' | null = null;
   /** Quick travel between shrines in progress (game/Warp): the world is paused. */
@@ -362,9 +363,21 @@ export class GameScene extends Phaser.Scene {
     if (!this.travel && !this.player.dead && !this.shrineSeq) this.story.checkTriggers();
     if (!this.player.dead) for (const d of this.loot.tick(this.player.x, this.player.y, d => this.canCollect(d))) this.collectLoot(d);
 
+    this.announceMinibosses();
     for (const e of this.enemies.filter(en => en.remove)) this.removeEnemy(e);
     this.cam.tick(lead.x, lead.y);
     if (this.dirty && this.simTick % DATA.shrine.autosaveTicks === 0) this.save();
+  }
+
+  /** A miniboss that spots you makes an entrance: its name across the screen, its cry, the ground shaking. */
+  private announceMinibosses() {
+    for (const e of this.enemies) {
+      if (!e.miniboss || e.announced || e.dead || e.awareness < 1) continue;
+      e.announced = true;
+      this.areaBanner = { name: e.miniboss.title, t: 0 };
+      this.cam.addTrauma(0.3);
+      this.bus.emit('sfx', { id: e.def.voice?.alert ?? 'boss_roar', x: e.x, y: e.y, volume: 1.4 });
+    }
   }
 
   /** A drop the player can't take yet (a full stack) stays on the floor. */
@@ -395,7 +408,7 @@ export class GameScene extends Phaser.Scene {
       this.numbers.add(took ? `${c.name.toUpperCase()}${took > 1 ? ` x${took}` : ''}` : `${c.name.toUpperCase()} (FULL)`, p.x, p.y - 30, hexToInt(DATA.palette.wax2));
       if (took) this.firstFind(d.item);
     } else {
-      for (const wid of new Set(p.slots)) {
+      for (const wid of p.inv.weapons) {
         const r = DATA.weapons[wid]?.ranged;
         if (r) p.ammoFor(wid).reserve = Math.min(r.reserveMax, p.ammoFor(wid).reserve + Math.ceil(r.reserveMax * d.amount));
       }
@@ -467,6 +480,8 @@ export class GameScene extends Phaser.Scene {
       { label: 'RESUME', enabled: true, action: close },
       { label: 'EQUIPMENT', enabled: true, action: () => this.openGear('equip') },
       { label: 'INVENTORY', enabled: true, action: () => this.openGear('inventory') },
+      { label: 'CONTROLS', enabled: true, action: () => this.openOptions('controls') },
+      { label: 'SETTINGS', enabled: true, action: () => this.openOptions('settings') },
       {
         label: 'QUIT TO TITLE',
         enabled: true,
@@ -500,6 +515,17 @@ export class GameScene extends Phaser.Scene {
       id => this.bus.emit('sfx', { id }),
     );
     if (note) this.gear.focus('NOTES', note);
+  }
+
+  /** CONTROLS or SETTINGS from the pause menu; back returns to it. */
+  openOptions(kind: 'controls' | 'settings') {
+    this.menu = null;
+    this.controls.clearBuffer();
+    const close = () => {
+      this.gear = null;
+      this.openPause(kind === 'controls' ? 3 : 4);
+    };
+    this.gear = kind === 'controls' ? new ControlsScreen(this, close) : new SettingsScreen(this, close);
   }
 
   /** Open Maudlin's, Oskar's or Bede's screen; closing it returns to the game. */
@@ -662,6 +688,14 @@ export class GameScene extends Phaser.Scene {
 
   /** Gameplay consequences of events (presentation lives in game/Presentation). */
   private wireGameplayEvents() {
+    // controls explained once a session: a tap of the drop key, the old swap key
+    const hinted = new Set<string>();
+    this.bus.on('hint', e => {
+      if (hinted.has(e.id)) return;
+      hinted.add(e.id);
+      if (e.id === 'drop') this.showToast('DROP WEAPON', 'Hold the drop key (G) to drop the weapon in use on the ground. It leaves your inventory until you pick it up again.');
+      else this.showToast('TWO HANDS', 'Tab no longer swaps weapons. Left click uses your right hand; right click your left hand (a shield blocks, a weapon strikes or fires). Change them under EQUIPMENT (Esc).');
+    });
     this.bus.on('weaponDropped', e => {
       this.ground.add(e.id, e.x, e.y + 2);
       this.bus.emit('sfx', { id: 'swap' });

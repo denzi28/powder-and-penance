@@ -4,6 +4,7 @@
 import { DATA } from '../data/config';
 import { TILE } from '../world/TileGrid';
 import { grantItem } from '../game/Items';
+import { levelCost, startStats } from '../player/Player';
 import { check, storyFlag } from './conditions';
 import type { Cond, Step, Voice } from '../data/schemas';
 import type { GameScene } from '../scenes/GameScene';
@@ -199,6 +200,8 @@ export class Story {
       gs.showToast(s.toast[0], s.toast[1]);
     } else if ('open' in s) {
       gs.pendingScreen = s.open;
+    } else if ('respec' in s) {
+      respec(gs);
     } else if ('card' in s) {
       const ticks = s.ticks ?? DEFAULT_CARD_TICKS;
       this.card = { title: s.card, sub: s.sub ?? null, t: 0, ticks };
@@ -337,4 +340,22 @@ export class Story {
     this.fadeAlpha = f.from + (f.to - f.from) * (f.t / f.ticks);
     if (f.t >= f.ticks) this.fade = null;
   }
+}
+
+/** Maudlin unmakes what the player has become: every stat back to the start, all the Tallow spent returned. */
+function respec(gs: GameScene) {
+  const p = gs.player;
+  const level = p.level;
+  if (level <= 1) {
+    gs.showToast('NOTHING TO UNMAKE', 'You have not levelled up yet.');
+    return;
+  }
+  let refund = 0;
+  for (let l = 1; l < level; l++) refund += levelCost(l);
+  p.stats = startStats();
+  p.tallow += refund;
+  p.hp = Math.min(p.hp, p.maxHp);
+  gs.showToast('UNMADE', `Level ${level} -> 1. Every stat is back at ${DATA.levels.start}, and ${refund} Tallow is yours again. Spend it at Maudlin as you like.`);
+  gs.bus.emit('sfx', { id: 'p_levelup' });
+  gs.save();
 }

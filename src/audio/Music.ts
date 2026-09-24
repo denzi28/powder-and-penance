@@ -6,6 +6,7 @@
 //   0 while the boss makes its entrance, 1 in the fight, 2 once the boss is below half health.
 // Between phases (remains, the Chandler's turn) only the `hold` layers play. The next phase has its own
 // theme. When the last phase falls, a full major chord rings out; if the player dies, the music fades.
+import { SETTINGS } from '../game/Settings';
 import { DATA } from '../data/config';
 import { harp } from './Ambient';
 import type { Sfx } from './Sfx';
@@ -68,6 +69,8 @@ const REVERB: Record<MusicLayer['inst'], number> = {
 interface Hall {
   out: AudioNode;
   wet: AudioNode;
+  /** The music volume setting. */
+  level: GainNode;
 }
 const halls = new WeakMap<BaseAudioContext, Hall>();
 function hall(ctx: BaseAudioContext): Hall {
@@ -78,7 +81,8 @@ function hall(ctx: BaseAudioContext): Hall {
     comp.ratio.value = 3;
     comp.attack.value = 0.01;
     comp.release.value = 0.25;
-    comp.connect(ctx.destination);
+    const level = ctx.createGain();
+    comp.connect(level).connect(ctx.destination);
     const wet = ctx.createGain();
     const verb = ctx.createConvolver();
     verb.buffer = hallImpulse(ctx, 3.6);
@@ -88,7 +92,7 @@ function hall(ctx: BaseAudioContext): Hall {
     const ret = ctx.createGain();
     ret.gain.value = 0.9;
     wet.connect(verb).connect(tone).connect(ret).connect(comp);
-    h = { out: comp, wet };
+    h = { out: comp, wet, level };
     halls.set(ctx, h);
   }
   return h;
@@ -97,7 +101,9 @@ function hall(ctx: BaseAudioContext): Hall {
 /** A music context, once the player has pressed something (or an offline one, for previews). */
 function musicContext(sfx: Sfx): BaseAudioContext | null {
   const ctx = sfx.context;
-  return ctx && (ctx.state === 'running' || ctx instanceof OfflineAudioContext) ? ctx : null;
+  const ok = ctx && (ctx.state === 'running' || ctx instanceof OfflineAudioContext) ? ctx : null;
+  if (ok) hall(ok).level.gain.value = SETTINGS.master * SETTINGS.music; // the volume settings, live
+  return ok;
 }
 
 /**

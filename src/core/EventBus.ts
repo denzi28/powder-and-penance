@@ -48,6 +48,8 @@ export interface GameEvents {
   blast: { x: number; y: number; radius: number; sfx: string };
   /** The player used a consumable (its effect has already applied). */
   itemUsed: { id: string; x: number; y: number };
+  /** Explain a control once (a tap of the drop key, the old swap key). */
+  hint: { id: 'drop' | 'swap' };
   /** A consumable's timed effect wore off. */
   buffEnded: { id: string };
   /** A thrown strike releases its projectile (throw sound). */

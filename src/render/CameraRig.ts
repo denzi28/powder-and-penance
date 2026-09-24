@@ -3,6 +3,7 @@
 // offset, so while walking the player never jitters against the world. Changing rooms blends the clamp.
 import type Phaser from 'phaser';
 import { DATA } from '../data/config';
+import { SETTINGS } from '../game/Settings';
 import { lerp } from '../core/math';
 
 export interface Bounds {
@@ -24,7 +25,7 @@ export class CameraRig {
   private blend: { fromX: number; fromY: number; ms: number } | null = null;
 
   addTrauma(t: number) {
-    this.trauma = Math.min(1, this.trauma + t);
+    this.trauma = Math.min(1, this.trauma + t * SETTINGS.shake); // the shake setting (0 = none)
   }
 
   /** Per gameplay tick: ease the lead offset toward its target. */

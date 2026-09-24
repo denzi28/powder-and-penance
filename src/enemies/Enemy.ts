@@ -62,6 +62,8 @@ export class Enemy extends Actor {
   spawnId: string | null = null;
   /** Set when its room placement makes it a miniboss (a name bar, more health, a drop, dead for good). */
   miniboss: MinibossPlacement | null = null;
+  /** A miniboss has made its entrance (banner, cry) this life. */
+  announced = false;
   /** Called up by a boss: drops no Tallow or loot. */
   summoned = false;
   /** Lost the player in smoke: it walks back without healing (smoke isn't a way to reset a fight). */

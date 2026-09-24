@@ -1,6 +1,7 @@
 // Placeholder sound: every effect is synthesised with WebAudio from a preset in data/audio/sfx.json
 // (oscillator or noise -> optional low-pass sweep -> envelope). No audio files needed.
 // For "noise" presets, `freq` is the noise playback rate (1 = white noise, lower = darker).
+import { SETTINGS } from '../game/Settings';
 import { DATA } from '../data/config';
 
 export class Sfx {
@@ -31,7 +32,7 @@ export class Sfx {
     const ctx = this.ctx;
     const p = DATA.sfx.presets[id];
     if (!ctx || !p || ctx.state !== 'running') return;
-    const vol = p.volume * volume * DATA.audio.master * DATA.audio.sfx;
+    const vol = p.volume * volume * DATA.audio.master * DATA.audio.sfx * SETTINGS.master * SETTINGS.sfx;
     if (vol <= 0.001) return;
     const t0 = ctx.currentTime;
     const end = t0 + p.duration;

@@ -13,6 +13,8 @@ npm run gen:art    # regenerate missing placeholder art (--force to overwrite al
 ```
 
 ## Controls (defaults — `data/config/input.json`)
+Every key can be changed in game: **Esc > CONTROLS**, select an action, press E, then the new key. **Esc > SETTINGS** has volume sliders (master, music, effects, ambience) and screen shake. Both are kept in the browser, apart from the save.
+
 | Action | Keyboard + mouse | Gamepad |
 |---|---|---|
 | Move | WASD / arrows | Left stick |
@@ -24,14 +26,14 @@ npm run gen:art    # regenerate missing placeholder art (--force to overwrite al
 | Reload the gun in use, else the one in the other hand (auto when firing empty) | R | Y / △ |
 | Roll | Space | B / ○ |
 | Sprint (hold) | Shift | L3 or LB |
-| Drop the weapon in use on the ground (it leaves your inventory) | G | D-pad ↓ |
+| Drop the weapon in use on the ground (hold; it leaves your inventory) | Hold G | Hold D-pad ↓ |
 | Drink a Mending Phial (about 1 s; a hit before it lands wastes the charge) | Q | X / □ |
-| Use the item on your belt (a throw, or a short eat/drink; a hit before it lands keeps the item) | C | R3 |
-| Cycle the belt to the next consumable you carry | X | D-pad ↑ |
+| Use the item on your belt (a throw, or a short eat/drink; a hit before it lands keeps the item) | C | D-pad → |
+| Cycle the belt to the next consumable you carry | X | D-pad ↑ or ← |
 | Interact: talk, shrines, chests, doors, racks, dropped weapons | E | A / × |
 | Dialogue: next line / choose / skip cutscene | E, Enter, Space, click / W S or arrows / Esc | A / D-pad / B |
 | Map (pauses the game) | M (M or Esc closes) | Back / Select |
-| Pause menu: Equipment, Inventory, Quit (pauses the game) | Esc | Start |
+| Pause menu: Equipment, Inventory, Controls, Settings, Quit (pauses the game) | Esc | Start |
 | Menus: choose / confirm / back | W S or arrows / Enter, E, Space / Esc | stick or D-pad / A / B |
 
 **Maps:** the minimap in the top-right corner follows you. **M** opens the large map of the current area: every room you've visited, shrines, doors (locked ones in red), and each exit labelled with where it leads. Rooms appear on the map once you enter them, and are saved. Minimap size and on/off: `minimap` in `data/config/hud.json`.

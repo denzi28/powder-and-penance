@@ -43,7 +43,7 @@ export function applyItem(gs: GameScene, itemId: string): string {
     }
     case 'ammo': {
       const parts: string[] = [];
-      for (const wid of new Set(p.slots)) {
+      for (const wid of p.inv.weapons) {
         const r = DATA.weapons[wid]?.ranged;
         if (!r) continue;
         const a = p.ammoFor(wid);
@@ -58,7 +58,7 @@ export function applyItem(gs: GameScene, itemId: string): string {
       }
       what = parts.length
         ? `${parts.join('. ')}. Spare shots are what you reload from; shrines refill them.`
-        : 'Ammo for firearms, but you carry none. Equip a gun or crossbow to use pouches like this.';
+        : 'Ammo for firearms, but you carry none. Find a gun or crossbow to use pouches like this.';
       break;
     }
     case 'tallow':

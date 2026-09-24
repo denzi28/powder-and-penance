@@ -415,7 +415,8 @@ export type Step =
   | { give: string }
   | { toast: [string, string] }
   | { card: string; sub?: string; ticks?: number }
-  | { open: 'levelup' | 'shop' | 'smith' };
+  | { open: 'levelup' | 'shop' | 'smith' }
+  | { respec: true };
 export const Step: z.ZodType<Step> = z.lazy(() =>
   z.union([
     /** A line of dialogue. `who`: a character id (data/npcs.json); omitted = narration. */
@@ -444,6 +445,8 @@ export const Step: z.ZodType<Step> = z.lazy(() =>
     z.object({ card: z.string(), sub: z.string().optional(), ticks: int.positive().optional() }).strict(),
     /** Open a townsperson's screen (level up, shop, smith) once the conversation ends. */
     z.object({ open: z.enum(['levelup', 'shop', 'smith']) }).strict(),
+    /** Put every stat back where it started and give back all the Tallow spent levelling. */
+    z.object({ respec: z.literal(true) }).strict(),
   ]),
 );
 /** data/scripts/*.json: a dialogue or cutscene. `skippable`: Esc jumps to the end (flags are still set). */

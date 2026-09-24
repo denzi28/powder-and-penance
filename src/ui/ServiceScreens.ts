@@ -216,6 +216,11 @@ export class ShopScreen extends ServiceScreen {
     if (row.price > p.tallow) return this.say(`Not enough Tallow: ${row.name} costs ${row.price}, you have ${p.tallow}.`, false);
     if (e.consumable && p.count(e.consumable) >= DATA.consumables[e.consumable].max)
       return this.say(`You can't carry more ${row.name} (${DATA.consumables[e.consumable].max}).`, false);
+    if (e.item && DATA.items[e.item].effect.type === 'ammo') {
+      const guns = p.inv.weapons.filter(id => DATA.weapons[id].ranged);
+      if (!guns.length) return this.say('You carry no gun or crossbow for it.', false);
+      if (guns.every(id => p.ammoFor(id).reserve >= DATA.weapons[id].ranged!.reserveMax)) return this.say('Your spare shots are already full.', false);
+    }
     p.tallow -= row.price;
     p.bought[e.id] = (p.bought[e.id] ?? 0) + 1;
     let what: string;

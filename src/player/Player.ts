@@ -77,6 +77,8 @@ export class Player extends Actor {
   charge = 0;
   /** The current roll's shape (set as it starts, from the equip load). */
   rollCfg: ReturnType<typeof rollFor> | null = null;
+  /** Ticks the drop key has been held. */
+  dropHold = 0;
   /** Freeze the body animation (heavy charge hold). */
   animHold = false;
 

@@ -137,15 +137,25 @@ function useHand(p: Player, i: 0 | 1): string | undefined {
   }
 }
 
+/** How long the drop key must be held to drop the weapon in use (ticks). */
+export const DROP_HOLD_TICKS = 30;
+
 /** Shared by idle / move / sprint. */
 function locomotion(p: Player): string {
   const action = tryStartAction(p);
   if (action) return action;
   const inp = p.input;
-  if (inp.consume('drop')) {
-    const id = p.dropActive();
-    if (id) p.ctx.bus.emit('weaponDropped', { id, x: p.x, y: p.y });
+  // dropping a weapon takes a held press (a tap only says so): one slip shouldn't cost an upgraded weapon
+  if (inp.held('drop')) {
+    if (++p.dropHold === DROP_HOLD_TICKS) {
+      const id = p.dropActive();
+      if (id) p.ctx.bus.emit('weaponDropped', { id, x: p.x, y: p.y });
+    }
+  } else {
+    if (p.dropHold > 0 && p.dropHold < DROP_HOLD_TICKS && p.weaponId !== 'fists') p.ctx.bus.emit('hint', { id: 'drop' });
+    p.dropHold = 0;
   }
+  if (inp.consume('swap')) p.ctx.bus.emit('hint', { id: 'swap' }); // Tab used to swap weapons
   if (inp.held('block') && p.shield) return 'block';
 
   const cfg = DATA.player;

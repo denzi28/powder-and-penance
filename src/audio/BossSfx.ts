@@ -2,6 +2,7 @@
 // Any effect id starting "b_" is one of these: a strike's `sfx` (the swing or impact), its `windupSfx`
 // (the tell: a grunt, a chain, a breath), a boss's `roarSfx` / `slamSfx`, or a lob's landing `sfx`.
 // They play into a stone-hall reverb, panned toward where the boss is.
+import { SETTINGS } from '../game/Settings';
 import { DATA } from '../data/config';
 import { hallImpulse } from './Music';
 import type { Sfx } from './Sfx';
@@ -46,7 +47,7 @@ export class BossSfx {
     if (!ctx || volume <= 0.01) return;
     const g = ctx.createGain();
     const soft = id.startsWith('b_matron') || id === 'b_wet_swipe' || id === 'b_embrace'; // her voice is thin: lift it
-    g.gain.value = volume * DATA.audio.master * DATA.audio.sfx * 0.8 * (soft ? 1.8 : 1);
+    g.gain.value = volume * DATA.audio.master * DATA.audio.sfx * SETTINGS.master * SETTINGS.sfx * 0.8 * (soft ? 1.8 : 1);
     const p = ctx.createStereoPanner();
     p.pan.value = Math.max(-0.8, Math.min(0.8, pan));
     g.connect(p);

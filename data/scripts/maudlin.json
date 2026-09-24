@@ -37,6 +37,32 @@
           "end": true
         },
         {
+          "text": "Can you undo what I've become? (Reset stats)",
+          "when": "maudlin_levels",
+          "do": [
+            { "say": "I can take it back out of you. All of it: every point, back to what you were on the road. The Tallow comes back too.", "who": "maudlin" },
+            {
+              "menu": [
+                {
+                  "text": "Do it. (Reset every stat; get all the Tallow back)",
+                  "end": true,
+                  "do": [
+                    { "say": "Hold still. This is the part that stings.", "who": "maudlin" },
+                    { "respec": true }
+                  ]
+                },
+                {
+                  "text": "Not now.",
+                  "end": true,
+                  "do": [
+                    { "say": "As you like.", "who": "maudlin" }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
           "text": "What is the Drip?",
           "do": [
             { "say": "The slow death. First cold fingers, then a shine on the skin, then you're a candle that walks. The Great Wick keeps it back.", "who": "maudlin" },

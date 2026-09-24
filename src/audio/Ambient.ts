@@ -6,6 +6,7 @@
 // - Decor: sounds near scenery (a crackling fire, bubbling vats), louder as you get close and panned.
 // - Critters call `play` when they flee (wings, squeaks, a plop).
 // Drips and bells can go through a shared echo, set per area.
+import { SETTINGS } from '../game/Settings';
 import { DATA } from '../data/config';
 import { check } from '../story/conditions';
 import { TILE } from '../world/TileGrid';
@@ -62,7 +63,7 @@ export class AmbientAudio {
     if (this.ctx !== ctx) {
       this.ctx = ctx;
       this.out = ctx.createGain();
-      this.out.gain.value = DATA.ambient.volume * DATA.audio.master;
+      this.out.gain.value = DATA.ambient.volume * DATA.audio.master * SETTINGS.master * SETTINGS.ambience;
       this.out.connect(ctx.destination);
       // echo: delay -> low-pass -> feedback, mixed into the output
       this.echoIn = ctx.createGain();
@@ -79,7 +80,7 @@ export class AmbientAudio {
       this.echoFb.connect(delay);
       lp.connect(this.out);
       this.stepOut = ctx.createGain();
-      this.stepOut.gain.value = DATA.audio.master;
+      this.stepOut.gain.value = DATA.audio.master * SETTINGS.master * SETTINGS.sfx;
       this.stepOut.connect(ctx.destination);
       this.duckK = 1;
       this.musicPan = ctx.createStereoPanner();
@@ -169,7 +170,14 @@ export class AmbientAudio {
   duck(k: number) {
     if (!this.ctx || !this.out || k === this.duckK) return;
     this.duckK = k;
-    this.out.gain.setTargetAtTime(DATA.ambient.volume * DATA.audio.master * k, this.ctx.currentTime, 0.6);
+    this.out.gain.setTargetAtTime(DATA.ambient.volume * DATA.audio.master * SETTINGS.master * SETTINGS.ambience * k, this.ctx.currentTime, 0.6);
+  }
+
+  /** The volume settings changed: apply them now. */
+  applyVolume() {
+    if (!this.ctx || !this.out || !this.stepOut) return;
+    this.out.gain.setTargetAtTime(DATA.ambient.volume * DATA.audio.master * SETTINGS.master * SETTINGS.ambience * this.duckK, this.ctx.currentTime, 0.05);
+    this.stepOut.gain.setTargetAtTime(DATA.audio.master * SETTINGS.master * SETTINGS.sfx, this.ctx.currentTime, 0.05);
   }
 
   /** The player's footstep on a surface; false if sound isn't running yet. */
