@@ -5,6 +5,7 @@
 import Phaser from 'phaser';
 import { DATA } from '../data/config';
 import { hexToInt } from './colors';
+import { FINE, type FineItem } from '../render/FineText';
 import { wrap } from './MenuRenderer';
 import { SLOTS, TABS, gradeText, type Entry, type GearScreen } from './GearScreen';
 import type { Player } from '../player/Player';
@@ -19,6 +20,8 @@ export class GearView {
   private g: Phaser.GameObjects.Graphics;
   private texts: Phaser.GameObjects.BitmapText[] = [];
   private icons: Phaser.GameObjects.Image[] = [];
+  /** Fine print for this frame (descriptions), handed to the overlay at the end of draw. */
+  private fine: FineItem[] = [];
   private nText = 0;
   private nIcon = 0;
 
@@ -29,14 +32,13 @@ export class GearView {
     this.g = scene.add.graphics().setDepth(depth);
   }
 
-  private text(x: number, y: number, s: string, colour: string, scale = 1, font: 'pixel' | 'pixel_small' = 'pixel') {
+  private text(x: number, y: number, s: string, colour: string, scale = 1) {
     let t = this.texts[this.nText];
     if (!t) {
       t = this.scene.add.bitmapText(0, 0, 'pixel', '').setDepth(this.depth + 2);
       this.texts.push(t);
     }
     this.nText++;
-    if (t.font !== font) t.setFont(font, font === 'pixel' ? 6 : 4); // a retro font's size is its cell width; setFont keeps the old one otherwise
     t.setText(s).setScale(scale).setPosition(Math.round(x), Math.round(y)).setTint(hexToInt(DATA.palette[colour] ?? colour)).setVisible(true);
     return t;
   }
@@ -58,6 +60,7 @@ export class GearView {
   draw(screen: GearScreen | AnyServiceScreen | AnyOptionsScreen | null, p: Player) {
     this.g.clear();
     this.nText = 0;
+    this.fine = [];
     this.nIcon = 0;
     if (screen) {
       const W = DATA.game.width;
@@ -76,6 +79,7 @@ export class GearView {
     }
     for (let i = this.nText; i < this.texts.length; i++) this.texts[i].setVisible(false);
     for (let i = this.nIcon; i < this.icons.length; i++) this.icons[i].setVisible(false);
+    FINE.set('gear', this.fine);
   }
 
   /** An item row: icon in a small well, name, and a figure on the right. */
@@ -110,13 +114,13 @@ export class GearView {
       this.text(x, yy, s, 'stone4');
       yy += 9;
     }
-    // the description: the small font (4 px a letter against 6), dimmer than the stats, and more of it fits
-    const smallCols = Math.floor((cols * 6) / 4);
-    const room = Math.max(1, Math.floor(((maxLines - stats.length) * 9) / 7));
-    const all = wrap(e.description, smallCols).split('\n');
+    // the description in fine print (FineText: the same font, a third smaller), dimmer than the stats
+    const fineCols = Math.floor((cols * 6) / FINE.charW);
+    const room = Math.max(1, Math.floor(((maxLines - stats.length) * 9) / FINE.lineH));
+    const all = wrap(e.description, fineCols).split('\n');
     const lines = all.slice(0, room);
-    if (all.length > room) lines[room - 1] = lines[room - 1].slice(0, smallCols - 3) + '...';
-    if (lines[0]) this.text(x, yy + 4, lines.join('\n'), DESC_COLOUR, 1, 'pixel_small');
+    if (all.length > room) lines[room - 1] = lines[room - 1].slice(0, fineCols - 3) + '...';
+    if (lines[0]) this.fine.push({ kind: 'text', x, y: yy + 4, text: lines.join('\n'), color: hexToInt(DESC_COLOUR) });
   }
 
   private drawEquip(s: GearScreen, p: Player) {

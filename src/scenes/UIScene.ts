@@ -2,6 +2,7 @@
 import Phaser from 'phaser';
 import { SETTINGS, keysFor, shortKey } from '../game/Settings';
 import { DATA, onDataError, onDataReload } from '../data/config';
+import { FINE, type FineItem } from '../render/FineText';
 import { hexToInt } from '../ui/colors';
 import { MenuRenderer, wrap } from '../ui/MenuRenderer';
 import { GearView } from '../ui/GearView';
@@ -36,10 +37,6 @@ export class UIScene extends Phaser.Scene {
   private tallowIcon!: Phaser.GameObjects.Sprite;
   private tallowText!: Phaser.GameObjects.BitmapText;
   private tallowShown = 0;
-  private toastTitle!: Phaser.GameObjects.BitmapText;
-  private toastBody!: Phaser.GameObjects.BitmapText;
-  private toastNote!: Phaser.GameObjects.BitmapText;
-  private toastPanel!: Phaser.GameObjects.Rectangle;
   private areaText!: Phaser.GameObjects.BitmapText;
   private cardTitle!: Phaser.GameObjects.BitmapText;
   private cardSub!: Phaser.GameObjects.BitmapText;
@@ -85,10 +82,6 @@ export class UIScene extends Phaser.Scene {
     this.tallowIcon = this.add.sprite(0, 0, 'tallow_icon', 0).setOrigin(0, 0).setDepth(2);
     this.tallowText = this.add.bitmapText(0, 0, 'pixel', '0').setTint(hexToInt(DATA.palette.wax2)).setDepth(2);
     this.tallowShown = this.gs.player.tallow;
-    this.toastTitle = this.add.bitmapText(0, 0, 'pixel_small', '').setTint(hexToInt(DATA.palette.flame2)).setDepth(15);
-    this.toastBody = this.add.bitmapText(0, 0, 'pixel_small', '').setTint(hexToInt(DATA.palette.wax2)).setDepth(15);
-    this.toastNote = this.add.bitmapText(0, 0, 'pixel_small', '').setTint(hexToInt(DATA.palette.stone4)).setDepth(15);
-    this.toastPanel = this.add.rectangle(0, 0, 10, 10, hexToInt(DATA.palette.ink), 0.7).setOrigin(0, 0).setDepth(14);
     this.areaText = this.add.bitmapText(0, 0, 'pixel', '').setTint(hexToInt(DATA.palette.wax2)).setDepth(16);
     this.cardTitle = this.add.bitmapText(0, 0, 'pixel', '').setScale(2).setTint(hexToInt(DATA.palette.flame2)).setDepth(22);
     this.cardSub = this.add.bitmapText(0, 0, 'pixel', '').setTint(hexToInt(DATA.palette.stone4)).setDepth(22);
@@ -104,6 +97,8 @@ export class UIScene extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       offErr();
       offOk();
+      FINE.set('toast', []);
+      FINE.set('gear', []);
     });
   }
 
@@ -335,30 +330,42 @@ export class UIScene extends Phaser.Scene {
    * your health or your character. Banners (area names, minibosses) drop below a message that's showing.
    */
   private drawToast() {
-    const t = this.gs.menu ? null : this.gs.toast; // menus take the centre of the screen
-    for (const o of [this.toastTitle, this.toastBody, this.toastNote, this.toastPanel]) o.setVisible(!!t);
+    const g = this.gs;
+    const t = g.menu || g.gear || g.mapOpen ? null : g.toast; // menus take the centre of the screen
     this.toastBottom = 0;
-    if (!t) return;
+    if (!t) {
+      FINE.set('toast', []);
+      return;
+    }
+    // In fine print (FineText): the game's own font, a third smaller, on the overlay above the game.
     const a = t.t < 15 ? t.t / 15 : t.t > t.life - 40 ? Math.max(0, (t.life - t.t) / 40) : 1;
     const cfg = DATA.hud.toast;
     const left = DATA.hud.x + HP_BAR_MAX + 6;
     // the minimap's column on the right, or at least room for the Tallow counter
     const right = DATA.game.width - 8 - Math.max(SETTINGS.minimap && DATA.hud.minimap.enabled ? DATA.hud.minimap.w + 6 : 0, 64);
-    const cols = Math.min(cfg.cols, Math.floor((right - left - 8) / 4)); // the small 3x5 font: 4 px a letter
-    const cx = Math.round((left + right) / 2);
-    const top = cfg.y + 2; // text starts 2 px inside the panel
-    this.toastTitle.setScale(cfg.titleScale).setText(wrap(t.title, cols)).setAlpha(a);
-    this.toastTitle.setPosition(Math.round(cx - this.toastTitle.width / 2), top);
-    const bodyY = top + this.toastTitle.height + 1;
-    this.toastBody.setText(wrap(t.body, cols)).setAlpha(a);
-    this.toastBody.setPosition(Math.round(cx - this.toastBody.width / 2), bodyY);
-    const noteY = bodyY + this.toastBody.height + 1;
-    this.toastNote.setText(t.note ? wrap(t.note, cols) : '').setAlpha(a);
-    this.toastNote.setPosition(Math.round(cx - this.toastNote.width / 2), noteY);
-    const bottom = t.note ? noteY + this.toastNote.height : bodyY + this.toastBody.height;
-    const w = Math.max(this.toastTitle.width, this.toastBody.width, this.toastNote.width) + 6;
-    this.toastPanel.setPosition(Math.round(cx - w / 2), cfg.y).setSize(w, bottom - cfg.y + 1).setAlpha(a);
-    this.toastBottom = bottom + 3;
+    const cols = Math.min(cfg.cols, Math.floor((right - left - 8) / FINE.charW));
+    const cx = (left + right) / 2;
+    const col = (name: string) => hexToInt(DATA.palette[name]);
+    const parts = [
+      { text: wrap(t.title, cols), color: col('flame2'), gap: 0 },
+      { text: wrap(t.body, cols), color: col('wax2'), gap: 1.5 },
+      ...(t.note ? [{ text: wrap(t.note, cols), color: col('stone4'), gap: 1 }] : []),
+    ];
+    const items: FineItem[] = [];
+    let y = cfg.y + 2; // text starts inside the panel
+    let w = 0;
+    for (const p of parts) {
+      y += p.gap;
+      const m = FINE.measure(p.text);
+      w = Math.max(w, m.w);
+      items.push({ kind: 'text', x: cx - m.w / 2, y, text: p.text, color: p.color, alpha: a });
+      y += m.h;
+    }
+    const bottom = y + 1.5;
+    w += 8;
+    items.unshift({ kind: 'rect', x: cx - w / 2, y: cfg.y, w, h: bottom - cfg.y, color: col('ink'), alpha: 0.7 * a });
+    FINE.set('toast', items);
+    this.toastBottom = bottom;
   }
 
 
