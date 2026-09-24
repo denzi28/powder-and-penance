@@ -1,6 +1,7 @@
 // Turns gameplay events into feedback: hit-stop, shake, particles, sprites FX, sound, floating text,
 // flinches and the player's damage vignette. The simulation never calls any of this directly.
 import { DATA } from '../data/config';
+import { TILE } from '../world/TileGrid';
 import { Enemy } from '../enemies/Enemy';
 import { PROJECTILE_HEIGHT } from '../combat/Projectiles';
 import { DEPTH } from '../render/depth';
@@ -23,6 +24,16 @@ export function wirePresentation(gs: GameScene) {
       vol *= Math.max(0, 1 - d / DATA.audio.hearingDistance);
     }
     gs.sfx.play(e.id, vol, (e.pitch ?? 1) * (0.96 + Math.random() * 0.08));
+  });
+
+  bus.on('footstep', e => {
+    // what the foot lands on: the floor kind, or plain floor as the area has it
+    const tx = Math.floor(e.x / TILE);
+    const ty = Math.floor((e.y - 2) / TILE);
+    const fs = DATA.ambient.footsteps;
+    const v = gs.grid.variant(tx, ty);
+    const surface = fs.surfaces[v] ?? fs.floor[gs.area] ?? fs.floor.default ?? 'stone';
+    if (!gs.ambientAudio.step(surface, e.sprint)) gs.sfx.play('footstep', e.sprint ? 1.3 : 1); // before the ambient engine is up
   });
 
   bus.on('hit', h => {

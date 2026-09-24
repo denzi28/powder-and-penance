@@ -61,6 +61,38 @@
       "echo": 0.5
     }
   },
+  "roomEcho": {
+    "hub_02_chapel": 0.35,
+    "road_02_cutting": 0.2,
+    "mire_04_chapel": 0.4,
+    "mire_09_choir": 0.45,
+    "mire_10_bath": 0.5,
+    "abbey_02_courtyard": 0.15,
+    "abbey_03_cloister": 0.3,
+    "abbey_05_crypt_stair": 0.6,
+    "abbey_06_ossuary": 0.6,
+    "abbey_10_undercroft": 0.6,
+    "abbey_12_nave": 0.65,
+    "works_04_lift": 0.55,
+    "works_09_flue": 0.6,
+    "works_10_great_vat": 0.55
+  },
+  "footsteps": {
+    "volume": 0.55,
+    "echo": 0.45,
+    "surfaces": {
+      "floor_grass": "grass",
+      "floor_road": "dirt",
+      "floor_plank": "wood",
+      "floor_grate": "metal",
+      "floor_grease": "grease",
+      "floor_wax": "wax",
+      "floor_moss": "moss",
+      "floor_stone": "stone"
+    },
+    "floor": { "road": "dirt", "hub": "dirt", "mire": "mud", "works": "stone", "abbey": "stone", "default": "stone" }
+  },
+  "harp": { "volume": 0.7, "bpm": 76, "near": 48, "range": 360 },
   "decor": {
     "campfire": { "sound": "crackle", "every": [0.08, 0.45], "range": 150, "volume": 0.8 },
     "furnace": { "sound": "roar", "every": [1.2, 2.2], "range": 170, "volume": 0.8 },

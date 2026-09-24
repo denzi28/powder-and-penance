@@ -39,6 +39,7 @@ The map is in [WORLD.md](WORLD.md).
 | **Old Agnes** | Hub | A pilgrim who kneels at the shrine, and at the graves in the south-west yard. Remembers when the Wick burned bright. |
 | **Ulla** | Hub | A pilgrim wife from the coast who keeps the west camp's fire going. Talks about the graves and why they stay. |
 | **Jost** | Hub | Ulla's husband, an old pilgrim with a scallop shell whose knees won't take the road home. Points the way to the Abbey. |
+| **Wren** | Hub | A travelling harper who plays pilgrims in from the south road. Her music carries across the yard. |
 | **Brother Lome** | Hill of Candles | A hermit who keeps the pilgrims' candle cairns lit, reciting their names. |
 | **Wenna** | Drowned Chapel (Mire) | A mire-woman who fishes the chapel's wax pools for eels. Warns about the Lanterns and the singing in the bath. |
 | **Fennick** | Foreman's Office (Works) | The Works' last clerk, still keeping the ledger, and the only one who wrote down what the carts brought in. |
@@ -104,6 +105,7 @@ Everything is data; the game hot-reloads it and checks every reference when it l
 - Walks must stay on open floor, clear of solid scenery: `tests/npcs.test.ts` checks every route.
 - They stop and give way if you stand in their path, stand still while any script runs, and face you when you come close.
 - `workSfx` in `data/npcs.json` plays on each stroke of the work pose when you're near (Bede's axe).
+- `"music": "harp"` in `data/npcs.json` makes a character play the harp tune while in their work pose (Wren). Give them `workPose: 'sit'` in their sheet to play sitting.
 - Walking and working need the 12-frame townsfolk sheets (`genTownsfolk` in tools/gen-art.ts): 0-1 idle, 2-3 talk, 4-7 walk, 8-9 work, 10 sit, 11 kneel.
 
 **Chatter between characters (`data/chatter.json`):** now and then, people standing near each other trade a few lines in speech bubbles, if you're close enough to see.

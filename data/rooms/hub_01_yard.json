@@ -934,6 +934,35 @@
       ]
     },
     {
+      "type": "npc",
+      "id": "wren",
+      "npc": "wren",
+      "at": [22, 25],
+      "talk": "wren",
+      "routine": [
+        {
+          "at": [22, 25],
+          "do": "work",
+          "ticks": 1800,
+          "face": 1
+        },
+        {
+          "via": [[26, 22]],
+          "at": [33, 18],
+          "do": "idle",
+          "ticks": 420,
+          "face": -1
+        },
+        {
+          "via": [[26, 22]],
+          "at": [22, 25],
+          "do": "work",
+          "ticks": 10,
+          "face": 1
+        }
+      ]
+    },
+    {
       "type": "cutscene",
       "id": "arrive_wicks_rest",
       "script": "arrive_wicks_rest",

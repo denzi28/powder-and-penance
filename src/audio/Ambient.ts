@@ -10,7 +10,9 @@ import { DATA } from '../data/config';
 import { check } from '../story/conditions';
 import { TILE } from '../world/TileGrid';
 import type { Sfx } from './Sfx';
-import type { AmbientBed, AmbientSound, RoomData } from '../data/schemas';
+import type { AmbientBed, AmbientSound, RoomData, Surface } from '../data/schemas';
+
+type StepSound = `step_${Surface}`;
 
 type Out = { node: AudioNode; t: number };
 const rnd = (a: number, b: number) => a + Math.random() * (b - a);
@@ -39,6 +41,12 @@ export class AmbientAudio {
   private area: string | null = null;
   private timers: number[] = [];
   private emitters: Emitter[] = [];
+  private echo = 0;
+  private room: string | null = null;
+  private foot = 0;
+  private music: GainNode | null = null;
+  private musicPan: StereoPannerNode | null = null;
+  private tune = { next: 0, bar: 0, loops: 0, playing: false };
 
   constructor(private sfx: Sfx) {}
 
@@ -65,6 +73,10 @@ export class AmbientAudio {
       lp.connect(this.echoFb);
       this.echoFb.connect(delay);
       lp.connect(this.out);
+      this.musicPan = ctx.createStereoPanner();
+      this.music = ctx.createGain();
+      this.music.gain.value = 0;
+      this.music.connect(this.musicPan).connect(this.out);
       this.area = null; // (re)start the beds on this context
     }
     return ctx;
@@ -90,7 +102,11 @@ export class AmbientAudio {
       }
   }
 
-  update(dt: number, area: string, listener: { x: number; y: number }, flags: ReadonlySet<string>) {
+  /**
+   * @param room the room the listener stands in (for its echo)
+   * @param musician where someone is playing the harp right now, or null
+   */
+  update(dt: number, area: string, room: string | null, listener: { x: number; y: number }, flags: ReadonlySet<string>, musician: { x: number; y: number } | null = null) {
     const ctx = this.ready();
     if (!ctx || !this.out) return;
     const cfg = DATA.ambient.areas[area];
@@ -104,15 +120,22 @@ export class AmbientAudio {
       }
       this.beds = (cfg?.beds ?? []).map(b => this.startBed(ctx, b));
       this.timers = (cfg?.events ?? []).map(e => rnd(e.every[0] * 0.3, e.every[1]));
-      this.echoFb!.gain.setTargetAtTime(cfg?.echo ?? 0, ctx.currentTime, 0.5);
+      this.room = null;
     }
+    if (room !== this.room) {
+      // echo: the room's own if it has one (enclosed places), else the area's
+      this.room = room;
+      this.echo = (room !== null ? DATA.ambient.roomEcho[room] : undefined) ?? cfg?.echo ?? 0;
+      this.echoFb!.gain.setTargetAtTime(this.echo, ctx.currentTime, 0.4);
+    }
+    this.tickMusic(ctx, listener, musician);
     if (!cfg) return;
     cfg.events.forEach((e, i) => {
       this.timers[i] -= dt;
       if (this.timers[i] > 0) return;
       this.timers[i] = rnd(e.every[0], e.every[1]);
       if (!check(flags, e.when)) return;
-      this.sound(e.sound, e.volume * rnd(0.7, 1), rnd(-0.7, 0.7), cfg.echo ? e.echo : 0);
+      this.sound(e.sound, e.volume * rnd(0.7, 1), rnd(-0.7, 0.7), this.echo ? e.echo : 0);
     });
     for (const em of this.emitters) {
       const d = Math.hypot(em.x - listener.x, em.y - listener.y);
@@ -131,6 +154,66 @@ export class AmbientAudio {
     const near = Math.max(0, 1 - d / DATA.audio.hearingDistance);
     if (near <= 0 || !this.ready()) return;
     this.sound(sound, volume * near, Math.max(-0.8, Math.min(0.8, (x - listener.x) / 160)), 0);
+  }
+
+  /** The player's footstep on a surface; false if sound isn't running yet. */
+  step(surface: Surface, sprint: boolean): boolean {
+    if (!this.ready() || !this.out) return false;
+    const fs = DATA.ambient.footsteps;
+    this.foot = 1 - this.foot; // left, right
+    const vol = fs.volume * (sprint ? 1.3 : 1) * rnd(0.85, 1.1);
+    const echo = this.echo > 0 ? fs.echo : 0;
+    this.sound(`step_${surface}`, vol, this.foot ? -0.12 : 0.12, echo);
+    return true;
+  }
+
+  // ---------------------------------------------------------------- the harp
+  /** Schedule the tune a little ahead while the harper plays; fade with distance. */
+  private tickMusic(ctx: BaseAudioContext, listener: { x: number; y: number }, at: { x: number; y: number } | null) {
+    const cfg = DATA.ambient.harp;
+    const music = this.music!;
+    const now = ctx.currentTime;
+    let level = 0;
+    if (at) {
+      const d = Math.hypot(at.x - listener.x, at.y - listener.y);
+      const k = Math.max(0, Math.min(1, 1 - (d - cfg.near) / (cfg.range - cfg.near)));
+      level = cfg.volume * k * k;
+      this.musicPan!.pan.setTargetAtTime(Math.max(-0.7, Math.min(0.7, (at.x - listener.x) / 200)), now, 0.2);
+    }
+    music.gain.setTargetAtTime(level, now, 0.3);
+    if (!at) {
+      this.tune.playing = false;
+      return;
+    }
+    if (!this.tune.playing) {
+      // she picks the tune up again from the top of a phrase
+      this.tune = { next: now + 0.4, bar: this.tune.bar - (this.tune.bar % 4), loops: this.tune.loops, playing: true };
+    }
+    const eighth = 60 / cfg.bpm / 2;
+    while (this.tune.next < now + 0.4) {
+      const bar = TUNE[this.tune.bar];
+      const t0 = this.tune.next;
+      const [root, minor] = CHORDS[bar.chord];
+      // left hand: a rolling arpeggio of the chord, root low
+      [0, 7, 12, minor ? 15 : 16, 12, 7].forEach((iv, i) => {
+        if (bar.half && i >= 3) return;
+        harp(ctx, music, t0 + i * eighth + rnd(-0.008, 0.008), root + iv, i ? 0.1 : 0.16);
+      });
+      if (bar.half) {
+        const [r2, m2] = CHORDS[bar.half];
+        [0, 7, m2 ? 15 : 16].forEach((iv, i) => harp(ctx, music, t0 + (3 + i) * eighth + rnd(-0.008, 0.008), r2 + iv, i ? 0.1 : 0.15));
+      }
+      // right hand: the melody, now and then an octave higher on the repeat
+      let t = t0;
+      const up = this.tune.loops % 2 === 1 && this.tune.bar < 8 ? 12 : 0;
+      for (const [note, len] of bar.melody) {
+        if (note !== null) harp(ctx, music, t + rnd(0, 0.015), note + up, rnd(0.19, 0.24));
+        t += len * eighth;
+      }
+      this.tune.next += 6 * eighth;
+      this.tune.bar = (this.tune.bar + 1) % TUNE.length;
+      if (this.tune.bar === 0) this.tune.loops++;
+    }
   }
 
   stop() {
@@ -220,7 +303,7 @@ export class AmbientAudio {
   }
 
   // ---------------------------------------------------------------- one-off sounds
-  private sound(id: AmbientSound, volume: number, pan: number, echo: number) {
+  private sound(id: AmbientSound | StepSound, volume: number, pan: number, echo: number) {
     const ctx = this.ctx!;
     if (volume < 0.01) return;
     const panner = ctx.createStereoPanner();
@@ -280,7 +363,7 @@ function hiss(ctx: BaseAudioContext, out: AudioNode, t: number, buf: AudioBuffer
 }
 
 type Recipe = (ctx: BaseAudioContext, o: Out, noise: AudioBuffer) => void;
-const RECIPES: Record<AmbientSound, Recipe> = {
+const RECIPES: Record<AmbientSound | StepSound, Recipe> = {
   // a crow: two or three harsh, falling caws
   crow: (ctx, { node, t }) => {
     const n = 2 + Math.floor(Math.random() * 2);
@@ -455,4 +538,110 @@ const RECIPES: Record<AmbientSound, Recipe> = {
   },
   // something slipping into water
   plop: (ctx, { node, t }) => tone(ctx, node, t, 'sine', rnd(250, 350), rnd(700, 900), 0.08, 0.25, undefined, 0.002),
+  // ---- footsteps, by what the foot lands on
+  // packed earth: a soft thud with a little grit
+  step_dirt: (ctx, { node, t }, buf) => {
+    hiss(ctx, node, t, buf, 'lowpass', rnd(500, 700), 0.07, 0.35, 0.004, 0.6);
+    tone(ctx, node, t, 'sine', rnd(85, 100), 60, 0.06, 0.25);
+  },
+  // grass: a brushing swish
+  step_grass: (ctx, { node, t }, buf) => {
+    hiss(ctx, node, t, buf, 'bandpass', rnd(2400, 3400), 0.09, 0.16, 0.015);
+    tone(ctx, node, t, 'sine', 80, 60, 0.05, 0.12);
+  },
+  // flagstones: a hard, short tap (a boot heel)
+  step_stone: (ctx, { node, t }, buf) => {
+    hiss(ctx, node, t, buf, 'bandpass', rnd(1600, 2200), 0.035, 0.4, 0.001);
+    tone(ctx, node, t, 'triangle', rnd(210, 250), 150, 0.045, 0.18, undefined, 0.001);
+  },
+  // boards: a hollow knock
+  step_wood: (ctx, { node, t }, buf) => {
+    tone(ctx, node, t, 'triangle', rnd(150, 180), 105, 0.1, 0.35, 900, 0.002);
+    hiss(ctx, node, t, buf, 'bandpass', 900, 0.03, 0.2, 0.001);
+  },
+  // an iron grate: a ringing clank
+  step_metal: (ctx, { node, t }, buf) => {
+    const f = rnd(680, 820);
+    tone(ctx, node, t, 'triangle', f, f * 0.99, 0.16, 0.12, undefined, 0.001);
+    tone(ctx, node, t, 'triangle', f * 1.52, f * 1.5, 0.1, 0.07, undefined, 0.001);
+    hiss(ctx, node, t, buf, 'highpass', 2500, 0.03, 0.2, 0.001);
+  },
+  // mud: a wet squelch
+  step_mud: (ctx, { node, t }, buf) => {
+    hiss(ctx, node, t, buf, 'lowpass', 450, 0.12, 0.4, 0.02, 0.5);
+    tone(ctx, node, t + 0.02, 'sine', 160, 90, 0.09, 0.18, undefined, 0.01);
+  },
+  // grease on stone: a slap and a slide
+  step_grease: (ctx, { node, t }, buf) => {
+    hiss(ctx, node, t, buf, 'bandpass', 1200, 0.05, 0.3, 0.001);
+    hiss(ctx, node, t + 0.03, buf, 'lowpass', 700, 0.12, 0.18, 0.03, 0.5);
+  },
+  // wax: sticky and slow, pulling free
+  step_wax: (ctx, { node, t }, buf) => {
+    hiss(ctx, node, t, buf, 'lowpass', 600, 0.1, 0.3, 0.01, 0.5);
+    tone(ctx, node, t + 0.05, 'sine', 140, 260, 0.1, 0.16, undefined, 0.03); // the sucking pull
+  },
+  // moss: soft and muffled
+  step_moss: (ctx, { node, t }, buf) => {
+    hiss(ctx, node, t, buf, 'lowpass', 380, 0.07, 0.3, 0.006, 0.6);
+  },
 };
+
+// ---------------------------------------------------------------- the harp
+/** A plucked harp string: a bright attack, upper partials dying first, a long soft tail. */
+function harp(ctx: BaseAudioContext, out: AudioNode, t: number, midi: number, vol: number) {
+  const f = 440 * Math.pow(2, (midi - 69) / 12);
+  const sustain = Math.max(0.9, 2.6 - (midi - 40) * 0.035);
+  const lp = ctx.createBiquadFilter();
+  lp.type = 'lowpass';
+  lp.frequency.setValueAtTime(Math.min(8000, f * 8), t);
+  lp.frequency.exponentialRampToValueAtTime(Math.max(300, f * 2), t + sustain);
+  lp.connect(out);
+  for (const [k, a] of [
+    [1, 1],
+    [2, 0.4],
+    [3, 0.18],
+    [4, 0.08],
+  ] as const) {
+    const o = ctx.createOscillator();
+    o.type = 'sine';
+    o.frequency.value = f * k * (1 + (k - 1) * 0.0015); // strings are a touch sharp up high
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(vol * a, t + 0.004);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + sustain / k);
+    o.connect(g).connect(lp);
+    o.start(t);
+    o.stop(t + sustain / k + 0.05);
+  }
+}
+
+/** Chord roots (MIDI, low register) and whether they're minor. */
+const CHORDS: Record<string, [number, boolean]> = {
+  Dm: [50, true],
+  C: [48, false],
+  Bb: [46, false],
+  A: [45, false],
+  F: [41, false],
+  Gm: [43, true],
+};
+type Bar = { chord: string; half?: string; melody: [number | null, number][] };
+/** A slow air in D minor, 3/4: melody notes are [MIDI, length in eighths]. */
+const TUNE: Bar[] = [
+  { chord: 'Dm', melody: [[69, 2], [65, 1], [67, 1], [69, 2]] },
+  { chord: 'C', melody: [[67, 3], [64, 1], [67, 2]] },
+  { chord: 'Bb', melody: [[65, 2], [62, 1], [65, 1], [70, 2]] },
+  { chord: 'A', melody: [[69, 4], [73, 2]] },
+  { chord: 'Dm', melody: [[74, 2], [72, 1], [69, 1], [65, 2]] },
+  { chord: 'C', melody: [[64, 2], [67, 2], [72, 2]] },
+  { chord: 'Bb', half: 'A', melody: [[70, 2], [69, 1], [67, 1], [64, 2]] },
+  { chord: 'Dm', melody: [[62, 6]] },
+  { chord: 'F', melody: [[72, 2], [69, 1], [72, 1], [77, 2]] },
+  { chord: 'C', melody: [[76, 3], [74, 1], [72, 2]] },
+  { chord: 'Dm', melody: [[74, 2], [69, 2], [65, 2]] },
+  { chord: 'A', melody: [[64, 2], [69, 2], [73, 2]] },
+  { chord: 'Bb', melody: [[74, 3], [72, 1], [70, 2]] },
+  { chord: 'F', melody: [[69, 2], [72, 2], [77, 2]] },
+  { chord: 'Gm', half: 'A', melody: [[70, 2], [69, 1], [67, 1], [64, 2]] },
+  { chord: 'Dm', melody: [[62, 4], [null, 2]] },
+];

@@ -143,6 +143,7 @@ function loadAll(src: Record<string, unknown>) {
       }
     }
     for (const k of Object.keys(data.ambient.decor)) if (!data.decor.decor[k]) errors.push(`data/audio/ambient.json: unknown decor kind "${k}"`);
+    for (const r of Object.keys(data.ambient.roomEcho)) if (!data.rooms[r]) errors.push(`data/audio/ambient.json: roomEcho: unknown room "${r}"`);
     for (const a of Object.keys(data.ambient.areas)) if (!data.areas.areas[a]) errors.push(`data/audio/ambient.json: unknown area "${a}"`);
     for (const k of Object.keys(data.ambience.decor)) if (!data.decor.decor[k]) errors.push(`data/ambience.json: unknown decor kind "${k}"`);
     for (const [a, amb] of Object.entries(data.ambience.areas)) {

@@ -334,6 +334,41 @@
         ["cuthwin", "Does it sound strange? The quiet?"],
         ["hobb", "It sounds like I can sleep."]
       ]
+    },
+    {
+      "id": "harp_lamps",
+      "who": ["tomas",  "wren"],
+      "lines": [
+        ["tomas", "Play me something with a bit of light in it, girl."],
+        ["wren", "It's a minor key, Tomas. Everything here is."],
+        ["tomas", "Then play it slower. Makes it last."]
+      ]
+    },
+    {
+      "id": "harp_request",
+      "who": ["pip",  "wren"],
+      "lines": [
+        ["pip", "Play the one about the lady in the water!"],
+        ["wren", "That one makes you cry, Pip."],
+        ["pip", "I like crying when it's a song."]
+      ]
+    },
+    {
+      "id": "harp_strings",
+      "who": ["wren",  "pip"],
+      "lines": [
+        ["wren", "Another string gone. The damp eats them."],
+        ["pip", "Use my hair! It's very long when it's wet."]
+      ]
+    },
+    {
+      "id": "harp_quiet",
+      "who": ["tomas",  "wren"],
+      "when": "boss:chandler",
+      "lines": [
+        ["wren", "Hear that? No bell under the tune any more."],
+        ["tomas", "First time I've heard the whole of it."]
+      ]
     }
   ]
 }

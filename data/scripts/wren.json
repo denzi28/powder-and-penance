@@ -1,0 +1,41 @@
+{
+  "id": "wren",
+  "steps": [
+    {
+      "if": "!wren_met",
+      "then": [
+        { "say": "Oh, don't stop on my account. Or do, and listen. Wren. I play for whoever comes up the road.", "who": "wren" },
+        { "say": "Most of them don't come back down it, so I play them in. It seems only polite.", "who": "wren" },
+        { "set": "wren_met" }
+      ]
+    },
+    {
+      "menu": [
+        {
+          "text": "What's the tune?",
+          "do": [
+            { "say": "'The Wick Burns Low'. Pilgrims used to sing it on the hill. There were words once. Nobody remembers them now.", "who": "wren" },
+            { "say": "I think they were happy words. The tune doesn't sound it, does it?", "who": "wren" }
+          ]
+        },
+        {
+          "text": "Where are you from?",
+          "do": [
+            { "say": "Everywhere with a road. I came for the Abbey's feast day. The feast never came, and the road out got long.", "who": "wren" }
+          ]
+        },
+        {
+          "text": "Leave",
+          "end": true,
+          "do": [
+            {
+              "if": "boss:chandler",
+              "then": [{ "say": "I've been learning a new tune. Something for after. It's still missing an ending.", "who": "wren" }],
+              "else": [{ "say": "I'll be here. Follow the harp home if you lose your way.", "who": "wren" }]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

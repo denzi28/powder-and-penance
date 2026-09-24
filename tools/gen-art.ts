@@ -4173,7 +4173,7 @@ function line(img: Img, x0: number, y0: number, x1: number, y1: number, c: RGBA)
 
 
 /** Head-and-shoulders portraits for the dialogue box, drawn at double detail. */
-function drawPortrait(c: Img, who: 'oskar' | 'maudlin' | 'pip' | 'tollwarden' | 'matron' | 'chandler' | 'tomas' | 'hedda' | 'bede' | 'agnes' | 'ulla' | 'jost' | 'lome' | 'wenna' | 'fennick' | 'cuthwin' | 'hobb') {
+function drawPortrait(c: Img, who: 'oskar' | 'maudlin' | 'pip' | 'tollwarden' | 'matron' | 'chandler' | 'tomas' | 'hedda' | 'bede' | 'agnes' | 'ulla' | 'jost' | 'lome' | 'wenna' | 'fennick' | 'cuthwin' | 'hobb' | 'wren') {
   c.rect(0, 0, 32, 32, P.dark1);
   const skin = mix(P.wax1, P.wood2, 0.35);
   const oldSkin = mix(P.wax1, P.stone3, 0.3);
@@ -4289,6 +4289,19 @@ function drawPortrait(c: Img, who: 'oskar' | 'maudlin' | 'pip' | 'tollwarden' | 
     for (let y = 17; y < 23; y++) for (let x = 10; x < 22; x += 3) if ((x * 7 + y * 5) % 4 === 0) c.set(x + (y % 3), y, mix(P.stone3, P.wood1, 0.3)); // stubble
     c.rect(7, 4, 18, 5, mix(P.teal1, P.ink, 0.3)); // cap
     c.hline(6, 8, 21, mix(P.teal1, P.ink, 0.5));
+  } else if (who === 'wren') {
+    // the harper: a young face, a green cap with a white feather, a faded red cloak, the harp's neck at her shoulder
+    c.rect(3, 24, 26, 8, mix(P.blood1, P.stone2, 0.35));
+    face(9, 8, 14, 15, skin);
+    c.hline(14, 19, 4, mix(skin, P.blood2, 0.5)); // a half smile
+    c.set(18, 18, mix(skin, P.blood2, 0.5));
+    c.rect(7, 4, 18, 5, mix(P.moss1, P.stone1, 0.3)); // cap
+    c.hline(6, 8, 20, mix(P.moss1, P.ink, 0.4));
+    line(c, 8, 4, 3, 0, P.wax2); // feather
+    line(c, 9, 4, 4, 1, P.wax1);
+    line(c, 27, 31, 27, 14, P.wood2); // harp pillar
+    line(c, 27, 14, 31, 17, P.wood2);
+    for (let y = 18; y < 31; y += 3) c.set(29, y, P.wax2);
   } else if (who === 'chandler') {
     c.rect(3, 24, 26, 8, P.wax2); // chasuble
     c.hline(3, 24, 26, P.flame1);
@@ -4385,7 +4398,7 @@ function drawPortrait(c: Img, who: 'oskar' | 'maudlin' | 'pip' | 'tollwarden' | 
 
 function genNpcs() {
   genTownsfolk();
-  const who = ['oskar', 'maudlin', 'pip', 'tollwarden', 'matron', 'chandler', 'tomas', 'hedda', 'bede', 'agnes', 'ulla', 'jost', 'lome', 'wenna', 'fennick', 'cuthwin', 'hobb'] as const;
+  const who = ['oskar', 'maudlin', 'pip', 'tollwarden', 'matron', 'chandler', 'tomas', 'hedda', 'bede', 'agnes', 'ulla', 'jost', 'lome', 'wenna', 'fennick', 'cuthwin', 'hobb', 'wren'] as const;
   const portraits = new Img(32 * who.length, 32);
   who.forEach((w, i) => {
     const c = new Img(32, 32);
@@ -6831,6 +6844,8 @@ interface VillagerSpec {
   apron?: RGBA;
   child?: boolean;
   wide?: number; // extra shoulder width
+  /** Pose for the work frames (a harper plays sitting down). */
+  workPose?: 'stand' | 'sit';
   /** Hands for this frame (null: at the sides) and anything held or worn on top. */
   job?: (c: Img, f: VFrame, g: { cx: number; top: number; body: number; waist: number; feet: number }) => { l?: [number, number]; r?: [number, number] } | void;
 }
@@ -6968,7 +6983,7 @@ function villagerSheet(name: string, s: VillagerSpec) {
   const img = new Img(32 * frames.length, 32);
   frames.forEach((f, i) => {
     const c = new Img(32, 32);
-    drawVillager(c, s, f);
+    drawVillager(c, s, f.kind === 'work' && s.workPose ? { ...f, pose: s.workPose } : f);
     img.blit(c, i * 32, 0);
   });
   sheet(name, img, { cell: [32, 32], pivot: [16, 28], layer: 'single' });
@@ -7214,6 +7229,34 @@ function genTownsfolk() {
         if (f.k) c.set(g.cx + 11, g.feet - 1, P.stone3); // dust
         return { r, l: [g.cx + 1, g.waist - 3] };
       }
+    },
+  });
+  // Wren: a travelling harper in a faded red cloak and a feathered cap, who sits by the south road and plays.
+  villagerSheet('npc_wren', {
+    cloth: { c0: mix(P.blood1, P.ink, 0.4), c1: mix(P.blood1, P.stone2, 0.35), c2: mix(P.blood2, P.stone3, 0.4), c3: mix(P.blood2, P.wax1, 0.35) },
+    long: true, legs: P.dark2, skin, head: 'cap', headCol: mix(P.moss1, P.stone1, 0.3), workPose: 'sit',
+    job: (c, f, g) => {
+      c.set(g.cx - 3, g.top - 2, P.wax2); // a feather in the cap
+      c.set(g.cx - 4, g.top - 3, P.wax1);
+      c.set(g.cx - 5, g.top - 4, P.wax1);
+      const harp = (x: number, y: number, h: number) => {
+        // a small lap harp: a curved neck, a pillar, a sounding box, strings
+        line(c, x, y, x, y - h, P.wood2); // pillar (front)
+        line(c, x, y - h, x + 3, y - h + 1, P.wood2); // neck curving back
+        line(c, x + 3, y - h + 1, x + 6, y - h + 3, P.wood1);
+        line(c, x + 6, y - h + 3, x + 6, y, P.wood1); // sounding box
+        c.vline(x + 7, y - h + 4, h - 4, mix(P.wood1, P.ink, 0.3));
+        for (let sx = x + 1; sx <= x + 5; sx += 2) c.vline(sx, y - h + 2 + Math.floor((sx - x) / 2), h - 2 - Math.floor((sx - x) / 2), withAlpha(P.wax2, 200)); // strings
+        c.hline(x, y, 7, P.wood1);
+      };
+      if (f.kind === 'work') {
+        // seated, the harp on her knee, both hands in the strings
+        harp(g.cx + 2, g.waist + 3, 11);
+        const pl = f.k ? 1 : -1;
+        return { l: [g.cx + 3, g.waist - 3 + pl], r: [g.cx + 6, g.waist - 1 - pl] };
+      }
+      // carried on her back when she walks or stands
+      harp(g.cx - 9, g.waist + 1, 10);
     },
   });
   // Old Hobb: a beggar in rags and a battered cap who sits by the Abbey porch with a bowl.

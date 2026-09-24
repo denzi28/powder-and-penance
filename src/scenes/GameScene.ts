@@ -750,7 +750,11 @@ export class GameScene extends Phaser.Scene {
     this.npcs.update(delta, this.player, still);
     this.chatter.update(delta, this.player, this.flags, still);
     this.ambience.update(delta, this.player, this.cameras.main.worldView, still || !!this.hitstop);
-    if (!this.mapOpen) this.ambientAudio.update(Math.min(delta, 100) / 1000, this.area, this.player, this.flags);
+    if (!this.mapOpen) {
+      // a musician at their instrument (sitting at it, not walking or talking) is heard across the area
+      const harper = this.npcs.list.find(n => n.visible && DATA.npcs.npcs[n.npc].music && !n.walking && !n.held && n.pose === 'work' && this.npcs.speaking !== n.npc);
+      this.ambientAudio.update(Math.min(delta, 100) / 1000, this.area, this.roomAt(this.player.x, this.player.y), this.player, this.flags, harper ?? null);
+    }
     this.arena.update(delta);
     // A script can point the camera elsewhere (cutscenes); otherwise it follows the player.
     const focus = this.story.cameraPoint;

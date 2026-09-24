@@ -305,7 +305,7 @@ export class Player extends Actor {
     }
 
     if (events.includes('footstep')) {
-      this.ctx.bus.emit('sfx', { id: 'footstep', volume: st === 'sprint' ? 1.3 : 1 });
+      this.ctx.bus.emit('footstep', { x: this.x, y: this.y, sprint: st === 'sprint' });
       const dustMode = DATA.juice.dust.footstep;
       if (dustMode === 'always' || (dustMode === 'sprint' && st === 'sprint'))
         this.ctx.bus.emit('dust', { x: this.x, y: this.y, kind: 'step' });

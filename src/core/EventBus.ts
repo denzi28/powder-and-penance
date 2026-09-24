@@ -25,6 +25,8 @@ export interface GameEvents {
   dust: { x: number; y: number; kind: 'roll' | 'step' };
   shake: { trauma: number };
   sfx: { id: string; x?: number; y?: number; volume?: number; pitch?: number };
+  /** The player's foot came down (the sound depends on the ground). */
+  footstep: { x: number; y: number; sprint: boolean };
   hit: HitInfo;
   /** Active frames of a strike begin (slash FX + swing sound). */
   swing: { actor: Actor; strike: StrikeDef; angle: number; mirror: number };

@@ -290,6 +290,8 @@ export const NpcDef = z.object({
   voice: Voice.default({ sfx: 'voice', pitch: 1, every: 2, volume: 1 }),
   /** Sound on each stroke of its work pose (chopping, drawing water...), heard when you're near. */
   workSfx: z.string().optional(),
+  /** Plays music (data/audio/ambient.json `harp`) while doing its work pose. */
+  music: z.literal('harp').optional(),
 });
 /** `narration`: the voice of lines with no speaker. */
 export const Npcs = z.object({ npcs: z.record(z.string(), NpcDef), narration: Voice.default({ sfx: 'voice_soft', pitch: 0.75, every: 3, volume: 0.55 }) });
@@ -721,6 +723,8 @@ export type AmbientDecor = z.infer<typeof AmbientDecor>;
 // ---- Ambient sound (data/audio/ambient.json) ----
 export const AMBIENT_SOUNDS = ['crow', 'creak', 'owl', 'bell', 'crickets', 'frog', 'bubble', 'drip', 'clank', 'steam', 'chain', 'choir', 'humming', 'crackle', 'roar', 'wings', 'squeak', 'plop'] as const;
 export type AmbientSound = (typeof AMBIENT_SOUNDS)[number];
+export const SURFACES = ['dirt', 'grass', 'stone', 'wood', 'metal', 'mud', 'grease', 'wax', 'moss'] as const;
+export type Surface = (typeof SURFACES)[number];
 const Sound = z.enum(AMBIENT_SOUNDS);
 const Every = z.tuple([pos, pos]);
 export const AmbientBed = z.object({
@@ -748,6 +752,17 @@ export const AmbientAudioCfg = z.object({
   ),
   /** Sounds from scenery, heard within `range` px. */
   decor: z.record(z.object({ sound: Sound, every: Every, range: pos, volume: num.min(0).max(1) })),
+  /** Echo for enclosed rooms (overrides their area's). */
+  roomEcho: z.record(num.min(0).max(0.8)).default({}),
+  /** The player's footsteps: floor kind -> surface; plain `floor` per area (or `default`); `echo` send in echoing rooms. */
+  footsteps: z.object({
+    volume: num.min(0).max(2),
+    echo: num.min(0).max(1),
+    surfaces: z.record(z.enum(SURFACES)),
+    floor: z.record(z.enum(SURFACES)),
+  }),
+  /** The hub harper's music: full volume within `near` px, silent past `range`. */
+  harp: z.object({ volume: num.min(0).max(1), bpm: pos, near: pos, range: pos }),
 });
 export type AmbientArea = z.infer<typeof AmbientArea>;
 export type ChatDef = z.infer<typeof ChatDef>;

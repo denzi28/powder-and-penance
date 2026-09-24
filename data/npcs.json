@@ -17,6 +17,7 @@
     "wenna": { "name": "Wenna", "sprite": "npc_wenna", "portrait": 13, "voice": { "sfx": "voice", "pitch": 1.05, "every": 2 } },
     "fennick": { "name": "Fennick", "sprite": "npc_fennick", "portrait": 14, "voice": { "sfx": "voice", "pitch": 1.3, "every": 2 } },
     "cuthwin": { "name": "Brother Cuthwin", "sprite": "npc_cuthwin", "portrait": 15, "voice": { "sfx": "voice", "pitch": 1.25, "every": 2 } },
-    "hobb": { "name": "Old Hobb", "sprite": "npc_hobb", "portrait": 16, "voice": { "sfx": "voice_low", "pitch": 0.85, "every": 3 } }
+    "hobb": { "name": "Old Hobb", "sprite": "npc_hobb", "portrait": 16, "voice": { "sfx": "voice_low", "pitch": 0.85, "every": 3 } },
+    "wren": { "name": "Wren", "sprite": "npc_wren", "portrait": 17, "voice": { "sfx": "voice_soft", "pitch": 1.2, "every": 2 }, "music": "harp" }
   }
 }
