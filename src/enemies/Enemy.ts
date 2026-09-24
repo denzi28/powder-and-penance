@@ -78,6 +78,8 @@ export class Enemy extends Actor {
   noHealOnReturn = false;
   /** Enemies this one has summoned (strike.summon). */
   summons: Enemy[] = [];
+  /** Ids of this enemy's moves that summon (their cooldown waits for the brood to die). */
+  private readonly summonMoves = new Set<string>();
   /** Sitting in a summoning bubble: invulnerable until every summon is dead. */
   bubble = false;
   /** Ticks left half-seen in its own smoke (strike.vanish). */
@@ -132,6 +134,12 @@ export class Enemy extends Actor {
     this.anim.play('idle');
     this.dir = dir8FromAngle(facing);
     this.sm = new StateMachine<Enemy>(this, BRAINS[this.def.ai], this.def.ambush ? 'submerged' : 'idle');
+    // no brood in the first moments of a fight (or of a new phase): half the move's rest first
+    for (const m of this.def.moves)
+      if (m.strikes.some(st => st.summon)) {
+        this.summonMoves.add(m.id);
+        this.cooldowns.set(m.id, Math.round(m.cooldown / 2));
+      }
     this.sm.start();
   }
 
@@ -208,7 +216,9 @@ export class Enemy extends Actor {
   tick() {
     this.beginTick();
     this.age++;
-    for (const [k, v] of this.cooldowns) if (v > 0) this.cooldowns.set(k, v - 1);
+    // A summoning move rests only once its brood is dead, so a boss can't call the next lot the moment they fall.
+    const broodUp = this.summons.some(s => !s.dead);
+    for (const [k, v] of this.cooldowns) if (v > 0 && !(broodUp && this.summonMoves.has(k))) this.cooldowns.set(k, v - 1);
     if (this.attackGap > 0) this.attackGap--;
     if (this.barTicks > 0) this.barTicks--;
     const g = this.def.guard;

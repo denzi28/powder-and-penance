@@ -72,7 +72,8 @@ A ruined candle-abbey where gunpowder replaced prayer. Light, wax and smoke are 
 | Sprint (hold) | Shift | L3 or hold LB |
 | Heal | Q | X / □ |
 | Reload | R | Y / △ (tap) |
-| Swap weapon | Tab / Mouse wheel | Y / △ (hold) or D-pad ↔ |
+| Equipment | Tab | — |
+| Inventory | I | — |
 | Interact | E | A / × |
 | Pause | Esc | Start |
 

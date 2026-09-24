@@ -355,6 +355,7 @@ The manifest's `tiles` block maps tile kinds to sheet indices (index = row × 8 
 - 96×48 image: a 16×6 grid of 6×8 cells, each holding a 5×7 glyph at the top-left.
 - Characters run in ASCII order from space (32) to `~` (126).
 - Draw in **white**; the game tints it. Lowercase currently reuses the uppercase glyphs.
+- A second, small font `assets/fonts/pixel3x5.png` (64×36: 16×6 grid of 4×6 cells, 3×5 glyphs, with real lowercase) is used for item descriptions on the gear, shop and smith screens.
 
 ---
 

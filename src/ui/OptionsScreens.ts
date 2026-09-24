@@ -25,6 +25,8 @@ export const CONTROL_ROWS: { action: string; label: string }[] = [
   { action: 'reload', label: 'RELOAD' },
   { action: 'interact', label: 'TALK, OPEN, PICK UP, READ' },
   { action: 'drop', label: 'DROP THE WEAPON IN USE (HOLD)' },
+  { action: 'equipment', label: 'EQUIPMENT' },
+  { action: 'inventory', label: 'INVENTORY' },
   { action: 'map', label: 'MAP' },
 ];
 const REBINDABLE = CONTROL_ROWS.map(r => r.action);

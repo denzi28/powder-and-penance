@@ -58,7 +58,7 @@
       "type": "shrine",
       "id": "shrine_rest",
       "name": "Wick's Rest",
-      "at": [24, 9]
+      "at": [18, 9]
     },
     {
       "type": "decor",
@@ -276,12 +276,12 @@
     {
       "type": "decor",
       "kind": "candle_cairn",
-      "at": [26, 8]
+      "at": [20, 8]
     },
     {
       "type": "decor",
       "kind": "candle_cairn",
-      "at": [21, 8]
+      "at": [16, 8]
     },
     {
       "type": "decor",

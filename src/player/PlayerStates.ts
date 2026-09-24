@@ -155,7 +155,6 @@ function locomotion(p: Player): string {
     if (p.dropHold > 0 && p.dropHold < DROP_HOLD_TICKS && p.weaponId !== 'fists') p.ctx.bus.emit('hint', { id: 'drop' });
     p.dropHold = 0;
   }
-  if (inp.consume('swap')) p.ctx.bus.emit('hint', { id: 'swap' }); // Tab used to swap weapons
   if (inp.held('block') && p.shield) return 'block';
 
   const cfg = DATA.player;

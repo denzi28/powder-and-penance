@@ -32,6 +32,7 @@ export class Chatter {
   private text: Phaser.GameObjects.BitmapText;
   private box: Phaser.GameObjects.Graphics;
   private letters = 0;
+  private roomAt: (x: number, y: number) => unknown = () => null;
 
   constructor(
     scene: Phaser.Scene,
@@ -57,7 +58,22 @@ export class Chatter {
     this.hide();
   }
 
-  update(deltaMs: number, player: { x: number; y: number }, flags: ReadonlySet<string>, paused: boolean) {
+  /** `hush`: a fight is on (a boss, or enemies after the player): nobody chats, and a chat going on stops.
+   *  `roomAt` keeps chats to people in the player's own room, so no bubble reaches over a wall. */
+  update(
+    deltaMs: number,
+    player: { x: number; y: number },
+    flags: ReadonlySet<string>,
+    paused: boolean,
+    hush = false,
+    roomAt: (x: number, y: number) => unknown = () => null,
+  ) {
+    this.roomAt = roomAt;
+    if (hush) {
+      if (this.playing) this.stop();
+      this.cooldown = Math.max(this.cooldown, 2500); // a breather after the fight before anyone speaks
+      return;
+    }
     if (paused) {
       // A conversation with the player interrupts a chat with one of its people.
       if (this.playing && this.playing.people.some(n => this.npcs.speaking === n.npc)) this.stop();
@@ -101,6 +117,8 @@ export class Chatter {
       if (people.some(n => !n || !n.visible)) return false;
       const first = people[0]!;
       if (Math.hypot(first.x - player.x, first.y - player.y) > SEE_RANGE) return false;
+      const here = this.roomAt(player.x, player.y);
+      if (people.some(n => this.roomAt(n!.x, n!.y) !== here)) return false;
       return people.every(n => Math.hypot(n!.x - first.x, n!.y - first.y) <= c.range);
     });
     this.cooldown = 700; // look again soon if nobody is in place
@@ -173,7 +191,9 @@ export class Chatter {
     }
     this.text.setText(typed);
     const x = Math.round(n.x - w / 2);
-    const top = this.box.scene.cameras.main.worldView.y + 2;
+    const view = this.box.scene.cameras.main.worldView;
+    if (!view.contains(n.x, n.y - 12)) return this.hide(); // only over someone you can see
+    const top = view.y + 2;
     const y = Math.round(Math.max(top, n.y - 34 - h)); // keep the bubble on screen
     this.box.clear();
     this.box.fillStyle(0x140f14, 0.88).fillRect(x, y, w, h);

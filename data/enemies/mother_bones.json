@@ -148,8 +148,8 @@
     {
       "id": "brood",
       "range": [0, 400],
-      "weight": 2,
-      "cooldown": 420,
+      "weight": 1,
+      "cooldown": 780,
       "strikes": [
         {
           "damage": 0, "poise": 0,

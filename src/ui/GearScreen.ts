@@ -262,6 +262,8 @@ export class GearScreen {
     private flags: ReadonlySet<string>,
     private onClose: () => void,
     private sfx: (id: string) => void,
+    /** Opened with its own key (Tab, I): pressing it again closes the screen. */
+    private hotkey?: 'equipment' | 'inventory',
   ) {
     this.kind = kind;
   }
@@ -328,7 +330,7 @@ export class GearScreen {
         this.p.belt = sel.id;
         this.sfx('p_belt');
       }
-      if (input.pressed('back') || input.pressed('pause')) this.onClose();
+      if (input.pressed('back') || input.pressed('pause') || (this.hotkey && input.pressed(this.hotkey))) this.onClose();
       return;
     }
 
@@ -357,7 +359,7 @@ export class GearScreen {
       const cur = slotEntry(this.p, key).id;
       this.choosing = { key, options, index: Math.max(0, options.findIndex(o => o.id === cur || (cur === null && (o.id === null || o.id === FISTS)))) };
       this.sfx('menu_confirm');
-    } else if (input.pressed('back') || input.pressed('pause')) this.onClose();
+    } else if (input.pressed('back') || input.pressed('pause') || (this.hotkey && input.pressed(this.hotkey))) this.onClose();
   }
 
   private apply(key: SlotKey, id: string | null) {

@@ -29,13 +29,14 @@ export class GearView {
     this.g = scene.add.graphics().setDepth(depth);
   }
 
-  private text(x: number, y: number, s: string, colour: string, scale = 1) {
+  private text(x: number, y: number, s: string, colour: string, scale = 1, font: 'pixel' | 'pixel_small' = 'pixel') {
     let t = this.texts[this.nText];
     if (!t) {
       t = this.scene.add.bitmapText(0, 0, 'pixel', '').setDepth(this.depth + 2);
       this.texts.push(t);
     }
     this.nText++;
+    if (t.font !== font) t.setFont(font, font === 'pixel' ? 6 : 4); // a retro font's size is its cell width; setFont keeps the old one otherwise
     t.setText(s).setScale(scale).setPosition(Math.round(x), Math.round(y)).setTint(hexToInt(DATA.palette[colour] ?? colour)).setVisible(true);
     return t;
   }
@@ -109,11 +110,13 @@ export class GearView {
       this.text(x, yy, s, 'stone4');
       yy += 9;
     }
-    const room = Math.max(1, maxLines - stats.length);
-    const all = wrap(e.description, cols).split('\n');
+    // the description: the small font (4 px a letter against 6), dimmer than the stats, and more of it fits
+    const smallCols = Math.floor((cols * 6) / 4);
+    const room = Math.max(1, Math.floor(((maxLines - stats.length) * 9) / 7));
+    const all = wrap(e.description, smallCols).split('\n');
     const lines = all.slice(0, room);
-    if (all.length > room) lines[room - 1] = lines[room - 1].slice(0, cols - 3) + '...';
-    if (lines[0]) this.text(x, yy + 3, lines.join('\n'), 'wax1');
+    if (all.length > room) lines[room - 1] = lines[room - 1].slice(0, smallCols - 3) + '...';
+    if (lines[0]) this.text(x, yy + 4, lines.join('\n'), DESC_COLOUR, 1, 'pixel_small');
   }
 
   private drawEquip(s: GearScreen, p: Player) {
@@ -430,6 +433,9 @@ export class GearView {
     this.text(22, DATA.game.height - 18, onItems ? 'UP/DOWN SELECT   E/ENTER PUT ON BELT   LEFT/RIGHT TAB   ESC BACK' : 'UP/DOWN SELECT   LEFT/RIGHT TAB   ESC BACK', 'stone2');
   }
 }
+
+/** Item descriptions: a quiet parchment grey, readable but behind the name and figures. */
+const DESC_COLOUR = '#a39884';
 
 const SLOT_Y = 38;
 const SLOT_STEP = 22;

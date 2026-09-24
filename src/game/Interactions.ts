@@ -1,4 +1,4 @@
-// "Press E" interactions: dropped weapons, people, levers, notes, chests, doors, shrines and racks (in that priority).
+// "Press E" interactions: dropped weapons, people or shrines (whichever is closer), levers, notes, chests, doors and racks.
 import { DATA } from '../data/config';
 import { hexToInt } from '../ui/colors';
 import { beginShrine } from './ShrineFlow';
@@ -32,7 +32,14 @@ export function nearestInteractable(gs: GameScene): Interactable | null {
   const remains = gs.arena.remainsInteraction();
   if (remains) return remains;
 
+  // A shrine you're standing closer to than anyone wins, so people milling about it never crowd it out.
+  const shrine = gs.shrines.nearest(p.x, p.y);
   const npc = gs.npcs.nearest(p.x, p.y);
+  if (shrine && (!npc?.talk || Math.hypot(shrine.x - p.x, shrine.y - p.y) < Math.hypot(npc.x - p.x, npc.y - p.y)))
+    return {
+      label: shrine.lit ? `REST AT ${shrine.name}` : `KINDLE ${shrine.name}`,
+      use: () => beginShrine(gs, shrine),
+    };
   if (npc?.talk) {
     const talk = npc.talk;
     return { label: `TALK TO ${DATA.npcs.npcs[npc.npc].name}`, use: () => gs.story.start(talk) };
@@ -112,13 +119,6 @@ export function nearestInteractable(gs: GameScene): Interactable | null {
       },
     };
   }
-
-  const shrine = gs.shrines.nearest(p.x, p.y);
-  if (shrine)
-    return {
-      label: shrine.lit ? `REST AT ${shrine.name}` : `KINDLE ${shrine.name}`,
-      use: () => beginShrine(gs, shrine),
-    };
 
   const rack = gs.racks.nearest(p.x, p.y);
   if (!rack) return null;

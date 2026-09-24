@@ -35,7 +35,7 @@ import { Explosions, nearestKeg } from '../game/Explosions';
 import { Pathfinder } from '../world/Pathfinder';
 import { Player } from '../player/Player';
 import { PlayerView } from '../player/PlayerView';
-import { Enemy } from '../enemies/Enemy';
+import { COMBAT_STATES, Enemy } from '../enemies/Enemy';
 import { EnemyView } from '../enemies/EnemyView';
 import { AttackTokens } from '../enemies/AttackTokens';
 import { CombatSystem } from '../combat/CombatSystem';
@@ -332,6 +332,12 @@ export class GameScene extends Phaser.Scene {
       this.openPause();
       return;
     }
+    // Tab / I: straight into EQUIPMENT / INVENTORY; the same key (or Esc) closes it again, back to the game
+    for (const [key, kind] of [['equipment', 'equip'], ['inventory', 'inventory']] as const)
+      if (this.controls.pressed(key) && !this.menu && !this.player.dead && !this.shrineSeq && !this.travel) {
+        this.openGear(kind, undefined, key);
+        return;
+      }
     if (this.menu) {
       const r = this.menuNav.update(this.menu, this.controls);
       if (r === 'moved') this.bus.emit('sfx', { id: 'menu_move' });
@@ -504,8 +510,8 @@ export class GameScene extends Phaser.Scene {
   }
 
   /** Open EQUIPMENT or INVENTORY from the pause menu (back returns there), or straight onto a note just read
-   *  (back returns to the game). */
-  openGear(kind: 'equip' | 'inventory', note?: string) {
+   *  or from its own key (back returns to the game). */
+  openGear(kind: 'equip' | 'inventory', note?: string, hotkey?: 'equipment' | 'inventory') {
     this.menu = null;
     this.controls.clearBuffer();
     this.gear = new GearScreen(
@@ -515,10 +521,11 @@ export class GameScene extends Phaser.Scene {
       () => {
         this.gear = null;
         this.markDirty();
-        if (note) this.controls.clearBuffer();
+        if (note || hotkey) this.controls.clearBuffer();
         else this.openPause(kind === 'equip' ? 1 : 2);
       },
       id => this.bus.emit('sfx', { id }),
+      hotkey,
     );
     if (note) this.gear.focus('NOTES', note);
   }
@@ -695,13 +702,12 @@ export class GameScene extends Phaser.Scene {
 
   /** Gameplay consequences of events (presentation lives in game/Presentation). */
   private wireGameplayEvents() {
-    // controls explained once a session: a tap of the drop key, the old swap key
+    // controls explained once a session: a tap of the drop key
     const hinted = new Set<string>();
     this.bus.on('hint', e => {
       if (hinted.has(e.id)) return;
       hinted.add(e.id);
       if (e.id === 'drop') this.showToast('DROP WEAPON', 'Hold the drop key (G) to drop the weapon in use on the ground. It leaves your inventory until you pick it up again.');
-      else this.showToast('TWO HANDS', 'Tab no longer swaps weapons. Left click uses your right hand; right click your left hand (a shield blocks, a weapon strikes or fires). Change them under EQUIPMENT (Esc).');
     });
     this.bus.on('weaponDropped', e => {
       this.ground.add(e.id, e.x, e.y + 2);
@@ -930,7 +936,8 @@ export class GameScene extends Phaser.Scene {
     this.pools.draw(this);
     const still = !!(this.menu || this.gear || this.mapOpen || this.story.active || this.warp);
     this.npcs.update(delta, this.player, still);
-    this.chatter.update(delta, this.player, this.flags, still);
+    const fightOn = !!this.arena.musicState() || this.enemies.some(e => !e.dead && COMBAT_STATES.has(e.stateName));
+    this.chatter.update(delta, this.player, this.flags, still, fightOn, (x, y) => this.roomAt(x, y));
     this.ambience.update(delta, this.player, this.cameras.main.worldView, still || !!this.hitstop);
     if (!this.mapOpen) {
       // a musician at their instrument (sitting at it, not walking or talking) is heard across the area
