@@ -1,7 +1,7 @@
 # Powder & Penance (working title)
 
 Top-down pixel-art action game: reference-shooter movement and camera, Souls-like combat.
-Design: [DESIGN.md](DESIGN.md) · Milestones: [PLAN.md](PLAN.md) · Art spec: [ASSETS.md](ASSETS.md)
+**Status and next steps: [STATUS.md](STATUS.md)** · Design: [DESIGN.md](DESIGN.md) · Milestones: [PLAN.md](PLAN.md) · Art spec: [ASSETS.md](ASSETS.md)
 
 ## Run
 ```

@@ -15,8 +15,9 @@ All timings are in ticks (60/s). Everything tunable lives in `data/`, and edits 
 | 4 Healing, shrines, saving, death loop | ✅ Done |
 | 4.5 Improvement pass | ✅ Built. Enemy A* pathfinding, GameScene split into `src/game/*`, hit feedback (flinch, HP damage trail, directional damage vignette, low-HP pulse), 6–7 frame attacks with a separate windup pose per enemy attack, camera clamped to rooms with rock fill (no void). Project moved to `C:\Users\recep\code\powder-and-penance`. |
 | 5 Full roster + the Guttering Abbey | ✅ Built, awaiting playtest. 4 new enemies (Warden guard/guard break, Acolyte lobbed firepots with AoE, Hound lunge, Brute grab), 13-room abbey with 2 shrines, doors and a one-way shortcut gate, breakable props with one-time loot, debug teleport menu and flag editor. Level integrity covered by `tests/abbey.test.ts`. |
-| **Act 1 build** | 🚧 In progress: the game is now built as a complete ~2 h Act 1, room by room. Map: [WORLD.md](WORLD.md), story: [STORY.md](STORY.md). The milestones below (bosses, progression) are folded into it; story systems (dialogue, NPCs, cutscenes) come after the road and hub rooms. Done so far: per-area tilesets, floor variants, decor, placed weapons, `road_01_wreck`. |
-| 6–7 | Planned (now part of the Act 1 build) |
+| **Act 1 build** | 🚧 Nearly complete: all five areas (road, hub, abbey, works, mire), every boss including the Chandler finale and the ending, story, dialogue with voices, maps, quick travel. **Current status, what's left and what's next: [STATUS.md](STATUS.md).** Map: [WORLD.md](WORLD.md), story: [STORY.md](STORY.md). |
+| 6 Bosses | ✅ Done (Tollwarden, Mother Tallow, Mire Matron, the Chandler) |
+| 7 Progression, polish, sound | 🔸 Partly done: quick travel, synthesised SFX, dialogue voices. Level-up, shop and settings are still to come (see STATUS.md). |
 | 8–12 (post-launch roadmap) | Proposed, see the end of this file |
 
 ---
