@@ -196,8 +196,10 @@ Enemies hold their weapon like the player does: `handAnchors` in the body manife
 - Frames: 0–1 idle (breathing), 2–3 talking (mouth open, then closed).
 - Drawn facing the viewer; the game mirrors them to turn toward the player. Skin is pale wax (`wax1`).
 
-### `portraits` (32×32 per frame, ui)
-- Dialogue-box portraits: 0 Oskar, 1 Maudlin, 2 Pip, 3 the Tollwarden, 4 the Mire Matron, 5 the Chandler.
+### `portraits` (48×48 per frame, ui)
+- Dialogue-box portraits, painted by `tools/portraits.ts` (lit volumes, hue-shifted ramps, a warm rim light): 0 Oskar,
+  1 Maudlin, 2 Pip, 3 the Tollwarden, 4 the Mire Matron, 5 the Chandler, 6 Tomas, 7 Hedda, 8 Bede, 9 Agnes, 10 Ulla,
+  11 Jost, 12 Lome, 13 Wenna, 14 Fennick, 15 Cuthwin, 16 Hobb, 17 Wren, 18 the Master Gunner (`portrait` in data/npcs.json).
 - `data/npcs.json` picks each character's frame.
 
 ### Bosses

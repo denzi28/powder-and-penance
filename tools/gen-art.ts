@@ -5,6 +5,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { PNG } from 'pngjs';
+import { PORTRAIT, renderPortraits } from './portraits';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const SPRITES = path.join(ROOT, 'assets/sprites');
@@ -4165,262 +4166,21 @@ function line(img: Img, x0: number, y0: number, x1: number, y1: number, c: RGBA)
 // ---------------------------------------------------------------- Wick's Rest decor (64x64 cells, pivot 32,62)
 // Multi-tile pieces are drawn so they cover exactly their blocking tiles (see data/decor.json).
 
-// ---------------------------------------------------------------- NPCs (32x32, pivot 16,28) and portraits (32x32)
+// ---------------------------------------------------------------- NPCs (32x32, pivot 16,28); portraits (48x48) are painted in tools/portraits.ts
 // NPC frames: 0-1 idle (breathing), 2-3 talking (mouth open / closed). Skin is pale wax: everyone here is
 // half a candle already.
 
 
 
 
-/** Head-and-shoulders portraits for the dialogue box, drawn at double detail. */
-function drawPortrait(c: Img, who: 'oskar' | 'maudlin' | 'pip' | 'tollwarden' | 'matron' | 'chandler' | 'tomas' | 'hedda' | 'bede' | 'agnes' | 'ulla' | 'jost' | 'lome' | 'wenna' | 'fennick' | 'cuthwin' | 'hobb' | 'wren' | 'gunner') {
-  c.rect(0, 0, 32, 32, P.dark1);
-  const skin = mix(P.wax1, P.wood2, 0.35);
-  const oldSkin = mix(P.wax1, P.stone3, 0.3);
-  const face = (x: number, y: number, w: number, h: number, col: RGBA) => {
-    c.rect(x, y, w, h, col);
-    c.vline(x, y, h, mix(col, P.wax2, 0.35));
-    c.vline(x + w - 1, y, h, mix(col, P.wood1, 0.35));
-    c.hline(x + 2, y + Math.floor(h * 0.4), 3, P.ink);
-    c.hline(x + w - 5, y + Math.floor(h * 0.4), 3, P.ink);
-    c.rect(x + Math.floor(w / 2) - 1, y + Math.floor(h * 0.45), 2, 3, mix(col, P.wood1, 0.3));
-  };
-  if (who === 'gunner') {
-    // the Master Gunner: a soot-black old face, a braided grey beard, fuse-bright eyes, the tricorn and red coat
-    c.rect(2, 24, 28, 8, mix(P.blood1, P.dark1, 0.2));
-    c.vline(16, 24, 8, mix(P.blood2, P.wood2, 0.3));
-    c.set(15, 27, mix(P.flame1, P.wood2, 0.35));
-    c.set(15, 30, mix(P.flame1, P.wood2, 0.35));
-    face(9, 9, 14, 14, mix(P.wax1, P.dark1, 0.45));
-    c.set(11, 14, P.flame2);
-    c.set(20, 14, P.flame2);
-    c.rect(12, 18, 8, 7, P.stone3); // beard
-    c.vline(15, 25, 3, P.stone2); // braided
-    c.vline(17, 25, 2, P.stone2);
-    c.rect(5, 6, 22, 3, P.dark1); // tricorn
-    c.rect(8, 3, 16, 4, P.dark2);
-    c.set(16, 4, mix(P.flame1, P.wood2, 0.35));
-  } else if (who === 'tomas') {
-    // the lamplighter: an old face, a white beard, a cap pulled low; a spark of his flame
-    c.rect(3, 24, 26, 8, mix(P.moss1, P.stone1, 0.5));
-    face(9, 8, 14, 15, oldSkin);
-    for (let y = 16; y < 25; y++) c.hline(10 + Math.floor((y - 16) / 3), y, 12 - Math.floor((y - 16) / 3) * 2, P.stone4); // beard
-    c.hline(12, 17, 8, P.stone3); // moustache
-    c.rect(7, 4, 18, 5, P.dark2); // cap
-    c.hline(6, 8, 21, P.dark1); // brim
-    c.set(26, 3, P.flame2);
-    c.set(27, 2, P.flame1);
-  } else if (who === 'hedda') {
-    // the water-carrier: a red kerchief, a broad kind face, strong shoulders under the yoke
-    c.rect(2, 24, 28, 8, mix(P.teal1, P.stone2, 0.5));
-    c.hline(0, 23, 32, P.wood2); // the yoke
-    c.hline(0, 24, 32, P.wood1);
-    face(9, 8, 14, 15, skin);
-    c.hline(13, 19, 6, P.blood1); // a wide mouth
-    c.rect(7, 3, 18, 6, P.blood2); // kerchief
-    c.hline(8, 3, 16, mix(P.blood2, P.white, 0.3));
-    c.rect(24, 8, 3, 4, P.blood2); // its knot
-  } else if (who === 'bede') {
-    // the woodcutter: broad and bearded, brown hair, an axe haft over his shoulder
-    c.rect(1, 24, 30, 8, P.moss1);
-    line(c, 24, 31, 30, 14, P.wood2);
-    c.rect(27, 11, 4, 4, EN.steel2);
-    face(8, 7, 16, 16, skin);
-    c.rect(8, 16, 16, 8, P.wood1); // beard
-    c.hline(12, 16, 8, mix(P.wood1, P.dark2, 0.4));
-    c.rect(7, 3, 18, 5, P.wood1); // hair
-    c.vline(7, 3, 8, P.wood1);
-  } else if (who === 'agnes') {
-    // the old pilgrim: a black shawl, a lined face, eyes half closed, her beads
-    c.rect(3, 22, 26, 10, P.dark1);
-    c.rect(5, 2, 22, 22, P.dark2); // shawl
-    face(10, 8, 12, 14, oldSkin);
-    c.hline(12, 11, 3, oldSkin); // lids lowered
-    c.hline(17, 11, 3, oldSkin);
-    c.hline(12, 12, 3, P.ink);
-    c.hline(17, 12, 3, P.ink);
-    for (const y of [15, 18]) c.hline(11, y, 2, mix(oldSkin, P.wood1, 0.4)); // lines
-    for (let x = 10; x < 23; x += 2) c.set(x, 27 + ((x / 2) % 2), P.wood2); // prayer beads
-  } else if (who === 'ulla') {
-    // the pilgrim wife: a moss-green kerchief, soot on her cheek, a brown shawl
-    c.rect(3, 24, 26, 8, mix(P.wood1, P.stone2, 0.4));
-    face(9, 8, 14, 15, skin);
-    c.set(19, 16, P.dark2); // soot
-    c.hline(13, 19, 6, mix(skin, P.blood1, 0.5));
-    c.rect(7, 3, 18, 6, mix(P.moss1, P.stone2, 0.4));
-    c.hline(8, 3, 16, mix(P.moss2, P.wax1, 0.3));
-  } else if (who === 'jost') {
-    // the old pilgrim: a brown hood, a white beard, a scallop badge
-    c.rect(3, 24, 26, 8, P.stone2);
-    c.rect(5, 2, 22, 22, mix(P.wood1, P.stone2, 0.3)); // hood
-    face(10, 8, 12, 14, oldSkin);
-    for (let y = 16; y < 24; y++) c.hline(11 + Math.floor((y - 16) / 3), y, 10 - Math.floor((y - 16) / 3) * 2, mix(P.stone4, P.wax1, 0.3));
-    c.rect(6, 26, 3, 3, P.wax2); // scallop
-  } else if (who === 'lome') {
-    // the hermit: a brown hood, a grey beard, a candle stub glowing below his chin
-    c.rect(3, 24, 26, 8, mix(P.wood1, P.stone1, 0.3));
-    c.rect(5, 2, 22, 22, mix(P.wood1, P.ink, 0.3)); // hood
-    face(10, 8, 12, 14, oldSkin);
-    for (let y = 16; y < 25; y++) c.hline(11 + Math.floor((y - 16) / 3), y, 10 - Math.floor((y - 16) / 3) * 2, P.stone3);
-    c.vline(24, 25, 5, P.wax2);
-    c.set(24, 24, P.flame2);
-    c.set(24, 23, P.flame1);
-  } else if (who === 'wenna') {
-    // the mire-woman: dark hair plastered down, a green shawl, a wry mouth
-    c.rect(3, 24, 26, 8, P.moss1);
-    c.rect(6, 4, 20, 14, mix(P.dark2, P.moss1, 0.3)); // hair
-    face(9, 8, 14, 15, mix(skin, P.moss2, 0.15));
-    c.hline(14, 19, 5, P.blood1);
-    c.set(19, 18, P.blood1);
-    c.vline(7, 8, 14, mix(P.dark2, P.moss1, 0.3));
-    c.vline(24, 8, 14, mix(P.dark2, P.moss1, 0.3));
-  } else if (who === 'fennick') {
-    // the clerk: bald and pale, round spectacles, a white collar under a black coat
-    c.rect(3, 24, 26, 8, P.dark1);
-    c.rect(12, 23, 8, 3, P.wax1);
-    face(9, 6, 14, 17, mix(P.wax2, P.wax1, 0.5));
-    for (const x of [10, 17]) {
-      c.rect(x, 10, 5, 4, P.stone2); // round rims
-      c.rect(x + 1, 11, 3, 2, mix(P.wax2, P.teal3, 0.3)); // lenses
-      c.set(x + 2, 12, P.ink);
-      c.set(x + 1, 11, P.white);
-    }
-    c.hline(15, 11, 2, P.stone2);
-    c.hline(13, 19, 6, mix(P.wax1, P.blood1, 0.4)); // thin lips
-  } else if (who === 'cuthwin') {
-    // the novice: young, a tonsure ringed with ginger hair, a nervous look
-    c.rect(3, 24, 26, 8, mix(P.stone3, P.wood2, 0.35));
-    face(9, 7, 14, 16, mix(P.wax2, P.wax1, 0.5));
-    c.rect(8, 4, 16, 4, mix(P.wood1, P.flame1, 0.25)); // hair ring
-    c.rect(12, 4, 8, 2, mix(P.wax2, P.wax1, 0.5)); // the tonsure
-    c.set(12, 16, mix(P.wax1, P.blood1, 0.4)); // freckles
-    c.set(19, 16, mix(P.wax1, P.blood1, 0.4));
-  } else if (who === 'hobb') {
-    // the beggar: a battered teal cap, a stubbled grey face, one eye screwed shut
-    c.rect(2, 24, 28, 8, P.wood1);
-    face(9, 8, 14, 15, oldSkin);
-    c.hline(18, 11, 3, oldSkin); // the shut eye
-    c.hline(18, 12, 3, P.ink);
-    for (let y = 17; y < 23; y++) for (let x = 10; x < 22; x += 3) if ((x * 7 + y * 5) % 4 === 0) c.set(x + (y % 3), y, mix(P.stone3, P.wood1, 0.3)); // stubble
-    c.rect(7, 4, 18, 5, mix(P.teal1, P.ink, 0.3)); // cap
-    c.hline(6, 8, 21, mix(P.teal1, P.ink, 0.5));
-  } else if (who === 'wren') {
-    // the harper: a young face, a green cap with a white feather, a faded red cloak, the harp's neck at her shoulder
-    c.rect(3, 24, 26, 8, mix(P.blood1, P.stone2, 0.35));
-    face(9, 8, 14, 15, skin);
-    c.hline(14, 19, 4, mix(skin, P.blood2, 0.5)); // a half smile
-    c.set(18, 18, mix(skin, P.blood2, 0.5));
-    c.rect(7, 4, 18, 5, mix(P.moss1, P.stone1, 0.3)); // cap
-    c.hline(6, 8, 20, mix(P.moss1, P.ink, 0.4));
-    line(c, 8, 4, 3, 0, P.wax2); // feather
-    line(c, 9, 4, 4, 1, P.wax1);
-    line(c, 27, 31, 27, 14, P.wood2); // harp pillar
-    line(c, 27, 14, 31, 17, P.wood2);
-    for (let y = 18; y < 31; y += 3) c.set(29, y, P.wax2);
-  } else if (who === 'chandler') {
-    c.rect(3, 24, 26, 8, P.wax2); // chasuble
-    c.hline(3, 24, 26, P.flame1);
-    c.rect(14, 24, 4, 8, P.flame1); // the gold orphrey
-    c.vline(15, 24, 8, P.flame2);
-    c.rect(9, 21, 14, 4, P.blood2); // red stole at the collar
-    c.rect(10, 7, 12, 15, P.stone4); // a long grey face
-    c.hline(11, 21, 10, P.stone3);
-    c.vline(10, 9, 12, P.stone3); // hollow cheeks
-    c.vline(21, 9, 12, P.stone3);
-    c.hline(11, 11, 4, P.dark2); // deep-set, tired eyes
-    c.hline(17, 11, 4, P.dark2);
-    c.set(13, 12, P.ink);
-    c.set(18, 12, P.ink);
-    c.rect(15, 13, 2, 3, P.stone3); // nose
-    c.hline(14, 18, 4, P.dark2); // a thin mouth
-    c.vline(12, 6, 4, P.wax1); // wax running from the crown
-    c.hline(9, 5, 14, P.flame1); // crown band
-    c.set(16, 5, P.blood2);
-    for (const x of [10, 13, 16, 19, 22]) {
-      c.vline(x, 1, 4, P.wax2); // lit tapers
-      c.set(x, 0, P.flame2);
-    }
-  } else if (who === 'matron') {
-    c.rect(4, 24, 24, 8, P.teal1); // sodden habit
-    c.rect(9, 22, 14, 4, P.stone3); // collar
-    c.rect(6, 2, 20, 23, P.stone1); // veil
-    c.rect(8, 4, 16, 4, P.wax2); // wimple band
-    c.rect(10, 8, 12, 14, P.wax1); // face, pale as wax
-    c.hline(12, 13, 3, P.ink); // eyes closed
-    c.hline(18, 13, 3, P.ink);
-    c.rect(15, 18, 3, 2, P.dark2); // singing
-    c.vline(11, 14, 6, P.wax2); // wax tear tracks
-    c.vline(21, 15, 5, P.wax2);
-    for (const x of [7, 25]) c.vline(x, 20, 6, P.wax1); // wax running from the veil's hem
-  } else if (who === 'tollwarden') {
-    c.rect(3, 24, 26, 8, P.blood1); // coat collar
-    c.ellipse(5, 26, 5, 4, P.steel1); // pauldrons
-    c.ellipse(27, 26, 5, 4, P.steel1);
-    c.rect(8, 3, 16, 21, P.steel1); // barbute
-    c.vline(8, 3, 21, P.steel2);
-    c.hline(8, 23, 16, P.stone1);
-    c.rect(14, 0, 4, 3, P.flame1); // crest
-    c.hline(10, 11, 12, P.ink); // visor slit
-    c.hline(10, 12, 12, P.ink);
-    c.rect(12, 11, 2, 2, P.wax2); // pale candle eyes
-    c.rect(18, 11, 2, 2, P.wax2);
-    c.rect(15, 14, 2, 7, P.ink); // the coin slot
-    c.set(22, 7, P.stone3); // dents
-    c.set(10, 18, P.stone3);
-  } else if (who === 'oskar') {
-    c.rect(4, 22, 24, 10, P.wood1);
-    c.hline(4, 22, 24, P.wood2);
-    c.rect(8, 4, 16, 17, P.wax1);
-    c.hline(8, 4, 16, P.wax2);
-    c.rect(10, 9, 3, 2, P.ink);
-    c.rect(19, 9, 3, 2, P.ink);
-    c.hline(9, 7, 5, P.wood1); // heavy brows
-    c.hline(18, 7, 5, P.wood1);
-    c.rect(8, 14, 16, 9, P.dark2); // beard
-    c.rect(13, 16, 6, 2, P.blood1);
-    c.set(15, 12, P.stone3); // nose
-    c.set(16, 12, P.stone3);
-  } else if (who === 'maudlin') {
-    c.rect(4, 22, 24, 10, P.stone2);
-    c.rect(6, 2, 20, 22, P.stone1); // veil
-    c.rect(8, 4, 16, 18, P.wax2); // wimple
-    c.rect(10, 7, 12, 13, P.wax1); // face
-    c.rect(12, 11, 2, 2, P.ink);
-    c.rect(18, 11, 2, 2, P.ink);
-    c.hline(11, 10, 3, P.stone3);
-    c.hline(18, 10, 3, P.stone3);
-    c.hline(14, 17, 4, P.blood1);
-    c.vline(10, 8, 12, P.stone4); // lined cheeks: tired
-    c.vline(21, 8, 12, P.stone4);
-  } else {
-    c.rect(7, 22, 18, 10, P.teal2);
-    c.rect(9, 7, 14, 15, P.wax1);
-    c.rect(8, 4, 16, 5, P.wood1); // hair
-    c.rect(8, 9, 2, 4, P.wood1);
-    c.rect(22, 9, 2, 3, P.wood1);
-    c.rect(11, 12, 2, 3, P.ink); // big eyes
-    c.rect(19, 12, 2, 3, P.ink);
-    c.set(11, 12, P.wax2);
-    c.set(19, 12, P.wax2);
-    c.hline(15, 18, 2, P.blood1);
-  }
-  // frame
-  c.hline(0, 0, 32, P.stone3);
-  c.hline(0, 31, 32, P.stone3);
-  c.vline(0, 0, 32, P.stone3);
-  c.vline(31, 0, 32, P.stone3);
-}
-
 function genNpcs() {
   genTownsfolk();
   const who = ['oskar', 'maudlin', 'pip', 'tollwarden', 'matron', 'chandler', 'tomas', 'hedda', 'bede', 'agnes', 'ulla', 'jost', 'lome', 'wenna', 'fennick', 'cuthwin', 'hobb', 'wren', 'gunner'] as const;
-  const portraits = new Img(32 * who.length, 32);
-  who.forEach((w, i) => {
-    const c = new Img(32, 32);
-    drawPortrait(c, w);
-    portraits.blit(c, i * 32, 0);
-  });
-  sheet('portraits', portraits, { cell: [32, 32], pivot: [0, 0], layer: 'ui' });
+  // painted head-and-shoulders portraits for the dialogue box (tools/portraits.ts)
+  const pr = renderPortraits(who);
+  const portraits = new Img(pr.w, pr.h);
+  portraits.px.set(pr.px);
+  sheet('portraits', portraits, { cell: [PORTRAIT, PORTRAIT], pivot: [0, 0], layer: 'ui' });
 }
 
 // ---------------------------------------------------------------- chest (20x18 cells, pivot = ground centre)

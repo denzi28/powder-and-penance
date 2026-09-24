@@ -9,7 +9,7 @@ import type { GameScene } from '../scenes/GameScene';
 
 const MARGIN = 40;
 const PAD = 7;
-const PORTRAIT = 32;
+const PORTRAIT = 48;
 const LINE = 9;
 
 export class DialogueBox {

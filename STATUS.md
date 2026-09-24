@@ -108,7 +108,7 @@ Stack: Phaser 3 + TypeScript + Vite. Zod-validated data files, Vitest tests.
 - Fixed: the player got stuck in the Nave doorway. The arena sealed while the player stood on the tile next to the seal, which then became solid. Arenas now wake only 2+ tiles away from every seal (`src/game/arenaWake.ts`); a test covers all arenas.
 
 ## Remaining for Act 1
-- **Pixel-art beauty pass** ← in progress. Done: the player, all four tilesets, the regular enemies and the bosses. Still procedural placeholder: portraits (the four new townsfolk have simple ones), most weapons, regular enemies' death frames, the lever and weapon racks. The Chandler, the Last Candle and the Nave decor are the roughest.
+- **Pixel-art beauty pass** ← in progress. Done: the player, all four tilesets, the regular enemies and the bosses. Portraits are repainted (48×48, `tools/portraits.ts`). Still procedural placeholder: most weapons, regular enemies' death frames, the lever and weapon racks. The Chandler, the Last Candle and the Nave decor are the roughest.
 - **Brother Aldous** (Abbey Scriptorium): give him Bitter Salt and he fights beside you against the Chandler (needs an ally AI). Otherwise you meet him later as a Wickling in the Nave Approach.
 - **Sister Maudlin's forgive/condemn choice** (after the Chandler's ledger). Forgive: she stays and helps in Act 2. Condemn: she leaves and her shrine goes cold.
 - **Powder Vault** (optional area behind a hidden wall in the Works; boss: Master Gunner).
