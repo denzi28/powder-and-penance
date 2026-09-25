@@ -15,7 +15,7 @@ import { TILE } from '../world/TileGrid';
 import { check } from './conditions';
 import type { Actor } from '../actors/Actor';
 import type { Cond, NpcStop, RoomData } from '../data/schemas';
-import { NpcStop as NpcStopSchema } from '../data/schemas';
+import { NpcInside, NpcStop as NpcStopSchema } from '../data/schemas';
 import type { SpriteLib } from '../anim/SpriteLib';
 
 export type NpcPose = 'idle' | 'work' | 'sit' | 'kneel';
@@ -59,6 +59,8 @@ export interface Npc {
   lastWork: number;
   /** How long it has been waiting for the player to get out of its way. */
   waited: number;
+  /** Sorts this many px lower than its feet (seen inside something in front of it: `inside.over`). */
+  over: number;
 }
 
 /** Talking range; generous so you can talk across a counter or through cage bars. */
@@ -88,7 +90,9 @@ export class Npcs {
         const def = DATA.npcs.npcs[String(en.npc)];
         const toPx = ([tx, ty]: readonly number[]) => ({ x: (r.origin[0] + tx) * TILE + TILE / 2, y: (r.origin[1] + ty) * TILE + TILE - 2 });
         const { x, y } = toPx(en.at);
-        const sprite = this.lib.sprite(def.sprite).setPosition(x, y).setDepth(DEPTH.actor(y));
+        const inside = en.inside === undefined ? null : NpcInside.parse(en.inside);
+        const sprite = this.lib.sprite(def.sprite).setPosition(x, y).setDepth(DEPTH.actor(y + (inside?.over ?? 0)));
+        if (inside) sprite.setCrop(0, 0, sprite.frame.width, inside.rows); // only what shows through the bars
         const full = sprite.texture.frameTotal - 1 >= 12;
         const stops = ((en.routine as unknown[] | undefined) ?? []).map(s => NpcStopSchema.parse(s) as NpcStop);
         const routine: Stop[] = stops.map(s => ({
@@ -120,6 +124,7 @@ export class Npcs {
           lookAt: null,
           lastWork: 0,
           waited: 0,
+          over: inside?.over ?? 0,
         });
         // Start at the first stop, doing its thing.
         const n = this.list[this.list.length - 1];
@@ -252,7 +257,7 @@ export class Npcs {
       if (n.held && n.lookAt !== null) n.facing = n.lookAt < n.x ? -1 : 1;
       else if ((talkingToPlayer || (near && !n.walking && n.pose === 'idle')) && Math.abs(player.x - n.x) > 4) n.facing = player.x < n.x ? -1 : 1;
       n.sprite.setFlipX(n.facing < 0);
-      n.sprite.setPosition(Math.round(n.x), Math.round(n.y)).setDepth(DEPTH.actor(n.y));
+      n.sprite.setPosition(Math.round(n.x), Math.round(n.y)).setDepth(DEPTH.actor(n.y + n.over));
     }
   }
 

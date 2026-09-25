@@ -16,7 +16,7 @@
   "sprite": "tollwarden",
   "weaponSprite": "toll_halberd",
   "weaponRestDeg": 60,
-  "hp": 720,
+  "hp": 600,
   "poise": {"max": 200, "resetTicks": 240},
   "tallow": 1500,
   "loot": "boss_ingots",
@@ -44,7 +44,7 @@
       "cooldown": 60,
       "strikes": [
         {
-          "damage": 34,
+          "damage": 24,
           "poise": 45,
           "windup": 30,
           "active": 9,
@@ -72,7 +72,7 @@
       "cooldown": 110,
       "strikes": [
         {
-          "damage": 40,
+          "damage": 28,
           "poise": 50,
           "windup": 58,
           "active": 6,
@@ -100,7 +100,7 @@
       "cooldown": 170,
       "strikes": [
         {
-          "damage": 48,
+          "damage": 34,
           "poise": 70,
           "windup": 40,
           "active": 6,
@@ -125,7 +125,7 @@
             "stepTicks": 5,
             "warnTicks": 16,
             "radius": 13,
-            "damage": 30,
+            "damage": 22,
             "poise": 35,
             "knockback": 130,
             "fx": "spikes",
@@ -141,7 +141,7 @@
       "cooldown": 90,
       "strikes": [
         {
-          "damage": 22,
+          "damage": 16,
           "poise": 25,
           "windup": 16,
           "active": 5,
@@ -160,7 +160,7 @@
           "anim": "thrust"
         },
         {
-          "damage": 30,
+          "damage": 22,
           "poise": 40,
           "windup": 12,
           "active": 8,
@@ -202,7 +202,7 @@
             "sprite": "toll_coin",
             "speed": 180,
             "range": 360,
-            "damage": 14,
+            "damage": 10,
             "poise": 12,
             "knockback": 40,
             "hitstop": 2,
@@ -222,7 +222,7 @@
       "cooldown": 220,
       "strikes": [
         {
-          "damage": 26,
+          "damage": 18,
           "poise": 30,
           "windup": 38,
           "active": 42,
@@ -270,7 +270,7 @@
             "sprite": "toll_halberd",
             "speed": 230,
             "range": 190,
-            "damage": 30,
+            "damage": 22,
             "poise": 35,
             "knockback": 110,
             "hitstop": 4,

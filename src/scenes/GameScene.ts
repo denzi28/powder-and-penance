@@ -58,7 +58,7 @@ import { BossSfx } from '../audio/BossSfx';
 import { GearScreen } from '../ui/GearScreen';
 import { LevelUpScreen, ShopScreen, SmithScreen, type AnyServiceScreen } from '../ui/ServiceScreens';
 import { ControlsScreen, SettingsScreen, type AnyOptionsScreen } from '../ui/OptionsScreens';
-import { BossMusic, ExploreMusic, musicLoad } from '../audio/Music';
+import { BossMusic, ExploreMusic, musicLoad, type MusicState } from '../audio/Music';
 import { SaveSystem, type SaveData } from '../save/SaveSystem';
 import { MenuNav, type Menu } from '../ui/Menu';
 import { DebugOverlay } from '../debug/DebugOverlay';
@@ -73,7 +73,7 @@ import { applySave, snapshot } from '../game/Persistence';
 import { updateAim } from '../game/aim';
 import type { Actor } from '../actors/Actor';
 import type { Dir8 } from '../core/math';
-import { MinibossPlacement, type RoomData } from '../data/schemas';
+import { CarriedDrop, MinibossPlacement, type RoomData } from '../data/schemas';
 
 const DEPTH_LIGHT = (y: number) => DEPTH.actor(y) + 1;
 const DIR_ANGLE: Record<Dir8, number> = { E: 0, SE: 45, S: 90, SW: 135, W: 180, NW: 225, N: 270, NE: 315 };
@@ -249,7 +249,9 @@ export class GameScene extends Phaser.Scene {
     this.props = new Props(this.lib);
     this.decor = new Decor(this.lib);
     this.ambience = new Ambience(this, this.lib);
-    this.ambience.onSound = (id, x, y) => this.ambientAudio.play(id, x, y, this.player);
+    this.ambience.onSound = (id, x, y) => {
+      if (!this.story.cinematic) this.ambientAudio.play(id, x, y, this.player); // no critters over a cutscene's own sounds
+    };
     this.npcs = new Npcs(this.lib);
     this.chatter = new Chatter(this, this.npcs, this.bus);
     this.npcs.onWorkStroke = n => {
@@ -402,6 +404,22 @@ export class GameScene extends Phaser.Scene {
     for (const e of this.enemies.filter(en => en.remove)) this.removeEnemy(e);
     this.cam.tick(lead.x, lead.y);
     if (this.dirty && this.simTick % DATA.shrine.autosaveTicks === 0) this.save();
+  }
+
+  /** The miniboss whose theme is playing: it holds while the miniboss lives and is anywhere near you. */
+  private musicMiniboss: Enemy | null = null;
+
+  /** A miniboss fighting you plays its own short theme (data/audio/music.json `minibosses`). */
+  private minibossMusicState(): MusicState | null {
+    const p = this.player;
+    const near = (e: Enemy, r: number) => Math.hypot(e.x - p.x, e.y - p.y) < r;
+    let e = this.musicMiniboss;
+    // it keeps playing until the miniboss falls, loses you, or you run well away
+    if (e && (e.dead || !this.enemies.includes(e) || (e.awareness < 1 && !near(e, 200)) || !near(e, 360))) e = null;
+    e ??= this.enemies.find(x => x.miniboss && !x.dead && x.awareness >= 1 && near(x, 260) && DATA.music.minibosses[x.miniboss.id]) ?? null;
+    this.musicMiniboss = e;
+    if (!e || this.player.dead) return null;
+    return { arena: `miniboss:${e.miniboss!.id}`, boss: e.kind, level: e.hp <= e.maxHp * 0.5 ? 2 : 1, theme: DATA.music.minibosses[e.miniboss!.id] };
   }
 
   /** A miniboss that spots you makes an entrance: its name across the screen, its cry, the ground shaking. */
@@ -773,6 +791,8 @@ export class GameScene extends Phaser.Scene {
           this.flags.add(`miniboss:${mb.id}`);
           if (!this.flags.has(`item:${mb.id}`)) grantItem(this, mb.id, mb.drop, e.actor.x, e.actor.y);
         }
+        const carried = e.actor.carries;
+        if (carried && !this.flags.has(`item:${carried.id}`)) grantItem(this, carried.id, carried.item, e.actor.x, e.actor.y);
         // an ordinary enemy's Tallow scales with its area's place on the route; bosses and minibosses have their own
         const base = mb?.tallow ?? e.actor.def.tallow;
         const areaMult = e.actor.def.boss || mb?.tallow !== undefined ? 1 : (DATA.areas.areas[this.area]?.tallowMult ?? 1);
@@ -1033,6 +1053,7 @@ export class GameScene extends Phaser.Scene {
         e.spawnId = spawnId;
         if (mb) e.miniboss = mb;
         else if (!e.def.boss) e.areaHpMult = DATA.areas.areas[r.area]?.hpMult ?? 1;
+        if (en.carries !== undefined) e.carries = CarriedDrop.parse(en.carries);
         e.hp = e.maxHp;
       });
   }
@@ -1076,10 +1097,12 @@ export class GameScene extends Phaser.Scene {
       const harper = this.npcs.list.find(n => n.visible && DATA.npcs.npcs[n.npc].music && !n.walking && !n.held && n.pose === 'work' && this.npcs.speaking !== n.npc);
       this.ambientAudio.update(Math.min(delta, 100) / 1000, this.area, this.roomAt(this.player.x, this.player.y), this.player, this.flags, harper ?? null);
     }
-    const fight = this.arena.musicState();
-    this.bossMusic.update(fight, arena => this.flags.has(`boss:${arena}`));
-    this.ambientAudio.duck(fight ? 0.35 : 1); // the world quietens under the music
-    this.exploreMusic.update(Math.min(delta, 100) / 1000, this.area, !!fight || this.bossMusic.playing, 1 - 0.9 * this.ambientAudio.harpNear);
+    const fight = this.arena.musicState() ?? this.minibossMusicState();
+    this.bossMusic.update(fight, arena => this.flags.has(arena.startsWith('miniboss:') ? arena : `boss:${arena}`));
+    // the world quietens under the music, and under a cutscene's own sounds
+    const scene = this.story.cinematic;
+    this.ambientAudio.duck(scene ? 0.2 : fight ? 0.35 : 1);
+    this.exploreMusic.update(Math.min(delta, 100) / 1000, this.area, !!fight || this.bossMusic.playing, (1 - 0.9 * this.ambientAudio.harpNear) * (scene ? 0.5 : 1));
     this.arena.update(delta);
     // A script can point the camera elsewhere (cutscenes); otherwise it follows the player.
     const focus = this.story.cameraPoint ?? this.screenFx.cameraPoint;

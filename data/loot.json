@@ -2,7 +2,7 @@
   "tables": {
     "husk": [
       { "weight": 7 },
-      { "weight": 2, "item": "honeycomb" },
+      { "weight": 2.5, "item": "honeycomb" },
       { "weight": 1, "item": "smoke_pellet" },
       { "weight": 0.5, "item": "beeswax_candle" }
     ],
@@ -32,23 +32,23 @@
     "wickling": [
       { "weight": 12 },
       { "weight": 2, "item": "tallow_candle" },
-      { "weight": 1, "item": "throwing_knife", "count": 2 }
+      { "weight": 1.5, "item": "throwing_knife", "count": 2 }
     ],
     "acolyte": [
       { "weight": 7 },
       { "weight": 2, "item": "firebomb" },
-      { "weight": 1, "item": "paper_cartridge", "count": 2 }
+      { "weight": 1.5, "item": "paper_cartridge", "count": 2 }
     ],
     "renderer": [
       { "weight": 7 },
-      { "weight": 1, "item": "chandlers_oil" },
+      { "weight": 1.5, "item": "chandlers_oil" },
       { "weight": 2, "item": "tallow_candle" },
       { "weight": 0.5, "item": "tallow_ingot" }
     ],
     "warden": [
       { "weight": 6 },
       { "weight": 1, "item": "communion_wafer" },
-      { "weight": 1, "item": "ringers_grog" },
+      { "weight": 1.5, "item": "ringers_grog" },
       { "weight": 0.5, "item": "tallow_ingot" }
     ],
     "drowned": [
@@ -63,7 +63,7 @@
     "crawler": [
       { "weight": 8 },
       { "weight": 1, "item": "tallow_candle" },
-      { "weight": 1, "item": "grey_salt" }
+      { "weight": 1.5, "item": "grey_salt" }
     ],
     "mule": [
       { "weight": 4 },

@@ -22,7 +22,7 @@
     }
   },
   "sprite": "gunner_cannon",
-  "hp": 950,
+  "hp": 720,
   "poise": {"max": 400, "resetTicks": 300},
   "tallow": 0,
   "speed": 18,
@@ -65,7 +65,7 @@
             "sprite": "cannonball",
             "speed": 1,
             "range": 1,
-            "damage": 45,
+            "damage": 44,
             "poise": 60,
             "knockback": 220,
             "hitstop": 6,
@@ -120,7 +120,7 @@
       "cooldown": 120,
       "strikes": [
         {
-          "damage": 50,
+          "damage": 48,
           "poise": 80,
           "windup": 36,
           "active": 10,
@@ -149,7 +149,7 @@
       "cooldown": 80,
       "strikes": [
         {
-          "damage": 40,
+          "damage": 38,
           "poise": 60,
           "windup": 22,
           "active": 6,
@@ -191,7 +191,7 @@
             "sprite": "cannonball",
             "speed": 1,
             "range": 1,
-            "damage": 45,
+            "damage": 44,
             "poise": 60,
             "knockback": 220,
             "hitstop": 6,
@@ -227,7 +227,7 @@
             "sprite": "cannonball",
             "speed": 160,
             "range": 620,
-            "damage": 40,
+            "damage": 38,
             "poise": 60,
             "knockback": 200,
             "hitstop": 6,

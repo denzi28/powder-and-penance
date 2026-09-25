@@ -126,12 +126,6 @@
       "kind": "powder_acolyte",
       "at": [27, 5],
       "facing": "W"
-    },
-    {
-      "type": "item",
-      "id": "chest_gunners_coat",
-      "item": "gear_gunners_coat",
-      "at": [27, 8]
     }
   ]
 }

@@ -38,7 +38,7 @@
         "id": "mb_belfry_brute",
         "title": "The Belfry Brute",
         "drop": "ring_steady_breath",
-        "hpMult": 1.6
+        "hpMult": 1.35
       }
     },
     {

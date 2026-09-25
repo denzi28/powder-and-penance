@@ -16,7 +16,7 @@
     "deathScript": "queen_death"
   },
   "sprite": "queen_swarm",
-  "hp": 700,
+  "hp": 530,
   "poise": {
     "max": 300,
     "resetTicks": 200
@@ -72,7 +72,7 @@
       "cooldown": 90,
       "strikes": [
         {
-          "damage": 28,
+          "damage": 32,
           "poise": 30,
           "windup": 30,
           "active": 14,
@@ -114,7 +114,7 @@
       "cooldown": 110,
       "strikes": [
         {
-          "damage": 9,
+          "damage": 10,
           "poise": 8,
           "windup": 28,
           "active": 40,
@@ -175,7 +175,7 @@
             "sprite": "bee_dart",
             "speed": 170,
             "range": 320,
-            "damage": 10,
+            "damage": 12,
             "poise": 6,
             "radius": 3,
             "count": 5,
@@ -226,7 +226,7 @@
             "sprite": "bee_dart",
             "speed": 110,
             "range": 260,
-            "damage": 12,
+            "damage": 14,
             "poise": 8,
             "radius": 3,
             "count": 10,

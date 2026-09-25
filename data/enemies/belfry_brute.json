@@ -45,7 +45,7 @@
       "cooldown": 90,
       "strikes": [
         {
-          "damage": 42, "poise": 60,
+          "damage": 34, "poise": 60,
           "windup": 40, "active": 5, "recovery": 44,
           "trackDegPerTick": 3,
           "hyperArmor": 60,
@@ -64,7 +64,7 @@
       "cooldown": 70,
       "strikes": [
         {
-          "damage": 30, "poise": 40,
+          "damage": 24, "poise": 40,
           "windup": 28, "active": 6, "recovery": 36,
           "trackDegPerTick": 3,
           "hyperArmor": 30,
@@ -82,7 +82,7 @@
       "cooldown": 200,
       "strikes": [
         {
-          "damage": 8, "poise": 0,
+          "damage": 6, "poise": 0,
           "windup": 26, "active": 5, "recovery": 90,
           "trackDegPerTick": 5,
           "unblockable": true,
@@ -91,7 +91,7 @@
           "lunge": { "distance": 22, "startTick": 22, "ticks": 6 },
           "hitbox": { "shape": "circle", "radius": 14, "offset": 16 },
           "sweep": { "fromDeg": 0, "toDeg": 0, "reach": 4 },
-          "grab": { "holdTicks": 60, "damage": 40, "throwKnockback": 260 },
+          "grab": { "holdTicks": 60, "damage": 32, "throwKnockback": 260 },
           "sfx": "e_brute_grab", "anim": "grab"
         }
       ]

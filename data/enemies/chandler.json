@@ -24,7 +24,7 @@
   "sprite": "chandler",
   "weaponSprite": "chandler_snuffer",
   "weaponRestDeg": 60,
-  "hp": 1100,
+  "hp": 880,
   "poise": {"max": 260, "resetTicks": 300},
   "tallow": 0,
   "speed": 28,
@@ -51,7 +51,7 @@
       "cooldown": 50,
       "strikes": [
         {
-          "damage": 36,
+          "damage": 32,
           "poise": 45,
           "windup": 30,
           "active": 10,
@@ -79,7 +79,7 @@
       "cooldown": 110,
       "strikes": [
         {
-          "damage": 28,
+          "damage": 26,
           "poise": 30,
           "windup": 24,
           "active": 9,
@@ -99,7 +99,7 @@
           "followSweep": true
         },
         {
-          "damage": 34,
+          "damage": 30,
           "poise": 40,
           "windup": 20,
           "active": 9,
@@ -125,7 +125,7 @@
       "cooldown": 150,
       "strikes": [
         {
-          "damage": 64,
+          "damage": 58,
           "poise": 90,
           "windup": 46,
           "active": 6,
@@ -171,7 +171,7 @@
             "sprite": "taper_shot",
             "speed": 200,
             "range": 300,
-            "damage": 18,
+            "damage": 16,
             "poise": 16,
             "knockback": 50,
             "hitstop": 2,
@@ -205,7 +205,7 @@
           "anim": "censer"
         },
         {
-          "damage": 34,
+          "damage": 30,
           "poise": 40,
           "windup": 16,
           "active": 6,
@@ -231,7 +231,7 @@
       "cooldown": 200,
       "strikes": [
         {
-          "damage": 14,
+          "damage": 12,
           "poise": 40,
           "windup": 26,
           "active": 6,
@@ -252,7 +252,7 @@
           "anim": "jab"
         },
         {
-          "damage": 44,
+          "damage": 40,
           "poise": 70,
           "windup": 16,
           "active": 6,

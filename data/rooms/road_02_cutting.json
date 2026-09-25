@@ -92,12 +92,6 @@
       "id": "road_02_cutting_buckler",
       "item": "gear_buckler",
       "at": [20, 5]
-    },
-    {
-      "type": "item",
-      "id": "cache_knives",
-      "item": "cache_knives",
-      "at": [18, 3]
     }
   ]
 }

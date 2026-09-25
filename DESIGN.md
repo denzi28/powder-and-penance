@@ -206,7 +206,7 @@ Ranged is a **resource**, not the default.
 |---|---|---|
 | Heavy crossbow | 1 | Slow bolt that pierces 2 targets and hits hard. Two-handed. |
 | Revolver | 6 | Moderate damage, 40-tick fire recovery, long 110-tick reload. One-handed. |
-| Flintlock | 1 | Huge single shot with high poise damage and a 150-tick reload. One-handed. |
+| Flintlock | 1 | Huge single shot with high poise damage and a 95-tick reload. One-handed. |
 
 Heavy input with a ranged weapon does a short **weapon bash**: low damage, some poise damage, a panic-button tool (see Open Question 4).
 

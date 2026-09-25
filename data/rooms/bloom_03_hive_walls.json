@@ -95,7 +95,8 @@
       "type": "enemy",
       "kind": "beekeeper_husk",
       "at": [12, 8],
-      "facing": "W"
+      "facing": "W",
+      "carries": { "id": "bloom_veil", "item": "gear_beekeepers_veil" }
     },
     {
       "type": "enemy",
@@ -108,12 +109,6 @@
       "kind": "orchard_guard",
       "at": [19, 3],
       "facing": "S"
-    },
-    {
-      "type": "item",
-      "id": "bloom_veil",
-      "item": "gear_beekeepers_veil",
-      "at": [21, 2]
     }
   ]
 }

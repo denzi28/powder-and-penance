@@ -68,6 +68,11 @@ export class Story {
     return this.running;
   }
 
+  /** A staged cutscene is playing (a skippable script, not a chat): the world's own sounds keep to the back. */
+  get cinematic() {
+    return this.running && this.skippable;
+  }
+
   /** Where the camera should look (null = on the player as usual). */
   get cameraPoint() {
     return this.focus;

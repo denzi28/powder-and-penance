@@ -13,7 +13,7 @@ import { TILE } from '../world/TileGrid';
 import { BRAINS } from './EnemyBrain';
 import type { WorldCtx } from '../core/World';
 import type { HitInfo } from '../combat/CombatSystem';
-import type { MinibossPlacement, MoveDef } from '../data/schemas';
+import type { CarriedDrop, MinibossPlacement, MoveDef } from '../data/schemas';
 
 /** States in which the enemy is actively fighting (knows where you are). */
 export const COMBAT_STATES: ReadonlySet<string> = new Set(['approach', 'strafe', 'attack']);
@@ -72,6 +72,8 @@ export class Enemy extends Actor {
   private unstick: { x: number; y: number; t: number } | null = null;
   /** Set when its room placement makes it a miniboss (a name bar, more health, a drop, dead for good). */
   miniboss: MinibossPlacement | null = null;
+  /** Set when its room placement gives it an item to drop the first time it falls. */
+  carries: CarriedDrop | null = null;
   /** Its area's health multiplier (data/areas.json `hpMult`), for enemies placed there; not bosses or minibosses. */
   areaHpMult = 1;
   /** A miniboss has made its entrance (banner, cry) this life. */

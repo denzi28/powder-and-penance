@@ -112,7 +112,8 @@
       "type": "enemy",
       "kind": "renderer",
       "at": [16, 9],
-      "facing": "W"
+      "facing": "W",
+      "carries": { "id": "works_06_gallery_renderer_apron", "item": "gear_renderer_apron" }
     },
     {
       "type": "enemy",
@@ -129,12 +130,6 @@
       "type": "prop",
       "kind": "crate",
       "at": [20, 11]
-    },
-    {
-      "type": "item",
-      "id": "works_06_gallery_renderer_apron",
-      "item": "gear_renderer_apron",
-      "at": [11, 1]
     },
     {
       "type": "item",

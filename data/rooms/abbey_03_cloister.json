@@ -33,7 +33,8 @@
       "type": "enemy",
       "kind": "bulwark_warden",
       "at": [13, 9],
-      "facing": "W"
+      "facing": "W",
+      "carries": { "id": "abbey_03_cloister_warden_hauberk", "item": "gear_warden_hauberk" }
     },
     {
       "type": "enemy",
@@ -85,12 +86,6 @@
       "type": "decor",
       "kind": "rubble",
       "at": [12, 11]
-    },
-    {
-      "type": "item",
-      "id": "abbey_03_cloister_warden_hauberk",
-      "item": "gear_warden_hauberk",
-      "at": [12, 5]
     },
     {
       "type": "item",

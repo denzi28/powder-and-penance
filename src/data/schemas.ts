@@ -398,6 +398,14 @@ export const MinibossPlacement = z.object({
 });
 export type MinibossPlacement = z.infer<typeof MinibossPlacement>;
 
+/**
+ * An enemy placement that carries an item (`"carries": { "id", "item" }` on a room's enemy entity): the first time
+ * it falls it drops `item` (data/items) where it dies, once per save (world flag "item:<id>", the same flag a chest
+ * uses, so gear moved out of a chest isn't given twice).
+ */
+export const CarriedDrop = z.object({ id: z.string(), item: z.string() });
+export type CarriedDrop = z.infer<typeof CarriedDrop>;
+
 const StatName = z.enum(['vitality', 'endurance', 'strength', 'dexterity']);
 export type StatName = z.infer<typeof StatName>;
 /**
@@ -1178,6 +1186,13 @@ export const DecorTable = z.object({ decor: z.record(z.string(), DecorDef) });
 /** data/terrain.json: floor variants that change how things move (e.g. wax pools slow you down). */
 export const Terrain = z.object({ floors: z.record(z.string(), z.object({ speedMult: num.min(0.05).max(2) })) });
 export const RoomEntity = z.object({ type: z.string(), id: z.string().optional(), at: Vec2 }).passthrough();
+/**
+ * An NPC seen inside something (`"inside": {...}` on an npc placement): Oskar in the wagon's cage. Only the top
+ * `rows` pixels of its frame are drawn, and it sorts as if its feet were `over` px lower, so it shows in the
+ * cage's window, in front of the wagon it's standing behind.
+ */
+export const NpcInside = z.object({ rows: int.positive(), over: num.min(0) });
+
 /** One stop of an NPC's routine (room tiles): walk there (through `via`), then `do` something for `ticks`. */
 export const NpcStop = z.object({
   at: Vec2,
@@ -1358,6 +1373,8 @@ export const MusicCfg = z.object({
   volume: num.min(0).max(1),
   /** Boss (enemy kind) -> theme. */
   bosses: z.record(z.string()),
+  /** Miniboss (its placement's `id`) -> a shorter fight theme, played while it fights you. */
+  minibosses: z.record(z.string()).default({}),
   /** Area -> exploration theme. */
   areas: z.record(z.string()).default({}),
   /** Exploration music: its volume, and how long after a boss fight it comes back (seconds). */

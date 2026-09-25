@@ -26,7 +26,7 @@
   "weaponSprite": "mother_ladle",
   "weaponRestDeg": 45,
   "wader": true,
-  "hp": 700,
+  "hp": 500,
   "poise": {"max": 280, "resetTicks": 300},
   "tallow": 1500,
   "speed": 22,
@@ -53,7 +53,7 @@
       "cooldown": 60,
       "strikes": [
         {
-          "damage": 36,
+          "damage": 28,
           "poise": 50,
           "windup": 34,
           "active": 10,
@@ -97,7 +97,7 @@
             "sprite": "wax_glob",
             "speed": 1,
             "range": 1,
-            "damage": 30,
+            "damage": 24,
             "poise": 30,
             "knockback": 120,
             "hitstop": 4,
@@ -110,7 +110,7 @@
               "count": 8,
               "speed": 110,
               "range": 80,
-              "damage": 16,
+              "damage": 12,
               "poise": 10,
               "knockback": 60,
               "radius": 3
@@ -126,7 +126,7 @@
       "cooldown": 130,
       "strikes": [
         {
-          "damage": 52,
+          "damage": 42,
           "poise": 80,
           "windup": 46,
           "active": 6,
@@ -154,7 +154,7 @@
       "cooldown": 200,
       "strikes": [
         {
-          "damage": 26,
+          "damage": 20,
           "poise": 30,
           "windup": 30,
           "active": 36,
@@ -226,7 +226,7 @@
             "stepTicks": 24,
             "warnTicks": 30,
             "radius": 20,
-            "damage": 34,
+            "damage": 28,
             "poise": 40,
             "knockback": 140,
             "fx": "wax",

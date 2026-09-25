@@ -59,9 +59,9 @@
       "sfx": "p_blunderbuss"
     },
     "reload": {
-      "ticks": 170,
+      "ticks": 110,
       "stamina": 12,
-      "moveMult": 0.35
+      "moveMult": 0.45
     },
     "projectile": {
       "sprite": "ball",

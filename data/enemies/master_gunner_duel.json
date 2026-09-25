@@ -16,7 +16,7 @@
   "sprite": "gunner",
   "weaponSprite": "blunderbuss",
   "weaponRestDeg": 40,
-  "hp": 700,
+  "hp": 530,
   "poise": {"max": 160, "resetTicks": 220},
   "tallow": 5000,
   "loot": "boss_salt",
