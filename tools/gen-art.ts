@@ -8890,6 +8890,457 @@ function genVault() {
   sheet('decor_vault', img, { cell: [W, W], pivot: [32, B], layer: 'single' });
 }
 
+// ---------------------------------------------------------------- Bloomhollow, the Apiary Orchard (expansion step 4)
+// The first colourful biome: warm late light on an orchard the Synod couldn't finish burning. Honey-stone dry
+// walls under flowering hedgerows, orchard grass full of clover, meadow flowers, lavender rows, honey pooling
+// where the hives were broken, honeycomb-paved yards, and the ash of the burned grove.
+const BL = {
+  g0: mix(P.leaf1, P.ink, 0.35),
+  g1: P.leaf1,
+  g2: mix(P.leaf1, P.leaf2, 0.6),
+  g3: P.leaf2,
+  g4: P.leaf3,
+  g5: mix(P.leaf3, P.flame2, 0.45),
+  // honey-stone: the valley's warm limestone
+  s0: mix(P.wood1, P.dark1, 0.45),
+  s1: mix(P.wood2, P.stone2, 0.35),
+  s2: mix(P.wax1, P.wood2, 0.55),
+  s3: mix(P.wax1, P.wood2, 0.3),
+  s4: mix(P.wax1, P.wax2, 0.35),
+  // earth path
+  e0: mix(P.wood1, P.dark2, 0.3),
+  e1: P.wood1,
+  e2: mix(P.wood2, P.flame1, 0.18),
+  e3: mix(P.wood2, P.wax1, 0.35),
+  // honey
+  h0: mix(P.ember, P.wood1, 0.35),
+  h1: mix(P.honey, P.ember, 0.3),
+  h2: P.honey,
+  h3: mix(P.honey, P.flame2, 0.6),
+  // ash
+  a0: mix(P.ink, P.dark1, 0.5),
+  a1: P.stone1,
+  a2: P.stone2,
+  a3: mix(P.stone3, P.wax1, 0.2),
+};
+
+function genOrchardTiles() {
+  const T = 16;
+  const img = new Img(T * 8, T * 14);
+  const at = tileAt;
+  const speck = (ox: number, oy: number, r: () => number, n: number, col: RGBA, m = 0) => {
+    for (let i = 0; i < n; i++) img.set(ox + m + Math.floor(r() * (16 - m * 2)), oy + m + Math.floor(r() * (16 - m * 2)), col);
+  };
+  /** A tuft of grass: a dark root, blades lit at the tips. */
+  const tuft = (x: number, y: number, r: () => number, tall = 3) => {
+    img.set(x, y, BL.g0);
+    for (const [dx, h] of [[0, tall], [1, tall - 1], [-1, tall - 2]] as const) {
+      if (h <= 0 || r() < 0.2) continue;
+      img.vline(x + dx, y - h, h, BL.g3);
+      img.set(x + dx, y - h, BL.g4);
+    }
+  };
+  /** A clover leaf: three dots of fresh green. */
+  const clover = (x: number, y: number) => {
+    img.set(x, y, BL.g4);
+    img.set(x + 1, y, BL.g4);
+    img.set(x, y + 1, BL.g3);
+    img.set(x + 1, y + 1, BL.g0);
+  };
+  /** A little flower seen from above: petals round a heart. */
+  const bloom = (x: number, y: number, petal: RGBA, heart: RGBA, big = false) => {
+    img.set(x, y - 1, petal);
+    img.set(x - 1, y, petal);
+    img.set(x + 1, y, petal);
+    img.set(x, y + 1, mix(petal, P.ink, 0.25));
+    img.set(x, y, heart);
+    if (big) {
+      img.set(x - 1, y - 1, mix(petal, P.wax2, 0.3));
+      img.set(x + 1, y + 1, mix(petal, P.ink, 0.3));
+    }
+  };
+  /** A poppy: a cup of red, dark at its heart, lit on its rim. */
+  const poppy = (x: number, y: number) => {
+    img.rect(x, y, 2, 2, P.poppy);
+    img.set(x - 1, y, mix(P.poppy, P.ink, 0.3));
+    img.set(x + 2, y + 1, mix(P.poppy, P.ink, 0.4));
+    img.set(x, y - 1, mix(P.poppy, P.flame2, 0.35));
+    img.set(x + 1, y + 1, P.ink);
+    img.set(x, y + 2, BL.g1); // the stem
+  };
+
+  // 0-3 orchard grass: thick and green, clover, now and then a daisy or a buttercup
+  for (let v = 0; v < 4; v++) {
+    const [ox, oy] = at(v);
+    const r = rng(9000 + v);
+    img.rect(ox, oy, T, T, BL.g2);
+    speck(ox, oy, r, 14, BL.g1);
+    speck(ox, oy, r, 8, BL.g3);
+    speck(ox, oy, r, 3, BL.g0);
+    for (let i = 0; i < 3; i++) tuft(ox + 2 + Math.floor(r() * 12), oy + 4 + Math.floor(r() * 11), r, 2 + Math.floor(r() * 2));
+    if (v !== 3) clover(ox + 3 + Math.floor(r() * 9), oy + 3 + Math.floor(r() * 9));
+    if (v === 1) bloom(ox + 11, oy + 5, P.wax2, P.flame2);
+    if (v === 2) {
+      bloom(ox + 4, oy + 11, P.flame2, P.flame1);
+      img.set(ox + 12, oy + 3, P.blossom); // a petal blown from the trees
+    }
+  }
+  // 4-7 orchard path: packed warm earth, a few stones, fallen blossom
+  for (let v = 0; v < 4; v++) {
+    const [ox, oy] = at(4 + v);
+    const r = rng(9100 + v);
+    img.rect(ox, oy, T, T, BL.e2);
+    speck(ox, oy, r, 14, BL.e1);
+    speck(ox, oy, r, 10, BL.e3);
+    speck(ox, oy, r, 3, BL.e0);
+    for (let i = 0; i < 2; i++) {
+      const x = ox + 1 + Math.floor(r() * 12);
+      const y = oy + 1 + Math.floor(r() * 12);
+      img.rect(x, y, 2, 1, BL.s3); // a pebble
+      img.set(x, y + 1, BL.e0);
+    }
+    if (v === 1 || v === 3) {
+      img.set(ox + 5 + v, oy + 9, P.blossom);
+      img.set(ox + 6 + v, oy + 9, mix(P.blossom, P.wax2, 0.5));
+    }
+    if (v === 2) img.set(ox + 10, oy + 4, P.blossom);
+  }
+  // 8-11 meadow: grass crowded with flowers (poppies, daisies, cornflowers, buttercups)
+  for (let v = 0; v < 4; v++) {
+    const [ox, oy] = at(8 + v);
+    const r = rng(9200 + v);
+    img.rect(ox, oy, T, T, BL.g2);
+    speck(ox, oy, r, 12, BL.g1);
+    speck(ox, oy, r, 8, BL.g4);
+    for (let i = 0; i < 2; i++) tuft(ox + 2 + Math.floor(r() * 12), oy + 5 + Math.floor(r() * 10), r);
+    const spots: [number, number][] = [[3, 4], [10, 3], [6, 9], [12, 11], [2, 12]];
+    spots.forEach(([x, y], i) => {
+      const k = (i + v) % 4;
+      const px = ox + x + Math.floor(r() * 2);
+      const py = oy + y + Math.floor(r() * 2);
+      if (k === 0) poppy(px, py);
+      else if (k === 1) bloom(px, py, P.wax2, P.flame2, true);
+      else if (k === 2) bloom(px, py, P.violet3, P.violet1);
+      else bloom(px, py, P.flame2, P.honey);
+    });
+  }
+  // 12-13 lavender: rows of grey-green bushes crowned with violet spikes
+  for (let v = 0; v < 2; v++) {
+    const [ox, oy] = at(12 + v);
+    const r = rng(9300 + v);
+    img.rect(ox, oy, T, T, mix(BL.g1, P.stone2, 0.35));
+    speck(ox, oy, r, 10, BL.g0);
+    for (let i = 0; i < 7; i++) {
+      const x = ox + 1 + ((i * 5 + v * 2) % 14) + Math.floor(r() * 2);
+      const y = oy + 5 + Math.floor(r() * 10);
+      const h = 3 + Math.floor(r() * 3);
+      img.vline(x, y - h + 1, h, mix(BL.g2, P.stone3, 0.3)); // stem
+      img.vline(x, y - h - 2, 3, P.violet2); // the spike of flowers
+      img.set(x, y - h - 2, P.violet3);
+      img.set(x + 1, y - h - 1, P.violet1);
+    }
+  }
+  // 14-15 honey: a glossy amber pool from a broken hive, wax flecks floating in it (it slows you)
+  for (let v = 0; v < 2; v++) {
+    const [ox, oy] = at(14 + v);
+    const r = rng(9400 + v);
+    img.rect(ox, oy, T, T, BL.h1);
+    speck(ox, oy, r, 10, BL.h2);
+    speck(ox, oy, r, 5, BL.h0);
+    // long glossy streaks catching the light
+    for (let i = 0; i < 2; i++) {
+      const x = ox + 1 + Math.floor(r() * 9);
+      const y = oy + 2 + Math.floor(r() * 12);
+      img.hline(x, y, 4, BL.h3);
+      img.set(x + 1, y, P.wax2);
+      img.hline(x + 1, y + 1, 3, BL.h2);
+    }
+    if (v === 1) {
+      // a scrap of comb afloat
+      img.rect(ox + 9, oy + 9, 3, 2, P.wax1);
+      img.set(ox + 10, oy + 9, BL.h0);
+      img.hline(ox + 9, oy + 11, 3, BL.h0);
+    }
+  }
+  // 16-31 wall caps: the flowering hedgerow along the top of every wall, lit on its open edges
+  const foliage = (ox: number, oy: number, r: () => number, dark: boolean, blossoms: number) => {
+    img.rect(ox, oy, T, T, dark ? mix(BL.g0, P.ink, 0.3) : BL.g1);
+    for (let i = 0; i < 7; i++) {
+      // round clumps of leaves, lit on their upper left
+      const cx = ox + 1 + r() * 14;
+      const cy = oy + 1 + r() * 14;
+      const rr = 2 + r() * 2;
+      img.disc(cx, cy, rr, dark ? BL.g0 : BL.g2);
+      img.disc(cx - rr * 0.3, cy - rr * 0.3, rr * 0.55, dark ? BL.g1 : BL.g3);
+      if (!dark) img.set(cx - rr * 0.5, cy - rr * 0.6, BL.g4);
+    }
+    for (let i = 0; i < blossoms; i++) {
+      const x = ox + 1 + Math.floor(r() * 14);
+      const y = oy + 1 + Math.floor(r() * 14);
+      const c = [P.blossom, P.wax2, P.blossom, P.flame2][i % 4];
+      img.set(x, y, c);
+      img.set(x + 1, y, mix(c, P.ink, 0.35));
+    }
+  };
+  for (let mask = 0; mask < 16; mask++) {
+    const [ox, oy] = at(16 + mask);
+    const r = rng(9500 + mask);
+    foliage(ox, oy, r, false, 3);
+    const N = mask & 1, E = mask & 2, S = mask & 4, W = mask & 8;
+    // open edges: the hedge's rounded, sunlit rim over the drop
+    if (N) {
+      img.hline(ox, oy, T, BL.g4);
+      img.hline(ox, oy + 1, T, BL.g3);
+      for (let x = 0; x < T; x += 3) img.set(ox + x + Math.floor(r() * 2), oy, BL.g5);
+    }
+    if (W) {
+      img.vline(ox, oy, T, BL.g4);
+      img.vline(ox + 1, oy, T, BL.g3);
+    }
+    if (S) {
+      img.hline(ox, oy + 14, T, BL.g1);
+      img.hline(ox, oy + 15, T, BL.g0);
+      for (let x = 0; x < T; x += 2) if (r() < 0.6) img.set(ox + x, oy + 15, P.ink); // leaves hanging over
+    }
+    if (E) {
+      img.vline(ox + 15, oy, T, BL.g0);
+      img.vline(ox + 14, oy, T, BL.g1);
+    }
+  }
+  shadeTiles(img, 32, 0.85);
+  // 40-43 wall faces: dry-stone walling in honey-coloured limestone, and what grows on it
+  const stones = (ox: number, oy: number, r: () => number, charred = false) => {
+    const S0 = charred ? mix(BL.a0, P.ink, 0.4) : BL.s0;
+    const cols = charred ? [mix(BL.a1, P.ink, 0.35), BL.a1, mix(BL.a1, BL.a2, 0.5), BL.a2] : [BL.s1, BL.s2, BL.s2, BL.s3];
+    img.rect(ox, oy, T, T, S0);
+    let y = 0;
+    let row = 0;
+    while (y < 14) {
+      const h = row === 0 ? 3 : 3 + Math.floor(r() * 2);
+      let x = -Math.floor(r() * 4);
+      while (x < T) {
+        const w = 4 + Math.floor(r() * 4);
+        const base = cols[Math.floor(r() * cols.length)];
+        for (let yy = 0; yy < h - 1; yy++)
+          for (let xx = 1; xx < w; xx++) {
+            const px = x + xx;
+            if (px < 0 || px >= T) continue;
+            const edgeTop = yy === 0;
+            const edgeLeft = xx === 1;
+            const edgeBot = yy === h - 2;
+            img.set(ox + px, oy + y + yy, edgeTop ? mix(base, charred ? BL.a3 : BL.s4, 0.5) : edgeLeft ? mix(base, charred ? BL.a3 : BL.s4, 0.25) : edgeBot ? mix(base, S0, 0.35) : base);
+          }
+        if (r() < 0.3 && x + 2 >= 0 && x + 2 < T) img.set(ox + x + 2 + Math.floor(r() * (w - 3)), oy + y + 1, mix(base, S0, 0.5)); // a pit in the stone
+        x += w;
+      }
+      y += h;
+      row++;
+    }
+    // the foot of the wall, in shadow
+    img.hline(ox, oy + 14, T, S0);
+    img.hline(ox, oy + 15, T, P.ink);
+  };
+  const faces: [number, string][] = [[40, 'plain'], [41, 'rose'], [42, 'ivy'], [43, 'bole']];
+  for (const [idx, kind] of faces) {
+    const [ox, oy] = at(idx);
+    const r = rng(9600 + idx);
+    stones(ox, oy, r);
+    if (kind === 'rose') {
+      // a climbing rose: a thorny cane, leaves, and flowers
+      line(img, ox + 3, oy + 15, ox + 6, oy + 2, BL.g0);
+      line(img, ox + 6, oy + 6, ox + 12, oy + 3, BL.g0);
+      for (const [x, y] of [[4, 11], [6, 5], [9, 4], [5, 8], [11, 3]]) {
+        img.set(ox + x, oy + y, BL.g3);
+        img.set(ox + x + 1, oy + y, BL.g2);
+      }
+      for (const [x, y, c] of [[7, 3, P.poppy], [12, 2, P.blossom], [4, 7, P.poppy], [10, 5, P.blossom]] as const) {
+        img.rect(ox + x, oy + y, 2, 2, c);
+        img.set(ox + x, oy + y, mix(c, P.wax2, 0.4));
+        img.set(ox + x + 1, oy + y + 1, mix(c, P.ink, 0.4));
+      }
+    }
+    if (kind === 'ivy') {
+      for (let i = 0; i < 20; i++) {
+        const x = ox + 2 + Math.floor(r() * 12);
+        const y = oy + Math.floor(Math.pow(r(), 0.6) * 13);
+        img.set(x, y, i % 3 ? BL.g2 : BL.g3);
+        img.set(x + 1, y + 1, BL.g0);
+      }
+    }
+    if (kind === 'bole') {
+      // a bee bole: an arched niche in the wall holding a straw skep, bees at its door
+      img.rect(ox + 3, oy + 4, 10, 10, P.ink);
+      img.hline(ox + 4, oy + 3, 8, P.ink);
+      img.hline(ox + 3, oy + 13, 10, BL.s3); // its sill
+      const straw = [mix(P.wood2, P.flame1, 0.35), mix(P.wax1, P.flame1, 0.35), mix(P.wax1, P.flame2, 0.3)];
+      for (let yy = 0; yy < 8; yy++) {
+        const half = Math.round(4.2 * Math.sqrt(Math.max(0, 1 - ((7 - yy) / 8.5) ** 2)));
+        for (let xx = -half; xx <= half; xx++) {
+          const coil = yy % 2 === 0;
+          const lit = xx < 0;
+          img.set(ox + 8 + xx, oy + 5 + yy, coil ? (lit ? straw[2] : straw[1]) : lit ? straw[1] : straw[0]);
+        }
+      }
+      img.rect(ox + 7, oy + 11, 2, 2, P.ink); // the entrance
+      img.set(ox + 10, oy + 9, P.flame2); // a bee
+      img.set(ox + 5, oy + 7, P.flame2);
+    }
+  }
+  // 44-45 honeycomb paving: six-sided flags of honey-stone in a comb, some cells stained with honey
+  for (let v = 0; v < 2; v++) {
+    const [ox, oy] = at(44 + v);
+    const r = rng(9700 + v);
+    const joint = mix(BL.s0, BL.h0, 0.3);
+    img.rect(ox, oy, T, T, BL.s2);
+    for (let row = 0; row < 4; row++) {
+      const y0 = row * 4;
+      const off = row % 2 ? 4 : 0;
+      for (let col = -1; col < 3; col++) {
+        const x0 = col * 8 + off;
+        const stain = r() < 0.18;
+        for (let yy = 0; yy < 4; yy++)
+          for (let xx = 0; xx < 8; xx++) {
+            const px = x0 + xx;
+            if (px < 0 || px >= T) continue;
+            // cut corners make each flag six-sided
+            const corner = (yy === 0 || yy === 3) && (xx === 0 || xx === 7);
+            const c = yy === 0 || xx === 0 || corner ? joint : yy === 1 && xx < 6 ? (stain ? BL.h3 : BL.s3) : stain ? BL.h2 : BL.s2;
+            img.set(ox + px, oy + y0 + yy, c);
+          }
+      }
+    }
+    speck(ox, oy, r, 4, BL.s1);
+  }
+  // 46-47 ash: the burned grove's floor, grey and black, still glowing here and there
+  for (let v = 0; v < 2; v++) {
+    const [ox, oy] = at(46 + v);
+    const r = rng(9800 + v);
+    img.rect(ox, oy, T, T, BL.a1);
+    speck(ox, oy, r, 16, BL.a2);
+    speck(ox, oy, r, 10, BL.a0);
+    speck(ox, oy, r, 4, BL.a3);
+    for (let i = 0; i < 2; i++) {
+      const x = ox + 1 + Math.floor(r() * 11);
+      const y = oy + 2 + Math.floor(r() * 12);
+      img.hline(x, y, 3 + Math.floor(r() * 3), P.ink); // a burnt twig
+      img.set(x + 1, y - 1, BL.a0);
+    }
+    if (v === 1) {
+      img.set(ox + 6, oy + 6, P.ember);
+      img.set(ox + 7, oy + 6, mix(P.ember, P.flame1, 0.5));
+    }
+  }
+  // 48-63 honey's lip: an amber edge spreading onto the ground, dark where it soaks in
+  fringeTiles(48, 4, 9900, (x, y, d, r) => {
+    if (d < 0.55) img.set(x, y, d < 0.2 && r() < 0.2 ? BL.h3 : BL.h2);
+    else if (d < 0.8) img.set(x, y, BL.h1);
+    else if (r() < 0.6) img.set(x, y, BL.h0);
+  });
+  // 64-79 the path's worn edge fraying into the grass
+  fringeTiles(64, 3, 10000, (x, y, d, r) => {
+    if (d > 0.6 ? r() < 0.5 : r() < 0.12) return;
+    img.set(x, y, d < 0.4 ? BL.e2 : r() < 0.5 ? BL.e3 : BL.e1);
+  });
+  // 80-95 meadow flowers spilling over their bed's edge
+  fringeTiles(80, 3, 10100, (x, y, d, r) => {
+    if (r() < 0.55 + d * 0.3) return;
+    const c = [P.poppy, P.wax2, P.violet3, P.flame2, BL.g4, BL.g3][Math.floor(r() * 6)];
+    img.set(x, y, c);
+  });
+  // 96-97 rock (outside the rooms): deep orchard canopy, dark, a blossom here and there
+  for (let v = 0; v < 2; v++) {
+    const [ox, oy] = at(96 + v);
+    foliage(ox, oy, rng(10200 + v), true, 1);
+  }
+  // 98-99 floorboards (the press house)
+  for (let v = 0; v < 2; v++) {
+    const [ox, oy] = at(98 + v);
+    const r = rng(10300 + v);
+    const wood = [mix(P.wood1, P.wood2, 0.4), mix(P.wood1, P.wood2, 0.65), P.wood2];
+    for (let b = 0; b < 4; b++) {
+      const c = wood[(b + v) % 3];
+      img.rect(ox, oy + b * 4, T, 4, c);
+      img.hline(ox, oy + b * 4, T, mix(c, P.wax1, 0.2));
+      img.hline(ox, oy + b * 4 + 3, T, mix(P.wood1, P.dark1, 0.5));
+      const seam = (b * 7 + v * 5) % 16;
+      img.vline(ox + seam, oy + b * 4, 3, mix(P.wood1, P.dark1, 0.5));
+      img.set(ox + ((seam + 3) % 16), oy + b * 4 + 1, P.dark1); // a nail
+      for (let i = 0; i < 2; i++) img.hline(ox + Math.floor(r() * 12), oy + b * 4 + 1 + Math.floor(r() * 2), 3, mix(c, P.wood1, 0.4)); // grain
+    }
+  }
+  // 100-101 charred wall faces (the burned grove's walls), soot streaking up from the ground
+  for (let v = 0; v < 2; v++) {
+    const [ox, oy] = at(100 + v);
+    const r = rng(10400 + v);
+    stones(ox, oy, r, true);
+    for (let i = 0; i < 4; i++) {
+      const x = ox + 1 + Math.floor(r() * 14);
+      img.vline(x, oy + 6 + Math.floor(r() * 5), 8, mix(P.ink, BL.a0, 0.4));
+    }
+    if (v === 1) img.set(ox + 9, oy + 12, P.ember);
+  }
+  // 102 a wall face with a candle niche (a beeswax taper still burning in it): glows
+  {
+    const [ox, oy] = at(102);
+    stones(ox, oy, rng(10500));
+    img.rect(ox + 5, oy + 4, 6, 8, P.ink);
+    img.hline(ox + 6, oy + 3, 4, P.ink);
+    img.hline(ox + 5, oy + 12, 6, BL.s3);
+    img.rect(ox + 7, oy + 8, 2, 4, mix(P.wax2, P.honey, 0.25)); // a beeswax taper, golden
+    img.set(ox + 8, oy + 9, P.honey);
+    img.set(ox + 7, oy + 7, P.dark1);
+    img.set(ox + 7, oy + 6, P.flame2);
+    img.set(ox + 7, oy + 5, P.flame1);
+    img.set(ox + 6, oy + 11, mix(P.wax2, P.honey, 0.3)); // a drip
+  }
+  // 103-104 warm flagstones (the chapel, the press yard)
+  const flags: SlabPal = { base: BL.s2, mortar: BL.s0, hi: BL.s4, lo: BL.s1 };
+  for (const v of [103, 104]) {
+    const [ox, oy] = at(v);
+    const r = rng(10600 + v);
+    if (v === 103) {
+      flagstone(img, ox, oy, 0, 0, 9, 7, r, flags, 0.1);
+      flagstone(img, ox, oy, 9, 0, 7, 7, r, flags, -0.15);
+      flagstone(img, ox, oy, 0, 7, 16, 9, r, flags);
+    } else {
+      flagstone(img, ox, oy, 0, 0, 16, 6, r, flags, -0.1);
+      flagstone(img, ox, oy, 0, 6, 6, 10, r, flags, 0.15);
+      flagstone(img, ox, oy, 6, 6, 10, 10, r, flags);
+    }
+    if (v === 104) img.set(ox + 3, oy + 3, BL.g3); // moss in a joint
+  }
+
+  sheet('tiles_orchard', img, {
+    cell: [T, T],
+    pivot: [0, 0],
+    layer: 'tiles',
+    tiles: {
+      floor: [0, 0, 0, 1, 2, 3, 0, 1],
+      floor_path: [4, 4, 5, 6, 7],
+      floor_flowers: [8, 9, 10, 11],
+      floor_lavender: [12, 13],
+      floor_honey: [14, 14, 15],
+      floor_comb: [44, 45],
+      floor_ash: [46, 46, 47],
+      floor_plank: [98, 99],
+      floor_stone: [103, 104],
+      wall_front: [40, 40, 42, 40, 41, 40, 42, 43, 40, 40, 41, 102],
+      wall_front_floor_ash: [100, 101],
+      wall_cap: Array.from({ length: 16 }, (_, i) => 16 + i),
+      rock: [96, 97],
+      shade: Array.from({ length: 8 }, (_, i) => 32 + i),
+      fringe_floor_honey: Array.from({ length: 16 }, (_, i) => 48 + i),
+      fringe_floor_flowers: Array.from({ length: 16 }, (_, i) => 80 + i),
+      fringe_floor_path: Array.from({ length: 16 }, (_, i) => 64 + i),
+      glow: [102],
+    },
+  });
+}
+
+function genBloom() {
+  genOrchardTiles();
+}
+
 genPlayer();
 genWeapons();
 genMisc();
@@ -8917,6 +9368,7 @@ genWorks();
 genMire();
 genNave();
 genVault();
+genBloom();
 genFont();
 console.log(
   ONLY

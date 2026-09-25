@@ -23,5 +23,14 @@
   "steel1": "#8893a0",
   "steel2": "#ccd6dc",
   "cyan": "#6fd6e0",
-  "white": "#ffffff"
+  "white": "#ffffff",
+  "leaf1": "#2f5a2e",
+  "leaf2": "#4f8a3a",
+  "leaf3": "#8cbf4f",
+  "violet1": "#3e3266",
+  "violet2": "#6a5aa8",
+  "violet3": "#a996d8",
+  "poppy": "#d9432f",
+  "honey": "#e8a93a",
+  "blossom": "#f2c2d0"
 }
