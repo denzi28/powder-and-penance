@@ -1,0 +1,20 @@
+{
+  "id": "beekeepers_veil",
+  "name": "Beekeeper's Veil",
+  "slot": "head",
+  "weight": 0.8,
+  "absorb": 0.03,
+  "poise": 0,
+  "icon": 58,
+  "description": "A wide straw hat and a fall of dark netting. Bees walk over it and find no way in.",
+  "effect": "Bee stings hurt you half as much",
+  "mods": {
+    "stings": 0.5
+  },
+  "ramp": [
+    "#3a2e3d",
+    "#6b5a3a",
+    "#b08a4a",
+    "#e0c27a"
+  ]
+}

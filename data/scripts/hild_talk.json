@@ -1,0 +1,288 @@
+{
+  "id": "hild_talk",
+  "steps": [
+    {
+      "if": "!hild_met",
+      "then": [
+        {
+          "say": "Stop there. Slowly. Let me see your hands.",
+          "who": "hild"
+        },
+        {
+          "say": "She pulls off a glove and takes your wrist. Her fingers are sticky with honey and, under that, warm."
+        },
+        {
+          "say": "Warm. You're not one of theirs, then. The Synod's men are cold to the elbow by the time they get this far.",
+          "who": "hild"
+        },
+        {
+          "say": "I'm Hild. This was my press house, and the orchard was my father's, and the bees were everybody's until the Synod decided they were heresy.",
+          "who": "hild"
+        },
+        {
+          "say": "Beeswax burns clean, you see. Honey-sweet. It doesn't need anybody rendered down to make it. The Abbey couldn't have that.",
+          "who": "hild"
+        },
+        {
+          "say": "The bees remember who burned them, and they don't know you from a Synod man. Take this. A puff of smoke and they forget what they were angry about.",
+          "who": "hild"
+        },
+        {
+          "give": "gear_smoker"
+        },
+        {
+          "say": "And one of these. Beeswax. Hold it up where the Synod sealed the old ways with tallow and watch the seals weep.",
+          "who": "hild"
+        },
+        {
+          "give": "cache_beeswax_one"
+        },
+        {
+          "set": "hild_met"
+        }
+      ],
+      "else": [
+        {
+          "if": "boss:hive_queen",
+          "then": [
+            {
+              "say": "It's quiet out there. I keep waiting for the hum to come back.",
+              "who": "hild"
+            }
+          ],
+          "else": [
+            {
+              "say": "Mind the hives. And your smoker. Both, ideally.",
+              "who": "hild"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "menu": [
+        {
+          "text": "Show me what you have. (Shop)",
+          "do": [
+            {
+              "if": "!hild_shop_open",
+              "then": [
+                {
+                  "say": "Candles, comb and smoke. It's what the orchard ever made, and all I have left to make.",
+                  "who": "hild"
+                },
+                {
+                  "say": "Tallow for payment, mind. I hate the stuff. But it's the only coin anyone carries now.",
+                  "who": "hild"
+                },
+                {
+                  "set": "hild_shop_open"
+                }
+              ],
+              "else": [
+                {
+                  "say": "Everything's fresh. Well. Everything's honey. Honey doesn't go off.",
+                  "who": "hild"
+                }
+              ]
+            },
+            {
+              "open": "apiary"
+            }
+          ],
+          "end": true
+        },
+        {
+          "text": "I read a letter you wrote. To M.",
+          "when": [
+            "note:note_orchard_letter",
+            "!hild_gave_letter",
+            "!key:hild_letter"
+          ],
+          "do": [
+            {
+              "say": "...Where did you find that?",
+              "who": "hild"
+            },
+            {
+              "say": "The road. Of course. I gave it to a carter going up to the Abbey. I suppose the carter didn't make it.",
+              "who": "hild"
+            },
+            {
+              "say": "M. is my sister. Maud, she was, before the Order gave her a new name. Sister Maudlin. She keeps a shrine somewhere below the Abbey.",
+              "who": "hild"
+            },
+            {
+              "say": "Twenty years and not a word back. I stopped expecting one. I never stopped writing.",
+              "who": "hild"
+            },
+            {
+              "say": "She goes to the press and comes back with another letter, the ink still soft."
+            },
+            {
+              "say": "If you're going back that way, take her this. You needn't wait for an answer. She won't give one.",
+              "who": "hild"
+            },
+            {
+              "give": "hild_letter"
+            },
+            {
+              "set": "hild_gave_letter"
+            }
+          ]
+        },
+        {
+          "text": "Do you have a sister?",
+          "when": [
+            "!note:note_orchard_letter",
+            "!hild_gave_letter",
+            "!key:hild_letter"
+          ],
+          "do": [
+            {
+              "say": "Had. Have. She went up to the Abbey when we were girls and came back a Sister of the Wick. Maudlin, they call her now.",
+              "who": "hild"
+            },
+            {
+              "say": "Here. I write to her anyway. If you're going back that way, take her this.",
+              "who": "hild"
+            },
+            {
+              "give": "hild_letter"
+            },
+            {
+              "set": "hild_gave_letter"
+            }
+          ]
+        },
+        {
+          "text": "Maudlin sent a reply. (Give it to her)",
+          "when": [
+            "key:maudlin_reply",
+            "!hild_read_reply"
+          ],
+          "do": [
+            {
+              "say": "She sent a... Give it here. Give it here.",
+              "who": "hild"
+            },
+            {
+              "say": "She breaks the grey seal with her thumb. Inside is a single short page, and wrapped in it, a stub of yellow candle."
+            },
+            {
+              "say": "That's Mother's wax. From the old skep behind the house. She's kept it twenty years. In the Abbey. Where tallow is the only holy thing.",
+              "who": "hild"
+            },
+            {
+              "wait": 30
+            },
+            {
+              "say": "She says she's sorry. She says she's not coming home, not while the Wick still burns, and I'm not to come up after her.",
+              "who": "hild"
+            },
+            {
+              "say": "She says... she says to give you something for your trouble. Bossy. She was always bossy.",
+              "who": "hild"
+            },
+            {
+              "say": "This was hers. Bitter salt from the old chapel. It makes a phial stronger. She meant it for me, I think, and I've no use for it.",
+              "who": "hild"
+            },
+            {
+              "give": "bitter_salt"
+            },
+            {
+              "say": "I'll open the good cellar for you, too. Mead and comb, the way we used to sell it on feast days. For M.",
+              "who": "hild"
+            },
+            {
+              "set": "hild_read_reply"
+            }
+          ]
+        },
+        {
+          "text": "What happened to Bloomhollow?",
+          "do": [
+            {
+              "say": "The Wax Synod came in the spring with a decree and a cart of pitch. Beeswax was a false light, they said. Only the Abbey's tallow is blessed.",
+              "who": "hild"
+            },
+            {
+              "say": "They burned the east grove first, with the hives still in the trees. Then they sealed the cellars and the chapel ways with tallow, so no one could hide wax from them.",
+              "who": "hild"
+            },
+            {
+              "say": "The beekeepers who stayed... You've seen them. Veils on, smokers going, still tending hives that aren't there. The Drip got into them while they grieved.",
+              "who": "hild"
+            }
+          ]
+        },
+        {
+          "text": "What is the Great Skep?",
+          "do": [
+            {
+              "say": "The oldest hive in the valley. Big as a barn, woven by our grandmothers' grandmothers. The queen in it is older than the chapel.",
+              "who": "hild"
+            },
+            {
+              "if": "!boss:hive_queen",
+              "then": [
+                {
+                  "say": "When the Synod came for her, Mother Aldith, who kept the chapel, went into the Skep and wouldn't come out. That was spring.",
+                  "who": "hild"
+                },
+                {
+                  "say": "Something still comes out of it. It wears her dress. I don't go south of the chapel any more.",
+                  "who": "hild"
+                }
+              ],
+              "else": [
+                {
+                  "say": "Whatever was left of Aldith is at rest now. I hope the bees are too.",
+                  "who": "hild"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "text": "The Queen is dead.",
+          "when": [
+            "boss:hive_queen",
+            "!hild_heard_queen"
+          ],
+          "do": [
+            {
+              "say": "Dead. And Aldith with her?",
+              "who": "hild"
+            },
+            {
+              "say": "She's quiet for a long while."
+            },
+            {
+              "say": "Good. She wouldn't have wanted to be kept like that. None of us would.",
+              "who": "hild"
+            },
+            {
+              "say": "The bees will scatter now, find hollow trees, start again. They always do. It's more than the rest of us manage.",
+              "who": "hild"
+            },
+            {
+              "set": "hild_heard_queen"
+            }
+          ]
+        },
+        {
+          "text": "Leave",
+          "end": true,
+          "do": [
+            {
+              "say": "Keep your smoker lit.",
+              "who": "hild"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

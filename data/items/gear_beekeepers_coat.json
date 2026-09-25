@@ -1,0 +1,11 @@
+{
+  "id": "gear_beekeepers_coat",
+  "name": "Beekeeper's Coat",
+  "icon": 59,
+  "description": "Thick cream linen, scorched along the hem.",
+  "effect": {
+    "type": "gear",
+    "kind": "armour",
+    "id": "beekeepers_coat"
+  }
+}

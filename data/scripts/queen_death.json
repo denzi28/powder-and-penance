@@ -1,0 +1,20 @@
+{
+  "id": "queen_death",
+  "steps": [
+    { "camera": "enemy:queen_swarm", "ticks": 45 },
+    { "wait": 20 },
+    { "say": "The swarm comes apart. For a moment the bees hang in the shape of a woman, and then they are only bees, lifting away through the holes in the Skep." },
+    { "say": "Something is left in the comb where they were. Not a monster. An old woman in a chapel habit, gold with pollen." },
+    { "say": "...Is it spring?", "who": "aldith" },
+    { "say": "They came with pitch for the hives. I told the girls, go in, go in, I'll stay with the Queen. And she took me in instead.", "who": "aldith" },
+    { "say": "She kept me. Kept me warm when the Drip came for the rest. I thought it was mercy. Then I couldn't tell her humming from my own.", "who": "aldith" },
+    { "wait": 30 },
+    { "say": "Tell Hild the bees are free. Tell her... it wasn't the Synod that beat us. We just forgot how to let things end.", "who": "aldith" },
+    { "say": "Her hand opens. In it is a ring set with a drop of amber, and in the amber, a single bee." },
+    { "wait": 40 },
+    { "say": "The humming stops." },
+    { "give": "ring_of_the_queen" },
+    { "set": "queen_rests" },
+    { "camera": "player", "ticks": 45 }
+  ]
+}

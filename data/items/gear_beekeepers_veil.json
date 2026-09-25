@@ -1,0 +1,11 @@
+{
+  "id": "gear_beekeepers_veil",
+  "name": "Beekeeper's Veil",
+  "icon": 58,
+  "description": "A straw hat and a fall of dark netting.",
+  "effect": {
+    "type": "gear",
+    "kind": "armour",
+    "id": "beekeepers_veil"
+  }
+}

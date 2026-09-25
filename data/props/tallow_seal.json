@@ -1,0 +1,12 @@
+{
+  "id": "tallow_seal",
+  "name": "Tallow Seal",
+  "sprite": "prop_seal",
+  "hp": 999,
+  "radius": 6,
+  "hurtbox": { "w": 16, "h": 16, "offsetY": -6 },
+  "debris": "wax1",
+  "sfx": "wax_spill",
+  "secretWall": true,
+  "melts": { "near": 30 }
+}

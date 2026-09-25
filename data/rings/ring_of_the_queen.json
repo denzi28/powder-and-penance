@@ -1,0 +1,10 @@
+{
+  "id": "ring_of_the_queen",
+  "name": "Ring of the Queen",
+  "icon": 60,
+  "effect": "A backstab or riposte heals you 40 HP",
+  "mods": {
+    "critHeal": 40
+  },
+  "description": "A band of gold set with a drop of amber, a worker bee asleep inside it. The queen fed on what she took from behind; so, now, do you."
+}

@@ -1,0 +1,119 @@
+{
+  "id": "bloom_03_hive_walls",
+  "area": "bloom",
+  "origin": [33, 15],
+  "legend": {
+    "#": "wall",
+    ".": "floor",
+    "=": "floor_path",
+    ",": "floor_flowers",
+    "l": "floor_lavender",
+    "~": "floor_honey",
+    "h": "floor_comb",
+    "a": "floor_ash",
+    "p": "floor_plank",
+    ":": "floor_stone",
+    " ": "void"
+  },
+  "tiles": [
+    "########################",
+    "#,,,,,,,,,,,,,,,,,,,,,,#",
+    "#,,,,,,,,,,,,,,,,,,,,,,#",
+    "#,,,,,,,,,,,,,,,,,,,,,,#",
+    "#,,,,,,,,,,,,,,,,,,,,,,#",
+    "################.......#",
+    "#......................#",
+    "#......................#",
+    ".============..........#",
+    ".============..........#",
+    "#......................#",
+    "#.......################",
+    "#.........===..........#",
+    "#.........===..........#",
+    "#.........===..........#",
+    "#.........===..........#",
+    "#.........===..........#",
+    "###########..###########"
+  ],
+  "entities": [
+    {
+      "type": "prop",
+      "kind": "hive",
+      "at": [3, 3]
+    },
+    {
+      "type": "prop",
+      "kind": "hive",
+      "at": [7, 3]
+    },
+    {
+      "type": "prop",
+      "kind": "hive",
+      "at": [11, 3]
+    },
+    {
+      "type": "prop",
+      "kind": "hive",
+      "at": [18, 7]
+    },
+    {
+      "type": "prop",
+      "kind": "hive",
+      "at": [20, 13]
+    },
+    {
+      "type": "prop",
+      "kind": "hive",
+      "at": [4, 14]
+    },
+    {
+      "type": "decor",
+      "kind": "skep_bench",
+      "at": [15, 3]
+    },
+    {
+      "type": "decor",
+      "kind": "skep_bench",
+      "at": [6, 9]
+    },
+    {
+      "type": "decor",
+      "kind": "hive_box",
+      "at": [21, 9]
+    },
+    {
+      "type": "decor",
+      "kind": "frame_stack",
+      "at": [3, 7]
+    },
+    {
+      "type": "decor",
+      "kind": "hollyhocks",
+      "at": [17, 1]
+    },
+    {
+      "type": "enemy",
+      "kind": "beekeeper_husk",
+      "at": [12, 8],
+      "facing": "W"
+    },
+    {
+      "type": "enemy",
+      "kind": "beekeeper_husk",
+      "at": [16, 14],
+      "facing": "W"
+    },
+    {
+      "type": "enemy",
+      "kind": "orchard_guard",
+      "at": [19, 3],
+      "facing": "S"
+    },
+    {
+      "type": "item",
+      "id": "bloom_veil",
+      "item": "gear_beekeepers_veil",
+      "at": [21, 2]
+    }
+  ]
+}

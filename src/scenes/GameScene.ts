@@ -908,8 +908,8 @@ export class GameScene extends Phaser.Scene {
         const x = at.x + Math.cos(a) * d;
         const y = at.y + Math.sin(a) * d * 0.7;
         if (this.grid.isSolid(Math.floor(x / TILE), Math.floor(y / TILE))) continue;
-        this.pools.add(x, y, pl.radius, pl.ticks, pl.speedMult);
-        this.particles.burst(x, y, 4, -Math.PI / 2, Math.PI * 2, 8, 50, i % 2 ? 'wax1' : 'wax2', true);
+        this.pools.add(x, y, pl.radius, pl.ticks, pl.speedMult, pl.kind);
+        this.particles.burst(x, y, 4, -Math.PI / 2, Math.PI * 2, 8, 50, pl.kind === 'honey' ? (i % 2 ? 'honey' : 'flame2') : i % 2 ? 'wax1' : 'wax2', true);
       }
       this.bus.emit('sfx', { id: 'wax_spill', x: at.x, y: at.y });
     });

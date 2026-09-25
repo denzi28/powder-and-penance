@@ -1,0 +1,20 @@
+{
+  "id": "beekeepers_coat",
+  "name": "Beekeeper's Coat",
+  "slot": "body",
+  "weight": 4.5,
+  "absorb": 0.1,
+  "poise": 8,
+  "icon": 59,
+  "description": "Thick cream linen, honey-stained, scorched along the hem. The scarecrow wore it through the burning; the man who owned it did not come back for it.",
+  "effect": "Bee stings hurt you less (x0.6)",
+  "mods": {
+    "stings": 0.6
+  },
+  "ramp": [
+    "#5d5446",
+    "#9a8e74",
+    "#cdbf9c",
+    "#efe4c6"
+  ]
+}

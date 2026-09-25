@@ -322,7 +322,7 @@ function checkStory(data: {
   for (const [id, n] of Object.entries(data.npcs.npcs))
     if (!data.sfx.presets[n.voice.sfx]) errors.push(`data/npcs.json: "${id}" has unknown voice sound "${n.voice.sfx}"`);
   for (const [id, n] of Object.entries(data.npcs.npcs))
-    if (n.workSfx && !data.sfx.presets[n.workSfx]) errors.push(`data/npcs.json: "${id}" has unknown work sound "${n.workSfx}"`);
+    if (n.workSfx && !data.sfx.presets[n.workSfx] && !(S.LAYERED_SOUNDS as readonly string[]).includes(n.workSfx)) errors.push(`data/npcs.json: "${id}" has unknown work sound "${n.workSfx}"`);
   if (!data.sfx.presets[data.npcs.narration.sfx]) errors.push(`data/npcs.json: unknown narration voice sound "${data.npcs.narration.sfx}"`);
   return errors;
 }

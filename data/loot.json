@@ -1,5 +1,24 @@
 {
   "tables": {
+    "husk": [
+      { "weight": 7 },
+      { "weight": 2, "item": "honeycomb" },
+      { "weight": 1, "item": "smoke_pellet" },
+      { "weight": 0.5, "item": "beeswax_candle" }
+    ],
+    "guard": [
+      { "weight": 8 },
+      { "weight": 2, "item": "tallow_candle" },
+      { "weight": 1, "item": "throwing_knife", "count": 2 }
+    ],
+    "honey_slime": [
+      { "weight": 6 },
+      { "weight": 2, "item": "honeycomb" }
+    ],
+    "hive": [
+      { "weight": 1, "item": "honeycomb" },
+      { "weight": 1, "item": "honeycomb", "count": 2 }
+    ],
     "common_small": [
       { "weight": 5 },
       { "weight": 4, "tallow": [5, 15] },

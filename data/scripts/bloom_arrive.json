@@ -1,0 +1,28 @@
+{
+  "id": "bloom_arrive",
+  "skippable": true,
+  "steps": [
+    {"bars": true},
+    {"camera": "point:bloom_gate", "ticks": 70},
+    {"burst": "petals", "at": [5, 6], "count": 14},
+    {"burst": "petals", "at": [15, 9], "count": 12},
+    {"say": "Past the fallen gate the road turns to grass, and the air goes sweet. Blossom drifts on it. After the Works it is almost too much to breathe."},
+    {"actor": "husk", "sprite": "husk", "anim": "walk", "dir": "E", "at": [4, 10]},
+    {"move": "husk", "to": [8, 9], "ticks": 90, "anim": "walk", "face": true, "wait": true},
+    {"play": "husk", "anim": "puff", "dir": "NE"},
+    {"sfx": "e_husk_puff"},
+    {"burst": "smoke", "at": [9, 8], "count": 14},
+    {"wait": 40},
+    {"say": "A beekeeper in a veil puffs smoke at a hive stand that isn't there any more. Under the veil, something shines like wet candle."},
+    {"play": "husk", "anim": "walk", "dir": "W"},
+    {"move": "husk", "to": [3, 11], "ticks": 80, "face": true},
+    {"camera": "point:bloom_hive", "ticks": 50},
+    {"sfx": "e_buzz"},
+    {"wait": 30},
+    {"sfx": "e_buzz"},
+    {"say": "The hives still hum. Strike one and the bees come out angry, and they will not tell you from whoever burned their orchard."},
+    {"remove": "husk"},
+    {"camera": "player", "ticks": 45},
+    {"bars": false}
+  ]
+}

@@ -113,6 +113,30 @@
           ]
         },
         {
+          "text": "Do you know Bloomhollow?",
+          "when": ["boss:tollwarden", "!maudlin_read_letter"],
+          "do": [
+            { "say": "The orchard valley, past the collapsed gate on the road. I was born there. That was a long time ago and a different woman.", "who": "maudlin" },
+            { "say": "The Synod has been busy there, I hear. If you go, mind the bees. They were never gentle, even when things were good.", "who": "maudlin" }
+          ]
+        },
+        {
+          "text": "I bring a letter from Bloomhollow.",
+          "when": ["key:hild_letter", "!maudlin_read_letter"],
+          "do": [
+            { "say": "She sees the pressed blossom under the twine before she sees anything else, and sits down." },
+            { "say": "Hild. That's Hild's knot. She could never tie a proper one.", "who": "maudlin" },
+            { "say": "She reads it once, quickly, and then again very slowly." },
+            { "say": "She's still there. In the orchard, with the Synod at the gate and the Skep gone wrong. Of course she is. She's more stubborn than I ever was devout.", "who": "maudlin" },
+            { "say": "Twenty years I've let her write into silence. I told myself a Sister of the Wick has no family but the flame.", "who": "maudlin" },
+            { "wait": 30 },
+            { "say": "She takes something small from a fold of her habit, wraps it in a page, and seals the page with grey wax from the shrine." },
+            { "say": "Take her this. Don't read it. And don't let her come up here after me. Promise me that.", "who": "maudlin" },
+            { "give": "maudlin_reply" },
+            { "set": "maudlin_read_letter" }
+          ]
+        },
+        {
           "text": "Why are my hands warm?",
           "do": [
             { "say": "I don't know. And I'd rather not guess out loud. Keep your gloves on around the Order.", "who": "maudlin" }

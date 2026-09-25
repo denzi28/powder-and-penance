@@ -1,7 +1,7 @@
 {
   "volume": 0.11,
-  "bosses": {"tollwarden": "toll", "mire_matron": "lullaby", "mother_tallow": "work_song", "mother_bones": "unrendered", "chandler": "chorale", "chandler_wick": "last_candle", "master_gunner": "last_salute", "master_gunner_duel": "last_salute"},
-  "areas": {"road": "road", "hub": "rest", "mire": "mire", "works": "works", "abbey": "abbey", "vault": "vault"},
+  "bosses": {"tollwarden": "toll", "mire_matron": "lullaby", "mother_tallow": "work_song", "mother_bones": "unrendered", "chandler": "chorale", "chandler_wick": "last_candle", "master_gunner": "last_salute", "master_gunner_duel": "last_salute", "hive_queen": "queens_court", "queen_swarm": "the_swarm"},
+  "areas": {"road": "road", "hub": "rest", "mire": "mire", "works": "works", "abbey": "abbey", "vault": "vault", "bloom": "orchard"},
   "explore": {"volume": 0.035, "resumeAfter": 12},
   "themes": {
     "toll": {
@@ -356,6 +356,85 @@
         {"inst": "choir", "tag": "choir", "level": 2, "pattern": "x.......x.......", "notes": "1 5 8", "chord": true, "len": 8, "oct": 0, "vol": 0.55},
         {"inst": "brass", "tag": "lead", "level": 1, "oct": 0, "vol": 1.1, "melody": ["1:4 1:2 3:2 5:8", "5:4 6:2 5:2 3:8", "4:6 3:2 2:8", "5:12 r:4", "8:4 8:2 7:2 6:8", "5:4 6:2 5:2 3:8", "4:4 3:4 2:4 7-:4", "1:16"]},
         {"inst": "horn", "tag": "lead2", "level": 2, "oct": 1, "vol": 0.9, "melody": ["1:4 1:2 3:2 5:8", "5:4 6:2 5:2 3:8", "4:6 3:2 2:8", "5:12 r:4", "8:4 8:2 7:2 6:8", "5:4 6:2 5:2 3:8", "4:4 3:4 2:4 7-:4", "1:16"]}
+      ]
+    },
+    "orchard": {
+      "bpm": 88, "steps": 12, "root": 55, "scale": "major", "chords": [0, 3, 4, 0, 5, 3, 4, 0],
+      "form": [
+        {"bars": 8, "play": ["pad", "harp", "lead", "bass"]},
+        {"bars": 8, "play": []},
+        {"bars": 8, "play": ["pad", "harp", "lead2", "bass", "bird"]},
+        {"bars": 8, "play": []}
+      ],
+      "layers": [
+        {"inst": "strings", "tag": "pad", "pattern": "x...........", "notes": "1, 5, 1 3", "chord": true, "len": 12, "vol": 0.45, "rev": 0.7},
+        {"inst": "harp", "tag": "harp", "pattern": "x...x...x...", "notes": "1 5 8 3' 8 5", "oct": 0, "vol": 0.55, "rev": 0.6},
+        {"inst": "pluck", "tag": "bass", "pattern": "X...........", "notes": "1", "oct": -1, "len": 4, "vol": 0.6},
+        {"inst": "musicbox", "tag": "lead", "oct": 1, "vol": 0.7, "melody": ["5:6 6:2 5:4", "4:4 6:4 8:4", "7:6 6:2 5:4", "5:8 r:4", "6:4 8:4 6:4", "4:6 5:2 6:4", "5:4 4:4 2:4", "1:8 r:4"]},
+        {"inst": "celesta", "tag": "lead2", "oct": 1, "vol": 0.6, "melody": ["3:6 4:2 3:4", "1:4 4:4 6:4", "5:6 4:2 2:4", "3:8 r:4", "1:4 3:4 1:4", "6:6 5:2 4:4", "2:4 4:4 2:4", "1:8 r:4"]},
+        {"inst": "celesta", "tag": "bird", "oct": 2, "vol": 0.25, "pattern": "........x.x.", "notes": "5 8", "len": 1, "every": 2}
+      ]
+    },
+    "queens_court": {
+      "bpm": 150, "steps": 12, "root": 50, "scale": "phrygian", "chords": [0, 1, 0, "4M", 5, 1, "4M", 0],
+      "form": [
+        {"bars": 4, "play": ["pad", "harp", "hum", "bell"]},
+        {"bars": 4, "play": ["ost", "pad", "harp", "hum", "bass", "lperc", "riser", "roll"], "gap": 2},
+        {"bars": 8, "play": ["ost", "pad", "harp", "hum", "bass", "lperc", "perc", "lead", "choir", "hit", "crash"]},
+        {"bars": 4, "play": ["pad", "harp", "choir", "bell", "hum"]},
+        {"bars": 4, "play": ["ost", "pad", "harp", "hum", "bass", "lperc", "riser", "roll"], "gap": 2},
+        {"bars": 8, "play": ["ost", "pad", "harp", "hum", "bass", "lperc", "perc", "lead", "lead2", "choir", "hit", "crash"]}
+      ],
+      "layers": [
+        {"inst": "celesta", "tag": "ost", "pattern": "x.x.x.x.x.x.", "notes": "1 5 8 5 3' 5", "oct": 1, "hold": true, "vol": 0.55},
+        {"inst": "harp", "tag": "harp", "pattern": "x...x...x...", "notes": "1 5 8", "oct": 0, "hold": true, "vol": 0.7},
+        {"inst": "strings", "tag": "pad", "pattern": "x...........", "notes": "1, 5, 1 5", "chord": true, "len": 12, "hold": true, "vol": 0.6},
+        {"inst": "hum", "tag": "hum", "pattern": "x.....x.....", "notes": "1 5", "chord": true, "oct": -1, "len": 6, "hold": true, "vol": 0.5},
+        {"inst": "bass", "tag": "bass", "pattern": "X.......x...", "notes": "1", "oct": -1, "len": 3},
+        {"inst": "timpani", "tag": "lperc", "pattern": "X...........", "notes": "1", "oct": -1, "vol": 0.8},
+        {"inst": "drum", "tag": "perc", "level": 1, "pattern": "X...x...x...", "vol": 0.7},
+        {"inst": "snare", "tag": "perc", "level": 1, "pattern": "....x.x.x..x", "vol": 0.45},
+        {"inst": "hat", "tag": "perc", "level": 2, "pattern": "x.x.x.x.x.x.", "vol": 0.3},
+        {"inst": "bell", "tag": "bell", "pattern": "X...........", "notes": "1", "oct": 0, "len": 12, "every": 2, "hold": true, "vol": 0.45},
+        {"inst": "choir", "tag": "choir", "level": 1, "pattern": "x.....x.....", "notes": "1 5 8", "chord": true, "len": 6, "oct": 0, "vol": 0.5},
+        {"inst": "hit", "tag": "hit", "level": 1, "pattern": "X...........", "notes": "1, 5, 1 5 8", "chord": true, "every": 2, "vol": 0.8},
+        {"inst": "cymbal", "tag": "crash", "at": "first", "pattern": "x...........", "len": 1, "vol": 0.6},
+        {"inst": "drum", "tag": "crash", "at": "first", "pattern": "X...........", "vol": 1.0},
+        {"inst": "riser", "tag": "riser", "at": "last", "pattern": "x...........", "notes": "1", "oct": 0, "len": 10, "vol": 0.9},
+        {"inst": "roll", "tag": "roll", "at": "last", "pattern": "...x........", "len": 7, "vol": 0.9},
+        {"inst": "lead", "tag": "lead", "level": 1, "oct": 1, "vol": 0.75, "melody": ["5:6 4:2 5:4", "6:6 4:2 2:4", "1:4 3:4 5:4", "7+:6 5:2 2:4", "6:6 5:2 3:4", "4:6 2:2 1:4", "7+:6 2:2 5:4", "1:12"]},
+        {"inst": "horn", "tag": "lead2", "level": 2, "oct": 0, "vol": 0.85, "melody": ["5:6 4:2 5:4", "6:6 4:2 2:4", "1:4 3:4 5:4", "7+:6 5:2 2:4", "6:6 5:2 3:4", "4:6 2:2 1:4", "7+:6 2:2 5:4", "1:12"]}
+      ]
+    },
+    "the_swarm": {
+      "bpm": 184, "steps": 12, "root": 50, "scale": "minor", "chords": [0, 5, 3, "4M", 0, 6, 3, "4M"],
+      "form": [
+        {"bars": 4, "play": ["ost", "pad", "buzz", "bass", "lperc"]},
+        {"bars": 4, "play": ["ost", "pad", "buzz", "bass", "lperc", "riser", "roll"], "gap": 2},
+        {"bars": 8, "play": ["ost", "pad", "buzz", "bass", "lperc", "perc", "hit", "lead", "lead2", "choir", "crash"]},
+        {"bars": 4, "play": ["pad", "choir", "buzz", "bass", "bell"]},
+        {"bars": 4, "play": ["ost", "pad", "buzz", "bass", "lperc", "riser", "roll"], "gap": 2},
+        {"bars": 8, "play": ["ost", "pad", "buzz", "bass", "lperc", "perc", "hit", "lead", "lead2", "choir", "crash"]}
+      ],
+      "layers": [
+        {"inst": "spiccato", "tag": "ost", "pattern": "xxxxxxxxxxxx", "notes": "1 1 5 1 3 1", "oct": 0, "hold": true, "vol": 0.8},
+        {"inst": "strings", "tag": "pad", "pattern": "x...........", "notes": "1, 5, 1 5", "chord": true, "len": 12, "hold": true, "vol": 0.6},
+        {"inst": "hum", "tag": "buzz", "pattern": "x.....x.....", "notes": "1 5", "chord": true, "oct": 0, "len": 6, "hold": true, "vol": 0.55},
+        {"inst": "bass", "tag": "bass", "pattern": "X..x..X..x..", "notes": "1", "oct": -1, "len": 2},
+        {"inst": "drum", "tag": "lperc", "pattern": "X.....X.....", "vol": 0.8},
+        {"inst": "timpani", "tag": "perc", "level": 1, "pattern": "X.....x.....", "notes": "1 5,", "oct": -1, "vol": 0.85},
+        {"inst": "snare", "tag": "perc", "level": 1, "pattern": "...x.....x.x", "vol": 0.5},
+        {"inst": "drum", "tag": "perc", "level": 2, "pattern": "..x..x..x.xx", "vol": 0.55},
+        {"inst": "hat", "tag": "perc", "level": 2, "pattern": "xxxxxxxxxxxx", "vol": 0.28},
+        {"inst": "choir", "tag": "choir", "level": 1, "pattern": "x.....x.....", "notes": "1 5 8", "chord": true, "len": 6, "oct": 0, "vol": 0.6},
+        {"inst": "hit", "tag": "hit", "level": 1, "pattern": "X.....X.....", "notes": "1, 5, 1 5 8", "chord": true, "every": 2, "vol": 0.85},
+        {"inst": "bell", "tag": "bell", "pattern": "X...........", "notes": "1", "oct": 0, "len": 12, "every": 2, "hold": true, "vol": 0.45},
+        {"inst": "cymbal", "tag": "crash", "at": "first", "pattern": "x...........", "len": 1, "vol": 0.6},
+        {"inst": "drum", "tag": "crash", "at": "first", "pattern": "X...........", "vol": 1.0},
+        {"inst": "riser", "tag": "riser", "at": "last", "pattern": "x...........", "notes": "1", "oct": 0, "len": 10, "vol": 0.9},
+        {"inst": "roll", "tag": "roll", "at": "last", "pattern": "...x........", "len": 7, "vol": 0.9},
+        {"inst": "brass", "tag": "lead", "level": 1, "oct": 0, "vol": 1.0, "melody": ["8:6 7:3 5:3", "6:6 5:3 3:3", "4:4 6:4 8:4", "7+:6 5:6", "8:4 5:4 3:4", "7:6 5:3 4:3", "4:4 3:4 2:4", "7+:12"]},
+        {"inst": "lead", "tag": "lead2", "level": 2, "oct": 1, "vol": 0.7, "melody": ["8:6 7:3 5:3", "6:6 5:3 3:3", "4:4 6:4 8:4", "7+:6 5:6", "8:4 5:4 3:4", "7:6 5:3 4:3", "4:4 3:4 2:4", "7+:12"]}
       ]
     }
   }

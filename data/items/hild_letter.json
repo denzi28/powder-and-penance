@@ -1,0 +1,10 @@
+{
+  "id": "hild_letter",
+  "name": "Hild's Letter",
+  "icon": 62,
+  "description": "Folded small and tied with twine, a pressed blossom under the knot. Addressed to \"M., at the waystation below the Abbey\".",
+  "effect": {
+    "type": "quest",
+    "note": "Take it to Sister Maudlin at Wick's Rest."
+  }
+}

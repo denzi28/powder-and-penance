@@ -91,12 +91,13 @@ describe('gear in the world', () => {
     for (const g of all) expect(g.icon, g.id).toBeLessThan(iconCount);
   });
 
-  it('every armour piece, and every weapon but the starting two, can be found in a chest', () => {
+  it('every armour piece, and every weapon but the starting two, can be found in a chest or on a miniboss', () => {
     const inChests = new Set<string>();
     for (const r of Object.values(DATA.rooms))
       for (const en of r.entities) {
-        if (en.type !== 'item') continue;
-        const e = DATA.items[String(en.item)]?.effect;
+        const mb = en.type === 'enemy' ? (en.miniboss as { drop?: string } | undefined) : undefined;
+        if (en.type !== 'item' && !mb?.drop) continue;
+        const e = DATA.items[String(mb?.drop ?? en.item)]?.effect;
         if (e?.type === 'gear') inChests.add(e.id);
       }
     for (const id of Object.keys(DATA.armour)) expect(inChests.has(id), id).toBe(true);

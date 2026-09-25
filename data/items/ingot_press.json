@@ -1,0 +1,11 @@
+{
+  "id": "ingot_press",
+  "name": "Tallow Ingot x2",
+  "icon": 48,
+  "description": "Two ingots of hard tallow, hidden under the press house floor. Hild won't touch them.",
+  "effect": {
+    "type": "consumable",
+    "id": "tallow_ingot",
+    "count": 2
+  }
+}

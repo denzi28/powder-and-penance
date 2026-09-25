@@ -1,0 +1,159 @@
+{
+  "id": "beekeeper_husk",
+  "name": "Beekeeper Husk",
+  "ai": "melee",
+  "sprite": "husk",
+  "weaponSprite": "smoker",
+  "weaponRestDeg": 40,
+  "hp": 70,
+  "poise": {
+    "max": 24,
+    "resetTicks": 90
+  },
+  "tallow": 40,
+  "loot": "husk",
+  "speed": 42,
+  "strafeSpeed": 26,
+  "accelTicks": 7,
+  "turnDegPerTick": 6,
+  "collider": {
+    "w": 8,
+    "h": 5
+  },
+  "hurtbox": {
+    "w": 11,
+    "h": 18,
+    "offsetY": -10
+  },
+  "bodyRadius": 5,
+  "beeproof": true,
+  "perception": {
+    "halfAngleDeg": 70,
+    "nearDistance": 48,
+    "farDistance": 320,
+    "detectTicksNear": 20,
+    "detectTicksFar": 150,
+    "suspicionAt": 0.3,
+    "forgetPerTick": 0.004,
+    "investigateTicks": 200,
+    "reactionTicks": [
+      12,
+      20
+    ],
+    "loseTicks": 240
+  },
+  "leash": {
+    "distance": 380,
+    "healOnReturn": true
+  },
+  "spacing": {
+    "preferred": 34,
+    "strafeTicks": [
+      40,
+      90
+    ]
+  },
+  "attackGapTicks": [
+    24,
+    50
+  ],
+  "staggerTicks": 36,
+  "deathTicks": 44,
+  "corpseTicks": 120,
+  "blood": "wax1",
+  "steps": {
+    "sfx": "e_step_husk",
+    "volume": 0.5
+  },
+  "voice": {
+    "alert": "e_husk_alert",
+    "hurt": "e_husk_hurt",
+    "die": "e_husk_die"
+  },
+  "moves": [
+    {
+      "id": "puff",
+      "range": [
+        0,
+        60
+      ],
+      "weight": 3,
+      "cooldown": 170,
+      "strikes": [
+        {
+          "damage": 4,
+          "poise": 4,
+          "windup": 32,
+          "active": 8,
+          "recovery": 34,
+          "hitbox": {
+            "shape": "circle",
+            "radius": 18,
+            "offset": 22
+          },
+          "trackDegPerTick": 4,
+          "telegraph": {
+            "tick": 12,
+            "kind": "normal"
+          },
+          "smoke": {
+            "radius": 28,
+            "offset": 24,
+            "blind": 150,
+            "calm": true
+          },
+          "sweep": {
+            "fromDeg": -20,
+            "toDeg": 10,
+            "reach": 4
+          },
+          "windupSfx": "e_husk_pump",
+          "sfx": "e_husk_puff",
+          "anim": "puff"
+        }
+      ]
+    },
+    {
+      "id": "bash",
+      "range": [
+        0,
+        26
+      ],
+      "weight": 3,
+      "cooldown": 60,
+      "strikes": [
+        {
+          "damage": 16,
+          "poise": 18,
+          "windup": 22,
+          "active": 5,
+          "recovery": 26,
+          "hitbox": {
+            "shape": "arc",
+            "radius": 22,
+            "halfAngle": 60
+          },
+          "trackDegPerTick": 6,
+          "telegraph": {
+            "tick": 8,
+            "kind": "normal"
+          },
+          "lunge": {
+            "distance": 8,
+            "startTick": 19,
+            "ticks": 4
+          },
+          "sweep": {
+            "fromDeg": -120,
+            "toDeg": 40
+          },
+          "knockback": 80,
+          "hitstop": 3,
+          "shake": 0.12,
+          "sfx": "e_wick_swipe",
+          "anim": "bash"
+        }
+      ]
+    }
+  ]
+}

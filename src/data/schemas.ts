@@ -540,7 +540,7 @@ export const Step: z.ZodType<Step> = z.lazy(() =>
     z.object({ bubble: z.string(), over: Target, ticks: int.positive().optional() }).strict(),
     /** The whole screen flashes a colour (palette name or #hex). */
     z.object({ flash: z.string(), ticks: int.positive().optional(), peak: num.min(0).max(1).optional() }).strict(),
-    /** A burst of particles: dust, debris, sparks, flame, wax, blood, smoke, water, feathers. */
+    /** A burst of particles: dust, debris, sparks, flame, wax, blood, smoke, water, feathers, petals, honey. */
     z.object({ burst: z.string(), at: At, count: int.positive().optional() }).strict(),
     /** Hide / show "player", "npc:<placement>" or "decor:<kind>" while the scene plays (shown again at its end). */
     z.object({ hide: z.array(z.string()) }).strict(),
@@ -726,7 +726,7 @@ export const StrikeDef = z.object({
       poise: num.min(0).default(0),
       knockback: num.min(0).default(0),
       centre: z.boolean().default(false),
-      fx: z.enum(['spikes', 'wax', 'flame', 'water', 'ember']),
+      fx: z.enum(['spikes', 'wax', 'flame', 'water', 'ember', 'honey']),
       sfx: z.string().default('b_ground_slam'),
     })
     .optional(),
@@ -751,6 +751,8 @@ export const StrikeDef = z.object({
       at: z.enum(['self', 'target']).default('self'),
       ticks: int.positive(),
       speedMult: num.min(0.05).max(1).default(0.5),
+      /** Molten wax, or honey. */
+      kind: z.enum(['wax', 'honey']).default('wax'),
     })
     .optional(),
 });
@@ -1160,7 +1162,7 @@ export const AmbientDecor = z.object({
   moths: int.min(0).max(6).optional(),
 });
 export const CRITTERS = ['rat', 'crow', 'frog', 'cat', 'bat'] as const;
-export const AIR_FX = ['ash', 'dust', 'fireflies', 'soot', 'mist', 'leaves'] as const;
+export const AIR_FX = ['ash', 'dust', 'fireflies', 'soot', 'mist', 'leaves', 'petals', 'pollen'] as const;
 export const AmbientArea = z.object({
   /** Things drifting in the air over the view. */
   air: z.array(z.object({ fx: z.enum(AIR_FX), count: int.min(1).max(80) })).default([]),
@@ -1176,7 +1178,7 @@ export const AmbientArea = z.object({
 export const Ambience = z.object({ decor: z.record(AmbientDecor), areas: z.record(AmbientArea) });
 export type AmbientDecor = z.infer<typeof AmbientDecor>;
 // ---- Ambient sound (data/audio/ambient.json) ----
-export const AMBIENT_SOUNDS = ['crow', 'creak', 'owl', 'bell', 'crickets', 'frog', 'bubble', 'drip', 'clank', 'steam', 'chain', 'choir', 'humming', 'crackle', 'roar', 'wings', 'squeak', 'plop'] as const;
+export const AMBIENT_SOUNDS = ['crow', 'creak', 'owl', 'bell', 'crickets', 'frog', 'bubble', 'drip', 'clank', 'steam', 'chain', 'choir', 'humming', 'crackle', 'roar', 'wings', 'squeak', 'plop', 'bees', 'songbird'] as const;
 export type AmbientSound = (typeof AMBIENT_SOUNDS)[number];
 /** Layered sound effects (bosses "b_", regular enemies "e_"): recipes in src/audio/BossSfx.ts, usable anywhere an effect id is. */
 export const LAYERED_SOUNDS = [
@@ -1226,6 +1228,7 @@ export const LAYERED_SOUNDS = [
   'b_tallow_scream', 'b_chandler_scream', 'b_cannon_burst', 'b_boss_fall',
   // Bloomhollow
   'e_buzz', 'e_sting', 'e_swarm_rise', 'e_swarm_calm', 'p_smoker', 'e_husk_puff',
+  'e_husk_alert', 'e_husk_hurt', 'e_husk_die', 'e_husk_pump', 'e_step_husk', 'e_straw', 'e_guard_rise', 'e_guard_alert', 'e_guard_hurt', 'e_guard_die', 'e_scythe', 'e_scythe_windup', 'b_warden_roar', 'b_warden_scythe', 'b_warden_spin', 'b_crows_fly', 'b_step_straw', 'b_queen_hum', 'b_queen_song', 'b_jelly_spit', 'b_sceptre', 'b_swarm_roar', 'b_swarm_dive', 'b_queen_scream', 'b_step_glide', 'b_honey_rain',
   'c_shriek', 'c_neigh', 'c_crash', 'c_cart', 'c_crows', 'c_bell_toll', 'c_steam', 'c_bubble', 'p_blunderbuss', 'p_throw', 'p_throw_knife', 'p_eat', 'p_incense', 'p_cartridge', 'p_oil', 'p_smoke', 'p_drink_grog', 'p_candle', 'p_ring', 'p_paper',
 ] as const;
 export type LayeredSound = (typeof LAYERED_SOUNDS)[number];

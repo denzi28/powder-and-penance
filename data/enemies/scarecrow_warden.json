@@ -1,0 +1,294 @@
+{
+  "id": "scarecrow_warden",
+  "name": "The Scarecrow Warden",
+  "ai": "melee",
+  "sprite": "scarecrow_warden",
+  "weaponSprite": "warden_scythe",
+  "weaponRestDeg": 60,
+  "ambush": {
+    "radius": 64,
+    "riseTicks": 62,
+    "hidden": false
+  },
+  "hp": 400,
+  "poise": {
+    "max": 110,
+    "resetTicks": 160
+  },
+  "tallow": 900,
+  "speed": 46,
+  "strafeSpeed": 30,
+  "accelTicks": 8,
+  "turnDegPerTick": 5,
+  "collider": {
+    "w": 12,
+    "h": 6
+  },
+  "hurtbox": {
+    "w": 18,
+    "h": 36,
+    "offsetY": -18
+  },
+  "bodyRadius": 8,
+  "knockbackResist": 0.7,
+  "perception": {
+    "halfAngleDeg": 70,
+    "nearDistance": 48,
+    "farDistance": 320,
+    "detectTicksNear": 20,
+    "detectTicksFar": 150,
+    "suspicionAt": 0.3,
+    "forgetPerTick": 0.004,
+    "investigateTicks": 200,
+    "reactionTicks": [
+      12,
+      20
+    ],
+    "loseTicks": 240
+  },
+  "leash": {
+    "distance": 520,
+    "healOnReturn": true
+  },
+  "spacing": {
+    "preferred": 50,
+    "strafeTicks": [
+      30,
+      70
+    ]
+  },
+  "attackGapTicks": [
+    18,
+    40
+  ],
+  "staggerTicks": 40,
+  "parriedTicks": 80,
+  "deathTicks": 60,
+  "corpseTicks": 300,
+  "blood": "stone3",
+  "steps": {
+    "sfx": "b_step_straw",
+    "volume": 0.6
+  },
+  "voice": {
+    "alert": "b_warden_roar",
+    "hurt": "e_guard_hurt",
+    "die": "e_guard_die",
+    "rise": "b_warden_roar"
+  },
+  "moves": [
+    {
+      "id": "reap",
+      "range": [
+        0,
+        50
+      ],
+      "weight": 3,
+      "cooldown": 70,
+      "strikes": [
+        {
+          "damage": 30,
+          "poise": 34,
+          "windup": 36,
+          "active": 7,
+          "recovery": 30,
+          "hitbox": {
+            "shape": "arc",
+            "radius": 48,
+            "halfAngle": 85
+          },
+          "trackDegPerTick": 4,
+          "telegraph": {
+            "tick": 16,
+            "kind": "normal"
+          },
+          "lunge": {
+            "distance": 14,
+            "startTick": 32,
+            "ticks": 5
+          },
+          "sweep": {
+            "fromDeg": -150,
+            "toDeg": 80
+          },
+          "knockback": 140,
+          "hitstop": 5,
+          "shake": 0.3,
+          "windupSfx": "e_scythe_windup",
+          "sfx": "b_warden_scythe",
+          "anim": "reap"
+        },
+        {
+          "damage": 26,
+          "poise": 30,
+          "windup": 16,
+          "active": 7,
+          "recovery": 38,
+          "hitbox": {
+            "shape": "arc",
+            "radius": 48,
+            "halfAngle": 85
+          },
+          "trackDegPerTick": 3,
+          "sweep": {
+            "fromDeg": 80,
+            "toDeg": -140
+          },
+          "knockback": 140,
+          "hitstop": 5,
+          "shake": 0.3,
+          "sfx": "b_warden_scythe",
+          "anim": "reap"
+        }
+      ]
+    },
+    {
+      "id": "reaping_spin",
+      "range": [
+        0,
+        46
+      ],
+      "weight": 2,
+      "cooldown": 150,
+      "strikes": [
+        {
+          "damage": 18,
+          "poise": 22,
+          "windup": 40,
+          "active": 36,
+          "recovery": 40,
+          "hitbox": {
+            "shape": "arc",
+            "radius": 46,
+            "halfAngle": 40
+          },
+          "telegraph": {
+            "tick": 14,
+            "kind": "danger"
+          },
+          "followSweep": true,
+          "rehitTicks": 18,
+          "sweep": {
+            "fromDeg": 0,
+            "toDeg": 720
+          },
+          "knockback": 120,
+          "hitstop": 3,
+          "shake": 0.2,
+          "hyperArmor": 60,
+          "windupSfx": "e_scythe_windup",
+          "sfx": "b_warden_spin",
+          "anim": "spin"
+        }
+      ]
+    },
+    {
+      "id": "crows",
+      "range": [
+        60,
+        220
+      ],
+      "weight": 2,
+      "cooldown": 190,
+      "strikes": [
+        {
+          "damage": 0,
+          "poise": 0,
+          "windup": 34,
+          "active": 20,
+          "recovery": 30,
+          "hitbox": {
+            "shape": "circle",
+            "radius": 1
+          },
+          "trackDegPerTick": 3,
+          "telegraph": {
+            "tick": 12,
+            "kind": "normal"
+          },
+          "sweep": {
+            "fromDeg": 0,
+            "toDeg": 0
+          },
+          "sfx": "b_crows_fly",
+          "anim": "crows",
+          "projectile": {
+            "sprite": "crow_dart",
+            "speed": 150,
+            "range": 300,
+            "damage": 14,
+            "poise": 10,
+            "radius": 5,
+            "count": 3,
+            "spreadDeg": 60,
+            "homing": {
+              "degPerTick": 2.2,
+              "ticks": 70
+            },
+            "volleys": {
+              "count": 2,
+              "everyTicks": 16,
+              "reaim": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "leap",
+      "range": [
+        50,
+        150
+      ],
+      "weight": 2,
+      "cooldown": 170,
+      "strikes": [
+        {
+          "damage": 34,
+          "poise": 40,
+          "windup": 30,
+          "active": 10,
+          "recovery": 42,
+          "hitbox": {
+            "shape": "circle",
+            "radius": 26,
+            "offset": 6
+          },
+          "trackDegPerTick": 6,
+          "telegraph": {
+            "tick": 10,
+            "kind": "danger"
+          },
+          "lunge": {
+            "distance": 80,
+            "startTick": 18,
+            "ticks": 14
+          },
+          "sweep": {
+            "fromDeg": -120,
+            "toDeg": 60
+          },
+          "knockback": 180,
+          "hitstop": 6,
+          "shake": 0.45,
+          "unblockable": true,
+          "windupSfx": "e_scythe_windup",
+          "sfx": "b_warden_scythe",
+          "anim": "leap",
+          "eruptions": {
+            "pattern": "ring",
+            "count": 6,
+            "spacing": 30,
+            "stepTicks": 2,
+            "warnTicks": 20,
+            "radius": 12,
+            "damage": 14,
+            "poise": 10,
+            "fx": "ember",
+            "sfx": "b_ember_pop"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -45,6 +45,7 @@ const LOOK: Record<Fx, { ring: string; a: string; b: string }> = {
   flame: { ring: 'flame1', a: 'flame1', b: 'flame2' },
   water: { ring: 'teal3', a: 'teal2', b: 'cyan' },
   ember: { ring: 'ember', a: 'ember', b: 'flame1' },
+  honey: { ring: 'honey', a: 'honey', b: 'flame2' },
 };
 const col = (name: string) => hexToInt(DATA.palette[name]);
 

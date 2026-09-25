@@ -1,0 +1,116 @@
+{
+  "id": "bloom_08_orchard_chapel",
+  "area": "bloom",
+  "origin": [56, 32],
+  "legend": {
+    "#": "wall",
+    ".": "floor",
+    "=": "floor_path",
+    ",": "floor_flowers",
+    "l": "floor_lavender",
+    "~": "floor_honey",
+    "h": "floor_comb",
+    "a": "floor_ash",
+    "p": "floor_plank",
+    ":": "floor_stone",
+    " ": "void"
+  },
+  "tiles": [
+    "################",
+    "#hhhhhhhhhh#:::#",
+    "#hhhhhhhhhh#:::#",
+    "#hhhhhhhhhh#:::#",
+    "#hhhhhhhhhh#:::#",
+    "#hhhhhhhhhh##:##",
+    "#hhhhhhhhhhhhhh#",
+    "#hhhhhhhhhhhhhh#",
+    ".:::::::::::hhh#",
+    ".:::::::::::hhh#",
+    "#hhhhhhhhhhhhhh#",
+    "#hhhhhhhhhhhhhh#",
+    "#hhhhhhhhhhhhhh#",
+    "#hhhhhhhhhhhhhh#",
+    "#hhhhhhhhhhhhhh#",
+    "################"
+  ],
+  "entities": [
+    {
+      "type": "prop",
+      "kind": "tallow_seal",
+      "at": [13, 5]
+    },
+    {
+      "type": "decor",
+      "kind": "bee_altar",
+      "at": [6, 2]
+    },
+    {
+      "type": "decor",
+      "kind": "bee_saint",
+      "at": [2, 2]
+    },
+    {
+      "type": "decor",
+      "kind": "bee_saint",
+      "at": [9, 2]
+    },
+    {
+      "type": "decor",
+      "kind": "chapel_pew",
+      "at": [4, 6]
+    },
+    {
+      "type": "decor",
+      "kind": "chapel_pew",
+      "at": [9, 6]
+    },
+    {
+      "type": "decor",
+      "kind": "chapel_pew",
+      "at": [4, 11]
+    },
+    {
+      "type": "decor",
+      "kind": "chapel_pew",
+      "at": [9, 11]
+    },
+    {
+      "type": "decor",
+      "kind": "votive_stand",
+      "at": [2, 13]
+    },
+    {
+      "type": "decor",
+      "kind": "votive_stand",
+      "at": [10, 13]
+    },
+    {
+      "type": "enemy",
+      "kind": "beekeeper_husk",
+      "at": [4, 5],
+      "facing": "N"
+    },
+    {
+      "type": "enemy",
+      "kind": "beekeeper_husk",
+      "at": [9, 10],
+      "facing": "N"
+    },
+    {
+      "type": "note",
+      "note": "note_chapel_hymn",
+      "at": [6, 4]
+    },
+    {
+      "type": "item",
+      "id": "bloom_chapel_candles",
+      "item": "cache_beeswax",
+      "at": [13, 2]
+    },
+    {
+      "type": "note",
+      "note": "note_tallow_accounts",
+      "at": [12, 3]
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "id": "ring_of_the_queen",
+  "name": "Ring of the Queen",
+  "icon": 60,
+  "description": "A gold band set with a drop of amber.",
+  "effect": {
+    "type": "ring",
+    "id": "ring_of_the_queen"
+  }
+}

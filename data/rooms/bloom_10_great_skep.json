@@ -1,0 +1,90 @@
+{
+  "id": "bloom_10_great_skep",
+  "area": "bloom",
+  "origin": [31, 83],
+  "legend": {
+    "#": "wall",
+    ".": "floor",
+    "=": "floor_path",
+    ",": "floor_flowers",
+    "l": "floor_lavender",
+    "~": "floor_honey",
+    "h": "floor_comb",
+    "a": "floor_ash",
+    "p": "floor_plank",
+    ":": "floor_stone",
+    " ": "void"
+  },
+  "tiles": [
+    "###..###################",
+    "#,,,,,,,,,,,,,,,,,,,,,,#",
+    "#,,,,,,,,,,,,,,,,,,,,,,#",
+    "#hhhhhhhhhhhhhhhhhhhhhh#",
+    "#hhhhhhhhhhhhhhhhhhhhhh#",
+    "#hhhhhhhhhhhhhhhhhhhhhh#",
+    "#hhhhhhhh~~~~~~~hhhhhhh#",
+    "#hhhhhhhh~~~~~~~hhhhhhh#",
+    "#hhhhhhhhhhhhhhhhhhhhhh#",
+    "#hhhhhhhhhhhhhhhhhhhhhh#",
+    "#hhhhhhhhhhhhhhhhhhhhhh#",
+    "#hhhhhhhhhhhhhhhhhhhhhh#",
+    "#hh~~~~~hhhhhhhhhhhhhhh#",
+    "#hh~~~~~hhhhhhhh~~~~~hh#",
+    "#hh~~~~~hhhhhhhh~~~~~hh#",
+    "#hhhhhhhhhhhhhhh~~~~~hh#",
+    "#,,,,,,,,,,,,,,,,,,,,,,#",
+    "#,,,,,,,,,,,,,,,,,,,,,,#",
+    "#,,,,,,,,,,,,,,,,,,,,,,#",
+    "########################"
+  ],
+  "entities": [
+    {
+      "type": "decor",
+      "kind": "great_skep",
+      "at": [12, 4]
+    },
+    {
+      "type": "decor",
+      "kind": "bee_saint",
+      "at": [5, 3]
+    },
+    {
+      "type": "decor",
+      "kind": "bee_saint",
+      "at": [19, 3]
+    },
+    {
+      "type": "decor",
+      "kind": "votive_stand",
+      "at": [2, 9]
+    },
+    {
+      "type": "decor",
+      "kind": "votive_stand",
+      "at": [21, 9]
+    },
+    {
+      "type": "enemy",
+      "kind": "hive_queen",
+      "at": [12, 10],
+      "facing": "N"
+    },
+    {
+      "type": "arena",
+      "id": "great_skep",
+      "boss": "hive_queen",
+      "seals": [
+        [3, 0],
+        [4, 0]
+      ],
+      "at": [0, 0]
+    },
+    {
+      "type": "shrine",
+      "id": "shrine_queen",
+      "name": "Queen's Wick",
+      "at": [12, 13],
+      "when": "boss:hive_queen"
+    }
+  ]
+}

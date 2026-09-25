@@ -1,0 +1,164 @@
+{
+  "id": "orchard_guard",
+  "name": "Orchard Guard",
+  "ai": "melee",
+  "sprite": "orchard_guard",
+  "weaponSprite": "scythe",
+  "weaponRestDeg": 60,
+  "ambush": {
+    "radius": 40,
+    "riseTicks": 40,
+    "hidden": false
+  },
+  "hp": 95,
+  "poise": {
+    "max": 32,
+    "resetTicks": 100
+  },
+  "tallow": 55,
+  "loot": "guard",
+  "speed": 40,
+  "strafeSpeed": 24,
+  "accelTicks": 8,
+  "turnDegPerTick": 6,
+  "collider": {
+    "w": 8,
+    "h": 5
+  },
+  "hurtbox": {
+    "w": 11,
+    "h": 20,
+    "offsetY": -10
+  },
+  "bodyRadius": 5,
+  "perception": {
+    "halfAngleDeg": 70,
+    "nearDistance": 48,
+    "farDistance": 320,
+    "detectTicksNear": 20,
+    "detectTicksFar": 150,
+    "suspicionAt": 0.3,
+    "forgetPerTick": 0.004,
+    "investigateTicks": 200,
+    "reactionTicks": [
+      12,
+      20
+    ],
+    "loseTicks": 240
+  },
+  "leash": {
+    "distance": 360,
+    "healOnReturn": true
+  },
+  "spacing": {
+    "preferred": 34,
+    "strafeTicks": [
+      40,
+      80
+    ]
+  },
+  "attackGapTicks": [
+    26,
+    54
+  ],
+  "staggerTicks": 34,
+  "deathTicks": 44,
+  "corpseTicks": 120,
+  "blood": "wax1",
+  "steps": {
+    "sfx": "e_straw",
+    "volume": 0.6
+  },
+  "voice": {
+    "alert": "e_guard_alert",
+    "hurt": "e_guard_hurt",
+    "die": "e_guard_die",
+    "rise": "e_guard_rise"
+  },
+  "moves": [
+    {
+      "id": "reap",
+      "range": [
+        0,
+        36
+      ],
+      "weight": 3,
+      "cooldown": 80,
+      "strikes": [
+        {
+          "damage": 24,
+          "poise": 26,
+          "windup": 34,
+          "active": 6,
+          "recovery": 34,
+          "hitbox": {
+            "shape": "arc",
+            "radius": 34,
+            "halfAngle": 80
+          },
+          "trackDegPerTick": 4,
+          "telegraph": {
+            "tick": 14,
+            "kind": "normal"
+          },
+          "lunge": {
+            "distance": 10,
+            "startTick": 30,
+            "ticks": 5
+          },
+          "sweep": {
+            "fromDeg": -140,
+            "toDeg": 70
+          },
+          "knockback": 100,
+          "hitstop": 4,
+          "shake": 0.2,
+          "windupSfx": "e_scythe_windup",
+          "sfx": "e_scythe",
+          "anim": "reap"
+        }
+      ]
+    },
+    {
+      "id": "hook",
+      "range": [
+        24,
+        44
+      ],
+      "weight": 1,
+      "cooldown": 150,
+      "strikes": [
+        {
+          "damage": 12,
+          "poise": 14,
+          "windup": 26,
+          "active": 5,
+          "recovery": 36,
+          "hitbox": {
+            "shape": "arc",
+            "radius": 42,
+            "halfAngle": 25,
+            "inner": 18
+          },
+          "trackDegPerTick": 5,
+          "telegraph": {
+            "tick": 10,
+            "kind": "normal"
+          },
+          "sweep": {
+            "fromDeg": -30,
+            "toDeg": 20,
+            "reach": 8
+          },
+          "knockback": 130,
+          "pull": true,
+          "hitstop": 4,
+          "shake": 0.15,
+          "windupSfx": "e_scythe_windup",
+          "sfx": "e_scythe",
+          "anim": "reap"
+        }
+      ]
+    }
+  ]
+}

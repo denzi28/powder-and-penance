@@ -10270,7 +10270,7 @@ function drawQueen(c: Img, dir: Dir5, pose: QueenPose) {
   const wy = 18 + o.bob + o.rise + o.sink + ly;
   const flap = o.wing ? 2 : 0;
   for (const s of [-1, 1]) {
-    c.ellipse(32 + s * 13 + sh, wy - flap, 9, 5, withAlpha(P.wax2, 120), (x, y) => y < wy + 3);
+    c.ellipse(32 + s * 13 + sh, wy - flap, 9, 5, withAlpha(P.wax2, 120), (_x, y) => y < wy + 3);
     c.ellipse(32 + s * 11 + sh, wy + 7 - flap, 7, 3, withAlpha(P.wax2, 100));
     line(c, 32 + s * 4 + sh, wy + 2, 32 + s * 20 + sh, wy - 4 - flap, withAlpha(P.honey, 200)); // a vein
   }

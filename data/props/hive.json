@@ -1,0 +1,12 @@
+{
+  "id": "hive",
+  "name": "Straw Hive",
+  "sprite": "prop_hive",
+  "hp": 40,
+  "radius": 6,
+  "hurtbox": { "w": 14, "h": 18, "offsetY": -10 },
+  "debris": "honey",
+  "loot": "hive",
+  "sfx": "break_wood",
+  "hive": "hive"
+}

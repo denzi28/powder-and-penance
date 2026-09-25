@@ -1,0 +1,11 @@
+{
+  "id": "cache_beeswax_one",
+  "name": "Beeswax Candle",
+  "icon": 61,
+  "description": "A single honey-gold taper, half burned.",
+  "effect": {
+    "type": "consumable",
+    "id": "beeswax_candle",
+    "count": 1
+  }
+}

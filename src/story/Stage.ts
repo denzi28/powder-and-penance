@@ -64,6 +64,8 @@ const BURSTS: Record<string, { cols: string[]; z: number; spread: number; speed:
   smoke: { cols: ['stone2', 'dark2', 'stone3'], z: 10, spread: 0.8, speed: 25, up: true },
   water: { cols: ['teal3', 'cyan', 'stone4'], z: 4, spread: 1.4, speed: 80, up: true },
   feathers: { cols: ['dark1', 'dark2', 'stone2'], z: 12, spread: Math.PI * 2, speed: 60, up: true },
+  petals: { cols: ['blossom', 'blossom', 'wax1'], z: 14, spread: Math.PI * 2, speed: 35, up: true },
+  honey: { cols: ['honey', 'flame2'], z: 8, spread: 1.4, speed: 60, up: true, stain: true },
 };
 
 const WRAP = 22;

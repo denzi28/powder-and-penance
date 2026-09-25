@@ -83,11 +83,12 @@ describe('weapon scaling and upgrades', () => {
 
 describe("Oskar's stock", () => {
   it('starts small and grows as the bosses fall', () => {
-    const onSale = (flags: string[]) => DATA.shop.stock.filter(e => check(new Set(flags), e.when)).length;
+    const oskars = DATA.shop.stock.filter(e => e.seller === 'oskar');
+    const onSale = (flags: string[]) => oskars.filter(e => check(new Set(flags), e.when)).length;
     const start = onSale([]);
     const later = onSale(['boss:tollwarden', 'boss:mother_tallow', 'boss:mire_matron', 'boss:chandler', 'story:oskar_cache_returned']);
     expect(start).toBeGreaterThanOrEqual(4);
     expect(later).toBeGreaterThan(start + 4);
-    expect(later).toBe(DATA.shop.stock.length);
+    expect(later).toBe(oskars.length);
   });
 });

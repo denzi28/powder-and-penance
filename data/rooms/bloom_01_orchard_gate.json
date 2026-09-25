@@ -1,0 +1,142 @@
+{
+  "id": "bloom_01_orchard_gate",
+  "area": "bloom",
+  "origin": [20, 0],
+  "legend": {
+    "#": "wall",
+    ".": "floor",
+    "=": "floor_path",
+    ",": "floor_flowers",
+    "l": "floor_lavender",
+    "~": "floor_honey",
+    "h": "floor_comb",
+    "a": "floor_ash",
+    "p": "floor_plank",
+    ":": "floor_stone",
+    " ": "void"
+  },
+  "tiles": [
+    "###########==###########",
+    "#####......==......#####",
+    "#####......==..,,,.#####",
+    "#####......==..,,,.....#",
+    "#..........==..........#",
+    "#..,,,,....==..........#",
+    "#..,,,,..====..........#",
+    "#..,,,,..====..........#",
+    "#......===.............#",
+    "#......===....,,,,,....#",
+    "#......===....,,,,,....#",
+    "#......===....,,,,,.####",
+    "####...===..........####",
+    "####...===..........####",
+    "####...===..........####",
+    "######.=################"
+  ],
+  "entities": [
+    {
+      "type": "spawn",
+      "id": "from_road",
+      "at": [11, 2]
+    },
+    {
+      "type": "exit",
+      "id": "bloom_to_road",
+      "at": [11, 0],
+      "size": [2, 1],
+      "to": {
+        "area": "road",
+        "spawn": "from_bloom"
+      }
+    },
+    {
+      "type": "cutscene",
+      "id": "bloom_arrive",
+      "script": "bloom_arrive",
+      "at": [10, 2],
+      "size": [4, 3]
+    },
+    {
+      "type": "point",
+      "id": "bloom_gate",
+      "at": [12, 5]
+    },
+    {
+      "type": "point",
+      "id": "bloom_hive",
+      "at": [18, 3]
+    },
+    {
+      "type": "decor",
+      "kind": "orchard_gate",
+      "at": [12, 5]
+    },
+    {
+      "type": "decor",
+      "kind": "synod_notice",
+      "at": [9, 4]
+    },
+    {
+      "type": "decor",
+      "kind": "apple_tree",
+      "at": [3, 9]
+    },
+    {
+      "type": "decor",
+      "kind": "apple_tree",
+      "at": [17, 6]
+    },
+    {
+      "type": "decor",
+      "kind": "apple_tree",
+      "at": [5, 13]
+    },
+    {
+      "type": "decor",
+      "kind": "apple_tree",
+      "at": [15, 13]
+    },
+    {
+      "type": "decor",
+      "kind": "apple_tree_fruit",
+      "at": [19, 9]
+    },
+    {
+      "type": "decor",
+      "kind": "flower_bed",
+      "at": [16, 3]
+    },
+    {
+      "type": "decor",
+      "kind": "hollyhocks",
+      "at": [6, 4]
+    },
+    {
+      "type": "decor",
+      "kind": "lavender_bush",
+      "at": [13, 10]
+    },
+    {
+      "type": "decor",
+      "kind": "fallen_skep",
+      "at": [10, 11]
+    },
+    {
+      "type": "enemy",
+      "kind": "orchard_guard",
+      "at": [5, 8],
+      "facing": "E"
+    },
+    {
+      "type": "enemy",
+      "kind": "orchard_guard",
+      "at": [16, 10],
+      "facing": "W"
+    },
+    {
+      "type": "prop",
+      "kind": "hive",
+      "at": [18, 3]
+    }
+  ]
+}

@@ -537,6 +537,16 @@ export class Ambience {
         m.vy = rnd(8, 14);
         m.c = col(pick(['wood2', 'ember', 'flame1']));
         break;
+      case 'petals':
+        m.vx = rnd(6, 12);
+        m.vy = rnd(4, 9);
+        m.c = col(pick(['blossom', 'blossom', 'wax2']));
+        break;
+      case 'pollen':
+        m.vx = rnd(-3, 3);
+        m.vy = rnd(-2, 1);
+        m.c = col(pick(['flame2', 'honey', 'wax2']));
+        break;
     }
     if (!anywhere) {
       // enter from the side the wind blows from
@@ -556,9 +566,9 @@ export class Ambience {
     }
     const s = this.t / 1000;
     this.motes = this.motes.map(m => {
-      m.x += (m.vx + (m.fx === 'leaves' ? Math.sin(s * 3 + m.ph) * 14 : m.fx === 'ash' ? Math.sin(s * 1.5 + m.ph) * 4 : 0)) * dt;
+      m.x += (m.vx + (m.fx === 'leaves' || m.fx === 'petals' ? Math.sin(s * 3 + m.ph) * 14 : m.fx === 'ash' ? Math.sin(s * 1.5 + m.ph) * 4 : 0)) * dt;
       m.y += m.vy * dt;
-      if (m.fx === 'fireflies' || m.fx === 'dust') {
+      if (m.fx === 'fireflies' || m.fx === 'dust' || m.fx === 'pollen') {
         m.vx += rnd(-10, 10) * dt;
         m.vy += rnd(-10, 10) * dt;
         const lim = m.fx === 'dust' ? 4 : 10;
@@ -588,7 +598,11 @@ export class Ambience {
           a.fillStyle(m.c, 0.25 + 0.3 * Math.max(0, Math.sin(s * 0.9 + m.ph))).fillRect(x, y, 1, 1);
           break;
         case 'leaves':
+        case 'petals':
           a.fillStyle(m.c, 0.9).fillRect(x, y, Math.sin(s * 6 + m.ph) > 0 ? 2 : 1, 1);
+          break;
+        case 'pollen':
+          a.fillStyle(m.c, 0.35 + 0.35 * Math.max(0, Math.sin(s * 1.3 + m.ph))).fillRect(x, y, 1, 1);
           break;
         default:
           a.fillStyle(m.c, m.fx === 'ash' ? 0.6 : 0.7).fillRect(x, y, 1, 1);

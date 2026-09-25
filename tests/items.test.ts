@@ -93,11 +93,12 @@ describe('notes', () => {
 });
 
 describe('minibosses', () => {
-  it('have tougher health, a title and a ring to drop', () => {
+  it('have tougher health, a title and a ring or armour to drop', () => {
     expect(minibosses.length).toBeGreaterThanOrEqual(2);
     for (const m of minibosses) {
       expect(m.hpMult).toBeGreaterThan(1);
-      expect(DATA.items[m.drop].effect.type).toBe('ring');
+      const e = DATA.items[m.drop].effect;
+      expect(e.type === 'ring' || (e.type === 'gear' && e.kind === 'armour'), m.id).toBe(true);
     }
   });
 });

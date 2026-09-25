@@ -1,0 +1,11 @@
+{
+  "id": "cache_beeswax",
+  "name": "Beeswax Candle x2",
+  "icon": 61,
+  "description": "Two honey-gold tapers wrapped in a scrap of linen.",
+  "effect": {
+    "type": "consumable",
+    "id": "beeswax_candle",
+    "count": 2
+  }
+}

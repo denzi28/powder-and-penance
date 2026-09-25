@@ -564,6 +564,44 @@ const RECIPES: Record<AmbientSound | StepSound, Recipe> = {
     tone(ctx, node, t, 'sine', f, f * 1.25, 0.06, 0.08);
     if (Math.random() < 0.5) tone(ctx, node, t + 0.09, 'sine', f * 1.1, f * 1.3, 0.05, 0.06);
   },
+  // a bee going past: a buzzing saw, wobbling, swelling and falling away as it passes (the pitch drops after)
+  bees: (ctx, { node, t }) => {
+    const f = rnd(190, 250);
+    const d = rnd(0.9, 1.6);
+    const o = ctx.createOscillator();
+    o.type = 'sawtooth';
+    o.frequency.setValueAtTime(f * 1.04, t);
+    o.frequency.linearRampToValueAtTime(f * 0.93, t + d);
+    const lfo = ctx.createOscillator();
+    lfo.frequency.value = rnd(9, 14);
+    const depth = ctx.createGain();
+    depth.gain.value = f * 0.025;
+    lfo.connect(depth).connect(o.frequency);
+    const lp = ctx.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.frequency.value = 950;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.07, t + d * 0.5);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+    o.connect(lp).connect(g).connect(node);
+    for (const x of [o, lfo]) {
+      x.start(t);
+      x.stop(t + d + 0.05);
+    }
+  },
+  // a songbird in the trees: a quick phrase of rising and falling whistles
+  songbird: (ctx, { node, t }) => {
+    const base = rnd(2600, 3400);
+    const n = 3 + Math.floor(Math.random() * 4);
+    let at = t;
+    for (let i = 0; i < n; i++) {
+      const f = base * rnd(0.85, 1.25);
+      const len = rnd(0.05, 0.12);
+      tone(ctx, node, at, 'sine', f, f * rnd(0.8, 1.35), len, 0.06, undefined, 0.006);
+      at += len + rnd(0.02, 0.09);
+    }
+  },
   // something slipping into water
   plop: (ctx, { node, t }) => tone(ctx, node, t, 'sine', rnd(250, 350), rnd(700, 900), 0.08, 0.25, undefined, 0.002),
   // ---- footsteps, by what the foot lands on

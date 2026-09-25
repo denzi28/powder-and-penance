@@ -169,6 +169,7 @@ export function wirePresentation(gs: GameScene) {
     flame: ['flame1', 'flame2'],
     water: ['teal3', 'cyan'],
     ember: ['ember', 'flame2'],
+    honey: ['honey', 'flame2'],
   };
   bus.on('erupted', e => {
     const [a, b] = ERUPT_BITS[e.fx];

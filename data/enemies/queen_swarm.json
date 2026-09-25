@@ -1,0 +1,280 @@
+{
+  "id": "queen_swarm",
+  "name": "The Swarm Queen",
+  "ai": "boss",
+  "boss": {
+    "title": "The Hive Queen, the Swarm Unbound",
+    "introAnim": "intro",
+    "introTicks": 120,
+    "slams": [
+      90
+    ],
+    "slamShake": 0.4,
+    "slamSfx": "b_swarm_roar",
+    "introLine": "\"Every bee a daughter. Every daughter me.\"",
+    "roarSfx": "b_swarm_roar",
+    "deathScript": "queen_death"
+  },
+  "sprite": "queen_swarm",
+  "hp": 650,
+  "poise": {
+    "max": 300,
+    "resetTicks": 200
+  },
+  "smokePoise": 140,
+  "tallow": 4000,
+  "loot": "boss_salt",
+  "beeproof": true,
+  "wader": true,
+  "speed": 64,
+  "strafeSpeed": 50,
+  "accelTicks": 10,
+  "turnDegPerTick": 7,
+  "collider": {
+    "w": 20,
+    "h": 8
+  },
+  "hurtbox": {
+    "w": 30,
+    "h": 40,
+    "offsetY": -20
+  },
+  "bodyRadius": 12,
+  "knockbackResist": 1,
+  "spacing": {
+    "preferred": 70,
+    "strafeTicks": [
+      30,
+      70
+    ]
+  },
+  "attackGapTicks": [
+    14,
+    34
+  ],
+  "staggerTicks": 60,
+  "parriedTicks": 70,
+  "deathTicks": 110,
+  "corpseTicks": 999999,
+  "blood": "honey",
+  "steps": {
+    "sfx": "b_step_glide",
+    "volume": 0.8
+  },
+  "moves": [
+    {
+      "id": "dive",
+      "range": [
+        40,
+        150
+      ],
+      "weight": 3,
+      "cooldown": 90,
+      "strikes": [
+        {
+          "damage": 28,
+          "poise": 30,
+          "windup": 30,
+          "active": 14,
+          "recovery": 34,
+          "hitbox": {
+            "shape": "circle",
+            "radius": 22
+          },
+          "trackDegPerTick": 6,
+          "telegraph": {
+            "tick": 10,
+            "kind": "danger"
+          },
+          "lunge": {
+            "distance": 110,
+            "startTick": 30,
+            "ticks": 14
+          },
+          "sweep": {
+            "fromDeg": 0,
+            "toDeg": 0
+          },
+          "knockback": 150,
+          "hitstop": 4,
+          "shake": 0.3,
+          "unblockable": true,
+          "sfx": "b_swarm_dive",
+          "anim": "dive"
+        }
+      ]
+    },
+    {
+      "id": "engulf",
+      "range": [
+        0,
+        44
+      ],
+      "weight": 2,
+      "cooldown": 110,
+      "strikes": [
+        {
+          "damage": 9,
+          "poise": 8,
+          "windup": 28,
+          "active": 40,
+          "recovery": 30,
+          "hitbox": {
+            "shape": "circle",
+            "radius": 38
+          },
+          "telegraph": {
+            "tick": 10,
+            "kind": "danger"
+          },
+          "rehitTicks": 12,
+          "sweep": {
+            "fromDeg": 0,
+            "toDeg": 0
+          },
+          "knockback": 30,
+          "hitstop": 1,
+          "shake": 0.1,
+          "unblockable": true,
+          "sfx": "b_swarm_roar",
+          "anim": "engulf"
+        }
+      ]
+    },
+    {
+      "id": "sting_volley",
+      "range": [
+        50,
+        300
+      ],
+      "weight": 2,
+      "cooldown": 130,
+      "strikes": [
+        {
+          "damage": 0,
+          "poise": 0,
+          "windup": 28,
+          "active": 34,
+          "recovery": 30,
+          "hitbox": {
+            "shape": "circle",
+            "radius": 1
+          },
+          "trackDegPerTick": 4,
+          "telegraph": {
+            "tick": 10,
+            "kind": "normal"
+          },
+          "sweep": {
+            "fromDeg": 0,
+            "toDeg": 0
+          },
+          "sfx": "e_buzz",
+          "anim": "volley",
+          "projectile": {
+            "sprite": "bee_dart",
+            "speed": 170,
+            "range": 320,
+            "damage": 10,
+            "poise": 6,
+            "radius": 3,
+            "count": 5,
+            "spreadDeg": 60,
+            "homing": {
+              "degPerTick": 1.6,
+              "ticks": 60
+            },
+            "volleys": {
+              "count": 3,
+              "everyTicks": 14,
+              "reaim": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "spiral",
+      "range": [
+        0,
+        200
+      ],
+      "weight": 1,
+      "cooldown": 220,
+      "strikes": [
+        {
+          "damage": 0,
+          "poise": 0,
+          "windup": 34,
+          "active": 50,
+          "recovery": 36,
+          "hitbox": {
+            "shape": "circle",
+            "radius": 1
+          },
+          "telegraph": {
+            "tick": 12,
+            "kind": "danger"
+          },
+          "sweep": {
+            "fromDeg": 0,
+            "toDeg": 0
+          },
+          "sfx": "b_swarm_roar",
+          "anim": "engulf",
+          "projectile": {
+            "sprite": "bee_dart",
+            "speed": 110,
+            "range": 260,
+            "damage": 12,
+            "poise": 8,
+            "radius": 3,
+            "count": 10,
+            "ring": true,
+            "volleys": {
+              "count": 5,
+              "everyTicks": 10,
+              "turnDeg": 14
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "call_the_hive",
+      "range": [
+        0,
+        400
+      ],
+      "weight": 1,
+      "cooldown": 520,
+      "strikes": [
+        {
+          "damage": 0,
+          "poise": 0,
+          "windup": 40,
+          "active": 10,
+          "recovery": 36,
+          "hitbox": {
+            "shape": "circle",
+            "radius": 1
+          },
+          "telegraph": {
+            "tick": 14,
+            "kind": "normal"
+          },
+          "sweep": {
+            "fromDeg": 0,
+            "toDeg": 0
+          },
+          "sfx": "b_swarm_roar",
+          "anim": "engulf",
+          "swarm": {
+            "id": "queens_guard",
+            "count": 3
+          }
+        }
+      ]
+    }
+  ]
+}

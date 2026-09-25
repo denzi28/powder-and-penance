@@ -1,0 +1,296 @@
+{
+  "id": "hive_queen",
+  "name": "The Hive Queen",
+  "ai": "boss",
+  "boss": {
+    "title": "The Hive Queen",
+    "introAnim": "intro",
+    "introTicks": 150,
+    "slams": [
+      110
+    ],
+    "slamShake": 0.35,
+    "slamSfx": "b_queen_hum",
+    "introLine": "\"Hush, my darlings. Another one come to burn us? Then come closer, little flame. Come to the comb.\"",
+    "roarSfx": "b_queen_song",
+    "turn": {
+      "kind": "queen_swarm",
+      "altar": [
+        12,
+        5
+      ],
+      "anim": "pour",
+      "ticks": 150,
+      "line": "\"You cannot burn what has already been given to the hive.\"",
+      "scream": "b_queen_scream",
+      "flash": "honey"
+    }
+  },
+  "sprite": "hive_queen",
+  "weaponSprite": "comb_sceptre",
+  "weaponRestDeg": 30,
+  "hp": 850,
+  "poise": {
+    "max": 220,
+    "resetTicks": 240
+  },
+  "tallow": 0,
+  "beeproof": true,
+  "wader": true,
+  "speed": 30,
+  "strafeSpeed": 22,
+  "accelTicks": 14,
+  "turnDegPerTick": 4,
+  "collider": {
+    "w": 26,
+    "h": 8
+  },
+  "hurtbox": {
+    "w": 30,
+    "h": 44,
+    "offsetY": -22
+  },
+  "bodyRadius": 14,
+  "knockbackResist": 1,
+  "spacing": {
+    "preferred": 80,
+    "strafeTicks": [
+      60,
+      120
+    ]
+  },
+  "attackGapTicks": [
+    20,
+    44
+  ],
+  "staggerTicks": 44,
+  "parriedTicks": 70,
+  "deathTicks": 100,
+  "corpseTicks": 999999,
+  "blood": "honey",
+  "steps": {
+    "sfx": "b_step_glide",
+    "volume": 0.6
+  },
+  "moves": [
+    {
+      "id": "sceptre_sweep",
+      "range": [
+        0,
+        60
+      ],
+      "weight": 3,
+      "cooldown": 70,
+      "strikes": [
+        {
+          "damage": 26,
+          "poise": 30,
+          "windup": 30,
+          "active": 8,
+          "recovery": 30,
+          "hitbox": {
+            "shape": "arc",
+            "radius": 56,
+            "halfAngle": 70
+          },
+          "trackDegPerTick": 4,
+          "telegraph": {
+            "tick": 12,
+            "kind": "normal"
+          },
+          "sweep": {
+            "fromDeg": -140,
+            "toDeg": 60
+          },
+          "knockback": 140,
+          "hitstop": 5,
+          "shake": 0.25,
+          "sfx": "b_sceptre",
+          "anim": "sweep"
+        }
+      ]
+    },
+    {
+      "id": "sting_lance",
+      "range": [
+        30,
+        110
+      ],
+      "weight": 2,
+      "cooldown": 110,
+      "strikes": [
+        {
+          "damage": 34,
+          "poise": 40,
+          "windup": 36,
+          "active": 8,
+          "recovery": 40,
+          "hitbox": {
+            "shape": "arc",
+            "radius": 40,
+            "halfAngle": 18
+          },
+          "trackDegPerTick": 5,
+          "telegraph": {
+            "tick": 14,
+            "kind": "danger"
+          },
+          "lunge": {
+            "distance": 60,
+            "startTick": 32,
+            "ticks": 8
+          },
+          "sweep": {
+            "fromDeg": 0,
+            "toDeg": 0,
+            "reach": 18
+          },
+          "knockback": 180,
+          "hitstop": 6,
+          "shake": 0.35,
+          "unparryable": true,
+          "sfx": "b_swarm_dive",
+          "anim": "thrust"
+        }
+      ]
+    },
+    {
+      "id": "royal_jelly",
+      "range": [
+        60,
+        300
+      ],
+      "weight": 2,
+      "cooldown": 140,
+      "strikes": [
+        {
+          "damage": 0,
+          "poise": 0,
+          "windup": 32,
+          "active": 10,
+          "recovery": 34,
+          "hitbox": {
+            "shape": "circle",
+            "radius": 1
+          },
+          "trackDegPerTick": 3,
+          "telegraph": {
+            "tick": 12,
+            "kind": "normal"
+          },
+          "sweep": {
+            "fromDeg": 0,
+            "toDeg": 0
+          },
+          "sfx": "b_jelly_spit",
+          "anim": "spit",
+          "projectile": {
+            "sprite": "royal_jelly",
+            "speed": 1,
+            "range": 1,
+            "damage": 22,
+            "poise": 20,
+            "knockback": 60,
+            "radius": 5,
+            "count": 3,
+            "spreadDeg": 50,
+            "lob": {
+              "flightTicks": 48,
+              "arcHeight": 44,
+              "blastRadius": 22,
+              "sfx": "b_wax_splat"
+            }
+          },
+          "pools": {
+            "count": 3,
+            "radius": 18,
+            "spread": 50,
+            "at": "target",
+            "ticks": 420,
+            "speedMult": 0.5,
+            "kind": "honey"
+          }
+        }
+      ]
+    },
+    {
+      "id": "release",
+      "range": [
+        0,
+        400
+      ],
+      "weight": 1,
+      "cooldown": 480,
+      "strikes": [
+        {
+          "damage": 0,
+          "poise": 0,
+          "windup": 40,
+          "active": 10,
+          "recovery": 40,
+          "hitbox": {
+            "shape": "circle",
+            "radius": 1
+          },
+          "telegraph": {
+            "tick": 14,
+            "kind": "normal"
+          },
+          "sweep": {
+            "fromDeg": 0,
+            "toDeg": 0
+          },
+          "sfx": "b_swarm_roar",
+          "anim": "release",
+          "swarm": {
+            "id": "queens_guard",
+            "count": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "honey_rain",
+      "range": [
+        0,
+        260
+      ],
+      "weight": 2,
+      "cooldown": 200,
+      "strikes": [
+        {
+          "damage": 0,
+          "poise": 0,
+          "windup": 36,
+          "active": 24,
+          "recovery": 30,
+          "hitbox": {
+            "shape": "circle",
+            "radius": 1
+          },
+          "telegraph": {
+            "tick": 12,
+            "kind": "danger"
+          },
+          "sweep": {
+            "fromDeg": 0,
+            "toDeg": 0
+          },
+          "sfx": "b_honey_rain",
+          "anim": "release",
+          "eruptions": {
+            "pattern": "follow",
+            "count": 5,
+            "stepTicks": 12,
+            "warnTicks": 26,
+            "radius": 16,
+            "damage": 20,
+            "poise": 18,
+            "fx": "honey",
+            "sfx": "b_wax_splat"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,95 @@
+{
+  "id": "bloom_06_mead_cellar",
+  "area": "bloom",
+  "origin": [8, 45],
+  "legend": {
+    "#": "wall",
+    ".": "floor",
+    "=": "floor_path",
+    ",": "floor_flowers",
+    "l": "floor_lavender",
+    "~": "floor_honey",
+    "h": "floor_comb",
+    "a": "floor_ash",
+    "p": "floor_plank",
+    ":": "floor_stone",
+    " ": "void"
+  },
+  "tiles": [
+    "#########..###########",
+    "#:::::#::::::::::::::#",
+    "#:::::#::::::::::::::#",
+    "#:::::#::::::::::::::#",
+    "#:::::#::::::::::::::#",
+    "###:###::~~~~~~::::::#",
+    "#::::::::~~~~~~::::::#",
+    "#::::::::~~~~~~::::::.",
+    "#::::::::~~~~~~::::::#",
+    "#::::::::::::::::::::#",
+    "#::::::::::::::~~~~::#",
+    "#::::::::::::::~~~~::#",
+    "#::::::::::::::::::::#",
+    "######################"
+  ],
+  "entities": [
+    {
+      "type": "prop",
+      "kind": "tallow_seal",
+      "at": [3, 5]
+    },
+    {
+      "type": "door",
+      "id": "bloom_cellar_door",
+      "at": [21, 7],
+      "opensFrom": "E"
+    },
+    {
+      "type": "decor",
+      "kind": "mead_rack",
+      "at": [8, 2]
+    },
+    {
+      "type": "decor",
+      "kind": "mead_rack",
+      "at": [16, 2]
+    },
+    {
+      "type": "decor",
+      "kind": "honey_barrels",
+      "at": [12, 12]
+    },
+    {
+      "type": "decor",
+      "kind": "honey_barrels",
+      "at": [19, 3]
+    },
+    {
+      "type": "decor",
+      "kind": "frame_stack",
+      "at": [7, 11]
+    },
+    {
+      "type": "enemy",
+      "kind": "honey_slime",
+      "at": [11, 6],
+      "facing": "N"
+    },
+    {
+      "type": "enemy",
+      "kind": "honey_slime",
+      "at": [16, 11],
+      "facing": "W"
+    },
+    {
+      "type": "item",
+      "id": "bloom_shard",
+      "item": "phial_shard",
+      "at": [2, 3]
+    },
+    {
+      "type": "note",
+      "note": "note_synod_ledger",
+      "at": [3, 10]
+    }
+  ]
+}

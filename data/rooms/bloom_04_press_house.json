@@ -1,0 +1,112 @@
+{
+  "id": "bloom_04_press_house",
+  "area": "bloom",
+  "origin": [12, 32],
+  "legend": {
+    "#": "wall",
+    ".": "floor",
+    "=": "floor_path",
+    ",": "floor_flowers",
+    "l": "floor_lavender",
+    "~": "floor_honey",
+    "h": "floor_comb",
+    "a": "floor_ash",
+    "p": "floor_plank",
+    ":": "floor_stone",
+    " ": "void"
+  },
+  "tiles": [
+    "########..########",
+    "#pppppp::::pppppp#",
+    "#pppppp::::pppppp#",
+    "#pppppp::::pppppp#",
+    "#pppppppppppppppp#",
+    "#pppppppppppppppp#",
+    "#pppppppppppppppp.",
+    "#pppppppppppppppp.",
+    "#pppppppppppppppp#",
+    "#pppppppppppppppp#",
+    "#ppp::::ppppppppp#",
+    "#ppp::::ppppppppp#",
+    "#ppp::::ppppppppp#",
+    "#####..###########"
+  ],
+  "entities": [
+    {
+      "type": "shrine",
+      "id": "shrine_press",
+      "name": "Press Wick",
+      "at": [4, 4]
+    },
+    {
+      "type": "npc",
+      "id": "hild_press",
+      "npc": "hild",
+      "talk": "hild_talk",
+      "at": [11, 6],
+      "routine": [
+        {
+          "at": [12, 5],
+          "do": "work",
+          "ticks": 360
+        },
+        {
+          "at": [14, 9],
+          "do": "idle",
+          "ticks": 160
+        },
+        {
+          "at": [9, 8],
+          "do": "work",
+          "ticks": 300
+        },
+        {
+          "at": [12, 5],
+          "do": "idle",
+          "ticks": 120
+        }
+      ]
+    },
+    {
+      "type": "decor",
+      "kind": "wax_press",
+      "at": [14, 3]
+    },
+    {
+      "type": "decor",
+      "kind": "honey_barrels",
+      "at": [3, 11]
+    },
+    {
+      "type": "decor",
+      "kind": "mead_rack",
+      "at": [15, 11]
+    },
+    {
+      "type": "decor",
+      "kind": "frame_stack",
+      "at": [8, 11]
+    },
+    {
+      "type": "decor",
+      "kind": "honey_cart",
+      "at": [16, 8]
+    },
+    {
+      "type": "decor",
+      "kind": "votive_stand",
+      "at": [1, 2]
+    },
+    {
+      "type": "note",
+      "note": "note_hild_ledger",
+      "at": [6, 2]
+    },
+    {
+      "type": "item",
+      "id": "bloom_press_ingots",
+      "item": "ingot_press",
+      "at": [1, 11]
+    }
+  ]
+}

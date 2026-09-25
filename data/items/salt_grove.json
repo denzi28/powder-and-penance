@@ -1,0 +1,11 @@
+{
+  "id": "salt_grove",
+  "name": "Ember Salt",
+  "icon": 49,
+  "description": "Red crystals that grew where the grove burned hottest. Warm to hold, forever.",
+  "effect": {
+    "type": "consumable",
+    "id": "ember_salt",
+    "count": 1
+  }
+}

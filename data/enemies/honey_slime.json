@@ -1,0 +1,132 @@
+{
+  "id": "honey_slime",
+  "name": "Honey Slime",
+  "ai": "melee",
+  "sprite": "honey_slime",
+  "wader": true,
+  "beeproof": true,
+  "ambush": {
+    "radius": 34,
+    "riseTicks": 36
+  },
+  "trail": {
+    "everyTicks": 18,
+    "radius": 9,
+    "ticks": 420,
+    "speedMult": 0.6
+  },
+  "hp": 50,
+  "poise": {
+    "max": 14,
+    "resetTicks": 60
+  },
+  "tallow": 30,
+  "loot": "honey_slime",
+  "speed": 34,
+  "strafeSpeed": 22,
+  "accelTicks": 8,
+  "turnDegPerTick": 7,
+  "collider": {
+    "w": 10,
+    "h": 5
+  },
+  "hurtbox": {
+    "w": 14,
+    "h": 10,
+    "offsetY": -5
+  },
+  "bodyRadius": 6,
+  "perception": {
+    "halfAngleDeg": 70,
+    "nearDistance": 48,
+    "farDistance": 320,
+    "detectTicksNear": 20,
+    "detectTicksFar": 150,
+    "suspicionAt": 0.3,
+    "forgetPerTick": 0.004,
+    "investigateTicks": 200,
+    "reactionTicks": [
+      12,
+      20
+    ],
+    "loseTicks": 240
+  },
+  "leash": {
+    "distance": 300,
+    "healOnReturn": true
+  },
+  "spacing": {
+    "preferred": 22,
+    "strafeTicks": [
+      30,
+      60
+    ]
+  },
+  "attackGapTicks": [
+    20,
+    44
+  ],
+  "staggerTicks": 26,
+  "deathTicks": 34,
+  "corpseTicks": 80,
+  "blood": "honey",
+  "steps": {
+    "sfx": "e_step_slime",
+    "volume": 0.5
+  },
+  "voice": {
+    "alert": "e_blob_gurgle",
+    "hurt": "e_blob_hurt",
+    "die": "e_slime_die",
+    "rise": "e_blob_rise"
+  },
+  "moves": [
+    {
+      "id": "engulf",
+      "range": [
+        0,
+        30
+      ],
+      "weight": 2,
+      "cooldown": 70,
+      "strikes": [
+        {
+          "damage": 16,
+          "poise": 16,
+          "windup": 28,
+          "active": 6,
+          "recovery": 34,
+          "hitbox": {
+            "shape": "circle",
+            "radius": 14,
+            "offset": 10
+          },
+          "trackDegPerTick": 4,
+          "telegraph": {
+            "tick": 10,
+            "kind": "normal"
+          },
+          "lunge": {
+            "distance": 14,
+            "startTick": 25,
+            "ticks": 5
+          },
+          "knockback": 40,
+          "hitstop": 3,
+          "shake": 0.1,
+          "pools": {
+            "count": 1,
+            "radius": 12,
+            "at": "target",
+            "ticks": 360,
+            "speedMult": 0.55,
+            "kind": "honey"
+          },
+          "windupSfx": "e_blob_gurgle",
+          "sfx": "e_engulf",
+          "anim": "engulf"
+        }
+      ]
+    }
+  ]
+}

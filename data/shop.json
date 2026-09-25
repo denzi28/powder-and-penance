@@ -112,6 +112,12 @@
       "price": 2000,
       "limit": 3,
       "when": "oskar_cache_returned"
-    }
+    },
+    { "id": "hild_candle", "seller": "hild", "consumable": "beeswax_candle", "price": 300 },
+    { "id": "hild_comb", "seller": "hild", "consumable": "honeycomb", "price": 180 },
+    { "id": "hild_smoke", "seller": "hild", "consumable": "smoke_pellet", "price": 220 },
+    { "id": "hild_grog", "seller": "hild", "consumable": "ringers_grog", "price": 350, "when": "hild_read_reply" },
+    { "id": "hild_ingot", "seller": "hild", "consumable": "tallow_ingot", "price": 650, "limit": 4, "when": "hild_read_reply" },
+    { "id": "hild_ember", "seller": "hild", "consumable": "ember_salt", "price": 2200, "limit": 2, "when": "boss:hive_queen" }
   ]
 }

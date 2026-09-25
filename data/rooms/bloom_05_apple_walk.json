@@ -1,0 +1,154 @@
+{
+  "id": "bloom_05_apple_walk",
+  "area": "bloom",
+  "origin": [29, 32],
+  "legend": {
+    "#": "wall",
+    ".": "floor",
+    "=": "floor_path",
+    ",": "floor_flowers",
+    "l": "floor_lavender",
+    "~": "floor_honey",
+    "h": "floor_comb",
+    "a": "floor_ash",
+    "p": "floor_plank",
+    ":": "floor_stone",
+    " ": "void"
+  },
+  "tiles": [
+    "###############..###########",
+    "#..............==..........#",
+    "#.........,,,,.==..........#",
+    "#.........,,,,.==..........#",
+    "#.........,,,,.==..........#",
+    "#..............==..........#",
+    ".==========================#",
+    ".==========================#",
+    "#...................=======.",
+    "#...................=======.",
+    "#.,,,,,,,,..........==.....#",
+    "#.,,,,,,,,..~~~~~...==.....#",
+    "#.,,,,,,,,..~~~~~...==.,,,.#",
+    "#.,,,,,,,,..~~~~~...==.,,,.#",
+    "#.,,,,,,,,..........==.,,,.#",
+    "#...................==.,,,.#",
+    "#...................==.....#",
+    "####################..######"
+  ],
+  "entities": [
+    {
+      "type": "decor",
+      "kind": "apple_tree",
+      "at": [3, 3]
+    },
+    {
+      "type": "decor",
+      "kind": "apple_tree",
+      "at": [7, 3]
+    },
+    {
+      "type": "decor",
+      "kind": "apple_tree",
+      "at": [19, 3]
+    },
+    {
+      "type": "decor",
+      "kind": "apple_tree",
+      "at": [23, 3]
+    },
+    {
+      "type": "decor",
+      "kind": "apple_tree",
+      "at": [3, 15]
+    },
+    {
+      "type": "decor",
+      "kind": "apple_tree",
+      "at": [11, 15]
+    },
+    {
+      "type": "decor",
+      "kind": "apple_tree",
+      "at": [16, 15]
+    },
+    {
+      "type": "decor",
+      "kind": "apple_tree",
+      "at": [25, 11]
+    },
+    {
+      "type": "decor",
+      "kind": "apple_tree_fruit",
+      "at": [11, 3]
+    },
+    {
+      "type": "decor",
+      "kind": "apple_tree_fruit",
+      "at": [7, 9]
+    },
+    {
+      "type": "decor",
+      "kind": "apple_tree_fruit",
+      "at": [15, 9]
+    },
+    {
+      "type": "decor",
+      "kind": "apple_tree_fruit",
+      "at": [25, 15]
+    },
+    {
+      "type": "decor",
+      "kind": "scarecrow",
+      "at": [5, 12]
+    },
+    {
+      "type": "decor",
+      "kind": "skep_bench",
+      "at": [18, 12]
+    },
+    {
+      "type": "decor",
+      "kind": "fallen_skep",
+      "at": [13, 10]
+    },
+    {
+      "type": "prop",
+      "kind": "hive",
+      "at": [17, 11]
+    },
+    {
+      "type": "prop",
+      "kind": "hive",
+      "at": [19, 11]
+    },
+    {
+      "type": "enemy",
+      "kind": "orchard_guard",
+      "at": [9, 12],
+      "facing": "N"
+    },
+    {
+      "type": "enemy",
+      "kind": "orchard_guard",
+      "at": [24, 5],
+      "facing": "W"
+    },
+    {
+      "type": "enemy",
+      "kind": "honey_slime",
+      "at": [14, 12],
+      "facing": "N"
+    },
+    {
+      "type": "swarm",
+      "swarm": "drones",
+      "at": [4, 11]
+    },
+    {
+      "type": "item",
+      "id": "bloom_orchard_ingot",
+      "item": "ingot_orchard",
+      "at": [1, 1]
+    }
+  ]
+}

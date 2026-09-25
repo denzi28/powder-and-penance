@@ -1,0 +1,123 @@
+{
+  "id": "bloom_09_queens_garden",
+  "area": "bloom",
+  "origin": [29, 66],
+  "legend": {
+    "#": "wall",
+    ".": "floor",
+    "=": "floor_path",
+    ",": "floor_flowers",
+    "l": "floor_lavender",
+    "~": "floor_honey",
+    "h": "floor_comb",
+    "a": "floor_ash",
+    "p": "floor_plank",
+    ":": "floor_stone",
+    " ": "void"
+  },
+  "tiles": [
+    "#############..#############",
+    "#,,,,,,,,,,,,==,,,,,,,,,,,,#",
+    "#,,,,,,,,,,,,==,,,,,,,,,,,,#",
+    "#,,,,,,,,,,,,==,,,,,,,,,,,,#",
+    "#,,,,,,,,,,,,==,,,,,#,,,,,,#",
+    "#,,,,,,,,,,,,==,,,,,#,,,,,,#",
+    "#,,,,,,,,,,,,==,,,,,#,,,,,,#",
+    "#,,,,==========,,,,,#,,,,,,#",
+    "#,,,,==========,,,,,#,,,,,,#",
+    "#,,,,==,,,,,,,,,,,,,#,,,,,,#",
+    "#,,,,==,,,,,,,,,,,,,#,,,,,,#",
+    "#,,,,==,,,,,,,,,,,~~#~~,,,,#",
+    "#,,,,==,,############~~,,,,#",
+    "#,,,,==,,,,,,,,,,,~~~~~,,,,#",
+    "#,,,,==,,,,,,,,,,,,,,,,,,,,#",
+    "#,,,,==,,,,,,,,,,,,,,,,,,,,#",
+    "#,,,,==,,,,,,,,,,,,,,,,,,,,#",
+    "#####..#####################"
+  ],
+  "entities": [
+    {
+      "type": "prop",
+      "kind": "hive",
+      "at": [3, 3]
+    },
+    {
+      "type": "prop",
+      "kind": "hive",
+      "at": [10, 3]
+    },
+    {
+      "type": "prop",
+      "kind": "hive",
+      "at": [23, 3]
+    },
+    {
+      "type": "prop",
+      "kind": "hive",
+      "at": [16, 14]
+    },
+    {
+      "type": "prop",
+      "kind": "hive",
+      "at": [24, 15]
+    },
+    {
+      "type": "decor",
+      "kind": "hollyhocks",
+      "at": [1, 1]
+    },
+    {
+      "type": "decor",
+      "kind": "hollyhocks",
+      "at": [26, 1]
+    },
+    {
+      "type": "decor",
+      "kind": "hollyhocks",
+      "at": [1, 15]
+    },
+    {
+      "type": "decor",
+      "kind": "flower_bed",
+      "at": [18, 7]
+    },
+    {
+      "type": "decor",
+      "kind": "flower_bed",
+      "at": [25, 10]
+    },
+    {
+      "type": "decor",
+      "kind": "bee_saint",
+      "at": [9, 15]
+    },
+    {
+      "type": "swarm",
+      "swarm": "drones",
+      "at": [17, 3]
+    },
+    {
+      "type": "swarm",
+      "swarm": "queens_guard",
+      "at": [23, 13]
+    },
+    {
+      "type": "enemy",
+      "kind": "beekeeper_husk",
+      "at": [9, 5],
+      "facing": "S"
+    },
+    {
+      "type": "enemy",
+      "kind": "beekeeper_husk",
+      "at": [16, 9],
+      "facing": "W"
+    },
+    {
+      "type": "enemy",
+      "kind": "orchard_guard",
+      "at": [24, 6],
+      "facing": "W"
+    }
+  ]
+}

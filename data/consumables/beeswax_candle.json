@@ -1,0 +1,17 @@
+{
+  "id": "beeswax_candle",
+  "name": "Beeswax Candle",
+  "icon": 61,
+  "max": 5,
+  "sfx": "p_candle",
+  "description": "A taper of real beeswax, honey-gold and sweet-smelling. It burns clean and bright, and the old tallow the Order poured over the orchard's doors softens in its light.",
+  "use": {
+    "type": "buff",
+    "ticks": 3600,
+    "label": "BEESWAX LIGHT",
+    "colour": "honey",
+    "mods": {
+      "light": 1
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "id": "ingot_orchard",
+  "name": "Tallow Ingot",
+  "icon": 48,
+  "description": "Tallow pressed hard enough to ring when struck. This one was stamped with the Synod's flame: the Order's own stock, left behind when the burners moved on.",
+  "effect": {
+    "type": "consumable",
+    "id": "tallow_ingot",
+    "count": 1
+  }
+}

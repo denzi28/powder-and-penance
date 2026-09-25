@@ -47,7 +47,7 @@ function play(id: string, flags: Set<string>, maxTicks = 20000) {
     player: {
       x: 0, y: 0, tallow: 0, slots: [], phials: { max: 3, charges: 3, level: 0 }, healAmount: 45, ammoFor: () => ({ reserve: 0 }),
       inv: { weapons: [], shields: [], armour: [], rings: [] }, rings: [null, null], worn: { head: null, body: null },
-      give: () => true, pickUpWeapon: () => false, setRing: () => {}, equipLoad: 0, capacity: 30, loadTier: { label: 'Light', note: 'quick' },
+      give: () => true, addItem: () => 1, count: () => 1, belt: null, pickUpWeapon: () => false, setRing: () => {}, equipLoad: 0, capacity: 30, loadTier: { label: 'Light', note: 'quick' },
     },
     particles: { burst: () => {} },
     save: () => {},

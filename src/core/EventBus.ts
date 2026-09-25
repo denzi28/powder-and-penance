@@ -67,7 +67,7 @@ export interface GameEvents {
   swarm: { actor: Actor; strike: StrikeDef };
   /** Something walking leaves a slowing puddle behind it (enemy `trail`). */
   trail: { actor: Actor; x: number; y: number };
-  erupted: { x: number; y: number; radius: number; fx: 'spikes' | 'wax' | 'flame' | 'water' | 'ember'; sfx: string };
+  erupted: { x: number; y: number; radius: number; fx: 'spikes' | 'wax' | 'flame' | 'water' | 'ember' | 'honey'; sfx: string };
   /** Player caught by a grab / released from it. */
   grabbed: { by: Actor };
   propBroken: { prop: Prop };

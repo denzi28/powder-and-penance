@@ -1,0 +1,10 @@
+{
+  "id": "maudlin_reply",
+  "name": "Maudlin's Reply",
+  "icon": 63,
+  "description": "Sealed in grey wax with a candle pressed into it. It is heavier than a letter should be.",
+  "effect": {
+    "type": "quest",
+    "note": "Take it back to Hild in Bloomhollow."
+  }
+}

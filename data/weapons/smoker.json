@@ -1,0 +1,90 @@
+{
+  "id": "smoker",
+  "name": "Beekeeper's Smoker",
+  "weight": 1.5,
+  "icon": 57,
+  "description": "Hild's own, the tin blackened with thirty years of smouldering burlap. One puff and the bees forget what they were angry about; so, for a moment, does anything else caught in it.",
+  "sounds": {
+    "draw": "p_draw_gun",
+    "hit": "p_hit_blunt"
+  },
+  "kind": "melee",
+  "twoHanded": false,
+  "upgradable": true,
+  "scaling": {
+    "dex": "D"
+  },
+  "view": {
+    "sprite": "smoker",
+    "restAngleOffsetDeg": 15
+  },
+  "crit": {
+    "backstab": 2,
+    "riposte": 2
+  },
+  "light": [
+    {
+      "damage": 6,
+      "poise": 4,
+      "stamina": 16,
+      "windup": 10,
+      "active": 6,
+      "recovery": 18,
+      "comboFrom": 20,
+      "rollCancelFrom": 14,
+      "trackDegPerTick": 8,
+      "hitbox": {
+        "shape": "arc",
+        "radius": 34,
+        "halfAngle": 32
+      },
+      "sweep": {
+        "fromDeg": -10,
+        "toDeg": 10,
+        "reach": 4
+      },
+      "smoke": {
+        "radius": 26,
+        "offset": 22,
+        "blind": 120,
+        "calm": true
+      },
+      "knockback": 20,
+      "hitstop": 1,
+      "shake": 0.04,
+      "sfx": "p_smoker"
+    }
+  ],
+  "heavy": {
+    "chargeTicks": 30,
+    "chargeDamageMult": 1.2,
+    "chargePoiseMult": 1.2,
+    "strike": {
+      "damage": 8,
+      "poise": 8,
+      "stamina": 28,
+      "windup": 16,
+      "active": 10,
+      "recovery": 26,
+      "rollCancelFrom": 24,
+      "hitbox": {
+        "shape": "circle",
+        "radius": 36
+      },
+      "sweep": {
+        "fromDeg": -40,
+        "toDeg": 40
+      },
+      "smoke": {
+        "radius": 46,
+        "offset": 0,
+        "blind": 200,
+        "calm": true
+      },
+      "knockback": 40,
+      "hitstop": 2,
+      "shake": 0.08,
+      "sfx": "p_smoker"
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "id": "gear_smoker",
+  "name": "Beekeeper's Smoker",
+  "icon": 57,
+  "description": "Hild's smoker. Calms bees; blinds anything else that breathes the smoke.",
+  "effect": {
+    "type": "gear",
+    "kind": "weapon",
+    "id": "smoker"
+  }
+}

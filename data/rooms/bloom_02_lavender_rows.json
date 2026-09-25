@@ -1,0 +1,129 @@
+{
+  "id": "bloom_02_lavender_rows",
+  "area": "bloom",
+  "origin": [4, 15],
+  "legend": {
+    "#": "wall",
+    ".": "floor",
+    "=": "floor_path",
+    ",": "floor_flowers",
+    "l": "floor_lavender",
+    "~": "floor_honey",
+    "h": "floor_comb",
+    "a": "floor_ash",
+    "p": "floor_plank",
+    ":": "floor_stone",
+    " ": "void"
+  },
+  "tiles": [
+    "######################..######",
+    "####..................==.....#",
+    "####..................==.....#",
+    "#..lllllllllllllllllll==lll..#",
+    "#..lllllllllllllllllll==lll..#",
+    "#...........==........==.....#",
+    "#...........==........==.....#",
+    "#..lllllllll==llllllll==lll..#",
+    "#..lllllllll==llllllll==lll...",
+    "#...........==================",
+    "#...........=================#",
+    "#..lllllllll==llllllll==.....#",
+    "#..lllllllll==llllllll==.....#",
+    "#..~~~~~....======....==.....#",
+    "#..~~~~~....======....==..####",
+    "#..~~~~~....==........==..####",
+    "###.........==........==..####",
+    "################..############"
+  ],
+  "entities": [
+    {
+      "type": "decor",
+      "kind": "lavender_bush",
+      "at": [2, 3]
+    },
+    {
+      "type": "decor",
+      "kind": "lavender_bush",
+      "at": [2, 7]
+    },
+    {
+      "type": "decor",
+      "kind": "lavender_bush",
+      "at": [27, 3]
+    },
+    {
+      "type": "decor",
+      "kind": "lavender_bush",
+      "at": [27, 7]
+    },
+    {
+      "type": "decor",
+      "kind": "lavender_bush",
+      "at": [2, 11]
+    },
+    {
+      "type": "decor",
+      "kind": "lavender_bush",
+      "at": [23, 11]
+    },
+    {
+      "type": "decor",
+      "kind": "skep_bench",
+      "at": [9, 15]
+    },
+    {
+      "type": "decor",
+      "kind": "hive_box",
+      "at": [26, 12]
+    },
+    {
+      "type": "decor",
+      "kind": "scarecrow",
+      "at": [18, 6]
+    },
+    {
+      "type": "decor",
+      "kind": "apple_tree",
+      "at": [4, 1]
+    },
+    {
+      "type": "swarm",
+      "swarm": "drones",
+      "at": [7, 4]
+    },
+    {
+      "type": "swarm",
+      "swarm": "drones",
+      "at": [18, 8]
+    },
+    {
+      "type": "enemy",
+      "kind": "beekeeper_husk",
+      "at": [16, 9],
+      "facing": "W"
+    },
+    {
+      "type": "enemy",
+      "kind": "beekeeper_husk",
+      "at": [25, 13],
+      "facing": "N"
+    },
+    {
+      "type": "enemy",
+      "kind": "honey_slime",
+      "at": [5, 14],
+      "facing": "E"
+    },
+    {
+      "type": "item",
+      "id": "bloom_honey",
+      "item": "cache_honey",
+      "at": [27, 2]
+    },
+    {
+      "type": "note",
+      "note": "note_hild_orchard",
+      "at": [20, 15]
+    }
+  ]
+}

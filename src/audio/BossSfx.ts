@@ -1356,6 +1356,109 @@ const RECIPES: Record<LayeredSound, Recipe> = {
     k.breath(0.2, 0.5, 0.34, false);
     k.voice(0.2, 0.25, 140, 110, 'uh', 0.05, 0.6);
   },
+  // Beekeeper Husk: a wax thing breathing through a veil
+  e_husk_alert: k => {
+    k.voice(0, 0.5, 120, 100, 'oo', 0.22, 0.4);
+    k.breath(0.1, 0.4, 0.12, false);
+  },
+  e_husk_hurt: k => k.voice(0, 0.22, 150, 115, 'uh', 0.2, 0.5),
+  e_husk_die: k => {
+    k.voice(0, 0.7, 130, 70, 'oh', 0.22, 0.6);
+    k.splash(0.3, 0.4, 0.2, true);
+  },
+  e_husk_pump: k => {
+    k.breath(0, 0.18, 0.14, true);
+    k.breath(0.2, 0.18, 0.14, true);
+  },
+  e_step_husk: k => {
+    k.breath(0, 0.1, 0.05, false);
+    k.rattle(0, 0.04, 0.03);
+  },
+  // the scarecrows: straw, dry wood, a rasp where a throat should be
+  e_straw: k => k.debris(0, 0.14, 0.12),
+  e_guard_rise: k => {
+    k.debris(0, 0.5, 0.25);
+    k.rattle(0.05, 0.3, 0.18); // the post creaking out of the ground
+    k.breath(0.3, 0.5, 0.18, true);
+  },
+  e_guard_alert: k => {
+    k.breath(0, 0.45, 0.22, true);
+    k.rattle(0.1, 0.2, 0.12);
+  },
+  e_guard_hurt: k => {
+    k.debris(0, 0.2, 0.25);
+    k.breath(0, 0.15, 0.1, false);
+  },
+  e_guard_die: k => {
+    k.debris(0, 0.8, 0.35);
+    k.rattle(0.1, 0.4, 0.2);
+  },
+  e_scythe_windup: k => k.whoosh(0, 0.3, 140, 400, 0.25, 0.8),
+  e_scythe: k => {
+    k.whoosh(0, 0.35, 300, 1600, 0.7);
+    k.slice(0.12, 0.18, 0.35);
+  },
+  // the Scarecrow Warden
+  b_warden_roar: k => {
+    k.voice(0, 1.1, 70, 55, 'ah', 0.4, 0.9, 2);
+    k.fire(0, 1.2, 0.25);
+    for (let i = 0; i < 4; i++) k.voice(0.3 + i * 0.18, 0.14, rnd(700, 900), rnd(500, 600), 'ah', 0.12, 0.6); // its crows answering
+  },
+  b_warden_scythe: k => {
+    k.whoosh(0, 0.45, 160, 1200, 1);
+    k.slice(0.2, 0.2, 0.4);
+    k.fire(0.1, 0.4, 0.15);
+  },
+  b_warden_spin: k => {
+    for (let i = 0; i < 3; i++) k.whoosh(i * 0.16, 0.26, 180, 1100, 0.6);
+    k.fire(0, 0.6, 0.15);
+  },
+  b_crows_fly: k => {
+    for (let i = 0; i < 6; i++) k.breath(i * 0.06, 0.08, 0.14, i % 2 === 0); // wingbeats
+    for (let i = 0; i < 3; i++) k.voice(0.1 + i * 0.12, 0.13, rnd(750, 950), rnd(480, 600), 'ah', 0.14, 0.7);
+  },
+  b_step_straw: k => {
+    k.boom(0, 80, 50, 0.2, 0.3);
+    k.debris(0, 0.16, 0.14);
+  },
+  // the Hive Queen
+  b_queen_hum: k => {
+    k.voice(0, 1.4, 220, 247, 'mm', 0.25, 0, 3, 10);
+    k.buzz(0, 1.4, 180, 0.2, 8, 1.3);
+  },
+  b_queen_song: k => {
+    k.voice(0, 1.2, 440, 494, 'ah', 0.22, 0, 3, 14);
+    k.voice(0.2, 1, 659, 587, 'oo', 0.14, 0, 2, 12);
+    k.buzz(0, 1.2, 230, 0.1, 5, 1);
+  },
+  b_jelly_spit: k => {
+    k.breath(0, 0.2, 0.2, true);
+    k.splash(0.18, 0.3, 0.35);
+    k.pop(0.2, 500, 0.2);
+  },
+  b_sceptre: k => {
+    k.whoosh(0, 0.35, 250, 1200, 0.7);
+    k.clang(0.2, 900, 0.3, 0.12);
+  },
+  b_honey_rain: k => {
+    k.buzz(0, 0.8, 200, 0.12, 5, 1.2);
+    k.splash(0.4, 0.5, 0.3, true);
+  },
+  b_queen_scream: k => {
+    k.scream(0, 1.8, 900, 400, 0.35, 4, 0.6);
+    k.buzz(0, 2.2, 160, 0.4, 12, 1.5);
+    k.splash(0.8, 0.8, 0.4, true); // her hive splitting
+  },
+  // the swarm
+  b_swarm_roar: k => {
+    k.buzz(0, 1.6, 150, 0.45, 14, 1.4);
+    k.buzz(0.2, 1.3, 240, 0.25, 8, 1.2);
+  },
+  b_swarm_dive: k => {
+    k.buzz(0, 0.6, 200, 0.35, 10, 1.5);
+    k.whoosh(0.1, 0.4, 300, 1400, 0.4);
+  },
+  b_step_glide: k => k.buzz(0, 0.3, 190, 0.06, 4, 1),
   c_shriek: k => {
     // something in the trees, far off, not an animal
     k.scream(0, 1.6, 1700, 1100, 0.35, 3, 0.5);

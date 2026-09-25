@@ -6,6 +6,7 @@
     "works": { "name": "The Tallow Works", "tileset": "tiles_works" },
     "mire": { "name": "The Waxmire", "tileset": "tiles_mire" },
     "vault": { "name": "The Powder Vault", "tileset": "tiles" },
+    "bloom": { "name": "Bloomhollow", "tileset": "tiles_orchard" },
     "test": { "name": "Test Grounds", "tileset": "tiles" }
   }
 }

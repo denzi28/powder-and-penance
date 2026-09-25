@@ -1,0 +1,123 @@
+{
+  "id": "bloom_07_burned_grove",
+  "area": "bloom",
+  "origin": [29, 49],
+  "legend": {
+    "#": "wall",
+    ".": "floor",
+    "=": "floor_path",
+    ",": "floor_flowers",
+    "l": "floor_lavender",
+    "~": "floor_honey",
+    "h": "floor_comb",
+    "a": "floor_ash",
+    "p": "floor_plank",
+    ":": "floor_stone",
+    " ": "void"
+  },
+  "tiles": [
+    "####################..######",
+    "#aaaaaaaaaaaaaaaaaaa==aaaaa#",
+    "#aaaaaaaaaaaaaaaaaaa==aaaaa#",
+    ".======aaaaaaaaaaaaa==aaaaa#",
+    "#aaaaaaaaaaaaaaaaaaa==aaaaa#",
+    "#aaaaaaaaaaaaaaaaaaa==aaaaa#",
+    "#aaaaaaaaaaaaaaaaaaaaaaaaaa#",
+    "#aaaaaaaaaaaaaaaaaaaaaaaaaa#",
+    "#aaaaaaaaaaaaaaaaaaaaaaaaaa#",
+    "#aaaaaaaaaaaaaaaaaaaaaaaaaa#",
+    "#aaaaaaaaaaaaaaaaaaaaaaaaaa#",
+    "#aaaaaaaaaaaaaaaaaaaaaaaaaa#",
+    "#aaaaaaaaaaaa==aaaaaaaaaaaa#",
+    "#aaaaaaaaaaaa==aaaaaaa....a#",
+    "#aaaaaaaaaaaa==aaaaaaa....a#",
+    "#aaaaaaaaaaaa==aaaaaaa....a#",
+    "#aaaaaaaaaaaa==aaaaaaaaaaaa#",
+    "#############..#############"
+  ],
+  "entities": [
+    {
+      "type": "decor",
+      "kind": "burned_tree",
+      "at": [4, 7]
+    },
+    {
+      "type": "decor",
+      "kind": "burned_tree",
+      "at": [9, 3]
+    },
+    {
+      "type": "decor",
+      "kind": "burned_tree",
+      "at": [18, 4]
+    },
+    {
+      "type": "decor",
+      "kind": "burned_tree",
+      "at": [24, 8]
+    },
+    {
+      "type": "decor",
+      "kind": "burned_tree",
+      "at": [5, 14]
+    },
+    {
+      "type": "decor",
+      "kind": "burned_tree",
+      "at": [22, 14]
+    },
+    {
+      "type": "decor",
+      "kind": "burned_tree",
+      "at": [10, 12]
+    },
+    {
+      "type": "decor",
+      "kind": "charred_stump",
+      "at": [13, 4]
+    },
+    {
+      "type": "decor",
+      "kind": "charred_stump",
+      "at": [17, 12]
+    },
+    {
+      "type": "decor",
+      "kind": "charred_stump",
+      "at": [7, 10]
+    },
+    {
+      "type": "decor",
+      "kind": "ash_heap",
+      "at": [15, 7]
+    },
+    {
+      "type": "decor",
+      "kind": "ash_heap",
+      "at": [20, 10]
+    },
+    {
+      "type": "enemy",
+      "kind": "scarecrow_warden",
+      "at": [14, 8],
+      "facing": "S",
+      "miniboss": {
+        "id": "scarecrow_warden",
+        "title": "The Scarecrow Warden",
+        "drop": "gear_beekeepers_coat",
+        "hpMult": 1.3
+      }
+    },
+    {
+      "type": "note",
+      "note": "note_decree",
+      "at": [3, 5]
+    },
+    {
+      "type": "item",
+      "id": "bloom_grove_salt",
+      "item": "salt_grove",
+      "at": [25, 15]
+    }
+  ]
+}
