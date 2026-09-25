@@ -104,3 +104,9 @@ describe('small polish', () => {
     expect(steps).toContain('"show":["decor:wagon","decor:horse","decor:guard_dead","decor:wheel_debris","player","npc:oskar_wreck","enemy:wickling"]');
   });
 });
+
+describe('release', () => {
+  it('ships with the debug hotkeys and menu switched off', () => {
+    expect(DATA.debug.enabled).toBe(false);
+  });
+});

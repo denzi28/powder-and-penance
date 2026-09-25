@@ -1,4 +1,5 @@
 {
+  "enabled": false,
   "overlayOnStart": false,
   "slowmoScale": 0.25
 }

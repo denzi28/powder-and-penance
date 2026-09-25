@@ -1015,7 +1015,8 @@ export const InputCfg = z.object({
   gamepad: z.record(z.string(), z.array(int.nonnegative())),
 });
 
-export const DebugCfg = z.object({ overlayOnStart: z.boolean(), slowmoScale: pos });
+/** data/config/debug.json. `enabled` turns on the debug hotkeys (F1-F8, 1-7, the ` menu); keep it false for release. */
+export const DebugCfg = z.object({ enabled: z.boolean().default(false), overlayOnStart: z.boolean(), slowmoScale: pos });
 
 export const HudCfg = z.object({
   x: int, y: int, hpPxPerPoint: pos, hpHeight: int.positive(),

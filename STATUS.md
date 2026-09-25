@@ -19,7 +19,7 @@ Stack: Phaser 3 + TypeScript + Vite. Zod-validated data files, Vitest tests.
   - [ASSETS.md](ASSETS.md): every sprite sheet
   - [README.md](README.md): controls, debug keys, what's in each area
 - **Commands:** `npm run dev`, `npm test`, `npm run typecheck`, `npm run gen:art`.
-- **Debug:** press ` to open the debug menu. BOSSES... teleports to any boss door (and revives beaten bosses). You can also teleport to any room and edit world flags. F1 overlay, F2 god mode, F4 kill all, F5 slow/freeze, F6 step one tick.
+- **Debug:** off by default; set `"enabled": true` in `data/config/debug.json` to use it. Then press ` to open the debug menu. BOSSES... teleports to any boss door (and revives beaten bosses). You can also teleport to any room and edit world flags. F1 overlay, F2 god mode, F4 kill all, F5 slow/freeze, F6 step one tick.
 - **Git identity** isn't set globally on the dev machine. Commit with `git -c user.name="Powder & Penance dev" -c user.email="recepdeniz2005@gmail.com" commit ...`.
 - **Testing in a hidden or background browser tab:** the animation frame loop gets throttled. Step the game by hand (`window.__game` in dev builds; `game.step(...)`, or the game scene's `tick()`).
 

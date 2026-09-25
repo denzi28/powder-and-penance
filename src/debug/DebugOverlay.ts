@@ -12,7 +12,7 @@ import type { Actor } from '../actors/Actor';
 import type { GameScene } from '../scenes/GameScene';
 
 export class DebugOverlay {
-  enabled = DATA.debug.overlayOnStart;
+  enabled = DATA.debug.enabled && DATA.debug.overlayOnStart;
   private g: Phaser.GameObjects.Graphics;
   private labels: Phaser.GameObjects.BitmapText[] = [];
 
