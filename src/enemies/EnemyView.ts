@@ -38,18 +38,19 @@ export class EnemyView {
     const y = feetY + Math.round(e.flinchY);
     const depth = DEPTH.actor(feetY);
     const sheet = e.def.sprite;
+    const shown = e.sceneHidden ? 0 : e.alpha; // a cutscene can keep it off the stage
     const f = this.lib.frame(sheet, e.anim.name, e.dir, e.anim.index);
     const squash = e.squash;
     const sx = squash.sx * (1 + e.melt * 0.35); // melting: it slumps wide and low
     const sy = squash.sy * (1 - e.melt * 0.6);
 
-    this.shadow.setPosition(feetX, feetY).setAlpha(e.alpha);
+    this.shadow.setPosition(feetX, feetY).setAlpha(shown);
     this.body
       .setFrame(f.frame)
       .setScale(f.flip ? -sx : sx, sy)
       .setPosition(x, y)
       .setDepth(depth + 0.1)
-      .setAlpha(e.alpha);
+      .setAlpha(shown);
     tint(this.body, e.flash > 0);
     if (e.melt > 0 && e.flash <= 0) {
       const k = Math.min(1, e.melt);
@@ -58,7 +59,7 @@ export class EnemyView {
     }
 
     const pip = e.stateName === 'notice' ? 'exclaim' : e.stateName === 'suspicious' ? 'question' : null;
-    this.pip.setVisible(pip !== null && e.alpha > 0);
+    this.pip.setVisible(pip !== null && shown > 0);
     if (pip) {
       if (this.pip.texture.key !== pip) this.pip.setTexture(pip, 0);
       this.pip.setPosition(x, y - e.def.hurtbox.h - 14).setDepth(DEPTH.overlay - 1);
@@ -66,7 +67,7 @@ export class EnemyView {
 
     if (this.weapon) {
       // hidden with its owner (e.g. submerged ambushers), and while it's in the air (a boomerang throw)
-      this.weapon.setVisible(!e.dead && e.alpha > 0 && !e.ctx.projectiles.weaponOut(e));
+      this.weapon.setVisible(!e.dead && shown > 0 && !e.ctx.projectiles.weaponOut(e));
       // Casting and channelling need both hands: the weapon is set down flat on the floor beside the
       // caster, where it stays until they move or fight again.
       const setDown = !e.dead && SET_DOWN_ANIMS.has(e.anim.name);

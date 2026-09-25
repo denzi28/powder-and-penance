@@ -72,6 +72,7 @@ function loadAll(src: Record<string, unknown>) {
     decor: one(S.DecorTable, 'decor'),
     npcs: one(S.Npcs, 'npcs'),
     chatter: one(S.Chatter, 'chatter'),
+    goals: one(S.Goals, 'goals'),
     ambience: one(S.Ambience, 'ambience'),
     ambient: one(S.AmbientAudioCfg, 'audio/ambient'),
     music: one(S.MusicCfg, 'audio/music'),

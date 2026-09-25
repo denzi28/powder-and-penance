@@ -2,6 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import { DATA } from '../src/data/config';
 import { rollFor } from '../src/player/Player';
+import { check } from '../src/story/conditions';
 
 describe('reported bugs', () => {
   it("Wick's Rest stands clear of every villager's stops and paths", () => {
@@ -81,5 +82,25 @@ describe('the near-finished pass', () => {
 
   it('reloads the heavy guns quicker', () => {
     for (const id of ['flintlock', 'blunderbuss', 'heavy_crossbow']) expect(DATA.weapons[id].ranged!.reload.ticks, id).toBeLessThanOrEqual(110);
+  });
+});
+
+describe('small polish', () => {
+  it('names a goal for every step of Act 1, in order', () => {
+    const goal = (flags: string[]) => DATA.goals.goals.find(g => check(new Set(flags), g.when))!.text;
+    expect(goal([])).toContain('cage key');
+    expect(goal(['key:cage_key', 'story:oskar_freed'])).toContain('Tollwarden');
+    const seals = ['key:seal_of_tallow', 'key:seal_of_the_mire', 'key:seal_of_powder', 'key:seal_of_the_hive'];
+    expect(goal(['key:cage_key', 'story:oskar_freed', 'boss:tollwarden', ...seals.slice(0, 2)])).toContain('Powder Vault');
+    expect(goal(['key:cage_key', 'story:oskar_freed', 'boss:tollwarden', ...seals])).toContain('Chandler');
+    expect(goal(['key:cage_key', 'story:oskar_freed', 'boss:tollwarden', ...seals, 'boss:chandler', 'key:chandler_ledger'])).toContain('Maudlin');
+    expect(goal(['key:cage_key', 'story:oskar_freed', 'boss:tollwarden', ...seals, 'boss:chandler'])).toContain('Act One is over');
+    expect(DATA.goals.goals.at(-1)!.when).toBeUndefined(); // there's always something to say
+  });
+
+  it('keeps the Cutting\'s Wickling off the stage in the opening, and brings it back after', () => {
+    const steps = JSON.stringify(DATA.scripts.wreck_intro.steps);
+    expect(steps).toContain('"hide":["decor:wagon","decor:horse","decor:guard_dead","decor:wheel_debris","player","npc:oskar_wreck","enemy:wickling"]');
+    expect(steps).toContain('"show":["decor:wagon","decor:horse","decor:guard_dead","decor:wheel_debris","player","npc:oskar_wreck","enemy:wickling"]');
   });
 });

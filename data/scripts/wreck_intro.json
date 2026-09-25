@@ -2,7 +2,7 @@
   "id": "wreck_intro",
   "skippable": true,
   "steps": [
-    {"hide": ["decor:wagon", "decor:horse", "decor:guard_dead", "decor:wheel_debris", "player", "npc:oskar_wreck"]},
+    {"hide": ["decor:wagon", "decor:horse", "decor:guard_dead", "decor:wheel_debris", "player", "npc:oskar_wreck", "enemy:wickling"]},
     {"bars": true},
     {"fade": "out", "ticks": 1},
     {"actor": "wagon", "sprite": "decor_road", "frame": 0, "at": [33, 10], "bob": 1},
@@ -75,7 +75,7 @@
     {"fade": "out", "ticks": 50},
     {"follow": null},
     {"remove": ["wagon", "horse", "driver", "guard1", "guard2"]},
-    {"show": ["decor:wagon", "decor:horse", "decor:guard_dead", "decor:wheel_debris", "player", "npc:oskar_wreck"]},
+    {"show": ["decor:wagon", "decor:horse", "decor:guard_dead", "decor:wheel_debris", "player", "npc:oskar_wreck", "enemy:wickling"]},
     {"bars": false},
     {"camera": "player", "ticks": 1},
     {"wait": 70},

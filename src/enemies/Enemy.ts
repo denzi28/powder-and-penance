@@ -132,6 +132,8 @@ export class Enemy extends Actor {
     return { x: this.x, y: this.y };
   }
   alpha = 1;
+  /** Kept off the stage by a cutscene (`hide: ["enemy:<kind>"]`); drawing only. */
+  sceneHidden = false;
   /** Ticks left blinded by smoke: it can't see to fight, and stumbles about coughing. */
   blind = 0;
   /** Ticks until it next leaves a puddle behind (enemy `trail`). */

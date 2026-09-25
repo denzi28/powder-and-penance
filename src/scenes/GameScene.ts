@@ -547,8 +547,13 @@ export class GameScene extends Phaser.Scene {
       },
     ];
     const t = this.player.loadTier;
-    this.menu = { title: 'PAUSED', subtitle: `${DATA.areas.areas[this.area].name}. Load ${this.player.equipLoad}/${this.player.capacity} (${t.label.toLowerCase()}).`, items, index, onBack: close };
+    this.menu = { title: 'PAUSED', subtitle: `${DATA.areas.areas[this.area].name}. Load ${this.player.equipLoad}/${this.player.capacity} (${t.label.toLowerCase()}).`, footer: `GOAL: ${this.currentGoal()}`, items, index, onBack: close };
     this.controls.clearBuffer();
+  }
+
+  /** What to do next (data/goals.json): the first goal whose condition holds. */
+  currentGoal(): string {
+    return DATA.goals.goals.find(g => check(this.flags, g.when))?.text ?? '';
   }
 
   /** Open EQUIPMENT or INVENTORY from the pause menu (back returns there), or straight onto a note just read

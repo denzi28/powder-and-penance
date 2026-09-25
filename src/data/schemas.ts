@@ -479,6 +479,8 @@ export type BalanceCfg = z.infer<typeof BalanceCfg>;
  * story flags ("story:<name>"); names with a colon are any world flag ("key:toll_key", "shrine:shrine_rest").
  */
 export const Cond = z.union([z.string(), z.array(z.string())]);
+/** data/goals.json: what to do next, shown in the pause menu; the first goal whose `when` holds (none: always). */
+export const Goals = z.object({ goals: z.array(z.object({ when: Cond.optional(), text: z.string() })).min(1) });
 export type Cond = z.infer<typeof Cond>;
 
 /**
