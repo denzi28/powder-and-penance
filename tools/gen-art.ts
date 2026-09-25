@@ -7945,199 +7945,288 @@ function genFont() {
 // Gunner on his cannon (64 cell) and on foot with his blunderbuss (48 cell), the keg, the vault's decor.
 const SOOT = mix(P.dark1, P.ink, 0.35);
 const POWDER = mix(P.dark2, P.stone1, 0.4);
-const COAT: Ramp = { c0: mix(P.blood1, P.ink, 0.45), c1: mix(P.blood1, P.dark1, 0.2), c2: P.blood1, c3: mix(P.blood2, P.wood2, 0.3) };
+const COAT: Ramp = { c0: hex('#3a0d14'), c1: P.blood1, c2: mix(P.blood1, P.blood2, 0.55), c3: P.blood2 };
 const BRASS = mix(P.flame1, P.wood2, 0.35);
+/** Buff leather and facings: the gunner's lapels, cuffs and crossbelt. */
+const BUFF: Ramp = { c0: mix(P.wax1, P.wood2, 0.6), c1: mix(P.wax1, P.wood2, 0.3), c2: P.wax1, c3: P.wax2 };
+/** Grey hair and beard. */
+const GREY: Ramp = { c0: P.stone2, c1: P.stone3, c2: P.stone4, c3: mix(P.stone4, P.wax2, 0.5) };
+/** Faded linen, patched sack-cloth, soot-grey rags. */
+const LINEN: Ramp = { c0: mix(P.stone1, P.ink, 0.3), c1: P.stone1, c2: P.stone2, c3: P.stone3 };
+const RAG: Ramp = { c0: mix(P.dark1, P.ink, 0.3), c1: P.dark2, c2: mix(P.dark2, P.stone2, 0.55), c3: P.stone3 };
+const HAT: Ramp = { c0: P.ink, c1: mix(P.dark1, P.ink, 0.35), c2: P.dark1, c3: P.dark2 };
+/** Skin: the porter's sunburnt hide, the boy's soot-rubbed face, the old gunner's weathered one. */
+const SKIN_MULE: Ramp = { c0: mix(P.wood1, P.ember, 0.2), c1: mix(P.wood2, P.ember, 0.25), c2: mix(P.wax1, P.wood2, 0.5), c3: mix(P.wax1, P.wood2, 0.2) };
+const SKIN_BOY: Ramp = { c0: mix(P.wood1, P.ink, 0.3), c1: P.wood1, c2: mix(P.wood2, P.wax1, 0.3), c3: mix(P.wax1, P.wood2, 0.35) };
+const SKIN_OLD: Ramp = { c0: mix(P.wood1, P.ember, 0.2), c1: mix(P.wood2, P.ember, 0.2), c2: mix(P.wax1, P.wood2, 0.45), c3: mix(P.wax1, P.wood2, 0.15) };
+
+/** Shade across a span: a lit left edge, a dark right edge (t = 0..1 across it). */
+const shadeT = (t: number, r: Ramp) => (t < 0.12 ? r.c3 : t < 0.26 ? mix(r.c2, r.c3, 0.5) : t > 0.88 ? r.c0 : t > 0.7 ? r.c1 : r.c2);
+/** A lit ellipse: dark base, a lit body up and to the left, one highlight pixel. */
+function litBall(c: Img, x: number, y: number, rx: number, ry: number, r: Ramp) {
+  c.ellipse(x, y, rx, ry, r.c1);
+  c.ellipse(x - rx * 0.2, y - ry * 0.2, rx * 0.78, ry * 0.78, r.c2);
+  c.set(x - rx * 0.45, y - ry * 0.5, r.c3);
+  c.ellipse(x, y, rx, ry, r.c0, (px, py) => (px + 0.5 - x) / rx + (py + 0.5 - y) / ry > 1.05);
+}
+/** Where a face's features sit, per direction (the face turns toward the facing). */
+const faceX = (dir: Dir5, hx: number) => hx + (dir === 'SE' ? 1 : dir === 'E' ? 2 : 0);
 
 /** A keg drawn at (cx, base): staves, two iron hoops, a fuse; `lit` puts a spark on it. */
 function kegAt(c: Img, cx: number, base: number, r: number, lit = false) {
   const h = Math.round(r * 2.2);
+  const bulgeAt = (y: number) => r - Math.round((Math.abs(y - h / 2) / (h / 2)) * 1.5);
   for (let y = 0; y < h; y++) {
-    const bulge = r - Math.round(Math.abs(y - h / 2) / (h / 2) * 1.5);
+    const bulge = bulgeAt(y);
     for (let x = -bulge; x < bulge; x++) {
       const t = (x + bulge) / (bulge * 2);
-      c.set(cx + x, base - y, t < 0.2 ? WOOD.c3 : t > 0.8 ? WOOD.c0 : x % 3 === 0 ? WOOD.c1 : WOOD.c2);
+      let col = t < 0.12 ? WOOD.c2 : t < 0.34 ? WOOD.c3 : t > 0.84 ? WOOD.c0 : t > 0.62 ? WOOD.c1 : WOOD.c2;
+      if ((x + 99) % 3 === 0 && t > 0.1 && t < 0.86) col = mix(col, WOOD.c0, 0.45); // the seams between staves
+      c.set(cx + x, base - y, col);
     }
   }
-  for (const y of [Math.round(h * 0.25), Math.round(h * 0.75)]) {
-    const bulge = r - Math.round(Math.abs(y - h / 2) / (h / 2) * 1.5);
-    c.hline(cx - bulge, base - y, bulge * 2, IRON.c1);
-    c.set(cx - bulge + 1, base - y, IRON.c3);
+  for (const y of [Math.round(h * 0.22), Math.round(h * 0.78)]) {
+    const bulge = bulgeAt(y);
+    for (let x = -bulge; x < bulge; x++) {
+      const t = (x + bulge) / (bulge * 2);
+      c.set(cx + x, base - y, t < 0.3 ? IRON.c3 : t < 0.6 ? IRON.c2 : t < 0.85 ? IRON.c1 : IRON.c0);
+    }
   }
-  c.ellipse(cx, base - h + 1, r - 1.5, 1.5, WOOD.c3); // the lid
+  if (r >= 6) {
+    // a stencilled powder mark between the hoops
+    const my = base - Math.round(h / 2);
+    for (const [dx, dy] of [[-1, -1], [1, -1], [0, 0], [-1, 1], [1, 1]]) c.set(cx - 1 + dx, my + dy, mix(P.ink, WOOD.c1, 0.3));
+  }
+  c.ellipse(cx, base - h + 1, r - 1.5, 1.5, WOOD.c2); // the lid
+  c.ellipse(cx - 1, base - h + 1, r - 3, 0.9, WOOD.c3);
   c.set(cx + 1, base - h - 1, P.wax1); // fuse
   c.set(cx + 2, base - h - 2, P.wax1);
   if (lit) {
     c.set(cx + 3, base - h - 3, P.flame2);
     c.set(cx + 2, base - h - 4, P.wax2);
+    c.set(cx + 3, base - h - 2, P.ember);
   }
 }
 
-// --- Powder Mule: a hunched porter, a keg lashed to his back with the fuse already trimmed short.
+// --- Powder Mule: a hunched, barrel-chested porter, a keg lashed to his back with the fuse already trimmed short.
 function drawMule(c: Img, dir: Dir5, pose: BodyPose) {
   const o = { bob: 0, lean: 0, hunch: 0, step: -1, flinch: false, ...pose };
   const b = o.bob;
   const { lx, ly, sh } = leanOffsets(dir, o.lean);
   const back = dir === 'N' || dir === 'NE';
+  const side = dir === 'E';
   const liftL = o.step === 1 ? 2 : 0;
   const liftR = o.step === 3 ? 2 : 0;
-  c.rect(12, 24 - liftL + b, 3, 3, P.wood1); // boots
-  c.rect(18, 24 - liftR + b, 3, 3, mix(P.wood1, P.dark1, 0.4));
-  // sack-cloth body, bent under the load
-  for (let y = 14; y <= 24; y++) shadedRow(c, 10 + sh, y + b, 12, mix(P.stone2, P.dark1, 0.5), P.stone2, mix(P.stone2, P.stone3, 0.5), P.stone3);
-  c.hline(10 + sh, 20 + b, 12, P.wood1); // rope belt
-  // the keg, over the shoulders: its top above his head from the front, in full view from behind
-  const kx = 16 + sh + (dir === 'E' ? -6 : dir === 'SE' ? -4 : 0);
-  if (!back) kegAt(c, kx, 15 + b, 6, true);
-  // head, low and forward
-  const hx = 16 + lx + (o.flinch ? -1 : 0) + (dir === 'E' ? 3 : dir === 'SE' ? 2 : 0);
-  const hy = 9 + b + o.hunch + ly + 2;
-  c.disc(hx, hy, 3.2, mix(P.wax1, P.wood1, 0.45));
-  c.hline(hx - 3, hy - 3, 7, P.wood1); // a leather cap
-  c.hline(hx - 3, hy - 2, 7, WOOD.c3);
-  if (!back) {
-    c.set(hx - 1, hy, P.ink);
-    if (dir !== 'E') c.set(hx + 1, hy, P.ink);
-    c.hline(hx - 1, hy + 2, 3, SOOT); // soot on the chin
+  // stumpy legs: dark trousers, rag-wrapped shins, heavy boots
+  for (const [x, lift, dark] of [[11, liftL, 0], [17, liftR, 1]] as const) {
+    c.rect(x, 21 + b, 4, 3 - lift, dark ? LINEN.c0 : LINEN.c1);
+    c.rect(x, 24 - lift + b, 4, 1, dark ? mix(P.wax1, P.stone2, 0.6) : mix(P.wax1, P.stone2, 0.35));
+    c.rect(x, 25 - lift + b, 4, 2, dark ? WOOD.c0 : P.wood1);
+    c.set(x, 25 - lift + b, dark ? P.wood1 : WOOD.c2);
   }
+  // the keg, over the shoulders: its top above his head from the front, in full view from behind
+  const kx = 16 + sh + (side ? -6 : dir === 'SE' ? -4 : 0);
+  if (!back) kegAt(c, kx, 15 + b, 6, true);
+  // barrel chest in faded linen, bent under the load
+  for (let y = 13; y <= 22; y++) {
+    const w = y === 13 ? 10 : y < 20 ? 14 : 12;
+    const x0 = 16 - w / 2 + sh;
+    for (let x = 0; x < w; x++) c.set(x0 + x, y + b, shadeT(x / (w - 1), LINEN));
+  }
+  line(c, 12 + sh, 15 + b, 13 + sh, 20 + b, LINEN.c1); // folds where the straps pull
+  line(c, 20 + sh, 15 + b, 19 + sh, 20 + b, LINEN.c0);
+  if (!back) {
+    // leather apron, scorched, with a stitched pocket; the keg's harness straps over the shoulders
+    for (let y = 18; y <= 24; y++) for (let x = 12; x <= 19; x++) c.set(x + sh, y + b, shadeT((x - 12) / 7, DWOOD));
+    c.hline(12 + sh, 18 + b, 8, DWOOD.c3);
+    c.rect(13 + sh, 21 + b, 3, 2, DWOOD.c1); // pocket
+    c.set(13 + sh, 21 + b, DWOOD.c3);
+    c.set(18 + sh, 22 + b, P.ember); // burns
+    c.set(17 + sh, 23 + b, SOOT);
+    c.set(18 + sh, 20 + b, SOOT);
+    if (!side) {
+      line(c, 11 + sh, 13 + b, 13 + sh, 18 + b, DWOOD.c2);
+      line(c, 12 + sh, 13 + b, 14 + sh, 18 + b, DWOOD.c1);
+      c.set(12 + sh, 15 + b, BRASS);
+    }
+    line(c, 20 + sh, 13 + b, 18 + sh, 18 + b, DWOOD.c1);
+    line(c, 21 + sh, 13 + b, 19 + sh, 18 + b, DWOOD.c0);
+    c.set(20 + sh, 15 + b, GOLD0);
+  } else {
+    // the harness crossing his back under the keg
+    line(c, 10 + sh, 14 + b, 21 + sh, 21 + b, DWOOD.c1);
+    line(c, 21 + sh, 14 + b, 10 + sh, 21 + b, DWOOD.c1);
+  }
+  for (let x = 9; x <= 22; x++) c.set(x + sh, 20 + b, x % 2 ? EN.rope : WOOD.c3); // rope belt
+  // head, low and forward between the shoulders: leather skullcap with ear flaps, heavy brow, stubble
+  const hx = 16 + lx + (o.flinch ? -1 : 0) + (side ? 3 : dir === 'SE' ? 2 : 0);
+  const hy = 11 + b + o.hunch + ly;
+  const S = SKIN_MULE;
+  if (back) {
+    c.ellipse(hx, hy, 3.8, 3.4, S.c1);
+    c.hline(hx - 2, hy + 2, 5, S.c0); // neck folds
+  } else {
+    litBall(c, hx, hy, 3.8, 3.5, S);
+    const f = faceX(dir, hx);
+    c.hline(f - 2, hy, 5, S.c0); // brow
+    c.set(f - 1, hy + 1, o.flinch ? P.ember : P.ink);
+    if (!side) c.set(f + 1, hy + 1, o.flinch ? P.ember : P.ink);
+    c.set(f, hy + 1, S.c3); // broad nose
+    c.set(f, hy + 2, S.c0);
+    c.hline(f - 2, hy + 3, 5, mix(S.c1, P.dark1, 0.45)); // stubble
+    c.set(f, hy + 3, P.dark1); // mouth
+    c.set(f + 1, hy + 3, SOOT);
+  }
+  c.ellipse(hx, hy - 1, 4, 3, DWOOD.c1, (_x, y) => y < hy - 1);
+  c.hline(hx - 2, hy - 3, 2, DWOOD.c3);
+  c.hline(hx - 4, hy - 1, 8, DWOOD.c2); // cap edge
+  c.rect(hx - 4, hy, 1, 2, DWOOD.c1); // ear flaps
+  c.rect(hx + 3, hy, 1, 2, DWOOD.c0);
   if (back) kegAt(c, kx, 22 + b, 6, true);
-  // arms hanging to the knees, big hands
-  c.rect(8 + sh, 16 + b, 2, 7, P.stone2);
-  c.rect(22 + sh, 16 + b, 2, 7, mix(P.stone2, P.dark1, 0.4));
-  c.rect(7 + sh, 23 + b, 3, 2, mix(P.wax1, P.wood1, 0.45));
-  c.rect(22 + sh, 23 + b, 3, 2, mix(P.wax1, P.wood1, 0.55));
+  // thick arms hanging to the knees: rolled sleeves, bare forearms, big hands
+  const arm = (x: number, lit: boolean) => {
+    c.rect(x + sh, 14 + b, 2, 4, lit ? LINEN.c3 : LINEN.c1);
+    c.set(x + sh + (lit ? 1 : 0), 15 + b, lit ? LINEN.c2 : LINEN.c0);
+    c.hline(x + sh, 18 + b, 2, lit ? LINEN.c2 : LINEN.c0); // the roll
+    c.rect(x + sh, 19 + b, 2, 3, lit ? S.c2 : S.c1);
+    c.vline(x + sh + (lit ? 0 : 1), 19 + b, 3, lit ? S.c3 : S.c0);
+    c.rect(x + sh - (lit ? 1 : 0), 22 + b, 3, 3, lit ? S.c2 : S.c1);
+    c.set(x + sh - (lit ? 1 : 0), 22 + b, lit ? S.c3 : S.c2);
+    c.hline(x + sh - (lit ? 1 : 0), 24 + b, 3, S.c0);
+  };
+  if (side) arm(15, true);
+  else {
+    arm(7, true);
+    arm(23, false);
+  }
 }
 function muleDeath(c: Img, f: number) {
   if (f < 2) return drawMule(c, 'S', { bob: 2 + f, hunch: 2 + f, flinch: true });
-  c.ellipse(16, 25, 8, 3, P.stone2);
-  c.rect(10, 23, 5, 3, P.wood1);
-  kegAt(c, 21, 26, 4, f < 4); // his keg, still fizzing, then scattered staves
-  if (f === 4) c.rect(18, 24, 6, 2, POWDER);
+  c.ellipse(16, 25, 8, 3, LINEN.c1);
+  c.ellipse(14, 24.5, 5, 1.8, LINEN.c2);
+  c.ellipse(12, 24, 3, 1.5, SKIN_MULE.c1); // his head
+  c.hline(10, 23, 4, DWOOD.c1);
+  kegAt(c, 22, 26, 4, f < 4); // his keg, still fizzing, then scattered staves
+  if (f === 4) {
+    c.rect(18, 24, 7, 2, POWDER);
+    c.set(20, 24, SOOT);
+  }
 }
 
-// --- Fuse-Runner: a thin soot-black boy with a smoking linstock, running barefoot.
+// --- Fuse-Runner: a thin, soot-smeared boy in rags with a smoking linstock, running barefoot. A red rag at
+// his throat, a coil of fuse at his hip, a band of soot across white eyes.
 function drawRunner(c: Img, dir: Dir5, pose: BodyPose & { arm?: number }) {
   const o = { bob: 0, lean: 0, hunch: 0, step: -1, flinch: false, arm: 0, ...pose };
   const b = o.bob;
   const { lx, ly, sh } = leanOffsets(dir, o.lean);
   const back = dir === 'N' || dir === 'NE';
   const [fx] = FACE_VEC[dir];
+  const S = SKIN_BOY;
   const liftL = o.step === 1 ? 3 : 0;
   const liftR = o.step === 3 ? 3 : 0;
-  c.rect(14, 21 + b, 2, 5 - liftL, SOOT); // thin legs, bare feet
-  c.rect(17, 21 + b, 2, 5 - liftR, mix(SOOT, P.ink, 0.4));
-  c.rect(13, 26 - liftL, 3, 1, mix(P.wax1, SOOT, 0.6));
-  c.rect(17, 26 - liftR, 3, 1, mix(P.wax1, SOOT, 0.6));
-  for (let y = 13; y <= 21; y++) shadedRow(c, 12 + sh, y + b, 8, P.ink, SOOT, mix(SOOT, P.stone2, 0.4), mix(SOOT, P.stone3, 0.5)); // ragged shirt
-  c.set(12 + sh, 21 + b, null);
-  c.set(19 + sh, 20 + b, null);
-  c.hline(12 + sh, 17 + b, 8, P.ember); // a red rag tied round the middle
+  // brown breeches to the knee, bare shins and feet
+  for (const [x, lift, dark] of [[13, liftL, 0], [17, liftR, 1]] as const) {
+    c.rect(x, 20 + b, 2, 3, dark ? WOOD.c0 : P.wood1);
+    c.set(x, 20 + b, dark ? P.wood1 : WOOD.c2);
+    c.rect(x, 23 + b, 2, 3 - lift, dark ? S.c0 : S.c1);
+    c.rect(x - (dark ? 0 : 1), 26 - lift, 3, 1, dark ? S.c0 : S.c1);
+  }
+  // the red rag's tail flies out behind him
+  const tail = fx > 0.3 ? -1 : 1;
+  const flap = o.step % 2 ? 1 : 0;
+  const tx = 16 + sh + tail * 4;
+  c.set(tx, 13 + b, P.ember);
+  c.set(tx + tail, 14 + b - flap, P.ember);
+  c.set(tx + tail * 2, 14 + b, mix(P.ember, P.blood1, 0.5));
+  // off arm (the far one in profile)
+  const offX = dir === 'E' ? 13 + sh : 11 + sh;
+  c.vline(offX, 14 + b, 4, dir === 'E' ? RAG.c0 : RAG.c3);
+  c.set(offX, 18 + b, S.c1);
+  // ragged shirt, too big for him, a patch on it
+  for (let y = 13; y <= 20; y++) {
+    const x0 = 12 + (y < 17 ? sh : 0);
+    for (let x = 0; x < 8; x++) c.set(x0 + x, y + b, shadeT(x / 7, RAG));
+  }
+  for (const x of [13, 16, 18]) c.set(x, 20 + b, null); // tatters
+  c.set(12, 21 + b, RAG.c2);
+  c.set(15, 21 + b, RAG.c1);
+  c.set(19, 21 + b, RAG.c0);
+  line(c, 14 + sh, 15 + b, 14, 19 + b, RAG.c1); // a fold
+  if (!back) {
+    c.rect(17 + sh, 15 + b, 2, 2, mix(P.wood2, P.stone2, 0.5)); // patch
+    c.set(17 + sh, 15 + b, mix(P.wood2, P.stone3, 0.5));
+  }
+  for (let x = 12; x < 20; x++) c.set(x, 18 + b, x % 2 ? EN.rope : WOOD.c3); // rope belt
+  // a coil of spare fuse at the hip
+  if (dir !== 'E') {
+    const cx0 = back ? 19 : 12;
+    for (const [dx, dy] of [[0, -1], [1, 0], [0, 1], [-1, 0]]) c.set(cx0 + dx, 19 + dy + b, P.wax1);
+    c.set(cx0, 19 + b, SOOT);
+  }
+  // the neck rag
+  c.hline(13 + sh, 13 + b, 6, P.ember);
+  c.set(13 + sh, 13 + b, mix(P.ember, P.flame1, 0.45));
+  c.set(18 + sh, 13 + b, mix(P.ember, P.blood1, 0.5));
+  if (!back) c.set(16 + sh, 14 + b, mix(P.ember, P.blood1, 0.4)); // the knot
+  // head: soot-rubbed face, white eyes in a band of soot, a gap-toothed grin; a floppy knit cap
   const hx = 16 + lx + (o.flinch ? -1 : 0);
   const hy = 9 + b + o.hunch + ly;
-  c.disc(hx, hy, 3, mix(P.wax1, SOOT, 0.55));
-  c.hline(hx - 3, hy - 3, 7, P.dark2); // a knit cap
-  c.set(hx + 3, hy - 4, P.dark2);
-  if (!back) {
-    c.set(hx - 1, hy, P.wax2); // white eyes in a black face
-    if (dir !== 'E') c.set(hx + 1, hy, P.wax2);
+  if (back) c.disc(hx, hy, 3.2, P.dark1);
+  else {
+    litBall(c, hx, hy, 3.3, 3.2, S);
+    const f = faceX(dir, hx);
+    c.hline(f - 2, hy, dir === 'E' ? 4 : 5, SOOT); // the soot band
+    c.set(f - 1, hy, o.flinch ? P.ember : P.wax2);
+    if (dir !== 'E') c.set(f + 1, hy, o.flinch ? P.ember : P.wax2);
+    else c.set(f + 1, hy, P.ink);
+    c.set(f - 1, hy + 2, P.ink); // grin
+    c.set(f, hy + 2, P.wax2);
+    c.set(f + 1, hy + 2, P.ink);
+    c.set(hx - 2, hy + 1, S.c3); // a clean cheek
   }
-  // the linstock: a stick with a glowing slow-match, held out (arm 1 = thrown forward)
+  c.ellipse(hx, hy - 1.5, 3.7, 2.4, RAG.c2, (_x, y) => y < hy);
+  c.ellipse(hx - 0.5, hy - 2, 2.5, 1.4, RAG.c3, (_x, y) => y < hy - 1);
+  for (let x = -3; x <= 3; x++) c.set(hx + x, hy - 1, x % 2 ? RAG.c1 : RAG.c2); // ribbing
+  const tipX = hx + (fx > 0.3 ? -4 : 4);
+  c.set(tipX, hy - 3, RAG.c2); // the floppy end
+  c.set(tipX + Math.sign(tipX - hx), hy - 2, RAG.c1);
+  c.set(tipX + Math.sign(tipX - hx), hy - 1, P.ember); // a bobble
+  c.set(hx - 3, hy, P.dark1); // hair sticking out
+  c.set(hx + 3, hy + 1, P.dark1);
+  // the linstock: a forked stick with a glowing slow-match, held out (arm 1 = thrust forward)
   const ax = 16 + sh + Math.round((6 + o.arm * 3) * (fx || 0.7));
   const ay = 16 + b - Math.round(o.arm * 4);
-  line(c, 16 + sh, 16 + b, ax, ay, SOOT);
-  line(c, ax, ay, ax + 3, ay - 6, P.wood1);
-  c.set(ax + 3, ay - 7, P.flame2);
-  c.set(ax + 4, ay - 8, P.wax2);
+  const shx = dir === 'E' ? 17 + sh : 19 + sh;
+  line(c, shx, 14 + b, ax, ay, back ? RAG.c1 : RAG.c2);
+  line(c, shx + 1, 14 + b, ax + 1, ay, RAG.c0);
+  line(c, ax, ay + 2, ax + 3, ay - 6, WOOD.c2);
+  c.set(ax + 1, ay - 1, WOOD.c3);
+  c.set(ax + 2, ay - 7, WOOD.c1); // the fork
+  c.set(ax + 4, ay - 7, WOOD.c1);
+  c.rect(ax, ay, 2, 2, S.c2); // his fist
+  c.set(ax + 1, ay + 1, S.c1);
+  c.set(ax + 3, ay - 7, P.ember);
+  c.set(ax + 3, ay - 8, P.flame2);
+  c.set(ax + 4, ay - 8, P.flame1);
+  c.set(ax + 3, ay - 9, P.wax2);
+  c.set(ax + 4, ay - 10, withAlpha(P.stone4, 170)); // a thread of smoke
+  c.set(ax + 4, ay - 11, withAlpha(P.stone4, 110));
 }
 function runnerDeath(c: Img, f: number) {
   if (f < 2) return drawRunner(c, 'S', { bob: 2 + f, hunch: 2 + f, flinch: true });
-  c.ellipse(16, 25, 7, 2.5, SOOT);
-  c.rect(12, 24, 4, 2, P.ember);
+  c.ellipse(16, 25, 7, 2.5, RAG.c1);
+  c.ellipse(15, 24.5, 4, 1.4, RAG.c2);
+  c.disc(10, 24, 2, SKIN_BOY.c1);
+  c.hline(12, 23, 4, P.ember);
   line(c, 18, 25, 24, 22, P.wood1);
-  if (f < 4) c.set(24, 21, P.flame2);
+  if (f < 4) {
+    c.set(24, 21, P.flame2);
+    c.set(25, 20, withAlpha(P.stone4, 150));
+  }
 }
 
-// --- The Master Gunner, first form (64 cell): his great cannon on its carriage, the Gunner hunched behind it.
-type CannonPose = BodyPose & { recoil?: number; smoke?: number; lift?: number; stand?: number; roll?: number };
-function drawCannon(c: Img, dir: Dir5, pose: CannonPose) {
-  const o = { bob: 0, lean: 0, hunch: 0, flinch: false, recoil: 0, smoke: 0, lift: 0, stand: 0, roll: 0, ...pose };
-  const [fx, fy] = FACE_VEC[dir];
-  const cx = 32 - Math.round(fx * o.recoil * 3);
-  const base = 56 - Math.round(fy * o.recoil * 2);
-  const back = dir === 'N' || dir === 'NE';
-  // the Gunner, behind the gun (drawn first unless we see him from behind)
-  const gx = 32 - Math.round(fx * 12) + (dir === 'S' ? 8 : 0);
-  const gy = 40 - Math.round(fy * 6) - Math.round(o.stand * 8) + o.bob;
-  const gunner = () => {
-    for (let y = 0; y < 14; y++) shadedRow(c, gx - 5, gy + y, 10, COAT.c0, COAT.c1, COAT.c2, COAT.c3);
-    c.hline(gx - 5, gy + 6, 10, P.dark2); // belt
-    c.set(gx - 1, gy + 6, BRASS);
-    c.disc(gx, gy - 4, 3.5, mix(P.wax1, SOOT, 0.35)); // face
-    c.hline(gx - 6, gy - 7, 13, P.dark1); // tricorn
-    c.hline(gx - 4, gy - 9, 9, P.dark1);
-    c.hline(gx - 4, gy - 8, 9, P.dark2);
-    c.set(gx + 4, gy - 9, BRASS);
-    if (!back) {
-      c.set(gx - 1, gy - 4, o.flinch ? P.ember : P.flame2); // eyes, lit like fuses
-      c.set(gx + 1, gy - 4, o.flinch ? P.ember : P.flame2);
-      c.hline(gx - 2, gy - 1, 5, P.stone3); // a grey beard, singed
-    }
-  };
-  if (!back) gunner();
-  // carriage: two big wheels, a timber bed
-  const wheel = (wx: number, wy: number, spin: number) => {
-    c.disc(wx, wy, 7, WOOD.c1);
-    c.disc(wx, wy, 5.5, WOOD.c0);
-    c.disc(wx, wy, 1.8, IRON.c2);
-    for (let k = 0; k < 4; k++) {
-      const a = (k * Math.PI) / 4 + spin * 0.4;
-      line(c, wx, wy, Math.round(wx + Math.cos(a) * 5), Math.round(wy + Math.sin(a) * 5), WOOD.c2);
-    }
-    c.ellipse(wx, wy, 7, 7, IRON.c1, (x, y) => Math.hypot(x + 0.5 - wx, y + 0.5 - wy) > 6);
-  };
-  const side = Math.abs(fx) > 0.5;
-  c.rect(cx - 14, base - 12, 28, 6, WOOD.c1);
-  c.hline(cx - 14, base - 12, 28, WOOD.c3);
-  if (side || dir === 'SE' || dir === 'NE') {
-    wheel(cx - 10, base - 7, o.roll);
-    wheel(cx + 8, base - 7, o.roll + 1);
-  } else {
-    wheel(cx - 13, base - 7, o.roll);
-    wheel(cx + 13, base - 7, o.roll + 1);
-  }
-  // the barrel: a fat black-iron tube pointing where he aims (foreshortened toward or away from you), lifted
-  // for a lob, with a bronze reinforcing band
-  const len = Math.round(22 * (0.45 + 0.55 * Math.abs(fx)));
-  const bx0 = cx - Math.round(fx * 4);
-  const by0 = base - 17 - o.lift * 3;
-  const bx1 = bx0 + Math.round(fx * len);
-  const by1 = by0 + Math.round(fy * len * 0.5) - o.lift * 4;
-  for (let w = -5; w <= 5; w++) {
-    const col = w < -3 ? IRON.c3 : w < 0 ? IRON.c2 : w < 3 ? IRON.c1 : IRON.c0;
-    const px = Math.round(-fy * w * 0.8);
-    const py = Math.round(fx * w * 0.8);
-    line(c, bx0 + px, by0 + py, bx1 + px, by1 + py, col);
-  }
-  c.disc(bx0 - Math.round(fx * 3), by0 - Math.round(fy * 2), 5, IRON.c1); // the breech
-  c.disc(Math.round((bx0 + bx1) / 2), Math.round((by0 + by1) / 2), 5.5, BRONZE.c1, ); // band
-  c.disc(Math.round((bx0 + bx1) / 2), Math.round((by0 + by1) / 2), 4.5, IRON.c2);
-  const toward = fy > 0.5; // the muzzle looks at you: you see down the bore
-  c.disc(bx1, by1, toward ? 6 : 5, IRON.c2); // the muzzle ring
-  c.disc(bx1, by1, toward ? 4 : 2.5, P.ink);
-  if (toward) c.set(bx1 - 2, by1 - 2, IRON.c3);
-  if (o.smoke > 0) {
-    // powder smoke rolling out of the muzzle
-    for (let k = 0; k < 5; k++) {
-      const d = 4 + k * 4 * o.smoke;
-      c.disc(bx1 + Math.round(fx * d), by1 + Math.round(fy * d * 0.6) - k, 3 + k * o.smoke, k < 2 && o.smoke > 0.5 ? P.flame2 : mix(P.stone3, P.stone4, k / 5));
-    }
-  }
-  if (back) gunner();
-}
-function cannonDeath(c: Img, f: number) {
-  drawCannon(c, 'S', { flinch: true, smoke: f * 0.3, bob: f });
-}
-
-// --- The Master Gunner on foot (48 cell): long red gunner's coat, tricorn, a brass-belled blunderbuss.
+// --- The Master Gunner on foot (48 cell): an old one-eyed gunner in a long red coat with buff facings and
+// brass buttons, gold epaulettes, a crossbelt and cartridge box, a grey forked beard, a gold-laced tricorn.
 type DuelPose = BodyPose & { aim?: number; club?: number; toss?: number; crouch?: number };
 const DUEL_HAND: Record<Dir5, [number, number]> = { S: [31, 29], SE: [31, 28], E: [29, 28], NE: [30, 26], N: [30, 26] };
 function duelHand(dir: Dir5, p: DuelPose): [number, number] {
@@ -8148,6 +8237,17 @@ function duelHand(dir: Dir5, p: DuelPose): [number, number] {
   const club = p.club ?? 0;
   return [Math.round(hx + lx + fx * aim * 3 - club * 4), Math.round(hy + ly + fy * aim * 2 - club * 8 + (p.bob ?? 0) + (p.crouch ?? 0) * 2)];
 }
+/** A coat arm from the shoulder to the hand: shaded sleeve, a big buff cuff, a leather gauntlet. */
+function coatArm(c: Img, sx: number, sy: number, hx: number, hy: number, far: boolean, inner: -1 | 1 = 1) {
+  for (let t = -1; t <= 1; t++)
+    line(c, sx + t, sy, hx + t, hy - 3, far ? (t === -1 ? COAT.c1 : COAT.c0) : t === inner ? COAT.c0 : t === -inner ? (inner > 0 ? COAT.c3 : COAT.c2) : COAT.c2);
+  c.hline(hx - 1, hy - 3, 3, far ? BUFF.c1 : BUFF.c2);
+  c.hline(hx - 1, hy - 2, 3, far ? BUFF.c0 : BUFF.c1);
+  c.set(hx + 1, hy - 3, BRASS);
+  c.rect(hx - 1, hy - 1, 3, 3, far ? WOOD.c1 : WOOD.c2);
+  c.set(hx - 1, hy - 1, far ? WOOD.c2 : WOOD.c3);
+  c.set(hx + 1, hy + 1, WOOD.c0);
+}
 function drawDuel(c: Img, dir: Dir5, pose: DuelPose) {
   const o = { bob: 0, lean: 0, hunch: 0, step: -1, flinch: false, aim: 0, club: 0, toss: 0, crouch: 0, ...pose };
   const b = o.bob + o.crouch * 2;
@@ -8155,55 +8255,434 @@ function drawDuel(c: Img, dir: Dir5, pose: DuelPose) {
   const back = dir === 'N' || dir === 'NE';
   const liftL = o.step === 1 ? 2 : 0;
   const liftR = o.step === 3 ? 2 : 0;
-  c.rect(19, 38 + b, 4, 6 - liftL, P.dark1); // boots
-  c.rect(26, 38 + b, 4, 6 - liftR, mix(P.dark1, P.ink, 0.4));
-  c.hline(19, 38 + b, 4, P.dark2);
-  // the long coat, to the boot-tops, split at the back
-  for (let y = 18; y <= 39; y++) {
-    const w = 12 + Math.floor((y - 18) / 3);
-    shadedRow(c, 24 - Math.floor(w / 2) + (y < 28 ? sh : 0), y + b, w, COAT.c0, COAT.c1, COAT.c2, COAT.c3);
+  const toe = dir === 'E' ? 1 : dir === 'SE' ? 1 : 0;
+  // tall black boots with turned-down brown tops
+  for (const [x, lift, dark] of [[19, liftL, 0], [26, liftR, 1]] as const) {
+    const y0 = 36 + b;
+    const h = 44 - y0 - lift;
+    c.rect(x, y0, 4, h, dark ? HAT.c1 : HAT.c2);
+    c.vline(x, y0, h, dark ? HAT.c2 : HAT.c3);
+    c.vline(x + 3, y0, h, HAT.c0);
+    c.hline(x, y0, 4, dark ? WOOD.c1 : WOOD.c2);
+    c.hline(x, y0 + 1, 4, dark ? WOOD.c0 : P.wood1);
+    c.hline(x + toe, 43 - lift, 4, HAT.c0); // sole
   }
-  if (back) c.vline(24, 30 + b, 10, COAT.c0);
-  else {
-    c.vline(24 + sh, 20 + b, 18, COAT.c3); // buttoned front
-    for (let y = 21; y < 36; y += 4) c.set(23 + sh, y + b, BRASS);
-    line(c, 18 + sh, 19 + b, 29 + sh, 29 + b, P.wood1); // bandolier
-    for (let k = 0; k < 4; k++) c.set(20 + sh + k * 2, 21 + b + k * 2, P.wax1); // cartridges
+  const cxs = 24 + sh;
+  const [gx, gy] = duelHand(dir, o);
+  // the off hand: at his side, or up with a keg to throw
+  const offS: [number, number] = [dir === 'E' ? cxs - 1 : cxs - 6, 19 + b];
+  const offH: [number, number] =
+    o.toss > 0 ? [Math.round(cxs - 8 - o.toss), Math.round(30 + b - o.toss * 15)] : dir === 'E' ? [cxs - 3, 30 + b] : [cxs - 9, 30 + b];
+  const farOff = dir === 'E' || dir === 'NE';
+  if (farOff) coatArm(c, offS[0], offS[1], offH[0], offH[1], true);
+  // the long coat, to the boot-tops, split below the belt
+  const coatW = (y: number) => 13 + Math.floor((y - 18) / 2.5);
+  for (let y = 18; y <= 38; y++) {
+    const w = coatW(y);
+    const x0 = 24 - Math.floor(w / 2) + (y < 29 ? sh : 0);
+    for (let x = 0; x < w; x++) c.set(x0 + x, y + b, y === 38 ? (x < 2 ? COAT.c1 : COAT.c0) : shadeT(x / (w - 1), COAT));
   }
-  c.hline(18 + sh, 28 + b, 13, P.dark2); // belt
-  c.set(24 + sh, 28 + b, BRASS);
+  const skirtX = 24 + (dir === 'SE' ? 2 : dir === 'E' ? 4 : 0);
+  if (back) {
+    c.vline(24, 30 + b, 9, COAT.c0); // the vent
+    c.set(22, 29 + b, BRASS);
+    c.set(26, 29 + b, BRASS);
+    line(c, 20, 30 + b, 18, 37 + b, COAT.c1);
+    line(c, 28, 30 + b, 30, 37 + b, COAT.c0);
+  } else {
+    // the skirts part over buff breeches, their buff lining turned back
+    for (let y = 30; y <= 38; y++) {
+      const g = Math.min(3, Math.floor((y - 30) / 2));
+      for (let dx = -g; dx <= g; dx++) c.set(skirtX + dx, y + b, Math.abs(dx) === g ? (dx < 0 ? BUFF.c2 : BUFF.c0) : BUFF.c1);
+    }
+    line(c, skirtX - 6, 30 + b, skirtX - 8, 37 + b, COAT.c1); // folds
+    line(c, skirtX + 6, 30 + b, skirtX + 8, 37 + b, COAT.c0);
+  }
+  // collar and gold epaulettes
+  c.hline(cxs - 4, 18 + b, 9, COAT.c3);
+  for (const [ex, lit] of [[cxs - 7, 1], [cxs + 5, 0]] as const) {
+    if (dir === 'E' && !lit) continue;
+    const x = dir === 'E' ? cxs - 2 : ex;
+    c.hline(x, 18 + b, 3, lit ? P.flame2 : P.flame1);
+    c.hline(x, 19 + b, 3, lit ? P.flame1 : GOLD0);
+    c.set(x, 20 + b, GOLD0); // the fringe
+    c.set(x + 2, 20 + b, GOLD0);
+  }
+  if (!back) {
+    // buff lapels with brass buttons in pairs, a dark red waistcoat between them
+    const lp = cxs + (dir === 'SE' ? 1 : dir === 'E' ? 3 : 0);
+    for (let y = 19; y <= 28; y++) {
+      const lw = y < 24 ? 2 : 1;
+      if (dir !== 'E') for (let k = 1; k <= lw; k++) c.set(lp - 1 - k, y + b, k === lw ? BUFF.c3 : BUFF.c2);
+      c.hline(lp - 1, y + b, 2, COAT.c1);
+      for (let k = 1; k <= lw; k++) c.set(lp + k, y + b, k === lw ? BUFF.c0 : BUFF.c1);
+    }
+    for (let y = 20; y < 28; y += 3) {
+      c.set(lp + 2, y + b, BRASS);
+    }
+    // the buff crossbelt, shoulder to hip, a brass plate where it crosses the chest
+    line(c, cxs - 6, 19 + b, cxs + 5, 28 + b, BUFF.c2);
+    c.rect(cxs - 1, 23 + b, 2, 2, BRASS);
+    c.set(cxs - 1, 23 + b, P.flame2);
+    // a powder horn on a cord at the left hip
+    c.set(cxs - 7, 29 + b, P.wax2);
+    c.set(cxs - 6, 30 + b, P.wax1);
+    c.set(cxs - 5, 31 + b, P.wax1);
+    c.set(cxs - 4, 31 + b, BUFF.c0);
+    c.set(cxs - 3, 30 + b, P.dark1);
+  } else {
+    line(c, cxs + 6, 19 + b, cxs - 5, 28 + b, BUFF.c1);
+    line(c, cxs + 6, 20 + b, cxs - 5, 29 + b, BUFF.c0);
+  }
+  // black belt, big brass buckle; the cartridge box on the right hip
+  const bw = coatW(28);
+  c.hline(24 - Math.floor(bw / 2) + sh, 28 + b, bw, HAT.c2);
+  c.hline(24 - Math.floor(bw / 2) + sh, 29 + b, bw, HAT.c1);
+  if (!back) {
+    c.rect(skirtX - 1 + sh, 28 + b, 3, 2, BRASS);
+    c.set(skirtX - 1 + sh, 28 + b, P.flame2);
+  }
+  const boxX = back ? cxs - 7 : cxs + 4;
+  c.rect(boxX, 29 + b, 4, 3, HAT.c2);
+  c.hline(boxX, 29 + b, 4, HAT.c3);
+  c.set(boxX + 1, 30 + b, BRASS);
   // arms: the gun hand out to the side, the off hand free (it tosses kegs)
-  c.rect(15 + sh, 20 + b, 3, 9 - Math.round(o.toss * 4), COAT.c1);
-  if (o.toss > 0) c.disc(15 + sh, 18 + b - o.toss * 6, 2, mix(P.wax1, SOOT, 0.3));
-  // head: soot-dark face, a braided grey beard, the tricorn with a brass badge
+  const gunS: [number, number] = [cxs + (dir === 'E' ? 2 : dir === 'SE' || dir === 'NE' ? 5 : 6), 19 + b];
+  coatArm(c, gunS[0], gunS[1], gx, gy, false, dir === 'E' ? 1 : -1);
+  if (!farOff) coatArm(c, offS[0], offS[1], offH[0], offH[1], false);
+  if (o.toss >= 0.3) kegAt(c, offH[0], offH[1] - 1, 3, true);
+  // head: weathered face, an eyepatch, one eye lit like a fuse, a big nose, a grey forked beard in braids
   const hx = 24 + lx + (o.flinch ? -2 : 0);
   const hy = 11 + b + o.hunch + ly;
-  c.disc(hx, hy, 4.5, mix(P.wax1, SOOT, 0.4));
-  c.rect(hx - 2, hy + 3, 5, 4, P.stone3);
-  c.set(hx, hy + 7, P.stone2);
-  c.hline(hx - 8, hy - 4, 17, P.dark1);
-  c.hline(hx - 6, hy - 6, 13, P.dark1);
-  c.hline(hx - 6, hy - 5, 13, P.dark2);
-  c.hline(hx - 4, hy - 7, 9, P.dark1);
-  c.set(hx, hy - 6, BRASS);
-  if (!back) {
-    const e = o.flinch ? P.ember : P.flame2;
-    if (dir === 'E') c.set(hx + 2, hy - 1, e);
-    else {
-      c.set(hx - 2, hy - 1, e);
-      c.set(hx + 1, hy - 1, e);
+  const S = SKIN_OLD;
+  if (back) {
+    litBall(c, hx, hy, 4.2, 4.5, { c0: P.dark2, c1: P.stone1, c2: P.stone2, c3: P.stone3 });
+    for (const dx of [-2, 0, 2]) c.vline(hx + dx, hy - 1, 3, P.stone1); // combed back
+    c.hline(hx - 3, hy + 3, 7, S.c1); // the nape
+    c.vline(hx, hy + 3, 6, GREY.c2); // the queue, tied with a red ribbon
+    c.vline(hx + 1, hy + 3, 6, GREY.c0);
+    c.rect(hx, hy + 4, 2, 2, P.blood2);
+    c.set(hx - 1, hy + 5, P.blood1);
+    c.set(hx + 2, hy + 5, P.blood1);
+    if (dir === 'NE') c.rect(hx + 3, hy + 2, 2, 4, GREY.c1); // his beard, past his cheek
+  } else {
+    litBall(c, hx, hy, 4.3, 4.6, S);
+    const f = faceX(dir, hx);
+    c.hline(f - 3, hy - 1, dir === 'E' ? 6 : 7, S.c0); // heavy brow
+    const eye = o.flinch ? P.ember : P.flame2;
+    if (dir === 'E') {
+      c.set(f + 1, hy, eye);
+      c.set(f + 2, hy, P.ember);
+    } else {
+      c.rect(f - 2, hy - 1, 2, 2, P.ink); // the patch, its strap across the brow
+      line(c, f - 4, hy - 3, f, hy - 1, HAT.c0);
+      c.set(f + 1, hy, eye);
+      c.set(f + 1, hy - 1, P.flame1);
+      c.set(f + 2, hy, P.ember);
     }
+    c.set(f, hy + 1, mix(S.c2, P.ember, 0.45)); // the drinker's nose
+    c.set(f, hy + 2, S.c0);
+    c.set(hx - 3, hy + 1, S.c3);
+    // moustache and beard
+    c.hline(f - 3, hy + 2, 7, GREY.c2);
+    c.set(f - 4, hy + 1, GREY.c3);
+    c.set(f + 4, hy + 1, GREY.c1);
+    const rows = [7, 7, 5, 5, 3];
+    rows.forEach((w, i) => {
+      const y = hy + 3 + i;
+      for (let x = 0; x < w; x++) c.set(f - Math.floor(w / 2) + x, y, (x + i) % 3 === 2 ? GREY.c0 : shadeT(x / Math.max(1, w - 1), GREY));
+    });
+    for (const dx of [-1, 1]) {
+      c.set(f + dx, hy + 8, GREY.c1); // two braids
+      c.set(f + dx, hy + 9, P.ember); // with ember beads
+    }
+    c.set(f, hy + 8, null);
   }
-  const [ax, ay] = duelHand(dir, o);
-  c.rect(ax - 1, ay - 1, 3, 3, mix(P.wax1, SOOT, 0.35));
+  // hair at the temples
+  c.set(hx - 4, hy - 1, GREY.c2);
+  c.set(hx + 4, hy - 1, GREY.c1);
+  // the tricorn: a crown, a wide cocked brim laced with gold, a red cockade with a brass badge
+  const tc = hx + (dir === 'SE' ? 1 : dir === 'E' ? 1 : 0);
+  const hat: [number, number, number][] = [[-9, -2, 5], [-8, -4, 9], [-7, -4, 9], [-6, -8, 17], [-5, -7, 15], [-4, -5, 11]];
+  for (const [dy, x0, w] of hat) for (let x = 0; x < w; x++) c.set(tc + x0 + x, hy + dy, shadeT(x / (w - 1), HAT));
+  for (const s of [-1, 1]) {
+    c.set(tc + s * 7, hy - 7, HAT.c2); // the cocked-up wings
+    c.set(tc + s * 8, hy - 7, s < 0 ? HAT.c3 : HAT.c1);
+  }
+  for (let x = -8; x <= 8; x++) if (Math.abs(x) >= 5) c.set(tc + x, hy - 6, x < 0 ? P.flame1 : GOLD0); // gold lace
+  c.hline(tc - 2, hy - 8, 2, HAT.c3);
+  if (!back) {
+    for (let x = -4; x <= 4; x++) c.set(tc + x, hy - 4, x < 0 ? P.flame1 : GOLD0);
+    c.set(tc, hy - 3, HAT.c1); // the front point
+    c.rect(tc + 3, hy - 8, 2, 2, P.blood2);
+    c.set(tc + 3, hy - 8, P.flame2);
+  }
 }
 function duelDeath(c: Img, f: number) {
   if (f < 2) return drawDuel(c, 'S', { bob: 3 + f * 2, hunch: 2 + f, flinch: true });
   c.ellipse(24, 41, 13, 4, COAT.c1);
-  c.ellipse(20, 40, 6, 2.5, COAT.c2);
-  c.hline(12, 39, 17, P.dark1); // his hat, fallen
-  c.hline(14, 38, 12, P.dark2);
-  c.set(31, 40, BRASS);
+  c.ellipse(21, 40, 7, 2.5, COAT.c2);
+  c.ellipse(19, 39.5, 3, 1.2, COAT.c3);
+  c.ellipse(33, 40, 3.5, 2, GREY.c1); // his beard
+  c.hline(10, 39, 11, HAT.c2); // his hat, fallen
+  c.hline(12, 38, 7, HAT.c3);
+  c.hline(10, 40, 11, GOLD0);
+  c.set(20, 41, BRASS);
+  c.set(27, 41, BRASS);
+  if (f < 4) c.set(36, 38, P.flame2); // the eye, going out
+}
+
+// --- The Master Gunner, first form (64 cell): his great cannon on its trail carriage, the Gunner himself
+// standing at the breech with his linstock (the same man as on foot, drawn into this cell).
+type CannonPose = BodyPose & { recoil?: number; smoke?: number; lift?: number; stand?: number; roll?: number };
+/** Deterministic noise for flame tongues and smoke edges. */
+const hash2 = (x: number, y: number) => {
+  const n = Math.sin(x * 127.1 + y * 311.7) * 43758.5453;
+  return n - Math.floor(n);
+};
+function drawCannon(c: Img, dir: Dir5, pose: CannonPose) {
+  const o = { bob: 0, lean: 0, hunch: 0, flinch: false, recoil: 0, smoke: 0, lift: 0, stand: 0, roll: 0, ...pose };
+  const [fx, fy] = FACE_VEC[dir];
+  const cx = 32 - Math.round(fx * o.recoil * 3);
+  const base = 56 - Math.round(fy * o.recoil * 2);
+  const back = dir === 'N' || dir === 'NE';
+  // ground-plane projection: a along the facing, s along the axle, h up
+  const K = 1.25; // the gun is drawn a size up from the man
+  const at = (a: number, s: number, h: number): [number, number] => [cx + (fx * a - fy * s) * K, base - 1 + ((fy * a + fx * s) * 0.5 - h) * K];
+
+  // --- the Gunner, at the breech
+  const duelPose: DuelPose = {
+    bob: o.bob,
+    hunch: o.hunch,
+    crouch: o.hunch > 0 && !o.stand ? 1 : 0,
+    lean: o.recoil > 0 ? -2 : o.hunch > 0 ? 1 : o.lean,
+    flinch: o.flinch,
+  };
+  const spot: Record<Dir5, [number, number]> = { S: [12, 46], SE: [-9, 47], E: [-17, 53], NE: [-16, 57], N: [-20, 57] };
+  const gfx = cx + spot[dir][0];
+  const gfy = Math.max(45, base - 56 + spot[dir][1] - Math.round(o.stand * 3));
+  const drawGunner = () => {
+    const g = new Img(48, 48);
+    drawDuel(g, dir, duelPose);
+    g.outline(P.ink);
+    c.blit(g, gfx - 24, gfy - 44);
+    // his linstock: upright at rest, down to the touch-hole as he fires
+    const [hx0, hy0] = duelHand(dir, duelPose);
+    const hx = hx0 + gfx - 24;
+    const hy = hy0 + gfy - 44;
+    const [thx, thy] = at(-7, 0, 22);
+    const [tx, ty] = o.hunch > 0 && !o.stand ? [Math.round(thx), Math.round(thy)] : [hx + 3, hy - 13];
+    line(c, hx, hy + 2, tx, ty + 1, WOOD.c2);
+    c.set(tx, ty, P.ember);
+    c.set(tx, ty - 1, P.flame2);
+    c.set(tx + 1, ty - 2, withAlpha(P.stone4, 150));
+    if (o.hunch >= 2) {
+      c.set(tx - 1, ty - 1, P.wax2); // the priming catches
+      c.set(tx + 1, ty, P.flame1);
+    }
+  };
+  const gunnerInFront = back;
+  // --- wheels: iron tyre, oak felloe, see-through spokes, a bronze hub
+  const wheelR = 8 * K;
+  const wheel = (wx: number, wy: number, spin: number) => {
+    const rx = Math.max(4, wheelR * Math.abs(fx));
+    const ry = wheelR;
+    for (let y = Math.floor(wy - ry); y <= Math.ceil(wy + ry); y++)
+      for (let x = Math.floor(wx - rx); x <= Math.ceil(wx + rx); x++) {
+        const nx = (x + 0.5 - wx) / rx;
+        const ny = (y + 0.5 - wy) / ry;
+        const d = Math.hypot(nx, ny);
+        if (d > 1) continue;
+        const lit = -(nx + ny) * 0.7; // light from the top left
+        if (rx < 3.5) {
+          // edge-on: a band of oak with iron on its rim
+          c.set(x, y, d > 0.86 ? (lit > 0 ? IRON.c3 : IRON.c1) : nx < -0.2 ? WOOD.c3 : nx > 0.4 ? WOOD.c1 : WOOD.c2);
+          continue;
+        }
+        if (d > 0.86) c.set(x, y, lit > 0.3 ? IRON.c3 : lit > -0.1 ? IRON.c2 : lit > -0.5 ? IRON.c1 : IRON.c0);
+        else if (d > 0.68) c.set(x, y, lit > 0.2 ? WOOD.c3 : lit > -0.3 ? WOOD.c2 : WOOD.c1);
+        else if (d < 0.24) c.set(x, y, d < 0.12 ? BRONZE.c2 : lit > 0 ? IRON.c3 : IRON.c1);
+        else {
+          const ang = Math.atan2(ny, nx) - spin * 0.35;
+          const k = (ang / (Math.PI * 2)) * 8;
+          const off = Math.abs(k - Math.round(k)) * ((Math.PI * 2) / 8) * d * wheelR;
+          if (off < 0.75) c.set(x, y, lit > 0 ? WOOD.c3 : WOOD.c2);
+        }
+      }
+  };
+  // --- the carriage: two cheeks on the axle, the trail running back to the ground
+  const sides = [-6, 6].sort((p, q) => at(0, p, 0)[1] - at(0, q, 0)[1]); // far side first
+  const wheelAt = (s: number) => at(0, s * 1.55, 8);
+  const cheek = (s: number, near: boolean) => {
+    for (let h = 8; h <= 16; h++) {
+      const col = h === 16 ? WOOD.c3 : h >= 14 ? WOOD.c2 : h >= 10 ? WOOD.c1 : WOOD.c0;
+      const [x0, y0] = at(-9, s, h - 5);
+      const [x1, y1] = at(4, s, h);
+      line(c, Math.round(x0), Math.round(y0), Math.round(x1), Math.round(y1), near ? col : mix(col, WOOD.c0, 0.4));
+    }
+    if (near)
+      for (const a of [-5, 1]) {
+        const [bx, by] = at(a, s, 12);
+        c.set(Math.round(bx), Math.round(by), IRON.c3); // bolts
+      }
+  };
+  const trail = () => {
+    for (let w = -2; w <= 2; w++)
+      for (let h = 0; h <= 3; h++) {
+        const [x0, y0] = at(-2, w, 9 + h);
+        const [x1, y1] = at(-16, w * 0.6, 1 + h);
+        const col = h === 3 ? (w < 0 ? WOOD.c3 : WOOD.c2) : h === 2 ? WOOD.c2 : WOOD.c1;
+        line(c, Math.round(x0), Math.round(y0), Math.round(x1), Math.min(61, Math.round(y1)), Math.abs(w) === 2 ? mix(col, WOOD.c0, 0.4) : col);
+      }
+  };
+  // --- the barrel: a tapering black-iron tube with bronze rings and a flared muzzle, shaded as a cylinder
+  const len = 24;
+  const [tpx, tpy] = at(0, 0, 17); // the trunnions
+  const L2 = Math.round(len * K * (0.55 + 0.45 * Math.abs(fx))); // screen length (foreshortened toward or away)
+  const ux0 = fx;
+  const uy0 = fy * 0.6;
+  const A: [number, number] = [tpx - ux0 * L2 * 0.4, tpy - uy0 * L2 * 0.4 + o.lift * 1.5];
+  const B: [number, number] = [tpx + ux0 * L2 * 0.6, tpy + uy0 * L2 * 0.6 - o.lift * 3.5];
+  const ax = B[0] - A[0];
+  const ay = B[1] - A[1];
+  const sl = Math.max(0.01, Math.hypot(ax, ay));
+  const ux = ax / sl;
+  const uy = ay / sl;
+  const profile = (t: number) => (t < 0.08 ? 5.6 : t < 0.14 ? 6.2 : t > 0.9 ? 5 : t > 0.48 && t < 0.54 ? 5.3 : 5.2 - t * 1.2);
+  const ringAt = (t: number) => (t >= 0.08 && t < 0.14) || (t > 0.48 && t < 0.54) || t > 0.9;
+  const toward = fy > 0.3; // the muzzle end is the near one
+  const tubePx = (x: number, y: number, capOnly: boolean) => {
+    const px = x + 0.5 - A[0];
+    const py = y + 0.5 - A[1];
+    const t = (px * ux + py * uy) / sl;
+    const s = -px * uy + py * ux;
+    if (t < 0 || t > 1 || capOnly) return false;
+    const r = profile(t) * K;
+    if (Math.abs(s) > r) return false;
+    const n = s / r; // -1..1 across the tube; the normal points along (-uy, ux) * n
+    const nx = -uy * n;
+    const ny = ux * n;
+    const lit = -(nx * 0.6 + ny * 0.8) + Math.sqrt(1 - n * n) * 0.35;
+    const R = ringAt(t) ? BRONZE : IRON;
+    c.set(x, y, lit > 0.75 ? (ringAt(t) ? R.c3 : P.steel2) : lit > 0.45 ? R.c3 : lit > 0.05 ? R.c2 : lit > -0.45 ? R.c1 : R.c0);
+    return true;
+  };
+  const cap = (P0: [number, number], r: number, squash: number, ramp: Ramp) => {
+    for (let y = Math.floor(P0[1] - r - 1); y <= Math.ceil(P0[1] + r + 1); y++)
+      for (let x = Math.floor(P0[0] - r - 1); x <= Math.ceil(P0[0] + r + 1); x++) {
+        const px = x + 0.5 - P0[0];
+        const py = y + 0.5 - P0[1];
+        const a = (px * ux + py * uy) / (r * squash);
+        const s = (-px * uy + py * ux) / r;
+        const d = a * a + s * s;
+        if (d > 1) continue;
+        const lit = -(px * 0.6 + py * 0.8) / r;
+        c.set(x, y, lit > 0.5 ? ramp.c3 : lit > 0 ? ramp.c2 : lit > -0.5 ? ramp.c1 : ramp.c0);
+      }
+  };
+  const squash = 0.25 + 0.65 * Math.max(Math.abs(fy), 1 - L2 / len);
+  const barrel = () => {
+    const x0 = Math.floor(Math.min(A[0], B[0]) - 8);
+    const x1 = Math.ceil(Math.max(A[0], B[0]) + 8);
+    const y0 = Math.floor(Math.min(A[1], B[1]) - 8);
+    const y1 = Math.ceil(Math.max(A[1], B[1]) + 8);
+    const knob: [number, number] = [A[0] - ux * 3, A[1] - uy * 3];
+    if (toward || dir === 'E') {
+      c.disc(knob[0], knob[1], 2.2, IRON.c1); // the cascabel, behind
+      c.set(knob[0] - 1, knob[1] - 1, IRON.c3);
+      cap(A, 5.6 * K, squash, IRON);
+    }
+    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) tubePx(x, y, false);
+    if (toward || dir === 'E') {
+      // the muzzle face: a bronze swell and the bore
+      cap(B, 5.2 * K, squash, BRONZE);
+      cap(B, 4.2 * K, squash, IRON);
+      const lit = o.recoil > 0 && o.smoke > 0;
+      c.ellipse(B[0] + ux * 0.4, B[1] + uy * 0.4, dir === 'E' ? 1.2 : 3.4, dir === 'E' ? 3.4 : 3, lit ? P.flame2 : P.ink);
+      if (!lit && toward) c.set(Math.round(B[0] - 2), Math.round(B[1] - 2), IRON.c1);
+    } else {
+      cap(A, 5.6 * K, squash, IRON); // from behind: the breech, and its knob
+      c.disc(knob[0], knob[1], 2.2, IRON.c1);
+      c.set(knob[0] - 1, knob[1] - 1, IRON.c3);
+    }
+    // the touch-hole and a vent-plate
+    const [thx, thy] = at(-7, 0, 22);
+    c.set(Math.round(thx), Math.round(thy), P.ink);
+    c.set(Math.round(thx) - 1, Math.round(thy), BRONZE.c2);
+    // trunnion caps: iron straps over the barrel on each cheek
+    for (const s of sides) {
+      const [qx, qy] = at(0, s, 17);
+      c.set(Math.round(qx), Math.round(qy), IRON.c3);
+      c.set(Math.round(qx), Math.round(qy) + 1, IRON.c1);
+    }
+  };
+
+  // --- muzzle blast: a tongue of flame out of the bore, then rolling powder smoke
+  const blast = () => {
+    if (o.smoke <= 0) return;
+    const flame = o.recoil > 0 ? Math.min(1, o.recoil / 3) : 0;
+    // smoke puffs: far ones first
+    const puffs: [number, number, number, number][] = [];
+    const n = 6;
+    for (let k = n - 1; k >= 0; k--) {
+      const s = Math.min(o.smoke, 1.6);
+      const d = 4 + k * 1.8 * s;
+      const px = B[0] + ux * d * (dir === 'S' ? 0.5 : 1) + (hash2(k, 3) - 0.5) * 4 * s;
+      const py = B[1] + uy * d * (dir === 'S' ? 0.5 : 1) - k * s * 2 - (flame ? 0 : 4);
+      const pr = Math.min(7, 2.5 + k * 0.6 * s + (o.smoke > 1.6 ? 1 : 0));
+      puffs.push([px, py, pr, k]);
+    }
+    const fade = o.smoke > 1.6 ? 200 : 255;
+    for (const [px, py, pr, k] of puffs) {
+      c.ellipse(px, py, pr, pr * 0.85, withAlpha(P.stone2, fade));
+      c.ellipse(px - pr * 0.2, py - pr * 0.2, pr * 0.75, pr * 0.62, withAlpha(P.stone3, fade));
+      c.ellipse(px - pr * 0.4, py - pr * 0.4, pr * 0.38, pr * 0.3, withAlpha(P.stone4, fade));
+      if (flame && k < 2) c.ellipse(px + pr * 0.1, py + pr * 0.35, pr * 0.6, pr * 0.3, P.flame1); // lit from under by the blast
+    }
+    if (flame) {
+      const Lf = 4 + 9 * flame;
+      if (dir === 'S') {
+        // straight at you: a star of flame round the muzzle
+        for (let k = 0; k < 9; k++) {
+          const a = (k / 9) * Math.PI * 2 + 0.3;
+          const l = (4 + hash2(k, 1) * 5) * flame + 3;
+          line(c, Math.round(B[0]), Math.round(B[1]), Math.round(B[0] + Math.cos(a) * l), Math.round(B[1] + Math.sin(a) * l * 0.8), k % 2 ? P.flame1 : P.ember);
+        }
+        c.disc(B[0], B[1], 3 + 2.5 * flame, P.flame2);
+        c.disc(B[0], B[1], 1.5 + 1.5 * flame, P.wax2);
+        return;
+      }
+      for (let y = Math.floor(B[1] - Lf); y <= Math.ceil(B[1] + Lf); y++)
+        for (let x = Math.floor(B[0] - Lf); x <= Math.ceil(B[0] + Lf); x++) {
+          const px = x + 0.5 - B[0];
+          const py = y + 0.5 - B[1];
+          const t = px * ux + py * uy;
+          const s = Math.abs(-px * uy + py * ux);
+          if (t < -1 || t > Lf) continue;
+          const w = (1.8 + t * 0.5) * (0.6 + 0.4 * flame) * (1 - Math.max(0, (t - Lf * 0.7) / (Lf * 0.3)));
+          const jag = w * (0.75 + hash2(x, y) * 0.5);
+          if (s > jag) continue;
+          const k = s / Math.max(0.5, jag);
+          c.set(x, y, t < Lf * 0.45 && k < 0.45 ? P.wax2 : k < 0.6 && t < Lf * 0.8 ? P.flame2 : k < 0.85 ? P.flame1 : P.ember);
+        }
+    }
+  };
+
+  const [wfx, wfy] = wheelAt(sides[0]);
+  const [wnx, wny] = wheelAt(sides[1]);
+  if (!gunnerInFront) drawGunner();
+  wheel(wfx, wfy, o.roll + 1);
+  cheek(sides[0], false);
+  trail();
+  if (!toward) blast(); // smoke behind the gun when it fires away from you
+  barrel();
+  cheek(sides[1], true);
+  wheel(wnx, wny, o.roll);
+  if (toward) blast();
+  if (gunnerInFront) drawGunner();
+}
+function cannonDeath(c: Img, f: number) {
+  drawCannon(c, 'S', { flinch: true, smoke: f * 0.4, bob: f });
 }
 
 function genVault() {
