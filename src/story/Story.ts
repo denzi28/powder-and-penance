@@ -224,6 +224,16 @@ export class Story {
       gs.pendingScreen = s.open;
     } else if ('respec' in s) {
       respec(gs);
+    } else if ('spend' in s) {
+      // the salt that strengthened your phial, taken back out of it
+      const had = gs.player.phials.level > 0;
+      if (had) {
+        const before = gs.player.healAmount;
+        gs.player.phials.level--;
+        gs.showToast('BITTER SALT GIVEN', `Each phial drink heals less: ${before} -> ${gs.player.healAmount} HP.`);
+        gs.markDirty();
+      }
+      this.stack.push({ steps: had ? s.then : (s.else ?? []), i: 0 });
     } else if ('card' in s) {
       const ticks = s.ticks ?? DEFAULT_CARD_TICKS;
       this.card = { title: s.card, sub: s.sub ?? null, t: 0, ticks };
@@ -342,6 +352,8 @@ export class Story {
 
   private onFlags() {
     this.gs.npcs.refresh(this.gs.flags);
+    this.gs.rebuildShrines(); // a shrine may appear, or go cold
+    this.gs.refreshPlacedEnemies(); // someone may have left the world, or entered it
     this.gs.markDirty();
   }
 

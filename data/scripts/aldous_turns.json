@@ -1,0 +1,13 @@
+{
+  "id": "aldous_turns",
+  "steps": [
+    { "set": "aldous_turned" },
+    { "wait": 10 },
+    { "camera": "enemy:aldous_unmade", "ticks": 50 },
+    { "wait": 20 },
+    { "say": "Someone stands before the great door, in a Warden's mail, behind a Warden's shield. The shield is the one from the Scriptorium. Nothing behind it is." },
+    { "say": "...warm... you're still... warm...", "who": "aldous" },
+    { "say": "The wax closes over what was left of his face." },
+    { "camera": "player", "ticks": 40 }
+  ]
+}

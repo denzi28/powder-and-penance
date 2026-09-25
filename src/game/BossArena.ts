@@ -14,13 +14,19 @@
 // lifts, shrines waiting on that flag appear, and its `deathScript` plays. A `dust` boss crumbles away.
 // If the player dies at any point, the smoke lifts and the whole fight resets with the world. Dying inside
 // puts your Tallow just outside the doorway you came through.
+//
+// An arena can bring an ally (`"ally": { "kind", "when" }`): while `when` holds, that fighter (ai "ally") walks in
+// at the player's side as the fight begins, fights the boss through every phase, and takes his leave once the
+// boss's last words are over. If he's still standing when the boss falls, the world flag "story:<kind>_fought"
+// is set (his line in the death script).
 import Phaser from 'phaser';
 import { DATA } from '../data/config';
 import { DEPTH } from '../render/depth';
 import { Cell, TILE } from '../world/TileGrid';
 import { arenaWakesAt } from './arenaWake';
 import type { Enemy } from '../enemies/Enemy';
-import type { RoomData } from '../data/schemas';
+import type { Cond, RoomData } from '../data/schemas';
+import { check } from '../story/conditions';
 import type { GameScene } from '../scenes/GameScene';
 
 interface Arena {
@@ -28,6 +34,7 @@ interface Arena {
   kind: string;
   room: RoomData;
   seals: { tx: number; ty: number; prev: Cell; sprite: Phaser.GameObjects.Sprite }[];
+  ally: { kind: string; when?: Cond } | null;
 }
 
 type Stage =
@@ -47,6 +54,8 @@ export class BossArena {
   private arenas: Arena[] = [];
   private current: Arena | null = null;
   private stage: Stage | null = null;
+  /** The ally fighting beside the player in this fight (see the header), until he takes his leave. */
+  private ally: Enemy | null = null;
   /** Where the player came in, for the Tallow rule. */
   private entry: { x: number; y: number } | null = null;
   private smokeT = 0;
@@ -75,7 +84,7 @@ export class BossArena {
           sprite.setDepth(DEPTH.actor(ty * TILE + TILE));
           return { tx, ty, prev: Cell.Floor as Cell, sprite };
         });
-        this.arenas.push({ id: en.id, kind: String(en.boss), room: r, seals });
+        this.arenas.push({ id: en.id, kind: String(en.boss), room: r, seals, ally: (en.ally as Arena['ally']) ?? null });
       }
   }
 
@@ -128,6 +137,7 @@ export class BossArena {
 
   tick() {
     const gs = this.gs;
+    if (this.ally && (!this.gs.enemies.includes(this.ally) || (!this.stage && !gs.story.active))) this.dismissAlly();
     if (this.current && this.stage) {
       if (gs.player.dead) {
         this.release(); // the fight resets with the world on respawn; lift the smoke now
@@ -294,6 +304,7 @@ export class BossArena {
       s.sprite.setVisible(true).setAlpha(0);
     }
     this.active = { enemy: boss, title: boss.def.boss!.title };
+    if (a.ally && check(gs.flags, a.ally.when)) this.bringAlly(a.ally.kind);
     boss.startIntro();
     this.spotlight(boss, boss.def.boss!.introTicks + 20); // its entrance, on camera
     gs.bus.emit('sfx', { id: 'veil' });
@@ -301,11 +312,36 @@ export class BossArena {
     if (line) gs.showToast(boss.def.boss!.title.toUpperCase(), line);
   }
 
+  /** The ally walks in at the player's side, from behind them. */
+  private bringAlly(kind: string) {
+    const gs = this.gs;
+    const p = gs.player;
+    const back = p.aimAngle + Math.PI;
+    const spot = gs.ctxObj.nav.nearestFit(p.x + Math.cos(back) * 18, p.y + Math.sin(back) * 12, 6, 3) ?? { x: p.x, y: p.y };
+    const e = gs.spawnEnemy(kind, spot.x, spot.y, p.aimAngle);
+    if (!e) return;
+    e.ally = true;
+    e.hp = e.maxHp;
+    this.ally = e;
+    gs.particles.burst(e.x, e.y - 10, 10, -Math.PI / 2, 1.4, 14, 40, 'wax2', false);
+    gs.showToast(e.def.name.toUpperCase(), 'is at your side.');
+  }
+
+  /** The fight is won and its last words are over: the ally kneels and is gone (back to where you found him). */
+  private dismissAlly() {
+    const e = this.ally;
+    this.ally = null;
+    if (!e || e.dead || !this.gs.enemies.includes(e)) return;
+    this.gs.particles.burst(e.x, e.y - 10, 16, -Math.PI / 2, 1.6, 16, 60, 'wax2', false);
+    this.gs.despawn(e);
+  }
+
   /** The last phase fell: the boss is gone for good. */
   private finish(b: Enemy) {
     const gs = this.gs;
     const a = this.current!;
     gs.flags.add(`boss:${a.kind}`);
+    if (this.ally && !this.ally.dead) gs.flags.add(`story:${this.ally.kind}_fought`);
     this.release();
     this.active = null;
     this.stage = null;
@@ -347,6 +383,7 @@ export class BossArena {
 
   /** World reset (rest, respawn, area change): no fight in progress, and no chest left mid-floor. */
   reset() {
+    this.ally = null; // the world reset took him with everyone else
     this.release();
     this.active = null;
     this.stage = null;

@@ -124,6 +124,16 @@
       "at": [22, 8]
     },
     {
+      "type": "npc",
+      "id": "aldous",
+      "npc": "aldous",
+      "talk": "aldous",
+      "when": "!aldous_turned",
+      "at": [29, 12],
+      "pose": "sit",
+      "face": -1
+    },
+    {
       "type": "note",
       "note": "note_edict",
       "at": [15, 6]

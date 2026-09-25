@@ -3,6 +3,8 @@
 //              --(awareness 1)--> notice ("!", reaction delay, alerts the room) -> approach <-> strafe -> attack
 //         Combat ends when the player is lost for loseTicks (-> suspicious) or leaves the leash (-> return).
 //         stagger / parried / critVictim interrupt anything.
+// ally:   fights beside the player (Brother Aldous): follow at their side -> approach/strafe/attack its foe, the
+//         nearest enemy; back to follow when none is left. Its "player" is its foe (Enemy.player).
 // rhythm: stands, faces the player and repeats its first move every rhythmIntervalTicks (parry practice).
 // dummy:  does nothing; can be staggered and backstabbed.
 // boss:   dormant until its arena wakes it -> intro (entrance, player keeps control) -> the fighter's combat
@@ -74,6 +76,12 @@ const notice: State<Enemy> = {
 
 /** Shared combat checks: lost the player, or dragged too far from home. */
 function combatExit(e: Enemy): string | undefined {
+  // An ally fights while it has a foe, and goes back to the player's side when it hasn't.
+  if (e.ally) {
+    if (!e.foe || e.ctx.player().dead) return 'follow';
+    e.hunt();
+    return undefined;
+  }
   // A boss never gives up or wanders home: its arena is sealed until one of you falls.
   if (e.def.boss) {
     if (e.player.dead) return 'idle';
@@ -457,10 +465,35 @@ const blinded: State<Enemy> = {
   },
 };
 
+/**
+ * An ally with nothing to fight walks at the player's side (a little behind, on the left), faces where they
+ * look, and goes for the first enemy that comes near.
+ */
+const follow: State<Enemy> = {
+  tick(e) {
+    if (e.blind > 0) return 'blinded';
+    const p = e.ctx.player();
+    if (e.foe && !p.dead) return 'approach';
+    const a = p.aimAngle + Math.PI * 0.75;
+    const tx = p.x + Math.cos(a) * 22;
+    const ty = p.y + Math.sin(a) * 14;
+    const d = Math.hypot(tx - e.x, ty - e.y);
+    if (d > 10) {
+      const heading = e.navigateTo(tx, ty, d > 80 ? e.def.speed * 1.5 : e.def.speed);
+      e.turnTo(heading);
+    } else {
+      e.steer(0, 0);
+      e.turnTo(p.aimAngle);
+    }
+  },
+};
+
 const FIGHTER = { idle, suspicious, notice, approach, strafe, attack, stagger, parried, guardBroken, critVictim, return: ret, dead, channel, submerged, rise, blinded };
+const ALLY = { idle: follow, follow, approach, strafe, attack, stagger, parried, guardBroken, critVictim, dead, blinded };
 const BOSS = { idle: dormant, intro, approach, strafe, attack, stagger, parried, guardBroken, critVictim, dead, channel, turn, blinded };
 
-export const BRAINS: Record<'melee' | 'ranged' | 'dummy' | 'rhythm' | 'boss', Record<string, State<Enemy>>> = {
+export const BRAINS: Record<'melee' | 'ranged' | 'dummy' | 'rhythm' | 'boss' | 'ally', Record<string, State<Enemy>>> = {
+  ally: ALLY,
   // Ranged differs only through data: spacing.retreatBelow and moves whose strikes throw projectiles.
   melee: FIGHTER,
   ranged: FIGHTER,

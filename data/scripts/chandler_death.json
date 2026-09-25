@@ -17,6 +17,15 @@
     { "say": "The black flame on his head bends, gutters, and goes out. What is left of him settles into the floor, soft as a snuffed candle." },
     { "set": "chandler_rests" },
     { "wait": 30 },
+    {
+      "if": "aldous_fought",
+      "then": [
+        { "camera": "enemy:aldous", "ticks": 40 },
+        { "say": "Aldous lowers his shield and kneels by what is left of the man he guarded for eleven years." },
+        { "say": "Rest, Father. Somebody should say it, and I'm the only one of us left who can.", "who": "aldous" },
+        { "wait": 20 }
+      ]
+    },
     { "sfx": "lift_groan" },
     { "shake": 0.35 },
     { "camera": "point:nave_lift", "ticks": 70 },

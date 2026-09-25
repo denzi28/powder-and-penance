@@ -1,7 +1,7 @@
 {
   "volume": 0.11,
   "bosses": {"tollwarden": "toll", "mire_matron": "lullaby", "mother_tallow": "work_song", "mother_bones": "unrendered", "chandler": "chorale", "chandler_wick": "last_candle", "master_gunner": "last_salute", "master_gunner_duel": "last_salute", "hive_queen": "queens_court", "queen_swarm": "the_swarm"},
-  "minibosses": {"mb_belfry_brute": "bell_ringer", "mb_warden_hesk": "the_watch", "scarecrow_warden": "crow_dance"},
+  "minibosses": {"mb_belfry_brute": "bell_ringer", "mb_warden_hesk": "the_watch", "scarecrow_warden": "crow_dance", "mb_aldous": "the_unmade"},
   "areas": {"road": "road", "hub": "rest", "mire": "mire", "works": "works", "abbey": "abbey", "vault": "vault", "bloom": "orchard"},
   "explore": {"volume": 0.035, "resumeAfter": 12},
   "themes": {
@@ -502,6 +502,27 @@
         {"inst": "strings", "tag": "lead2", "level": 2, "oct": 2, "vol": 0.8, "melody": ["1:6 5:6", "4:6 3:6", "6:6 5:6", "5:12"]},
         {"inst": "celesta", "tag": "caw", "pattern": "x...........", "notes": "8", "oct": 1, "every": 2, "vol": 0.6, "hold": true},
         {"inst": "cymbal", "tag": "crash", "at": "first", "pattern": "x...........", "len": 1, "vol": 0.5}
+      ]
+    },
+    "the_unmade": {
+      "bpm": 112, "steps": 16, "root": 47, "scale": "phrygian",
+      "chords": [0, 1, 0, 6, 0, 1, 5, "4M"],
+      "form": [
+        {"bars": 2, "play": ["march", "low", "choir"]},
+        {"bars": 8, "play": ["march", "low", "perc", "choir", "lead", "bell"]},
+        {"bars": 2, "play": ["low", "choir", "bell"], "gap": 3},
+        {"bars": 8, "play": ["march", "low", "perc", "choir", "lead", "lead2", "bell", "crash"]}
+      ],
+      "layers": [
+        {"inst": "snare", "tag": "march", "pattern": "X...x.x.X...x...", "vol": 0.45, "hold": true},
+        {"inst": "bass", "tag": "low", "pattern": "X.......X.......", "notes": "1 5", "oct": -1, "len": 6},
+        {"inst": "choir", "tag": "choir", "pattern": "x...............", "notes": "1 5 8", "chord": true, "len": 16, "vol": 0.5, "hold": true},
+        {"inst": "timpani", "tag": "perc", "level": 1, "pattern": "X.......X.x.....", "notes": "1 5,", "oct": -1, "vol": 0.8},
+        {"inst": "drum", "tag": "perc", "level": 2, "pattern": "X.....x.X...x.x.", "vol": 0.75},
+        {"inst": "bell", "tag": "bell", "pattern": "X...............", "notes": "1", "oct": 0, "len": 16, "every": 2, "vol": 0.4},
+        {"inst": "horn", "tag": "lead", "level": 1, "oct": 0, "vol": 1.0, "melody": ["5:6 4:2 2:8", "3:4 2:4 1:8", "5:4 6-:4 5:8", "2:12 r:4"]},
+        {"inst": "strings", "tag": "lead2", "level": 2, "oct": 1, "vol": 0.8, "melody": ["5:6 4:2 2:8", "3:4 2:4 1:8", "5:4 6-:4 5:8", "2:12 r:4"]},
+        {"inst": "cymbal", "tag": "crash", "at": "first", "pattern": "x...............", "len": 1, "vol": 0.5}
       ]
     }
   }

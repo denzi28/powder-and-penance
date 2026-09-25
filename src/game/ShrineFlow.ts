@@ -1,5 +1,5 @@
 // Kneeling at a Wick Shrine: kindle (first visit) or rest -> restore, respawn enemies, save, shrine menu
-// (level up later; travel to any other lit shrine).
+// (travel to any other lit shrine; level up there once Maudlin has left Wick's Rest).
 import { DATA } from '../data/config';
 import { firstEnabled } from '../ui/Menu';
 import { beginWarp, travelTargets } from './Warp';
@@ -48,7 +48,19 @@ function shrineMenu(gs: GameScene, s: Shrine, subtitle: string) {
   };
   const targets = travelTargets(gs, s.id);
   const items = [
-    { label: 'LEVEL UP', enabled: false, note: 'later', action: () => {} },
+    // With Maudlin gone from Wick's Rest, you hold the Tallow to the flame yourself, at any Wick
+    ...(gs.flags.has('story:maudlin_condemned')
+      ? [
+          {
+            label: 'LEVEL UP',
+            enabled: true,
+            action: () => {
+              gs.player.sm.change('idle');
+              gs.openService('levelup');
+            },
+          },
+        ]
+      : []),
     {
       label: 'TRAVEL',
       enabled: targets.length > 0,

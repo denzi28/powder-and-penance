@@ -540,6 +540,7 @@ export type Step =
   | { card: string; sub?: string; ticks?: number }
   | { open: 'levelup' | 'shop' | 'smith' | 'apiary' }
   | { respec: true }
+  | { spend: 'phialLevel'; then: Step[]; else?: Step[] }
   | ({ actor: string; sprite: string; at: At; lift?: number; z?: number; shadow?: boolean; bob?: number } & Pose)
   | ({ move: string; to: At; ticks: number; arc?: number; face?: boolean; wait?: boolean } & Pose)
   | ({ play: string; shake?: number } & Pose)
@@ -581,6 +582,8 @@ export const Step: z.ZodType<Step> = z.lazy(() =>
     z.object({ open: z.enum(['levelup', 'shop', 'smith', 'apiary']) }).strict(),
     /** Put every stat back where it started and give back all the Tallow spent levelling. */
     z.object({ respec: z.literal(true) }).strict(),
+    /** Give something of yours away (Bitter Salt out of your phial: one phial level): `then` if you had it, else `else`. */
+    z.object({ spend: z.literal('phialLevel'), then: z.array(Step), else: z.array(Step).optional() }).strict(),
     // ---- the cutscene stage (story/Stage.ts): actors, bubbles, bursts, flashes, letterbox bars
     /** Put an actor on stage: any sprite sheet, in a pose. `lift`: drawn higher (sat on a cart); `z`: depth bias. */
     z.object({ actor: z.string(), sprite: z.string(), at: At, lift: num.optional(), z: num.optional(), shadow: z.boolean().optional(), bob: int.nonnegative().optional(), ...Pose }).strict(),
@@ -825,7 +828,7 @@ export const EnemyDef = z.object({
    * melee = full AI; ranged = full AI that keeps its distance (spacing.retreatBelow) and needs line of sight
    * to throw; dummy = never acts or dies; rhythm = stands still and repeats its first move every interval.
    */
-  ai: z.enum(['melee', 'ranged', 'dummy', 'rhythm', 'boss']),
+  ai: z.enum(['melee', 'ranged', 'dummy', 'rhythm', 'boss', 'ally']),
   /**
    * Boss (ai "boss"): waits dormant until the player enters its arena (room entity "arena"), then performs
    * its entrance (the player keeps control): `introAnim` for `introTicks`, with `slams` (ticks) that shake

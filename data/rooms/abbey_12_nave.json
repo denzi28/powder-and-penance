@@ -40,7 +40,7 @@
     { "type": "decor", "kind": "pew", "at": [18, 14] },
     { "type": "decor", "kind": "lift_gate", "at": [17, 0] },
     { "type": "enemy", "kind": "chandler", "at": [10, 4], "facing": "N" },
-    { "type": "arena", "id": "nave", "boss": "chandler", "seals": [[10, 17]], "at": [0, 0] },
+    { "type": "arena", "id": "nave", "boss": "chandler", "ally": { "kind": "aldous", "when": "aldous_saved" }, "seals": [[10, 17]], "at": [0, 0] },
     { "type": "shrine", "id": "shrine_nave", "name": "Nave Wick", "at": [10, 11], "when": "boss:chandler" },
     {
       "type": "exit",

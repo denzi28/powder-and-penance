@@ -3478,22 +3478,72 @@ function genMire() {
   sheet('mire_glob', glob, { cell: [8, 8], pivot: [4, 4], layer: 'fx' });
 }
 
-function genRoster() {
-  const P7 = phased7();
-  const walk4 = <T,>(draw: (c: Img, d: Dir5, p: T) => void, mk: (f: number) => T) => [0, 1, 2, 3].map(f => (c: Img, d: Dir5) => draw(c, d, mk(f)));
-  const frames = <T,>(draw: (c: Img, d: Dir5, p: T) => void, poses: T[]) => poses.map(p => (c: Img, d: Dir5) => draw(c, d, p));
+/**
+ * Wax over a finished figure (before its outline): `level` 1 is a man going to wax (the helm and a shoulder coated,
+ * the plume melted, runs down the front), 2 is gone (everything but the shield's wood, eyes gone to embers). The
+ * pattern is fixed per pixel, so a pose doesn't flicker.
+ */
+function waxCoat(c: Img, level: number) {
+  if (level <= 0) return;
+  const hash = (x: number, y: number) => (((x * 73856093) ^ (y * 19349663) ^ 0x5bd1e995) >>> 0) % 1000 / 1000;
+  const lum = (i: number) => (c.px[i] * 0.3 + c.px[i + 1] * 0.59 + c.px[i + 2] * 0.11) / 255;
+  const near = (a: RGBA, i: number) => Math.abs(c.px[i] - a[0]) + Math.abs(c.px[i + 1] - a[1]) + Math.abs(c.px[i + 2] - a[2]) < 40;
+  const coated = new Set<number>();
+  let top = c.h;
+  for (let i = 3; i < c.px.length; i += 4) if (c.px[i]) top = Math.min(top, Math.floor((i - 3) / 4 / c.w));
+  for (let y = 0; y < c.h; y++)
+    for (let x = 0; x < c.w; x++) {
+      const i = (y * c.w + x) * 4;
+      if (!c.px[i + 3]) continue;
+      const wood = near(P.wood1, i) || near(P.wood2, i);
+      const eye = near(P.cyan, i);
+      if (eye) {
+        if (level >= 2) c.set(x, y, P.ember);
+        continue;
+      }
+      const red = near(P.blood1, i) || near(P.blood2, i);
+      const rel = y - top; // rows down from the top of the head
+      let chance: number;
+      if (level === 1) chance = rel < 3 && red ? 1 : rel < 8 ? 0.55 : rel < 11 ? (x < c.w / 2 ? 0.5 : 0.1) : 0.08;
+      else chance = wood ? 0.08 : rel < 9 ? 0.95 : 0.7;
+      if (hash(x, y) >= chance) continue;
+      const l = lum(i);
+      c.set(x, y, l < 0.25 ? mix(P.wax1, P.ink, 0.45) : l < 0.45 ? mix(P.wax1, P.stone2, 0.3) : l < 0.65 ? P.wax1 : P.wax2);
+      coated.add(y * c.w + x);
+    }
+  // runs: from coated pixels, wax creeps a few pixels down over what's beneath
+  for (const k of [...coated]) {
+    const x = k % c.w;
+    const y = Math.floor(k / c.w);
+    if (hash(x + 17, y) > (level === 1 ? 0.18 : 0.35)) continue;
+    const len = 1 + Math.floor(hash(x, y + 5) * (level === 1 ? 3 : 5));
+    for (let d = 1; d <= len; d++) {
+      if (!c.alpha(x, y + d)) break;
+      c.set(x, y + d, d === len ? mix(P.wax1, P.stone2, 0.35) : P.wax1);
+    }
+  }
+}
 
+/** The Warden's sheet (and his waxed kin): `wax` 0 plain, 1 going to wax, 2 gone. */
+function wardenSheet(name: string, wax: number) {
+  const P7 = phased7();
+  const draw = (c: Img, d: Dir5, p: BodyPose & { shield?: number }) => {
+    drawWarden(c, d, p);
+    waxCoat(c, wax);
+  };
+  const walk4 = <T,>(dr: (c: Img, d: Dir5, p: T) => void, mk: (f: number) => T) => [0, 1, 2, 3].map(f => (c: Img, d: Dir5) => dr(c, d, mk(f)));
+  const frames = <T,>(dr: (c: Img, d: Dir5, p: T) => void, poses: T[]) => poses.map(p => (c: Img, d: Dir5) => dr(c, d, p));
   rosterSheet(
-    'warden',
+    name,
     CELL,
     PIVOT,
     7,
     [
-      { name: 'idle', frames: frames(drawWarden, [{}, { bob: 1 }]), timing: idleT, loop: true },
-      { name: 'walk', frames: walk4(drawWarden, f => ({ step: f, bob: f % 2 ? -1 : 0 })), timing: walkT(9), loop: true },
+      { name: 'idle', frames: frames(draw, [{}, { bob: 1 }]), timing: idleT, loop: true },
+      { name: 'walk', frames: walk4(draw, f => ({ step: f, bob: f % 2 ? -1 : 0 })), timing: walkT(9), loop: true },
       {
         name: 'bash',
-        frames: frames(drawWarden, [
+        frames: frames(draw, [
           { lean: -1, shield: -1 }, { lean: -2, shield: -1 }, { lean: -2, shield: -1, bob: 1 },
           { lean: 2, shield: 3 }, { lean: 2, shield: 3 }, { lean: 1, shield: 1 }, {},
         ]),
@@ -3502,24 +3552,39 @@ function genRoster() {
       },
       {
         name: 'thrust',
-        frames: frames(drawWarden, [{ lean: -1 }, { lean: -2 }, { lean: -2, bob: 1 }, { lean: 2 }, { lean: 3 }, { lean: 1 }, {}]),
+        frames: frames(draw, [{ lean: -1 }, { lean: -2 }, { lean: -2, bob: 1 }, { lean: 2 }, { lean: 3 }, { lean: 1 }, {}]),
         timing: P7,
         loop: false,
       },
       {
         name: 'overhead',
-        frames: frames(drawWarden, [
+        frames: frames(draw, [
           { lean: -1, hunch: -1, bob: -1 }, { lean: -2, hunch: -2, bob: -1 }, { lean: -2, hunch: -2, bob: -1, flinch: false },
           { lean: 2, bob: 1, hunch: 1 }, { lean: 2, bob: 1, hunch: 2 }, { lean: 1, bob: 1 }, {},
         ]),
         timing: P7,
         loop: false,
       },
-      { name: 'stagger', frames: frames(drawWarden, [{ lean: -2, flinch: true }, { lean: -1, bob: 1, flinch: true }, { bob: 1 }]), timing: staggerT, loop: false },
+      { name: 'stagger', frames: frames(draw, [{ lean: -2, flinch: true }, { lean: -1, bob: 1, flinch: true }, { bob: 1 }]), timing: staggerT, loop: false },
     ],
-    [0, 1, 2, 3, 4].map(f => (c: Img) => wardenDeath(c, f)),
+    [0, 1, 2, 3, 4].map(f => (c: Img) => {
+      wardenDeath(c, f);
+      waxCoat(c, wax);
+    }),
     WARDEN_HAND,
   );
+}
+
+function genRoster() {
+  const P7 = phased7();
+  const walk4 = <T,>(draw: (c: Img, d: Dir5, p: T) => void, mk: (f: number) => T) => [0, 1, 2, 3].map(f => (c: Img, d: Dir5) => draw(c, d, mk(f)));
+  const frames = <T,>(draw: (c: Img, d: Dir5, p: T) => void, poses: T[]) => poses.map(p => (c: Img, d: Dir5) => draw(c, d, p));
+
+  wardenSheet('warden', 0);
+  // Brother Aldous, a Warden deserter going to wax (his plume already gone to it), and what he becomes if nobody
+  // slows it: the same armour, the same shield, wax all the way through
+  wardenSheet('aldous', 1);
+  wardenSheet('aldous_unmade', 2);
 
   rosterSheet(
     'acolyte',
@@ -4207,7 +4272,7 @@ function line(img: Img, x0: number, y0: number, x1: number, y1: number, c: RGBA)
 
 function genNpcs() {
   genTownsfolk();
-  const who = ['oskar', 'maudlin', 'pip', 'tollwarden', 'matron', 'chandler', 'tomas', 'hedda', 'bede', 'agnes', 'ulla', 'jost', 'lome', 'wenna', 'fennick', 'cuthwin', 'hobb', 'wren', 'gunner', 'hild', 'queen', 'scarecrow'] as const;
+  const who = ['oskar', 'maudlin', 'pip', 'tollwarden', 'matron', 'chandler', 'tomas', 'hedda', 'bede', 'agnes', 'ulla', 'jost', 'lome', 'wenna', 'fennick', 'cuthwin', 'hobb', 'wren', 'gunner', 'hild', 'queen', 'scarecrow', 'aldous'] as const;
   // painted head-and-shoulders portraits for the dialogue box (tools/portraits.ts)
   const pr = renderPortraits(who);
   const portraits = new Img(pr.w, pr.h);
@@ -7011,6 +7076,28 @@ function genTownsfolk() {
       return { l: [g.cx - 6, g.waist] };
     },
   });
+  // Brother Aldous: a Warden who threw down his spear. Mail and a torn red tabard, no helm; the wax has his left
+  // cheek and shoulder already. He hides in the Scriptorium with his back to the shelves, hugging his knees.
+  villagerSheet('npc_aldous', {
+    cloth: { c0: EN.steel0, c1: EN.steel1, c2: EN.steel2, c3: EN.steel3 },
+    long: false, legs: EN.steel1, skin: pale, head: 'bald', headCol: pale, beard: mix(P.stone3, P.wax1, 0.3),
+    job: (c, f, g) => {
+      c.rect(g.cx - 2, g.body + 1, 4, g.waist - g.body + 2, P.blood1); // the tabard, torn at the hem
+      c.vline(g.cx - 2, g.body + 1, g.waist - g.body + 2, P.blood2);
+      c.set(g.cx + 1, g.waist + 2, null);
+      c.set(g.cx, g.body + 3, P.flame1); // the Abbey's flame, half picked off
+      // the wax: over the left of his face, down the neck, across the shoulder
+      for (const [dx, dy] of [[-3, 1], [-3, 2], [-2, 2], [-3, 3], [-2, 3], [-3, 4], [-2, 5], [-4, 6], [-5, 7], [-4, 8], [-6, 8], [-5, 9]])
+        c.set(g.cx + dx, g.top + dy, dy > 6 ? P.wax1 : P.wax2);
+      c.vline(g.cx - 5, g.body + 2, 3, P.wax1); // a run down the arm
+      if (f.kind === 'work') {
+        // rubbing salt into the wax, shaking
+        const l: [number, number] = [g.cx - 4 + f.k, g.top + 5];
+        c.set(l[0], l[1] - 1, P.white);
+        return { l };
+      }
+    },
+  });
   // Brother Cuthwin: a young novice with a tonsure in an undyed habit, forever sweeping the Abbey porch.
   villagerSheet('npc_cuthwin', {
     cloth: { c0: mix(P.stone2, P.wood1, 0.4), c1: mix(P.stone3, P.wood2, 0.35), c2: mix(P.stone3, P.wax1, 0.35), c3: mix(P.stone4, P.wax1, 0.4) },
@@ -7247,7 +7334,7 @@ function genCritters() {
 // 14 tallow lump, 15 powder pouch, 16 phial shard, 17 bitter salt, 18 cage key, 19 toll key, 20 igniter,
 // 21 ledger, 22 seal of tallow, 23 seal of the mire, 24 mending phial, 25 empty slot.
 function genIcons() {
-  const N = 66;
+  const N = 67;
   const img = new Img(16 * N, 16);
   const icon = (i: number, draw: (c: Img) => void, outline = true) => {
     const c = new Img(16, 16);
@@ -7826,6 +7913,16 @@ function genIcons() {
     for (const [x, y] of [[7, 6], [9, 6], [10, 8], [9, 10], [7, 10], [6, 8]]) c.set(x, y, P.flame2);
     c.set(6, 5, P.wax2);
   });
+  // 66 the Nave Watch oath-ring: an iron band with the Abbey's flame on a shield, wax run down over half of it
+  icon(66, c =>
+    band(c, IRON, c => {
+      c.rect(6, 2, 5, 5, IRON.c1);
+      c.hline(6, 2, 5, IRON.c3);
+      c.vline(8, 3, 2, P.flame2);
+      c.set(8, 5, P.blood2);
+      for (const [x, y] of [[5, 3], [5, 4], [5, 5], [6, 6], [5, 7], [4, 8], [5, 9], [4, 10]]) c.set(x, y, y > 7 ? P.wax1 : P.wax2);
+    }),
+  );
   sheet('icons', img, { cell: [16, 16], pivot: [0, 0], layer: 'ui' });
 
   // A throwing knife in flight (pointing right), and a note lying on the floor

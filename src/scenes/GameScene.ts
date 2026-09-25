@@ -73,7 +73,7 @@ import { applySave, snapshot } from '../game/Persistence';
 import { updateAim } from '../game/aim';
 import type { Actor } from '../actors/Actor';
 import type { Dir8 } from '../core/math';
-import { CarriedDrop, MinibossPlacement, type RoomData } from '../data/schemas';
+import { CarriedDrop, MinibossPlacement, type Cond, type RoomData } from '../data/schemas';
 
 const DEPTH_LIGHT = (y: number) => DEPTH.actor(y) + 1;
 const DIR_ANGLE: Record<Dir8, number> = { E: 0, SE: 45, S: 90, SW: 135, W: 180, NW: 225, N: 270, NE: 315 };
@@ -181,7 +181,7 @@ export class GameScene extends Phaser.Scene {
   /** Quick travel between shrines in progress (game/Warp): the world is paused. */
   warp: { to: WarpTarget; t: number } | null = null;
 
-  private ctxObj!: WorldCtx;
+  ctxObj!: WorldCtx;
   private rooms: RoomData[] = [];
   private worldView!: WorldView;
   playerView!: PlayerView;
@@ -762,6 +762,10 @@ export class GameScene extends Phaser.Scene {
       this.dirty = true;
     });
     this.bus.on('died', e => {
+      if (e.actor instanceof Enemy && e.actor.ally) {
+        this.showToast(e.actor.def.name.toUpperCase(), 'has fallen. The wax has him now.');
+        return;
+      }
       if (e.actor instanceof Enemy) {
         // Slain enemies stay dead (across areas and reloads) until the player rests or dies.
         if (e.actor.spawnId) this.flags.add(`slain:${e.actor.spawnId}`);
@@ -1013,6 +1017,17 @@ export class GameScene extends Phaser.Scene {
     return e;
   }
 
+  /** A story flag changed: placed enemies whose `when` no longer holds leave the world, new ones come in. */
+  refreshPlacedEnemies() {
+    for (const e of [...this.enemies]) {
+      if (!e.spawnId || e.dead) continue;
+      const [room, idx] = e.spawnId.split('#');
+      const en = DATA.rooms[room]?.entities[Number(idx)];
+      if (en && !check(this.flags, en.when as Cond | undefined)) this.removeEnemy(e);
+    }
+    this.spawnRoomEnemies();
+  }
+
   /** Shrines can depend on flags (a boss's shrine appears when it falls): rebuild after such a change. */
   rebuildShrines() {
     this.shrines.build(this.rooms, id => this.flags.has(`shrine:${id}`), this.flags);
@@ -1037,13 +1052,18 @@ export class GameScene extends Phaser.Scene {
     this.spawnRoomEnemies();
   }
 
-  /** Placed enemies, except those slain since the last rest ("slain:<room>#<index>" flags). */
+  /**
+   * Placed enemies, except those slain since the last rest ("slain:<room>#<index>" flags) and those whose `when`
+   * condition doesn't hold (Aldous the Unmade only walks once Aldous is lost).
+   */
   private spawnRoomEnemies() {
     for (const r of this.rooms)
       r.entities.forEach((en, i) => {
         if (en.type !== 'enemy') return;
         const spawnId = `${r.id}#${i}`;
         if (this.flags.has(`slain:${spawnId}`)) return;
+        if (!check(this.flags, en.when as Cond | undefined)) return;
+        if (this.enemies.some(e => e.spawnId === spawnId)) return; // already in the world
         const mb = en.miniboss === undefined ? null : MinibossPlacement.parse(en.miniboss);
         if (mb && this.flags.has(`miniboss:${mb.id}`)) return; // minibosses stay dead
         if (DATA.enemies[String(en.kind)]?.boss && this.flags.has(`boss:${String(en.kind)}`)) return; // bosses stay dead

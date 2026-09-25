@@ -31,6 +31,7 @@ export function travelTargets(gs: GameScene, from: string): WarpTarget[] {
     for (const en of r.entities) {
       if (en.type !== 'shrine' || !en.id || en.id === from || !gs.flags.has(`shrine:${en.id}`)) continue;
       if (!check(gs.flags, en.when as Cond | undefined)) continue;
+      if (en.cold !== undefined && check(gs.flags, en.cold as Cond)) continue; // nobody tends it: the flame won't lead there
       out.push({
         id: en.id,
         name: String(en.name ?? en.id),

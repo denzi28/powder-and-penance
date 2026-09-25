@@ -102,6 +102,22 @@
       "type": "decor",
       "kind": "rubble",
       "at": [10, 10]
+    },
+    {
+      "type": "enemy",
+      "kind": "aldous_unmade",
+      "at": [11, 4],
+      "facing": "E",
+      "when": "aldous_turned",
+      "miniboss": { "id": "mb_aldous", "title": "Aldous the Unmade", "drop": "nave_watch_ring", "hpMult": 1.6, "tallow": 340 }
+    },
+    {
+      "type": "cutscene",
+      "id": "aldous_turns",
+      "script": "aldous_turns",
+      "at": [18, 4],
+      "size": [2, 3],
+      "when": ["!aldous_saved", "key:seal_of_tallow", "key:seal_of_the_mire", "key:seal_of_powder", "key:seal_of_the_hive"]
     }
   ]
 }

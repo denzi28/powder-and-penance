@@ -1,0 +1,94 @@
+{
+  "id": "aldous",
+  "steps": [
+    {
+      "if": "boss:chandler",
+      "then": [
+        {
+          "if": "aldous_saved",
+          "then": [
+            { "say": "He's sitting where you found him, but upright now, with his shield across his knees." },
+            { "say": "I felt it go out. The fire in the Nave. Like a hand letting go of my throat.", "who": "aldous" },
+            { "say": "The wax is still on me. It's not getting worse. I'll take that. I'll take that and thank the salt and you, in that order.", "who": "aldous" },
+            { "say": "When they open the lift, I want to be the one who stands at the bottom of it. Somebody should be on guard who knows what he's guarding against.", "who": "aldous" }
+          ],
+          "else": [
+            { "say": "Still here. Still dripping. They say the Chandler's dead.", "who": "aldous" },
+            { "say": "Good. I wanted to be there. I'd only have slowed you down.", "who": "aldous" }
+          ]
+        }
+      ],
+      "else": [
+        {
+          "if": "!aldous_met",
+          "then": [
+            { "say": "A Warden sits with his back to the shelves, knees drawn up, his spear nowhere. Half of his face has gone to wax." },
+            { "say": "Don't. Don't come closer, I'm not... I don't bite. Not yet.", "who": "aldous" },
+            { "say": "Aldous. Brother Aldous, of the Nave Watch. I threw my spear down the Crypt Stair and I've been hiding in here ever since.", "who": "aldous" },
+            { "say": "You're going down there, aren't you. To the Works. Don't. Whatever they told you is down there, it's worse. I carried people to the carts.", "who": "aldous" },
+            { "set": "aldous_met" }
+          ],
+          "else": [
+            {
+              "if": "aldous_saved",
+              "then": [
+                { "say": "The salt's holding. I can feel my fingers. All ten.", "who": "aldous" },
+                { "say": "When you go into the Nave, I'll be at your back. I know how he fights. I stood at that altar for eleven years.", "who": "aldous" }
+              ],
+              "else": [
+                { "say": "Still warm? Lucky. I can hear it in my ears now. Like a candle being blown on, very gently.", "who": "aldous" }
+              ]
+            }
+          ]
+        },
+        {
+          "menu": [
+            {
+              "text": "What is happening to you?",
+              "when": "!aldous_saved",
+              "do": [
+                { "say": "The Drip. It starts in the fingers, but mine started in my face, where the Nave fire always hit me.", "who": "aldous" },
+                { "say": "They say Bitter Salt slows it. The Order kept it for the Chandler's own. Rubbed into the skin, it puts the cold back.", "who": "aldous" },
+                { "say": "If I had some I could fight. I could stand in the Nave with a shield again, instead of shaking in here with the books.", "who": "aldous" }
+              ]
+            },
+            {
+              "text": "Give him the Bitter Salt from your phial. (Your phial heals less; he fights beside you against the Chandler)",
+              "when": "!aldous_saved",
+              "do": [
+                {
+                  "spend": "phialLevel",
+                  "then": [
+                    { "say": "You pour out what the salt left in your phial, a grey crust, and press it into his palm." },
+                    { "say": "He rubs it into his cheek and gasps like a man breaking the surface of cold water." },
+                    { "say": "Cold. It's cold. Oh, that's... that's the first cold thing I've felt in a month.", "who": "aldous" },
+                    { "say": "I owe you a life. I'll pay it where it counts. When you go into the Nave to face him, I'll come. I'll be at your side before he's finished his first prayer.", "who": "aldous" },
+                    { "set": "aldous_saved" }
+                  ],
+                  "else": [
+                    { "say": "Your phial has no Bitter Salt in it to give. It's found in the world, and each one strengthens your phial when you take it." },
+                    { "say": "Don't worry about me. I'll hold. A while.", "who": "aldous" }
+                  ]
+                }
+              ]
+            },
+            {
+              "text": "What do you know about the Chandler?",
+              "do": [
+                { "say": "He prays with his whole arm. The snuffer comes round, then the bell, then the smoke and he's behind you. Never where he was.", "who": "aldous" },
+                { "say": "And if you ever get him down, it isn't over. He goes to the altar. Whatever gets up off it isn't a priest any more.", "who": "aldous" }
+              ]
+            },
+            {
+              "text": "Leave",
+              "end": true,
+              "do": [
+                { "say": "Mind the Warden by the desks. He was a friend of mine. He won't know you're not a pilgrim.", "who": "aldous" }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
