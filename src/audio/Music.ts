@@ -107,6 +107,47 @@ function musicContext(sfx: Sfx): BaseAudioContext | null {
 }
 
 /**
+ * The music's voice budget. Every note is several oscillators with filters, and a full boss theme can ask for
+ * ~200 oscillators at once: more than the audio thread renders in real time on many machines, which makes
+ * the music stutter and then drop out (with every other sound). So: at most `budget` notes ring at once; the
+ * rhythm, the bass and the lead lines always get through, washes and ornaments give way first. And a guard
+ * watches the audio clock: if it falls behind the wall clock, the budget shrinks until it keeps up.
+ */
+const VOICES = { ends: [] as number[], budget: 26, max: 26, lastWall: 0, lastAudio: 0, good: 0 };
+/** Parts that can be dropped first when the budget is tight. */
+const ORNAMENT: ReadonlySet<string> = new Set(['pad', 'strings', 'spiccato', 'celesta', 'musicbox', 'pluck', 'harp', 'hum', 'riser', 'organ', 'bell']);
+
+function loadGuard(ctx: BaseAudioContext) {
+  if (!(ctx instanceof AudioContext)) return; // offline renders run as fast as they like
+  const wall = performance.now() / 1000;
+  if (!VOICES.lastWall) {
+    VOICES.lastWall = wall;
+    VOICES.lastAudio = ctx.currentTime;
+    return;
+  }
+  const dw = wall - VOICES.lastWall;
+  if (dw < 1) return;
+  const ratio = (ctx.currentTime - VOICES.lastAudio) / dw;
+  VOICES.lastWall = wall;
+  VOICES.lastAudio = ctx.currentTime;
+  if (dw > 3) return; // the tab was asleep: no verdict
+  if (ratio < 0.93) {
+    VOICES.budget = Math.max(8, Math.floor(VOICES.budget * 0.7));
+    VOICES.good = 0;
+  } else if (ratio > 0.985 && ++VOICES.good >= 6 && VOICES.budget < VOICES.max) VOICES.budget += 2;
+}
+
+/** May a note of this part start at `t` (ringing until `end`)? Books it if so. */
+function voiceFree(inst: string, t: number, end: number): boolean {
+  const e = VOICES.ends.filter(x => x > t);
+  VOICES.ends = e;
+  const cap = ORNAMENT.has(inst) ? VOICES.budget * 0.6 : VOICES.budget;
+  if (e.length >= cap) return false;
+  e.push(end);
+  return true;
+}
+
+/**
  * Plays one theme from the top: schedules its steps a little ahead into its own fader (dry and reverb send,
  * so a fade takes the echo with it). Throw it away after fading it out; start a new one for the next theme.
  */
@@ -151,6 +192,7 @@ class Sequencer {
 
   /** Schedule what falls in the next moment. */
   tick() {
+    loadGuard(this.ctx);
     const th = this.theme;
     const stepDur = 60 / th.bpm / 4;
     while (this.next < this.ctx.currentTime + 0.25) {
@@ -245,6 +287,7 @@ class Sequencer {
 
   private note(L: MusicLayer, t: number, midi: number, len: number, accent: number) {
     const ctx = this.ctx;
+    if (!voiceFree(L.inst, t, t + len + 0.6)) return; // over budget: the part rests
     const g = ctx.createGain();
     g.gain.value = (L.vol ?? 1) * accent * rnd(0.9, 1.05);
     let out: AudioNode = g;
@@ -494,12 +537,20 @@ function noise(ctx: BaseAudioContext, t: number, end: number, out: AudioNode, ty
   n.stop(end);
 }
 
-/** A section: `n` detuned sawtooth voices spread across the stereo field, into `out`. */
+/**
+ * A section: detuned sawtooth voices spread across the stereo field, into `out`. Half the nominal `n` voices
+ * are synthesised (at most 3), split between one left and one right panner: a full orchestra of notes, each
+ * with six bows and a panner per bow, was more than the audio thread could render in real time (the music
+ * stuttered, then fell silent). The wider detune keeps the section sounding thick.
+ */
 function section(ctx: BaseAudioContext, f: number, t: number, end: number, out: AudioNode, n: number, spreadCents: number, width: number, type: OscillatorType = 'sawtooth') {
   const oscs: OscillatorNode[] = [];
-  for (let i = 0; i < n; i++) {
-    const k = n === 1 ? 0 : i / (n - 1) - 0.5; // -0.5 .. 0.5
-    oscs.push(osc(ctx, type, f, t, end, panned(ctx, k * 2 * width, out), k * 2 * spreadCents + rnd(-2, 2)));
+  const voices = Math.min(3, Math.max(1, Math.round(n / 2)));
+  const sides = voices === 1 ? [out] : [panned(ctx, -width, out), panned(ctx, width, out)];
+  for (let i = 0; i < voices; i++) {
+    const k = voices === 1 ? 0 : i / (voices - 1) - 0.5; // -0.5 .. 0.5
+    const side = voices === 1 ? out : sides[k < 0 || (k === 0 && i % 2 === 0) ? 0 : 1];
+    oscs.push(osc(ctx, type, f, t, end, side, k * 2 * spreadCents * 1.15 + rnd(-2, 2)));
   }
   return oscs;
 }
@@ -616,11 +667,9 @@ const INSTRUMENTS: Record<MusicLayer['inst'], Inst> = {
     mix.connect(f1);
     mix.connect(f2);
     mix.connect(f3);
-    for (let i = 0; i < 4; i++) {
-      const p = panned(ctx, (i / 3 - 0.5) * 1.4, mix);
-      const o = osc(ctx, 'sawtooth', hz(m), t, e.end, p, (i - 1.5) * 7);
-      vibrato(ctx, [o], t, e.end, 4.8 + i * 0.35, 9, 0.4);
-    }
+    const choir: OscillatorNode[] = [];
+    for (let i = 0; i < 2; i++) choir.push(osc(ctx, 'sawtooth', hz(m), t, e.end, panned(ctx, i ? 0.6 : -0.6, mix), i ? 9 : -9));
+    vibrato(ctx, choir, t, e.end, 5.1, 9, 0.4); // one vibrato for both singers
     // breath
     const b = env(ctx, e.g, t, attack, Math.max(0, len - attack), 0.5, 0.02);
     noise(ctx, t, b.end, b.g, 'bandpass', 1200);

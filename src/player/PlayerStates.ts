@@ -178,6 +178,7 @@ function locomotion(p: Player): string {
 // ------------------------------------------------------------------ melee
 function startStrike(p: Player, s: StrikeDef) {
   p.stamina.spend(s.stamina);
+  p.rollQueued = false;
   p.vx = p.vy = 0;
   p.runner = new AttackRunner(p, s, p.aimAngle, p.weapon.view.restAngleOffsetDeg * DEG);
   const thrust = s.sweep.fromDeg === s.sweep.toDeg;
@@ -188,14 +189,23 @@ function startStrike(p: Player, s: StrikeDef) {
 
 function endStrike(p: Player) {
   p.runner = null;
+  p.rollQueued = false;
   p.hyperArmor = 0;
   p.animHold = false;
   p.body.play('idle');
 }
 
-/** Roll-cancel check shared by attack states. */
+/**
+ * Roll-cancel check shared by attack states. A roll can cut in as soon as the strike's hitting frames are over
+ * (or at its `rollCancelFrom`, if that's sooner), and a roll pressed any time during the attack is kept until
+ * then instead of expiring in the input buffer: pressing early still gets you out at the first moment.
+ */
 function rollCancel(p: Player, s: StrikeDef, t: number) {
-  return s.rollCancelFrom !== undefined && t >= s.rollCancelFrom && p.stamina.canAct() && p.input.consume('roll');
+  if (p.input.consume('roll')) p.rollQueued = true;
+  const from = Math.min(s.rollCancelFrom ?? Infinity, s.windup + s.active);
+  if (!p.rollQueued || t < from || !p.stamina.canAct()) return false;
+  p.rollQueued = false;
+  return true;
 }
 
 const attack: State<Player> = {

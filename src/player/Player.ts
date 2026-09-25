@@ -73,6 +73,8 @@ export class Player extends Actor {
   rollDirY = 1;
   sprintNeedsRepress = false;
   comboIndex = 0;
+  /** A roll pressed mid-attack, waiting for the first moment the attack can be cancelled. */
+  rollQueued = false;
   /** Heavy attack charge ticks accumulated. */
   charge = 0;
   /** The current roll's shape (set as it starts, from the equip load). */
