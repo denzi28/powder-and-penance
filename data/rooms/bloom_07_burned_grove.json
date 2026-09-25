@@ -100,6 +100,7 @@
       "type": "enemy",
       "kind": "scarecrow_warden",
       "at": [14, 8],
+      "carries": { "id": "bloom_grove_salt", "item": "salt_grove" },
       "facing": "S",
       "miniboss": {
         "id": "scarecrow_warden",
@@ -113,12 +114,6 @@
       "type": "note",
       "note": "note_decree",
       "at": [3, 5]
-    },
-    {
-      "type": "item",
-      "id": "bloom_grove_salt",
-      "item": "salt_grove",
-      "at": [25, 15]
     }
   ]
 }

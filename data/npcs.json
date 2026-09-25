@@ -21,6 +21,7 @@
     "wren": { "name": "Wren", "sprite": "npc_wren", "portrait": 17, "voice": { "sfx": "voice_soft", "pitch": 1.2, "every": 2 }, "music": "harp" },
     "gunner": { "name": "The Master Gunner", "sprite": "gunner", "portrait": 18, "voice": { "sfx": "voice_low", "pitch": 0.7, "every": 2, "volume": 1.1 } },
     "hild": { "name": "Hild", "sprite": "npc_hild", "portrait": 19, "voice": { "sfx": "voice_soft", "pitch": 1.1, "every": 2 }, "workSfx": "p_smoker" },
-    "aldith": { "name": "Mother Aldith", "sprite": "hive_queen", "portrait": 20, "voice": { "sfx": "voice_soft", "pitch": 0.85, "every": 3, "volume": 0.8 } }
+    "aldith": { "name": "Mother Aldith", "sprite": "hive_queen", "portrait": 20, "voice": { "sfx": "voice_soft", "pitch": 0.85, "every": 3, "volume": 0.8 } },
+    "aldous": { "name": "Brother Aldous", "sprite": "npc_aldous", "portrait": 22, "voice": { "sfx": "voice_low", "pitch": 0.95, "every": 2, "volume": 0.9 } }
   }
 }

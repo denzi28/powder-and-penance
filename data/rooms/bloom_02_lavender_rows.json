@@ -115,12 +115,6 @@
       "facing": "E"
     },
     {
-      "type": "item",
-      "id": "bloom_honey",
-      "item": "cache_honey",
-      "at": [27, 2]
-    },
-    {
       "type": "note",
       "note": "note_hild_orchard",
       "at": [20, 15]

@@ -93,7 +93,7 @@
         "id": "mb_warden_hesk",
         "title": "Hesk, the Unrelieved Warden",
         "drop": "wardens_ward",
-        "hpMult": 1.8,
+        "hpMult": 2.2,
         "tallow": 300
       }
     },

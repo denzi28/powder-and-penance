@@ -14,6 +14,8 @@ export interface Shrine {
   x: number;
   y: number;
   lit: boolean;
+  /** Gone cold (its `cold` condition holds): nobody tends it, so it can't be rested at or travelled to. */
+  cold: boolean;
   sprite: Phaser.GameObjects.Sprite;
   anim: AnimPlayer;
 }
@@ -26,7 +28,10 @@ export class Shrines {
 
   constructor(private lib: SpriteLib) {}
 
-  /** A shrine with a `when` condition (e.g. "boss:tollwarden") only exists once it holds. */
+  /**
+   * A shrine with a `when` condition (e.g. "boss:tollwarden") only exists once it holds; one with a `cold`
+   * condition (e.g. "maudlin_condemned") stands unlit and useless once that holds.
+   */
   build(rooms: RoomData[], litIds: (id: string) => boolean, flags: ReadonlySet<string> = new Set()) {
     this.list.forEach(s => s.sprite.destroy());
     this.list = [];
@@ -38,9 +43,10 @@ export class Shrines {
         const y = (r.origin[1] + en.at[1]) * TILE + TILE - 2;
         const sprite = this.lib.sprite('shrine').setPosition(x, y).setDepth(DEPTH.actor(y));
         const anim = new AnimPlayer(this.lib.manifest('shrine').animations);
-        const lit = litIds(en.id);
+        const cold = en.cold !== undefined && check(flags, en.cold as Cond);
+        const lit = litIds(en.id) && !cold;
         anim.play(lit ? 'lit' : 'unlit');
-        this.list.push({ id: en.id, name: String(en.name ?? en.id), x, y, lit, sprite, anim });
+        this.list.push({ id: en.id, name: String(en.name ?? en.id), x, y, lit, cold, sprite, anim });
       }
   }
 

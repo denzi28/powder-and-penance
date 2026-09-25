@@ -107,12 +107,6 @@
       "type": "decor",
       "kind": "banner",
       "at": [16, 1]
-    },
-    {
-      "type": "item",
-      "id": "cache_smoke",
-      "item": "cache_smoke",
-      "at": [14, 12]
     }
   ]
 }

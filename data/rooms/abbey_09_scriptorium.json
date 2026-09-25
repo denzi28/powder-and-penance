@@ -31,7 +31,8 @@
       "type": "enemy",
       "kind": "powder_acolyte",
       "at": [4, 5],
-      "facing": "E"
+      "facing": "E",
+      "carries": { "id": "abbey_09_scriptorium_acolyte_robe", "item": "gear_acolyte_robe" }
     },
     {
       "type": "enemy",
@@ -49,13 +50,8 @@
       "type": "enemy",
       "kind": "bulwark_warden",
       "at": [10, 12],
-      "facing": "E"
-    },
-    {
-      "type": "item",
-      "id": "abbey_tallow",
-      "item": "tallow_lump",
-      "at": [2, 13]
+      "facing": "E",
+      "carries": { "id": "abbey_tallow", "item": "tallow_lump" }
     },
     {
       "type": "prop",
@@ -128,10 +124,14 @@
       "at": [22, 8]
     },
     {
-      "type": "item",
-      "id": "abbey_09_scriptorium_acolyte_robe",
-      "item": "gear_acolyte_robe",
-      "at": [18, 6]
+      "type": "npc",
+      "id": "aldous",
+      "npc": "aldous",
+      "talk": "aldous",
+      "when": "!aldous_turned",
+      "at": [29, 12],
+      "pose": "sit",
+      "face": -1
     },
     {
       "type": "note",

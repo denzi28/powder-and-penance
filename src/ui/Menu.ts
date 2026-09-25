@@ -13,6 +13,8 @@ export interface MenuItem {
 export interface Menu {
   title: string;
   subtitle?: string;
+  /** Wrapped lines under the choices (the pause menu's current goal). */
+  footer?: string;
   items: MenuItem[];
   index: number;
   /** Called on "back"; if omitted, back does nothing. */

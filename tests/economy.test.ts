@@ -5,11 +5,12 @@ import { DATA } from '../src/data/config';
 import { levelCost, levelOf, scalingBonus, startStats, vitalityHp, weaponMult } from '../src/player/Player';
 import { check } from '../src/story/conditions';
 
+/** How many of a consumable the world holds: in chests, and carried by enemies (dropped the first time they fall). */
 const chestCount = (consumable: string) =>
   Object.values(DATA.rooms)
     .flatMap(r => r.entities)
-    .filter(en => en.type === 'item')
-    .map(en => DATA.items[String(en.item)].effect)
+    .flatMap(en => (en.type === 'item' ? [String(en.item)] : en.type === 'enemy' && en.carries ? [(en.carries as { item: string }).item] : []))
+    .map(item => DATA.items[item].effect)
     .reduce((a, e) => a + (e.type === 'consumable' && e.id === consumable ? e.count : 0), 0);
 
 describe('levels', () => {

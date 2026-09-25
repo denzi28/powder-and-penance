@@ -20,6 +20,8 @@ export interface MusicState {
   boss: string;
   /** 0 entrance, 1 fight, 2 desperate, -1 between phases. */
   level: number;
+  /** Play this theme (a miniboss's) instead of the one listed for `boss`. */
+  theme?: string;
 }
 
 const SCALES: Record<string, number[]> = {
@@ -420,7 +422,7 @@ export class BossMusic {
       this.last = null;
       return;
     }
-    const themeId = DATA.music.bosses[state.boss];
+    const themeId = state.theme ?? DATA.music.bosses[state.boss];
     if (!themeId) return;
     if (themeId !== this.themeId) {
       // a new fight or the next phase: its theme from the top (the last one cuts off)

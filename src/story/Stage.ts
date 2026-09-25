@@ -193,6 +193,7 @@ export class Stage {
     const [kind, id] = what.split(/:(.*)/);
     if (kind === 'npc') gs.npcs.setSceneHidden(id, hide);
     if (kind === 'decor') gs.decor.setKindVisible(id, !hide);
+    if (kind === 'enemy') for (const e of gs.enemies) if (e.kind === id) e.sceneHidden = hide;
   }
 
   // ------------------------------------------------------------------ time

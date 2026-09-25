@@ -106,6 +106,88 @@
           ]
         },
         {
+          "text": "The Chandler is dead.",
+          "when": ["boss:chandler", "key:chandler_ledger", "!maudlin_judged"],
+          "do": [
+            {
+              "if": ["key:hild_letter", "!maudlin_read_letter"],
+              "then": [
+                { "say": "Dead. Then... no. Wait. You're carrying something with a knot I know.", "who": "maudlin" },
+                { "say": "Give me my sister's letter first. Whatever you decide about me after, let me have read it.", "who": "maudlin" }
+              ],
+              "else": [
+                {
+                  "if": "!maudlin_saw_ledger",
+                  "then": [
+                    { "say": "You hand her the Chandler's Ledger. She reads the first page, then the second. Her hands stop shaking somewhere around the tenth." },
+                    { "say": "Names and weights. He wrote down the weights.", "who": "maudlin" },
+                    { "set": "maudlin_saw_ledger" }
+                  ]
+                },
+                { "say": "Dead. Then it's over. Up there, anyway.", "who": "maudlin" },
+                { "say": "I owe you all of it, so here it is. Then you can say what I am.", "who": "maudlin" },
+                { "say": "Twenty years ago the Order came down to this shrine with a cart and a ledger. The Great Wick wanted feeding, they said, and a Sister who kept quiet could keep her flame.", "who": "maudlin" },
+                { "say": "So I sent them up. The tired ones. The sick ones. The ones nobody would come looking for. I told them the Abbey would take them in, and it did.", "who": "maudlin" },
+                { "say": "Every point of breath and grip I gave you came out of what they boiled down. I held it to the flame and told myself I was giving it back.", "who": "maudlin" },
+                { "wait": 30 },
+                { "say": "She takes the snuffer from its hook on the shrine and puts it in your hand." },
+                { "say": "You're the only one who's gone all the way up and come back down warm. So it's yours to say.", "who": "maudlin" },
+                {
+                  "menu": [
+                    {
+                      "text": "I forgive you. (She stays; Wick's Rest stays lit)",
+                      "end": true,
+                      "do": [
+                        { "say": "You hang the snuffer back on its hook." },
+                        { "say": "...Oh.", "who": "maudlin" },
+                        { "say": "Then I'll keep the flame. Not for them up there. For whoever comes up the road next, and I'll look at their faces, the way Anselm did.", "who": "maudlin" },
+                        { "say": "Here. I kept this back for myself, for the day the Drip came for me. I don't think I'm afraid of it any more.", "who": "maudlin" },
+                        { "give": "bitter_salt" },
+                        { "set": ["maudlin_forgiven", "maudlin_judged"] }
+                      ]
+                    },
+                    {
+                      "text": "I condemn you. (She leaves; her Wick goes cold)",
+                      "end": true,
+                      "do": [
+                        { "say": "You say it. She nods, as if she'd written the words herself." },
+                        { "say": "Yes. That's fair. That's the first fair thing anyone has said in this yard for twenty years.", "who": "maudlin" },
+                        { "say": "I'll walk the road down. Somebody should carry the names away from here and say them where it's quiet.", "who": "maudlin" },
+                        { "say": "This Wick won't answer anyone once I'm gone. Hold your Tallow to any other flame. It'll listen without me.", "who": "maudlin" },
+                        { "say": "And take what's in the box under my bench. It was never mine.", "who": "maudlin" },
+                        { "give": "tallow_lump" },
+                        { "fade": "out", "ticks": 50 },
+                        { "set": ["maudlin_condemned", "maudlin_judged"] },
+                        { "sfx": "shrine_kindle" },
+                        { "wait": 40 },
+                        { "fade": "in", "ticks": 60 },
+                        { "say": "She took nothing but her shawl. Behind you, the Wick of Wick's Rest gutters, and goes out." },
+                        { "toast": ["THE WICK GOES COLD", "Wick's Rest can no longer be rested at or travelled to. Level up at any other Wick from its menu."] }
+                      ]
+                    },
+                    {
+                      "text": "Not yet.",
+                      "end": true,
+                      "do": [
+                        { "say": "She takes the snuffer back." },
+                        { "say": "Take your time. I've had twenty years of it.", "who": "maudlin" }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "text": "How are you, Maudlin?",
+          "when": "maudlin_forgiven",
+          "do": [
+            { "say": "Lighter. I didn't know a person could be lighter at my age.", "who": "maudlin" },
+            { "say": "Whatever's drinking the Wick up there, it hasn't finished. When you go up the lift, I'll be here. Somebody should be.", "who": "maudlin" }
+          ]
+        },
+        {
           "text": "What is behind the locked gate?",
           "when": "!key:toll_key",
           "do": [

@@ -72,19 +72,14 @@
       "type": "enemy",
       "kind": "honey_slime",
       "at": [11, 6],
-      "facing": "N"
+      "facing": "N",
+      "carries": { "id": "bloom_shard", "item": "phial_shard" }
     },
     {
       "type": "enemy",
       "kind": "honey_slime",
       "at": [16, 11],
       "facing": "W"
-    },
-    {
-      "type": "item",
-      "id": "bloom_shard",
-      "item": "phial_shard",
-      "at": [2, 3]
     },
     {
       "type": "note",

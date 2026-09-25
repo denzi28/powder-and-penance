@@ -71,19 +71,15 @@
       "type": "enemy",
       "kind": "renderer",
       "at": [13, 8],
-      "facing": "W"
+      "facing": "W",
+      "carries": { "id": "ingot_pens", "item": "ingot_pens" }
     },
     {
       "type": "enemy",
       "kind": "wickling",
       "at": [5, 8],
-      "facing": "E"
-    },
-    {
-      "type": "item",
-      "id": "works_tallow",
-      "item": "tallow_lump",
-      "at": [18, 6]
+      "facing": "E",
+      "carries": { "id": "works_tallow", "item": "tallow_lump" }
     },
     {
       "type": "prop",
@@ -99,12 +95,6 @@
       "type": "note",
       "note": "note_carters_tally",
       "at": [10, 8]
-    },
-    {
-      "type": "item",
-      "id": "ingot_pens",
-      "item": "ingot_pens",
-      "at": [10, 1]
     }
   ]
 }

@@ -44,7 +44,7 @@ function room(id, origin, w, h) {
 const rooms = [];
 const R = (...a) => { const r = room(...a); rooms.push(r); return r; };
 
-// road_01 The Wreck — the game starts here. A ravine at dusk; the prison wagon lies on its side across the
+// road_01 The Wreck: the game starts here. A ravine at dusk; the prison wagon lies on its side across the
 // road where fallen rocks stopped it. No enemies: move, look around, pick up a weapon. Exit east.
 R('road_01_wreck', [0, 0], 30, 17)
   // ravine walls: jagged cliff lines top and bottom, a rocky dead end to the west
@@ -70,7 +70,7 @@ R('road_01_wreck', [0, 0], 30, 17)
   .add({ type: 'point', id: 'wagon', at: [8, 7] })
   .add({ type: 'npc', id: 'oskar_wreck', npc: 'oskar', talk: 'oskar_wreck', when: '!oskar_freed', at: [9, 7] });
 
-// road_02 The Cutting — a narrow, winding road between cliffs. One Wickling stands on the road facing you:
+// road_02 The Cutting: a narrow, winding road between cliffs. One Wickling stands on the road facing you:
 // the first fight (attack, roll). A guard who ran this way didn't make it.
 R('road_02_cutting', [29, 3], 36, 12)
   .open(0, 6, 1, 2).open(35, 4, 1, 2)
@@ -86,7 +86,7 @@ R('road_02_cutting', [29, 3], 36, 12)
   .decor('grass_tuft', 3, 5).decor('grass_tuft', 16, 3).decor('grass_tuft', 28, 6).decor('grass_tuft', 33, 6)
   .prop('pot', 33, 6).prop('pot', 22, 7);
 
-// road_03 Gibbet Bend — the road bends down into a wide hollow hung with gibbets. Three Wicklings keep
+// road_03 Gibbet Bend: the road bends down into a wide hollow hung with gibbets. Three Wicklings keep
 // watch; the first stands at the bend with its back to you (backstab). Tall rocks hide you; once one sees
 // you, the whole hollow knows. A side path along the northern ledge leads to a Powder Pouch.
 R('road_03_gibbet_bend', [64, 2], 32, 22)
@@ -104,7 +104,7 @@ R('road_03_gibbet_bend', [64, 2], 32, 22)
   .add({ type: 'item', id: 'road_pouch', item: 'ammo_pouch', at: [16, 4] })
   .prop('crate', 29, 13).prop('pot', 4, 12);
 
-// road_04 Collapsed Gate — the old toll arch has fallen across the road. A Taper Hound and a Wickling hold
+// road_04 Collapsed Gate: the old toll arch has fallen across the road. A Taper Hound and a Wickling hold
 // the far side: the first fight against two at once. A Phial Shard lies on the ledge to the north-east.
 R('road_04_collapsed_gate', [95, 12], 26, 18)
   .open(0, 5, 1, 2).open(25, 12, 1, 2)
@@ -121,7 +121,7 @@ R('road_04_collapsed_gate', [95, 12], 26, 18)
   .decor('grass_tuft', 6, 12).decor('grass_tuft', 15, 13).decor('grass_tuft', 23, 9).decor('grass_tuft', 19, 3)
   .prop('crate', 22, 14).prop('pot', 4, 12);
 
-// road_05 Hill of Candles — the road climbs in switchbacks toward Wick's Rest, lined with pilgrims' candle
+// road_05 Hill of Candles: the road climbs in switchbacks toward Wick's Rest, lined with pilgrims' candle
 // cairns. No enemies: a breather, and the first view of the Abbey (cutscene). The pilgrims' terrace below the
 // path holds the road's only shrine. Exit north to the hub.
 R('road_05_hill_of_candles', [120, 16], 22, 20)

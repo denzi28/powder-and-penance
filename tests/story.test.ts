@@ -27,12 +27,13 @@ const anything: unknown = new Proxy(() => anything, { get: (_t, k) => (k === 'th
 const anyAnims = new Proxy({}, { get: () => ({ row: 0, dirs: ['S'], loop: true, frames: [{ ticks: 5 }] }), has: () => true });
 
 /** Plays a script: confirms every few ticks and walks the menu cursor upward, so every menu is eventually left. */
-function play(id: string, flags: Set<string>, maxTicks = 20000) {
+function play(id: string, flags: Set<string>, maxTicks = 20000, opts: { picks?: string[]; phialLevel?: number } = {}) {
   let t = 0;
+  const picks = [...(opts.picks ?? [])];
   const gs = {
     flags,
     controls: {
-      pressed: (a: string) => (a === 'moveUp' ? t % 4 === 0 : a === 'confirm' ? t % 4 === 2 : false),
+      pressed: (a: string) => (a === 'moveUp' ? t % 4 === 0 && !picks.length : a === 'confirm' ? t % 4 === 2 : false),
       clearBuffer: () => {},
     },
     npcs: { speaking: null, refresh: () => {}, get: () => null, setSceneHidden: () => {} },
@@ -45,9 +46,9 @@ function play(id: string, flags: Set<string>, maxTicks = 20000) {
     roomAt: () => null,
     // enough of a player for `give` steps (grantItem)
     player: {
-      x: 0, y: 0, tallow: 0, slots: [], phials: { max: 3, charges: 3, level: 0 }, healAmount: 45, ammoFor: () => ({ reserve: 0 }),
+      x: 0, y: 0, tallow: 0, slots: [], phials: { max: 3, charges: 3, level: opts.phialLevel ?? 0 }, healAmount: 45, ammoFor: () => ({ reserve: 0 }),
       inv: { weapons: [], shields: [], armour: [], rings: [] }, rings: [null, null], worn: { head: null, body: null },
-      give: () => true, addItem: () => 1, count: () => 1, belt: null, pickUpWeapon: () => false, setRing: () => {}, equipLoad: 0, capacity: 30, loadTier: { label: 'Light', note: 'quick' },
+      give: () => true, addItem: () => 1, count: () => 1, belt: null, pickUpWeapon: () => false, setRing: () => {}, setArmour: () => {}, equipLoad: 0, capacity: 30, loadTier: { label: 'Light', note: 'quick' },
     },
     particles: { burst: () => {} },
     save: () => {},
@@ -57,14 +58,25 @@ function play(id: string, flags: Set<string>, maxTicks = 20000) {
     cam: { addTrauma: () => {} },
     showToast: () => {},
     markDirty: () => {},
+    rebuildShrines: () => {},
+    refreshPlacedEnemies: () => {},
   } as unknown as GameScene;
   const story = new Story(gs);
   story.start(id);
   while (story.active && t < maxTicks) {
+    // a scripted answer: put the cursor on the first choice that contains the next pick
+    const d = (story as unknown as { dialogue: { choices: string[] | null; selected: number } | null }).dialogue;
+    if (picks.length && d?.choices) {
+      const i = d.choices.findIndex(c => c.includes(picks[0]));
+      if (i >= 0) {
+        d.selected = i;
+        if (t % 4 === 2) picks.shift();
+      }
+    }
     story.tick();
     t++;
   }
-  return { finished: !story.active, ticks: t };
+  return { finished: !story.active, ticks: t, player: gs.player };
 }
 
 describe('voices', () => {
@@ -112,4 +124,50 @@ describe('scripts', () => {
       expect(play(id, flags).finished, `${id} (again)`).toBe(true);
       expect(play(id, new Set(['key:cage_key', 'key:toll_key'])).finished, `${id} (with keys)`).toBe(true);
     });
+});
+
+describe('Act 1 endings for Maudlin and Aldous', () => {
+  const after = ['boss:chandler', 'key:chandler_ledger', 'story:maudlin_met'];
+
+  it('Maudlin confesses once the Chandler is dead: forgiven, she stays and her Wick stays lit', () => {
+    const flags = new Set(after);
+    expect(play('maudlin', flags, 20000, { picks: ['The Chandler is dead', 'I forgive you', 'Leave'] }).finished).toBe(true);
+    expect(flags.has('story:maudlin_forgiven')).toBe(true);
+    expect(flags.has('story:maudlin_condemned')).toBe(false);
+    expect(flags.has('story:maudlin_judged')).toBe(true);
+  });
+
+  it('condemned, she leaves Wick\'s Rest and its Wick goes cold', () => {
+    const flags = new Set(after);
+    expect(play('maudlin', flags, 20000, { picks: ['The Chandler is dead', 'I condemn you'] }).finished).toBe(true);
+    expect(flags.has('story:maudlin_condemned')).toBe(true);
+    const hub = DATA.rooms.hub_01_yard.entities;
+    expect(hub.find(e => e.type === 'shrine' && e.id === 'shrine_rest')!.cold).toBe('maudlin_condemned');
+    expect(hub.find(e => e.type === 'npc' && e.id === 'maudlin')!.when).toBe('!maudlin_condemned');
+  });
+
+  it('Aldous takes the Bitter Salt out of your phial, and fights beside you at the Nave', () => {
+    const flags = new Set(['story:aldous_met']);
+    const r = play('aldous', flags, 20000, { picks: ['Give him the Bitter Salt', 'Leave'], phialLevel: 2 });
+    expect(r.finished).toBe(true);
+    expect(flags.has('story:aldous_saved')).toBe(true);
+    expect(r.player.phials.level).toBe(1);
+    const broke = new Set(['story:aldous_met']);
+    play('aldous', broke, 20000, { picks: ['Give him the Bitter Salt', 'Leave'], phialLevel: 0 });
+    expect(broke.has('story:aldous_saved')).toBe(false);
+    const arena = DATA.rooms.abbey_12_nave.entities.find(e => e.type === 'arena')!;
+    expect(arena.ally).toEqual({ kind: 'aldous', when: 'aldous_saved' });
+    expect(DATA.enemies.aldous.ai).toBe('ally');
+  });
+
+  it('lost, he turns at the Nave door into Aldous the Unmade, a miniboss', () => {
+    const approach = DATA.rooms.abbey_11_nave_approach.entities;
+    const unmade = approach.find(e => e.type === 'enemy' && e.kind === 'aldous_unmade')!;
+    expect(unmade.when).toBe('aldous_turned');
+    expect((unmade.miniboss as { id: string }).id).toBe('mb_aldous');
+    const scene = approach.find(e => e.type === 'cutscene' && e.id === 'aldous_turns')!;
+    expect(scene.when).toContain('!aldous_saved');
+    for (const seal of ['tallow', 'the_mire', 'powder', 'the_hive']) expect(scene.when).toContain(`key:seal_of_${seal}`);
+    expect(DATA.rooms.abbey_09_scriptorium.entities.find(e => e.type === 'npc' && e.id === 'aldous')!.when).toBe('!aldous_turned');
+  });
 });

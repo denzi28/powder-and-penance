@@ -223,7 +223,8 @@
       "type": "enemy",
       "kind": "powder_acolyte",
       "at": [12, 2],
-      "facing": "S"
+      "facing": "S",
+      "carries": { "id": "works_shard", "item": "phial_shard" }
     },
     {
       "type": "enemy",
@@ -236,12 +237,6 @@
       "kind": "vat_crawler",
       "at": [10, 7],
       "facing": "E"
-    },
-    {
-      "type": "item",
-      "id": "works_shard",
-      "item": "phial_shard",
-      "at": [2, 13]
     },
     {
       "type": "prop",

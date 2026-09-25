@@ -6,7 +6,7 @@ const pos = z.number().positive();
 const int = z.number().int();
 export const Vec2 = z.tuple([num, num]);
 export const Dir = z.enum(['E', 'SE', 'S', 'SW', 'W', 'NW', 'N', 'NE']);
-/** [scaleX, scaleY, ticks] — scale snaps to this then eases back to 1. */
+/** [scaleX, scaleY, ticks]: scale snaps to this then eases back to 1. */
 const SquashKey = z.tuple([pos, pos, int.nonnegative()]);
 
 export const GameCfg = z.object({
@@ -398,6 +398,14 @@ export const MinibossPlacement = z.object({
 });
 export type MinibossPlacement = z.infer<typeof MinibossPlacement>;
 
+/**
+ * An enemy placement that carries an item (`"carries": { "id", "item" }` on a room's enemy entity): the first time
+ * it falls it drops `item` (data/items) where it dies, once per save (world flag "item:<id>", the same flag a chest
+ * uses, so gear moved out of a chest isn't given twice).
+ */
+export const CarriedDrop = z.object({ id: z.string(), item: z.string() });
+export type CarriedDrop = z.infer<typeof CarriedDrop>;
+
 const StatName = z.enum(['vitality', 'endurance', 'strength', 'dexterity']);
 export type StatName = z.infer<typeof StatName>;
 /**
@@ -471,6 +479,8 @@ export type BalanceCfg = z.infer<typeof BalanceCfg>;
  * story flags ("story:<name>"); names with a colon are any world flag ("key:toll_key", "shrine:shrine_rest").
  */
 export const Cond = z.union([z.string(), z.array(z.string())]);
+/** data/goals.json: what to do next, shown in the pause menu; the first goal whose `when` holds (none: always). */
+export const Goals = z.object({ goals: z.array(z.object({ when: Cond.optional(), text: z.string() })).min(1) });
 export type Cond = z.infer<typeof Cond>;
 
 /**
@@ -532,6 +542,7 @@ export type Step =
   | { card: string; sub?: string; ticks?: number }
   | { open: 'levelup' | 'shop' | 'smith' | 'apiary' }
   | { respec: true }
+  | { spend: 'phialLevel'; then: Step[]; else?: Step[] }
   | ({ actor: string; sprite: string; at: At; lift?: number; z?: number; shadow?: boolean; bob?: number } & Pose)
   | ({ move: string; to: At; ticks: number; arc?: number; face?: boolean; wait?: boolean } & Pose)
   | ({ play: string; shake?: number } & Pose)
@@ -573,6 +584,8 @@ export const Step: z.ZodType<Step> = z.lazy(() =>
     z.object({ open: z.enum(['levelup', 'shop', 'smith', 'apiary']) }).strict(),
     /** Put every stat back where it started and give back all the Tallow spent levelling. */
     z.object({ respec: z.literal(true) }).strict(),
+    /** Give something of yours away (Bitter Salt out of your phial: one phial level): `then` if you had it, else `else`. */
+    z.object({ spend: z.literal('phialLevel'), then: z.array(Step), else: z.array(Step).optional() }).strict(),
     // ---- the cutscene stage (story/Stage.ts): actors, bubbles, bursts, flashes, letterbox bars
     /** Put an actor on stage: any sprite sheet, in a pose. `lift`: drawn higher (sat on a cart); `z`: depth bias. */
     z.object({ actor: z.string(), sprite: z.string(), at: At, lift: num.optional(), z: num.optional(), shadow: z.boolean().optional(), bob: int.nonnegative().optional(), ...Pose }).strict(),
@@ -817,7 +830,12 @@ export const EnemyDef = z.object({
    * melee = full AI; ranged = full AI that keeps its distance (spacing.retreatBelow) and needs line of sight
    * to throw; dummy = never acts or dies; rhythm = stands still and repeats its first move every interval.
    */
-  ai: z.enum(['melee', 'ranged', 'dummy', 'rhythm', 'boss']),
+  ai: z.enum(['melee', 'ranged', 'dummy', 'rhythm', 'boss', 'ally']),
+  /**
+   * An ally's blows (ai "ally"): every hit deals `share` of what the player's first light attack with `weapon`
+   * would deal right now (their stats, that weapon's upgrade, rings), whatever the move's own damage.
+   */
+  allyDamage: z.object({ weapon: z.string(), share: pos }).optional(),
   /**
    * Boss (ai "boss"): waits dormant until the player enters its arena (room entity "arena"), then performs
    * its entrance (the player keeps control): `introAnim` for `introTicks`, with `slams` (ticks) that shake
@@ -914,7 +932,7 @@ export const EnemyDef = z.object({
   bodyRadius: pos,
   knockbackResist: num.min(0).max(1).default(0),
   /**
-   * Stealth / awareness. Sight has no distance limit — only walls (line of sight) and the facing cone hide you.
+   * Stealth / awareness. Sight has no distance limit: only walls (line of sight) and the facing cone hide you.
    * While seen, awareness (0..1) fills in `detectTicksNear` ticks at <= nearDistance, slowing linearly to
    * `detectTicksFar` at >= farDistance. At `suspicionAt` the enemy turns suspicious ("?") and investigates;
    * at 1 it is sure ("!"), reacts after reactionTicks, and alerts its whole room.
@@ -997,7 +1015,8 @@ export const InputCfg = z.object({
   gamepad: z.record(z.string(), z.array(int.nonnegative())),
 });
 
-export const DebugCfg = z.object({ overlayOnStart: z.boolean(), slowmoScale: pos });
+/** data/config/debug.json. `enabled` turns on the debug hotkeys (F1-F8, 1-7, the ` menu); keep it false for release. */
+export const DebugCfg = z.object({ enabled: z.boolean().default(false), overlayOnStart: z.boolean(), slowmoScale: pos });
 
 export const HudCfg = z.object({
   x: int, y: int, hpPxPerPoint: pos, hpHeight: int.positive(),
@@ -1178,6 +1197,13 @@ export const DecorTable = z.object({ decor: z.record(z.string(), DecorDef) });
 /** data/terrain.json: floor variants that change how things move (e.g. wax pools slow you down). */
 export const Terrain = z.object({ floors: z.record(z.string(), z.object({ speedMult: num.min(0.05).max(2) })) });
 export const RoomEntity = z.object({ type: z.string(), id: z.string().optional(), at: Vec2 }).passthrough();
+/**
+ * An NPC seen inside something (`"inside": {...}` on an npc placement): Oskar in the wagon's cage. Only the top
+ * `rows` pixels of its frame are drawn, and it sorts as if its feet were `over` px lower, so it shows in the
+ * cage's window, in front of the wagon it's standing behind.
+ */
+export const NpcInside = z.object({ rows: int.positive(), over: num.min(0) });
+
 /** One stop of an NPC's routine (room tiles): walk there (through `via`), then `do` something for `ticks`. */
 export const NpcStop = z.object({
   at: Vec2,
@@ -1358,6 +1384,8 @@ export const MusicCfg = z.object({
   volume: num.min(0).max(1),
   /** Boss (enemy kind) -> theme. */
   bosses: z.record(z.string()),
+  /** Miniboss (its placement's `id`) -> a shorter fight theme, played while it fights you. */
+  minibosses: z.record(z.string()).default({}),
   /** Area -> exploration theme. */
   areas: z.record(z.string()).default({}),
   /** Exploration music: its volume, and how long after a boss fight it comes back (seconds). */
@@ -1408,7 +1436,7 @@ export const RoomData = z
     });
   });
 
-// ---- Asset manifests (assets/sprites/*.anim.json) — see ASSETS.md ----
+// ---- Asset manifests (assets/sprites/*.anim.json): see ASSETS.md ----
 export const Box = z.object({ x: num, y: num, w: pos, h: pos });
 export const FrameDef = z.object({
   ticks: pos,

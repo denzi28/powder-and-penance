@@ -45,13 +45,15 @@
       "type": "enemy",
       "kind": "drowned_pilgrim",
       "at": [11, 4],
-      "facing": "S"
+      "facing": "S",
+      "carries": { "id": "mire_09_choir_drowned_veil", "item": "gear_drowned_veil" }
     },
     {
       "type": "enemy",
       "kind": "drowned_pilgrim",
       "at": [16, 5],
-      "facing": "W"
+      "facing": "W",
+      "carries": { "id": "choir_lump", "item": "tallow_lump" }
     },
     {
       "type": "enemy",
@@ -110,18 +112,6 @@
       "type": "decor",
       "kind": "stone_angel",
       "at": [21, 8]
-    },
-    {
-      "type": "item",
-      "id": "mire_09_choir_drowned_veil",
-      "item": "gear_drowned_veil",
-      "at": [11, 1]
-    },
-    {
-      "type": "item",
-      "id": "choir_lump",
-      "item": "tallow_lump",
-      "at": [14, 1]
     }
   ]
 }

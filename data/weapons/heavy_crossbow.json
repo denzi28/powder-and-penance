@@ -14,7 +14,7 @@
     "clip": 1,
     "reserveMax": 12,
     "fire": { "windup": 6, "recovery": 30, "stamina": 8, "moveMult": 0.5, "recoilDeg": 10, "kick": 2, "shake": 0.1, "sfx": "p_crossbow" },
-    "reload": { "ticks": 120, "stamina": 12, "moveMult": 0.3 },
+    "reload": { "ticks": 85, "stamina": 12, "moveMult": 0.4 },
     "projectile": {
       "sprite": "bolt", "speed": 300, "range": 320,
       "damage": 48, "poise": 25, "pierce": 2, "knockback": 90,

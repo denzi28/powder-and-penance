@@ -13,8 +13,8 @@
     "regularAverageHits": [2, 5],
     "regularHitsMax": 7,
     "regularHitMax": 0.4,
-    "bossHitsToKill": [25, 60],
-    "bossHitMax": 0.55,
+    "bossHitsToKill": [20, 50],
+    "bossHitMax": 0.46,
     "levelSlack": 2,
     "minibossTallow": 5,
     "shrineHops": { "boss": 1, "miniboss": 2 }

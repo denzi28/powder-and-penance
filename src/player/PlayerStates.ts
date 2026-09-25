@@ -24,7 +24,7 @@ function findCritical(p: Player): { victim: Enemy; kind: 'riposte' | 'backstab' 
   const c = DATA.combat;
   let best: { victim: Enemy; kind: 'riposte' | 'backstab'; d: number } | null = null;
   for (const e of p.ctx.enemies()) {
-    if (e.dead || e.stateName === 'critVictim') continue;
+    if (e.dead || e.ally || e.stateName === 'critVictim') continue;
     const d = Math.hypot(e.x - p.x, e.y - p.y);
     const toEnemy = Math.atan2(e.y - p.y, e.x - p.x);
     if (angleDiff(p.aimAngle, toEnemy) > c.critFacingDeg * DEG) continue;

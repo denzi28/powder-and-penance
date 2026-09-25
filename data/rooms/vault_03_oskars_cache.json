@@ -33,15 +33,8 @@
       "type": "item",
       "id": "chest_keg_charges",
       "item": "cache_keg_charges",
-      "at": [9, 3]
+      "at": [10, 1]
     },
-    {
-      "type": "item",
-      "id": "chest_cache_ingots",
-      "item": "ingot_cache",
-      "at": [2, 3]
-    },
-    { "type": "item", "id": "chest_ember_salt", "item": "salt_vault", "at": [6, 1] },
     {
       "type": "decor",
       "kind": "keg_stack",
@@ -66,7 +59,8 @@
       "type": "enemy",
       "kind": "fuse_runner",
       "at": [6, 4],
-      "facing": "S"
+      "facing": "S",
+      "carries": { "id": "chest_cache_ingots", "item": "ingot_cache" }
     }
   ]
 }

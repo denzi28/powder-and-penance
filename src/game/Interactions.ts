@@ -35,6 +35,8 @@ export function nearestInteractable(gs: GameScene): Interactable | null {
   // A shrine you're standing closer to than anyone wins, so people milling about it never crowd it out.
   const shrine = gs.shrines.nearest(p.x, p.y);
   const npc = gs.npcs.nearest(p.x, p.y);
+  if (shrine?.cold && (!npc?.talk || Math.hypot(shrine.x - p.x, shrine.y - p.y) < Math.hypot(npc.x - p.x, npc.y - p.y)))
+    return { label: `THE COLD WICK`, use: () => gs.showToast(shrine.name.toUpperCase(), 'The Wick is cold. Nobody tends it now, and it will not take your rest.') };
   if (shrine && (!npc?.talk || Math.hypot(shrine.x - p.x, shrine.y - p.y) < Math.hypot(npc.x - p.x, npc.y - p.y)))
     return {
       label: shrine.lit ? `REST AT ${shrine.name}` : `KINDLE ${shrine.name}`,

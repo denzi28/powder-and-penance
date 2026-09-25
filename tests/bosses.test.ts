@@ -135,3 +135,60 @@ describe('wax pools', () => {
     expect(pools.mult(100, 100)).toBe(1);
   });
 });
+
+describe('an ally (Brother Aldous)', () => {
+  it('walks at your side, fights the nearest enemy until it falls, and never strikes you', () => {
+    const rooms = Object.values(DATA.rooms).filter(r => r.area === 'abbey');
+    const grid = levelGrid(rooms);
+    const nave = DATA.rooms.abbey_12_nave;
+    const roomAt = () => nave.id;
+    const at = (x: number, y: number) => ({ x: (nave.origin[0] + x) * TILE + TILE / 2, y: (nave.origin[1] + y) * TILE + TILE - 2 });
+    const pp = at(10, 14);
+    let playerHurt = 0;
+    const player = {
+      ...pp, chestY: pp.y - 10, dead: false, bodyRadius: 5, team: 'player', aimAngle: -Math.PI / 2, invulnerable: false,
+      hurtRect: () => ({ x: pp.x - 5, y: pp.y - 20, w: 10, h: 20 }),
+      onHit: () => playerHurt++,
+      damageDealtMult: () => 2, // a player whose sword hits twice as hard as its base
+    } as unknown as Player;
+    const bus = new EventBus<GameEvents>();
+    const combat = new CombatSystem();
+    const list: Enemy[] = [];
+    const ctx: WorldCtx = {
+      input: null as never, bus, grid: () => grid, combat, projectiles: new Projectiles(), tokens: new AttackTokens(),
+      nav: new Pathfinder(() => grid), rng: mulberry32(3), player: () => player, enemies: () => list, roomAt,
+    };
+    const a = at(8, 15);
+    const aldous = new Enemy(ctx, 'aldous', a.x, a.y, 0);
+    aldous.ally = true;
+    list.push(aldous);
+    // nothing to fight: he keeps to the player's side
+    for (let t = 0; t < 120; t++) aldous.tick();
+    expect(aldous.foe).toBeNull();
+    expect(Math.hypot(aldous.x - player.x, aldous.y - player.y)).toBeLessThan(40);
+    expect(aldous.team).toBe('player');
+    // a Wickling stands in the Nave: he goes for it and cuts it down
+    const w = at(10, 8);
+    const wick = new Enemy(ctx, 'wickling', w.x, w.y, Math.PI / 2);
+    list.push(wick);
+    let t = 0;
+    const blows: number[] = [];
+    for (; t < 1500 && !wick.dead; t++) {
+      const before = wick.hp;
+      aldous.tick();
+      combat.resolve([aldous, wick], bus);
+      if (wick.hp < before) blows.push(before - wick.hp);
+    }
+    // each blow is a quarter of the player's own first Straight Sword swing (22 base, doubled here)
+    const quarter = Math.round(DATA.weapons.straight_sword.light[0].damage * 2 * 0.25);
+    expect(blows.length).toBeGreaterThan(0);
+    for (const b of blows.slice(0, -1)) expect(b).toBe(quarter); // (the last may be what was left)
+    expect(aldous.foe === wick || wick.dead).toBe(true);
+    expect(wick.dead, 'the Wickling fell').toBe(true);
+    // on the player's side: the combat system skips same-team hits, so his blows pass through you
+    expect(aldous.team).toBe(player.team);
+    expect(playerHurt).toBe(0);
+    for (let k = 0; k < 200; k++) aldous.tick();
+    expect(aldous.stateName).toBe('follow');
+  });
+});

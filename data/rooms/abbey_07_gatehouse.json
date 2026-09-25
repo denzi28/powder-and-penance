@@ -48,12 +48,6 @@
       "at": [0, 0]
     },
     {
-      "type": "item",
-      "id": "abbey_pouch",
-      "item": "ammo_pouch",
-      "at": [3, 13]
-    },
-    {
       "type": "prop",
       "kind": "pot",
       "at": [2, 2]
@@ -82,12 +76,6 @@
       "type": "decor",
       "kind": "rubble",
       "at": [6, 13]
-    },
-    {
-      "type": "item",
-      "id": "cache_cartridges",
-      "item": "cache_cartridges",
-      "at": [8, 6]
     }
   ]
 }

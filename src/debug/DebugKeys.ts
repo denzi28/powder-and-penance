@@ -17,7 +17,7 @@ const SPAWN_KEYS: Record<string, string> = {
 
 export function installDebugKeys(scene: GameScene): () => void {
   const onKey = (e: KeyboardEvent) => {
-    if (e.repeat) return;
+    if (e.repeat || !DATA.debug.enabled) return; // off in release (data/config/debug.json)
     const loop = scene.loop;
     const p = scene.player;
     switch (e.code) {

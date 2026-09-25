@@ -1,4 +1,4 @@
-# DESIGN.md — *Powder & Penance* (working title)
+# DESIGN.md: *Powder & Penance* (working title)
 
 A top-down pixel-art action game. It **looks and moves** like a snappy 3/4-view dungeon shooter and **plays** like a Souls game: few, readable, telegraphed attacks; stamina; committed actions; limited healing; checkpoints with a death penalty. It is **not** a bullet hell.
 
@@ -72,8 +72,8 @@ A ruined candle-abbey where gunpowder replaced prayer. Light, wax and smoke are 
 | Sprint (hold) | Shift | L3 or hold LB |
 | Heal | Q | X / □ |
 | Reload | R | Y / △ (tap) |
-| Equipment | Tab | — |
-| Inventory | I | — |
+| Equipment | Tab | - |
+| Inventory | I | - |
 | Interact | E | A / × |
 | Pause | Esc | Start |
 
@@ -206,7 +206,7 @@ Ranged is a **resource**, not the default.
 |---|---|---|
 | Heavy crossbow | 1 | Slow bolt that pierces 2 targets and hits hard. Two-handed. |
 | Revolver | 6 | Moderate damage, 40-tick fire recovery, long 110-tick reload. One-handed. |
-| Flintlock | 1 | Huge single shot with high poise damage and a 150-tick reload. One-handed. |
+| Flintlock | 1 | Huge single shot with high poise damage and a 95-tick reload. One-handed. |
 
 Heavy input with a ranged weapon does a short **weapon bash**: low damage, some poise damage, a panic-button tool (see Open Question 4).
 

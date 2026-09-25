@@ -12,7 +12,7 @@ npm run typecheck
 npm run gen:art    # regenerate missing placeholder art (--force to overwrite all)
 ```
 
-## Controls (defaults — `data/config/input.json`)
+## Controls (defaults: `data/config/input.json`)
 Every key can be changed in game: **Esc > CONTROLS**, select an action, press E, then the new key. **Esc > SETTINGS** has volume sliders (master, music, effects, ambience), screen shake, and switches for the HUD's button hints and the minimap. Both are kept in the browser, apart from the save.
 
 | Action | Keyboard + mouse | Gamepad |
@@ -45,6 +45,7 @@ Every key can be changed in game: **Esc > CONTROLS**, select an action, press E,
 **Two hands.** The right hand holds a weapon (left click). The left hand holds a shield, a one-handed weapon, or nothing (right click): sword and buckler, sword and flintlock, dagger and revolver. **Two-handed weapons** (greataxe, heavy crossbow) take both hands: equipping one empties the left hand, and putting a shield or weapon in the left hand takes the two-hander off. Change hands from Esc > EQUIPMENT; the HUD boxes bottom-right show each hand with its button.
 
 ## Debug keys
+Off by default (release). To use them while developing, set `"enabled": true` in `data/config/debug.json`.
 | Key | Effect |
 |---|---|
 | F1 | Overlay: collider (yellow); hurtbox (green; cyan = i-frames; red = vulnerable roll recovery; orange = hyper-armor); active hitboxes (red); enemy vision cones; state/tick/HP/poise labels; FPS and attack-token readout |

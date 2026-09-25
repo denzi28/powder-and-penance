@@ -1,0 +1,15 @@
+{
+  "goals": [
+    { "when": "!key:cage_key", "text": "Find the guard who ran east down the road with the cage key." },
+    { "when": "!oskar_freed", "text": "Take the cage key back to Oskar at the wrecked wagon." },
+    { "when": "!boss:tollwarden", "text": "Climb past Wick's Rest to the Guttering Abbey, and get through the Tollwarden at its Gatehouse." },
+    { "when": ["!key:seal_of_tallow", "!key:seal_of_the_mire"], "text": "The Nave's great door wants four Seals. Take the Toll Key down to the Tallow Works, and find the Waxmire." },
+    { "when": "!key:seal_of_tallow", "text": "Win the Seal of Tallow in the depths of the Tallow Works." },
+    { "when": "!key:seal_of_the_mire", "text": "Win the Seal of the Mire at the heart of the Waxmire." },
+    { "when": "!key:seal_of_powder", "text": "Break through a cracked wall in the Tallow Works into the Powder Vault. Its Master Gunner keeps the Seal of Powder." },
+    { "when": "!key:seal_of_the_hive", "text": "Blow the rubble off the collapsed gate on the Penance Road with a Keg Charge, and win the Seal of the Hive in Bloomhollow." },
+    { "when": "!boss:chandler", "text": "Bring the four Seals to the Nave's great door, and face the Chandler." },
+    { "when": ["key:chandler_ledger", "!maudlin_judged"], "text": "Go back down to Wick's Rest and tell Sister Maudlin that the Chandler is dead." },
+    { "text": "Act One is over. In the Nave, the lift's chains are humming, but it will not rise. Not yet." }
+  ]
+}

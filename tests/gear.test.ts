@@ -91,15 +91,23 @@ describe('gear in the world', () => {
     for (const g of all) expect(g.icon, g.id).toBeLessThan(iconCount);
   });
 
-  it('every armour piece, and every weapon but the starting two, can be found in a chest or on a miniboss', () => {
+  it('every armour piece, and every weapon but the starting two, can be found in a chest, on an enemy or from a boss', () => {
     const inChests = new Set<string>();
+    const found = (item: string) => {
+      const e = DATA.items[item]?.effect;
+      if (e?.type === 'gear') inChests.add(e.id);
+    };
     for (const r of Object.values(DATA.rooms))
       for (const en of r.entities) {
-        const mb = en.type === 'enemy' ? (en.miniboss as { drop?: string } | undefined) : undefined;
-        if (en.type !== 'item' && !mb?.drop) continue;
-        const e = DATA.items[String(mb?.drop ?? en.item)]?.effect;
-        if (e?.type === 'gear') inChests.add(e.id);
+        if (en.type === 'item') found(String(en.item));
+        if (en.type !== 'enemy') continue;
+        const mb = en.miniboss as { drop?: string } | undefined;
+        const carried = en.carries as { item?: string } | undefined;
+        if (mb?.drop) found(mb.drop);
+        if (carried?.item) found(carried.item);
       }
+    // bosses hand theirs over in their last words
+    for (const sc of Object.values(DATA.scripts)) for (const m of JSON.stringify(sc).matchAll(/"give":"([a-z_]+)"/g)) found(m[1]);
     for (const id of Object.keys(DATA.armour)) expect(inChests.has(id), id).toBe(true);
     for (const id of ['dagger', 'greataxe', 'revolver', 'heavy_crossbow', 'buckler']) expect(inChests.has(id), id).toBe(true);
   });

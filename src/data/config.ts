@@ -72,6 +72,7 @@ function loadAll(src: Record<string, unknown>) {
     decor: one(S.DecorTable, 'decor'),
     npcs: one(S.Npcs, 'npcs'),
     chatter: one(S.Chatter, 'chatter'),
+    goals: one(S.Goals, 'goals'),
     ambience: one(S.Ambience, 'ambience'),
     ambient: one(S.AmbientAudioCfg, 'audio/ambient'),
     music: one(S.MusicCfg, 'audio/music'),
@@ -87,6 +88,7 @@ function loadAll(src: Record<string, unknown>) {
       if (e.boss?.deathScript && !data.scripts[e.boss.deathScript])
         errors.push(`data/enemies/${e.id}.json: unknown deathScript "${e.boss.deathScript}"`);
       if (e.splitInto && !data.enemies[e.splitInto.kind]) errors.push(`data/enemies/${e.id}.json: splitInto unknown kind "${e.splitInto.kind}"`);
+      if (e.allyDamage && !data.weapons[e.allyDamage.weapon]?.light?.length) errors.push(`data/enemies/${e.id}.json: allyDamage names "${e.allyDamage.weapon}", not a weapon with a light attack`);
       const next = e.boss?.next;
       if (next && !data.enemies[next.kind]?.boss) errors.push(`data/enemies/${e.id}.json: next phase "${next.kind}" is not a boss`);
       if (next && !data.items[next.chest.item]) errors.push(`data/enemies/${e.id}.json: next.chest has unknown item "${next.chest.item}"`);
@@ -138,6 +140,11 @@ function loadAll(src: Record<string, unknown>) {
         if (en.type === 'weapon' && !data.weapons[String(en.weapon)])
           errors.push(`data/rooms/${r.id}.json: weapon "${en.id}" has unknown weapon "${String(en.weapon)}"`);
         if (en.type === 'note' && !data.notes[String(en.note)]) errors.push(`data/rooms/${r.id}.json: note has unknown note "${String(en.note)}"`);
+        if (en.type === 'enemy' && en.carries !== undefined) {
+          const c = S.CarriedDrop.safeParse(en.carries);
+          if (!c.success) errors.push(`data/rooms/${r.id}.json: carries:\n${S.formatZod(c.error)}`);
+          else if (!data.items[c.data.item]) errors.push(`data/rooms/${r.id}.json: an enemy carries unknown item "${c.data.item}"`);
+        }
         if (en.type === 'enemy' && en.miniboss !== undefined) {
           const mb = S.MinibossPlacement.safeParse(en.miniboss);
           if (!mb.success) errors.push(`data/rooms/${r.id}.json: miniboss:\n${S.formatZod(mb.error)}`);
@@ -177,6 +184,8 @@ function loadAll(src: Record<string, unknown>) {
       if (!data.enemies[boss]) errors.push(`data/audio/music.json: unknown boss "${boss}"`);
       if (!data.music.themes[theme]) errors.push(`data/audio/music.json: boss "${boss}" has unknown theme "${theme}"`);
     }
+    for (const [id, theme] of Object.entries(data.music.minibosses))
+      if (!data.music.themes[theme]) errors.push(`data/audio/music.json: miniboss "${id}" has unknown theme "${theme}"`);
     for (const [area, theme] of Object.entries(data.music.areas)) {
       if (!data.areas.areas[area]) errors.push(`data/audio/music.json: unknown area "${area}"`);
       if (!data.music.themes[theme]) errors.push(`data/audio/music.json: area "${area}" has unknown theme "${theme}"`);

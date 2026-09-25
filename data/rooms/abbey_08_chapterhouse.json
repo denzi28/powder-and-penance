@@ -73,7 +73,7 @@
       "type": "item",
       "id": "chest_last_candle",
       "item": "ring_last_candle",
-      "at": [6, 7]
+      "at": [1, 10]
     },
     {
       "type": "note",

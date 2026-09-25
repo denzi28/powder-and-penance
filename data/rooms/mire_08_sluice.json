@@ -54,7 +54,8 @@
       "type": "enemy",
       "kind": "drowned_pilgrim",
       "at": [4, 9],
-      "facing": "N"
+      "facing": "N",
+      "carries": { "id": "mire_salt", "item": "bitter_salt" }
     },
     {
       "type": "decor",
@@ -65,12 +66,6 @@
       "type": "decor",
       "kind": "drowned_candles",
       "at": [10, 7]
-    },
-    {
-      "type": "item",
-      "id": "mire_salt",
-      "item": "bitter_salt",
-      "at": [11, 11]
     },
     {
       "type": "item",

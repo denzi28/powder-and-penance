@@ -1,0 +1,11 @@
+{
+  "id": "nave_watch_ring",
+  "name": "Nave Watch Ring",
+  "icon": 66,
+  "effect": "+15 poise, and 20% more damage while at or below 30% HP",
+  "mods": {
+    "poise": 15,
+    "desperate": 1.2
+  },
+  "description": "Brother Aldous's oath-ring, from the Watch that stood at the Nave altar. Wax has run over half the flame on it. He swore to hold the line when it was hopeless, and in the end he held it against you."
+}

@@ -47,7 +47,8 @@
       "type": "enemy",
       "kind": "wickling",
       "at": [15, 5],
-      "facing": "S"
+      "facing": "S",
+      "carries": { "id": "ingot_lanterns", "item": "ingot_lanterns" }
     },
     {
       "type": "enemy",
@@ -144,18 +145,6 @@
       "type": "decor",
       "kind": "dead_willow",
       "at": [25, 15]
-    },
-    {
-      "type": "item",
-      "id": "mire_pouch",
-      "item": "ammo_pouch",
-      "at": [25, 2]
-    },
-    {
-      "type": "item",
-      "id": "ingot_lanterns",
-      "item": "ingot_lanterns",
-      "at": [14, 1]
     }
   ]
 }

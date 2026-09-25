@@ -13,7 +13,7 @@ import { TILE } from '../world/TileGrid';
 import { BRAINS } from './EnemyBrain';
 import type { WorldCtx } from '../core/World';
 import type { HitInfo } from '../combat/CombatSystem';
-import type { MinibossPlacement, MoveDef } from '../data/schemas';
+import type { CarriedDrop, MinibossPlacement, MoveDef } from '../data/schemas';
 
 /** States in which the enemy is actively fighting (knows where you are). */
 export const COMBAT_STATES: ReadonlySet<string> = new Set(['approach', 'strafe', 'attack']);
@@ -26,7 +26,13 @@ const UNBLINDABLE: ReadonlySet<string> = new Set(['dead', 'critVictim', 'submerg
 const STUCK_TICKS = 30;
 
 export class Enemy extends Actor {
-  readonly team = 'enemy' as const;
+  /** Fights on the player's side (Brother Aldous): its blows land on enemies, theirs on it, and yours pass through. */
+  ally = false;
+  /** An ally's current foe: the nearest living enemy it can fight (null: it walks at the player's side). */
+  foe: Enemy | null = null;
+  get team(): 'enemy' | 'player' {
+    return this.ally ? 'player' : 'enemy';
+  }
   readonly poise: Poise;
   readonly anim: AnimPlayer;
   readonly sm: StateMachine<Enemy>;
@@ -72,6 +78,8 @@ export class Enemy extends Actor {
   private unstick: { x: number; y: number; t: number } | null = null;
   /** Set when its room placement makes it a miniboss (a name bar, more health, a drop, dead for good). */
   miniboss: MinibossPlacement | null = null;
+  /** Set when its room placement gives it an item to drop the first time it falls. */
+  carries: CarriedDrop | null = null;
   /** Its area's health multiplier (data/areas.json `hpMult`), for enemies placed there; not bosses or minibosses. */
   areaHpMult = 1;
   /** A miniboss has made its entrance (banner, cry) this life. */
@@ -124,6 +132,8 @@ export class Enemy extends Actor {
     return { x: this.x, y: this.y };
   }
   alpha = 1;
+  /** Kept off the stage by a cutscene (`hide: ["enemy:<kind>"]`); drawing only. */
+  sceneHidden = false;
   /** Ticks left blinded by smoke: it can't see to fight, and stumbles about coughing. */
   blind = 0;
   /** Ticks until it next leaves a puddle behind (enemy `trail`). */
@@ -188,7 +198,7 @@ export class Enemy extends Actor {
   }
   /** Has the full combat AI (perception, room alerts, health bar). */
   get isFighter() {
-    return this.def.ai === 'melee' || this.def.ai === 'ranged' || this.def.ai === 'boss';
+    return this.def.ai === 'melee' || this.def.ai === 'ranged' || this.def.ai === 'boss' || this.def.ai === 'ally';
   }
   /** A boss that hasn't begun its fight yet (dormant or performing its entrance). */
   get bossWaiting() {
@@ -240,6 +250,7 @@ export class Enemy extends Actor {
     }
 
     if (this.blind > 0) this.blind--;
+    if (this.ally && !this.dead) this.foe = this.pickFoe();
     if (this.isFighter && !this.dead && this.sm.name !== 'critVictim') this.perceive();
     if (this.bubble && !this.summons.some(s => !s.dead)) {
       this.bubble = false; // the last summon fell: the bubble bursts
@@ -321,11 +332,32 @@ export class Enemy extends Actor {
       if (this.awareness < 1) {
         const d = Math.hypot(p.x - this.x, p.y - this.y);
         const k = Math.max(0, Math.min(1, (d - per.nearDistance) / Math.max(1, per.farDistance - per.nearDistance)));
-        this.awareness = Math.min(1, this.awareness + (p.mods?.notice ?? 1) / (per.detectTicksNear + (per.detectTicksFar - per.detectTicksNear) * k));
+        this.awareness = Math.min(1, this.awareness + ((p as { mods?: { notice?: number } }).mods?.notice ?? 1) / (per.detectTicksNear + (per.detectTicksFar - per.detectTicksNear) * k));
       }
     } else if (!inCombat) {
       this.awareness = Math.max(0, this.awareness - per.forgetPerTick);
     }
+  }
+
+  /**
+   * An ally's foe: it keeps the one it's fighting while that one can still be fought, else takes the nearest
+   * enemy near the player that can be struck (not dormant, not sheltering, not mid-turn at its altar).
+   */
+  private pickFoe(): Enemy | null {
+    const fightable = (e: Enemy) => !e.dead && !e.ally && !e.invulnerable && !e.bossWaiting && e.def.ai !== 'dummy' && e.stateName !== 'submerged';
+    const p = this.ctx.player();
+    if (this.foe && fightable(this.foe) && Math.hypot(this.foe.x - p.x, this.foe.y - p.y) < 320) return this.foe;
+    let best: Enemy | null = null;
+    let bd = 240;
+    for (const e of this.ctx.enemies()) {
+      if (!fightable(e) || Math.hypot(e.x - p.x, e.y - p.y) > 240) continue;
+      const d = Math.hypot(e.x - this.x, e.y - this.y);
+      if (d < bd) {
+        bd = d;
+        best = e;
+      }
+    }
+    return best;
   }
 
   /** A boss fighting you always knows where you are: its arena is sealed, there's nowhere to hide. */
@@ -419,6 +451,10 @@ export class Enemy extends Actor {
 
   /** Become certain and fight immediately (hit, or alerted by the room). */
   aggro() {
+    if (this.ally) {
+      if (this.foe && !this.dead && !COMBAT_STATES.has(this.sm.name)) this.sm.change('approach');
+      return;
+    }
     if (!this.isFighter || this.dead || COMBAT_STATES.has(this.sm.name) || this.bossWaiting) return;
     if (this.sm.name === 'submerged' || this.sm.name === 'rise') return; // it comes up in its own time
     this.awareness = 1;
@@ -429,7 +465,7 @@ export class Enemy extends Actor {
 
   /** Lose the player (smoke): stop hunting and go back to the post. Bosses and minibosses aren't fooled. */
   loseTrack() {
-    if (this.dead || !this.isFighter || this.def.boss || this.miniboss) return;
+    if (this.dead || !this.isFighter || this.def.boss || this.miniboss || this.ally) return;
     const st = this.sm.name;
     if (!COMBAT_STATES.has(st) && st !== 'notice' && st !== 'suspicious') return;
     this.awareness = 0;
@@ -451,8 +487,9 @@ export class Enemy extends Actor {
     }
   }
 
-  get player() {
-    return this.ctx.player();
+  /** Who it fights: the player, or (an ally) its foe; an ally with no foe looks to the player. */
+  get player(): Actor {
+    return this.ally ? (this.foe ?? this.ctx.player()) : this.ctx.player();
   }
   distToPlayer() {
     const p = this.player;
@@ -538,14 +575,15 @@ export class Enemy extends Actor {
     return (
       this.attackGap <= 0 &&
       !this.player.dead &&
+      (!this.ally || !!this.foe) &&
       this.def.moves.some(m => !(this.cooldowns.get(m.id) ?? 0)) &&
-      this.ctx.tokens.available(this)
+      (this.ally || this.ctx.tokens.available(this)) // an ally doesn't take a turn from the enemies' attack tokens
     );
   }
 
   /** Pick an in-range, off-cooldown move by weight and take an attack token. */
   tryAttack(): boolean {
-    if (this.attackGap > 0 || this.player.dead) return false;
+    if (this.attackGap > 0 || this.player.dead || (this.ally && !this.foe)) return false;
     const d = this.distToPlayer();
     const a = this.angleToPlayer();
     const facing = Math.abs(Math.atan2(Math.sin(a - this.facing), Math.cos(a - this.facing))) <= 70 * DEG;
@@ -561,7 +599,7 @@ export class Enemy extends Actor {
         (!m.strikes[0].projectile || this.visible || lobs(m)) && // throwing straight needs a clear view
         (!m.strikes.some(s => s.summon) || !this.summons.some(s => !s.dead)), // one brood at a time
     );
-    if (!options.length || !this.ctx.tokens.acquire(this)) return false;
+    if (!options.length || (!this.ally && !this.ctx.tokens.acquire(this))) return false;
     let roll = this.ctx.rng() * options.reduce((s, m) => s + m.weight, 0);
     this.move = options[options.length - 1];
     for (const m of options)
@@ -576,6 +614,13 @@ export class Enemy extends Actor {
     const s = this.move!.strikes[this.strikeIndex];
     this.vx = this.vy = 0;
     this.runner = new AttackRunner(this, s, this.facing, this.def.weaponRestDeg * DEG);
+    const share = this.ally ? this.def.allyDamage : undefined;
+    if (share && s.damage > 0) {
+      // a set share of the player's own blow with that weapon, as they are now
+      const w = DATA.weapons[share.weapon];
+      const theirs = (w?.light?.[0]?.damage ?? 0) * (this.ctx.player().damageDealtMult?.('melee', share.weapon) ?? 1);
+      this.runner.damageMult = (theirs * share.share) / s.damage;
+    }
     const anim = s.anim && this.anim.has(s.anim) ? s.anim : 'attack';
     this.anim.play(anim, { restart: true, phases: { windup: s.windup, active: s.active, recovery: s.recovery } });
   }

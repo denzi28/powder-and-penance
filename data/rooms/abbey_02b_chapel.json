@@ -22,16 +22,11 @@
   ],
   "entities": [
     {
-      "type": "item",
-      "id": "abbey_shard",
-      "item": "phial_shard",
-      "at": [6, 6]
-    },
-    {
       "type": "enemy",
       "kind": "taper_hound",
       "at": [3, 5],
-      "facing": "E"
+      "facing": "E",
+      "carries": { "id": "abbey_shard", "item": "phial_shard" }
     },
     {
       "type": "prop",
@@ -62,12 +57,6 @@
       "type": "decor",
       "kind": "candle_stand",
       "at": [10, 6]
-    },
-    {
-      "type": "item",
-      "id": "cache_incense",
-      "item": "cache_incense",
-      "at": [7, 1]
     },
     {
       "type": "note",

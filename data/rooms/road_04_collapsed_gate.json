@@ -119,12 +119,6 @@
       "at": [4, 12]
     },
     {
-      "type": "item",
-      "id": "cache_firebombs",
-      "item": "cache_firebombs",
-      "at": [13, 6]
-    },
-    {
       "type": "note",
       "note": "note_orchard_letter",
       "at": [13, 8]

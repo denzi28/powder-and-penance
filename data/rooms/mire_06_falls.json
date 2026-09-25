@@ -39,7 +39,8 @@
       "type": "enemy",
       "kind": "taper_hound",
       "at": [4, 3],
-      "facing": "E"
+      "facing": "E",
+      "carries": { "id": "mire_shard", "item": "phial_shard" }
     },
     {
       "type": "enemy",
@@ -51,7 +52,8 @@
       "type": "enemy",
       "kind": "powder_acolyte",
       "at": [9, 9],
-      "facing": "S"
+      "facing": "S",
+      "carries": { "id": "ingot_falls", "item": "ingot_falls" }
     },
     {
       "type": "enemy",
@@ -78,12 +80,6 @@
       "type": "decor",
       "kind": "gravestone",
       "at": [10, 20]
-    },
-    {
-      "type": "item",
-      "id": "ingot_falls",
-      "item": "ingot_falls",
-      "at": [10, 13]
     }
   ]
 }

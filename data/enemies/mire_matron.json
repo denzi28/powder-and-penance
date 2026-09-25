@@ -13,7 +13,7 @@
     "deathScript": "matron_death"
   },
   "sprite": "mire_matron",
-  "hp": 1300,
+  "hp": 950,
   "poise": {"max": 260, "resetTicks": 280},
   "tallow": 3500,
   "loot": "boss_salt",
@@ -41,7 +41,7 @@
       "cooldown": 50,
       "strikes": [
         {
-          "damage": 38,
+          "damage": 34,
           "poise": 50,
           "windup": 28,
           "active": 9,
@@ -82,7 +82,7 @@
           "hitbox": {"shape": "circle", "radius": 18, "offset": 20},
           "originY": -12,
           "sweep": {"fromDeg": 0, "toDeg": 0, "reach": 6},
-          "grab": {"holdTicks": 80, "damage": 46, "throwKnockback": 220},
+          "grab": {"holdTicks": 80, "damage": 42, "throwKnockback": 220},
           "windupSfx": "b_matron_hush",
           "sfx": "b_embrace",
           "anim": "embrace"
@@ -112,7 +112,7 @@
             "sprite": "note",
             "speed": 72,
             "range": 420,
-            "damage": 20,
+            "damage": 18,
             "poise": 20,
             "knockback": 80,
             "hitstop": 3,
@@ -132,7 +132,7 @@
       "cooldown": 150,
       "strikes": [
         {
-          "damage": 30,
+          "damage": 28,
           "poise": 60,
           "windup": 34,
           "active": 6,
@@ -198,7 +198,7 @@
             "sprite": "mire_glob",
             "speed": 105,
             "range": 180,
-            "damage": 18,
+            "damage": 16,
             "poise": 16,
             "knockback": 90,
             "hitstop": 2,
@@ -239,7 +239,7 @@
             "stepTicks": 2,
             "warnTicks": 36,
             "radius": 16,
-            "damage": 30,
+            "damage": 28,
             "poise": 35,
             "knockback": 120,
             "centre": true,

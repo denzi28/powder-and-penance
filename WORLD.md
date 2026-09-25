@@ -114,7 +114,9 @@ Exits into areas that aren't built yet (the Waxmire, the Tallow Works) show "The
 ## The Guttering Abbey (`abbey`): built in M5, revised for Act 1
 The 13 existing rooms stay. Changes:
 - **Porch:** a new north doorway from the Hill Stair ✅. New games no longer start here.
-- **Scriptorium:** Brother Aldous hides here (NPC).
+- **Scriptorium:** Brother Aldous hides here (NPC, sitting in the south-east corner) until he's saved or lost.
+- **Nave Approach:** if Aldous is lost, Aldous the Unmade waits before the great door (miniboss, `when: aldous_turned`).
+- **Nave:** a red runner down the aisle, lancet windows in the north wall, a reliquary and votive stands; the Chandler's arena brings Aldous in beside you (`ally`) once he's saved.
 - **Gatehouse:** the **Tollwarden**'s arena ✅. Beating him gives you the **Toll Key**.
   - Smoke seals both doorways when you walk in, and he performs his entrance while you keep control.
   - His name and health bar sit at the bottom of the screen.

@@ -10,7 +10,11 @@
     "typecheck": "tsc",
     "test": "vitest run",
     "balance": "vitest run tests/balance.test.ts",
-    "gen:art": "tsx tools/gen-art.ts"
+    "gen:art": "tsx tools/gen-art.ts",
+    "app": "vite build && electron .",
+    "dist:win": "vite build && electron-builder --win",
+    "dist:mac": "vite build && electron-builder --mac",
+    "dist:linux": "vite build && electron-builder --linux"
   },
   "dependencies": {
     "phaser": "^3.90.0",
@@ -19,10 +23,54 @@
   "devDependencies": {
     "@types/node": "^26.6.2",
     "@types/pngjs": "^6.0.5",
+    "electron": "^44.4.5",
+    "electron-builder": "^26.15.3",
     "pngjs": "^7.0.0",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2",
     "vite": "^8.3.0",
     "vitest": "^5.0.1"
+  },
+  "main": "electron/main.cjs",
+  "description": "Powder & Penance: a top-down action game of powder, wax and penance.",
+  "author": "Powder & Penance dev",
+  "build": {
+    "appId": "com.powderandpenance.game",
+    "productName": "Powder & Penance",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "portable",
+        "zip"
+      ],
+      "icon": "build/icon.png",
+      "signAndEditExecutable": false
+    },
+    "portable": {
+      "artifactName": "PowderAndPenance-${version}-portable.exe"
+    },
+    "mac": {
+      "target": [
+        "zip"
+      ],
+      "icon": "build/icon.png",
+      "category": "public.app-category.games"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "tar.gz"
+      ],
+      "icon": "build/icon.png",
+      "category": "Game"
+    }
   }
 }

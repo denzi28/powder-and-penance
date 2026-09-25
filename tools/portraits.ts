@@ -690,6 +690,24 @@ export const CAST: Record<string, Person> = {
       line(k.c, k.head.cx - 2, k.ey, k.head.cx + 1, k.ey, rimC);
     },
   },
+  aldous: {
+    seed: 23, skin: PALE, bg: mix(P.stone1, P.blood1, 0.25), age: 1, iris: P.cyan, eyes: 'wide', brow: P.stone3, browTilt: -1.2, mouth: 'frown',
+    hair: { col: mix(P.stone3, P.wax1, 0.3), style: 'short' }, beard: { col: mix(P.stone3, P.wax1, 0.3), style: 'stubble' },
+    cloth: mix(P.steel1, P.dark1, 0.35), collar: P.blood1,
+    front: k => {
+      // the wax has his left cheek and jaw, and runs down into the mail
+      for (let y = k.ey - 3; y < 44; y++)
+        for (let x = k.head.cx - 11; x < k.head.cx - 3 + Math.round(Math.sin(y * 0.7) * 1.5); x++) {
+          const c = k.c.get(x, y);
+          if (!c) continue;
+          const t = (y - (k.ey - 3)) / 20;
+          k.c.set(x, y, mix(c, (x + y) % 3 ? P.wax2 : P.wax1, Math.min(0.85, 0.55 + t * 0.3)));
+        }
+      for (const x of [k.head.cx - 9, k.head.cx - 6]) for (let y = 38; y < 47; y++) if ((y + x) % 4) k.c.set(x, y, P.wax1);
+      // mail links at the collar
+      for (let x = 12; x < 38; x += 3) k.c.set(x, 44, P.steel3);
+    },
+  },
   cuthwin: {
     seed: 16, skin: PALE, bg: mix(P.stone1, P.dark1, 0.4), age: 0, iris: mix(P.moss2, P.stone3, 0.3), eyes: 'wide', browTilt: -1.5, mouth: 'frown',
     hair: { col: mix(P.wood1, P.flame1, 0.35), style: 'tonsure' }, cloth: mix(P.stone3, P.wood2, 0.35), collar: mix(P.stone2, P.wood1, 0.4),

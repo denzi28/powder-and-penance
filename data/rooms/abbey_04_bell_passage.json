@@ -78,12 +78,6 @@
       "id": "abbey_04_bell_passage_greataxe",
       "item": "gear_greataxe",
       "at": [10, 1]
-    },
-    {
-      "type": "item",
-      "id": "cache_grog",
-      "item": "cache_grog",
-      "at": [12, 1]
     }
   ]
 }

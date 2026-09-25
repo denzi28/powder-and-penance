@@ -168,6 +168,11 @@ export class UIScene extends Phaser.Scene {
     this.drawTallow();
     this.drawLoadout();
     this.drawPrompt();
+    // A staged cutscene has the screen to itself: bars, phials, belt, hands, Tallow and crosshair step aside
+    if (this.gs.story.cinematic)
+      for (const o of [this.g, this.cross, this.beltIcon, this.beltText, this.beltKey, this.tallowIcon, this.tallowText, this.shieldIcon, ...this.phialIcons, ...this.buffIcons, ...this.slotIcons, ...this.ammoTexts, ...this.handKeys])
+        o.setVisible(false);
+    else this.g.setVisible(true);
     this.drawToast();
     this.drawAreaBanner();
     this.mapView.update(this.gs, dt);
@@ -342,7 +347,8 @@ export class UIScene extends Phaser.Scene {
     const diff = target - this.tallowShown;
     this.tallowShown = Math.abs(diff) < 1 ? target : this.tallowShown + Math.sign(diff) * Math.max(1, Math.abs(diff) * 0.15);
     const W = DATA.game.width;
-    this.tallowText.setText(String(Math.round(this.tallowShown)));
+    this.tallowText.setText(String(Math.round(this.tallowShown))).setVisible(true);
+    this.tallowIcon.setVisible(true);
     this.tallowText.setPosition(W - 8 - this.tallowText.width, 14);
     this.tallowIcon.setPosition(W - 8 - this.tallowText.width - 10, 13);
   }

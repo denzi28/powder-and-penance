@@ -17,7 +17,7 @@
   "sprite": "mother_bones",
   "weaponSprite": "mother_ladle",
   "weaponRestDeg": 50,
-  "hp": 600,
+  "hp": 450,
   "poise": {"max": 240, "resetTicks": 240},
   "tallow": 2000,
   "loot": "boss_salt",
@@ -45,7 +45,7 @@
       "cooldown": 40,
       "strikes": [
         {
-          "damage": 46,
+          "damage": 36,
           "poise": 55,
           "windup": 16,
           "active": 8,
@@ -73,7 +73,7 @@
       "cooldown": 70,
       "strikes": [
         {
-          "damage": 22,
+          "damage": 18,
           "poise": 20,
           "windup": 12,
           "active": 4,
@@ -93,7 +93,7 @@
           "anim": "jab"
         },
         {
-          "damage": 22,
+          "damage": 18,
           "poise": 20,
           "windup": 8,
           "active": 4,
@@ -111,7 +111,7 @@
           "anim": "jab"
         },
         {
-          "damage": 30,
+          "damage": 24,
           "poise": 40,
           "windup": 10,
           "active": 5,
@@ -152,7 +152,7 @@
             "sprite": "ember_glob",
             "speed": 95,
             "range": 260,
-            "damage": 18,
+            "damage": 14,
             "poise": 12,
             "knockback": 60,
             "hitstop": 2,
@@ -175,7 +175,7 @@
       "cooldown": 110,
       "strikes": [
         {
-          "damage": 54,
+          "damage": 42,
           "poise": 90,
           "windup": 30,
           "active": 6,
@@ -202,7 +202,7 @@
             "stepTicks": 5,
             "warnTicks": 8,
             "radius": 12,
-            "damage": 22,
+            "damage": 18,
             "poise": 20,
             "knockback": 90,
             "fx": "ember",
@@ -257,7 +257,7 @@
             "sprite": "ember_glob",
             "speed": 1,
             "range": 1,
-            "damage": 30,
+            "damage": 24,
             "poise": 30,
             "knockback": 130,
             "hitstop": 4,

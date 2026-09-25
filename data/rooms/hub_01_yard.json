@@ -58,7 +58,8 @@
       "type": "shrine",
       "id": "shrine_rest",
       "name": "Wick's Rest",
-      "at": [18, 9]
+      "at": [18, 9],
+      "cold": "maudlin_condemned"
     },
     {
       "type": "decor",
@@ -669,6 +670,7 @@
       "type": "npc",
       "id": "maudlin",
       "npc": "maudlin",
+      "when": "!maudlin_condemned",
       "at": [22, 10],
       "talk": "maudlin",
       "routine": [
