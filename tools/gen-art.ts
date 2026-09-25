@@ -9337,8 +9337,527 @@ function genOrchardTiles() {
   });
 }
 
+// ---- Bloomhollow scenery and props
+const LEAF: Ramp = { c0: BL.g0, c1: BL.g1, c2: BL.g3, c3: BL.g4 };
+const STRAW: Ramp = { c0: mix(P.wood2, P.wood1, 0.35), c1: mix(P.wood2, P.flame1, 0.35), c2: mix(P.wax1, P.flame1, 0.35), c3: mix(P.wax1, P.flame2, 0.3) };
+const HSTONE: Ramp = { c0: BL.s0, c1: BL.s1, c2: BL.s2, c3: BL.s3 };
+const CHAR: Ramp = { c0: P.ink, c1: mix(P.ink, P.dark1, 0.6), c2: P.dark2, c3: mix(P.dark2, P.stone2, 0.4) };
+const HONEY: Ramp = { c0: BL.h0, c1: BL.h1, c2: BL.h2, c3: BL.h3 };
+const PAINT: Ramp = { c0: mix(P.stone3, P.wood1, 0.3), c1: mix(P.wax1, P.stone3, 0.4), c2: P.wax1, c3: P.wax2 }; // whitewashed boards
+
+/** A straw skep: a dome of coiled straw rope, lit on its left, a dark door at its foot. */
+function skep(c: Img, cx: number, base: number, r: number, broken = false) {
+  const h = Math.round(r * 1.3);
+  for (let y = 0; y < h; y++) {
+    const k = (y + 0.5) / h;
+    const half = Math.round(r * Math.sqrt(Math.max(0, 1 - (1 - k) ** 2))); // a round dome
+    const coil = y % 2 === 0;
+    for (let x = -half; x <= half; x++) {
+      const t = (x + half) / Math.max(1, half * 2);
+      let col = shadeT(t, STRAW);
+      if (!coil) col = mix(col, STRAW.c0, 0.3); // the groove between coils
+      c.set(cx + x, base - h + y, col);
+    }
+  }
+  c.hline(cx - r + 1, base - h - 1, 1, STRAW.c3);
+  c.set(cx, base - h - 1, STRAW.c2); // the crown knot
+  if (broken) {
+    // split open: the comb inside, spilling
+    for (let y = 2; y < h - 2; y++) c.hline(cx + 1, base - h + y, Math.round(r * 0.5), y % 2 ? BL.h2 : P.wax1);
+    c.vline(cx, base - h + 1, h - 2, P.ink);
+  } else {
+    c.rect(cx - 1, base - 3, 3, 2, P.ink); // the door
+    c.set(cx - 1, base - 3, STRAW.c0);
+  }
+  c.hline(cx - r, base, r * 2 + 1, STRAW.c0); // its ring base
+}
+
+/** An orchard tree: a crooked trunk and a round crown, in blossom, in fruit, or burnt to a black skeleton. */
+function orchardTree(c: Img, cx: number, base: number, kind: 'blossom' | 'fruit' | 'burnt', seed: number) {
+  const r = rng(seed);
+  const T = kind === 'burnt' ? CHAR : WOOD;
+  // trunk: leaning a little, a knot, roots
+  for (let y = 0; y < 24; y++) {
+    const w = y < 3 ? 6 : y > 18 ? 3 : 4;
+    const lean = Math.round(Math.sin(y * 0.18) * 1.5);
+    for (let x = 0; x < w; x++) c.set(cx - Math.floor(w / 2) + x + lean, base - y, x === 0 ? T.c3 : x === w - 1 ? T.c0 : x === 1 ? T.c2 : T.c1);
+  }
+  line(c, cx - 3, base, cx - 6, base + 1, T.c1);
+  line(c, cx + 3, base, cx + 6, base + 1, T.c0);
+  c.set(cx, base - 10, T.c0); // a knot
+  c.set(cx + 1, base - 11, T.c3);
+  // boughs
+  const boughs: [number, number][] = [[-10, -34], [9, -33], [-4, -40], [5, -38], [-14, -26], [14, -27]];
+  for (const [bx, by] of boughs) line(c, cx, base - 20, cx + bx, base + by, T.c1);
+  if (kind === 'burnt') {
+    for (const [bx, by] of boughs) {
+      line(c, cx + bx, base + by, cx + bx + (bx < 0 ? -3 : 3), base + by - 4, T.c2);
+      c.set(cx + bx, base + by + 1, T.c3);
+    }
+    for (let i = 0; i < 4; i++) c.set(cx - 12 + r() * 24, base - 18 - r() * 20, i % 2 ? P.ember : mix(P.ember, P.flame1, 0.5)); // embers still in it
+    return;
+  }
+  // the crown: overlapping clumps of leaf, lit from the upper left
+  const clumps: [number, number, number][] = [[-9, -32, 8], [8, -31, 8], [0, -38, 9], [-12, -24, 6], [12, -24, 6], [0, -27, 9], [-5, -44, 6], [6, -44, 5]];
+  for (const [x, y, s] of clumps) blob(c, cx + x, base + y, s, s * 0.85, LEAF);
+  for (let i = 0; i < 26; i++) {
+    const a = r() * Math.PI * 2;
+    const d = Math.sqrt(r()) * 17;
+    const x = Math.round(cx + Math.cos(a) * d);
+    const y = Math.round(base - 33 + Math.sin(a) * d * 0.75);
+    if (!c.alpha(x, y)) continue;
+    if (kind === 'blossom') {
+      c.set(x, y, i % 3 ? P.blossom : P.wax2);
+      if (i % 4 === 0) c.set(x + 1, y, mix(P.blossom, P.poppy, 0.3));
+    } else if (i % 2 === 0) {
+      c.set(x, y, P.poppy); // an apple, lit on one cheek
+      c.set(x + 1, y, mix(P.poppy, P.blood1, 0.5));
+      c.set(x, y - 1, mix(P.poppy, P.flame2, 0.4));
+    }
+  }
+  if (kind === 'fruit')
+    for (const [x, y] of [[-8, 1], [5, 0], [11, 2]]) {
+      c.set(cx + x, base + y, P.poppy); // windfalls
+      c.set(cx + x + 1, base + y, mix(P.poppy, P.blood1, 0.5));
+    }
+}
+
+function genBloomDecor() {
+  const W = 64;
+  const B = 62;
+  const f: Img[] = [];
+  const cell = () => new Img(W, W);
+  const push = (c: Img, sw = 10) => {
+    c.outline(P.ink);
+    finish(c, 32, B, sw, 2);
+    f.push(c);
+  };
+  // 0 apple tree in blossom (tall)
+  {
+    const c = cell();
+    orchardTree(c, 32, B, 'blossom', 11);
+    push(c, 12);
+  }
+  // 1 apple tree in fruit (tall)
+  {
+    const c = cell();
+    orchardTree(c, 32, B, 'fruit', 12);
+    push(c, 12);
+  }
+  // 2 burned tree: a black skeleton, still smouldering
+  {
+    const c = cell();
+    orchardTree(c, 32, B, 'burnt', 13);
+    c.ellipse(32, B, 10, 2, BL.a1);
+    push(c, 10);
+  }
+  // 3 wax press (2 tiles): a heavy oak frame, the great screw, a tray of crushed comb, honey running from its lip
+  {
+    const c = cell();
+    box(c, 17, B - 30, 4, 30, WOOD);
+    box(c, 39, B - 30, 4, 30, WOOD);
+    box(c, 15, B - 33, 30, 5, WOOD); // the beam
+    for (let y = B - 28; y < B - 12; y += 2) {
+      c.hline(29, y, 3, IRON.c2); // the screw's thread
+      c.set(29, y, IRON.c3);
+      c.hline(29, y + 1, 3, IRON.c0);
+    }
+    box(c, 25, B - 12, 11, 3, WOOD); // the platen
+    box(c, 19, B - 9, 23, 7, DWOOD); // the tray
+    c.hline(20, B - 8, 21, P.wax1); // crushed comb
+    for (let x = 21; x < 40; x += 3) c.set(x, B - 8, BL.h2);
+    c.vline(41, B - 5, 5, BL.h2); // honey from the spout
+    c.ellipse(42, B, 4, 1.5, BL.h1);
+    c.set(41, B - 5, BL.h3);
+    line(c, 12, B - 30, 30, B - 30, WOOD.c3); // the bar to turn it
+    push(c, 16);
+  }
+  // 4 flower bed (2 tiles): a low honey-stone kerb round poppies, daisies and cornflowers
+  {
+    const c = cell();
+    const r = rng(14);
+    box(c, 16, B - 6, 31, 6, HSTONE);
+    c.rect(18, B - 7, 27, 3, mix(P.wood1, P.dark2, 0.3)); // earth
+    for (let i = 0; i < 16; i++) {
+      const x = 18 + Math.floor(r() * 27);
+      const h = 3 + Math.floor(r() * 5);
+      c.vline(x, B - 6 - h, h, i % 2 ? BL.g1 : BL.g3);
+      const col = [P.poppy, P.wax2, P.violet2, P.flame2][i % 4];
+      c.rect(x - 1, B - 7 - h, 2, 2, col);
+      c.set(x, B - 6 - h, i % 4 === 0 ? P.ink : mix(col, P.flame2, 0.5));
+    }
+    push(c, 16);
+  }
+  // 5 scarecrow: a sack head with a stitched grin, a battered hat, a coat stuffed with straw, arms on a cross-bar
+  {
+    const c = cell();
+    box(c, 31, B - 36, 3, 36, WOOD); // the post
+    box(c, 17, B - 30, 30, 3, WOOD); // the cross-bar
+    // coat
+    for (let y = B - 30; y < B - 14; y++) {
+      const w = 12 + Math.floor((y - (B - 30)) / 4);
+      for (let x = 0; x < w; x++) c.set(32 - Math.floor(w / 2) + x, y, shadeT(x / (w - 1), { c0: mix(P.teal1, P.ink, 0.3), c1: P.teal1, c2: mix(P.teal1, P.teal2, 0.6), c3: P.teal2 }));
+    }
+    c.vline(32, B - 29, 14, P.teal1);
+    for (const y of [B - 26, B - 21]) c.set(33, y, P.wax1); // buttons (odd ones)
+    c.rect(24, B - 22, 3, 3, mix(P.blood1, P.wood2, 0.3)); // a patch
+    // straw hands and hem
+    for (const x of [16, 47]) for (let i = 0; i < 4; i++) c.set(x + (x < 30 ? -i % 2 : i % 2), B - 30 + i, i % 2 ? STRAW.c2 : STRAW.c3);
+    for (let x = 26; x < 39; x += 2) c.vline(x, B - 14, 2 + (x % 3), STRAW.c2);
+    // the sack head
+    c.disc(32, B - 36, 5.5, mix(P.wax1, P.wood2, 0.45));
+    c.disc(31, B - 37, 4, mix(P.wax1, P.wood2, 0.25));
+    c.set(30, B - 37, P.ink); // painted eyes, a stitched grin
+    c.set(34, B - 37, P.ink);
+    for (let x = 29; x <= 35; x++) c.set(x, B - 34 + (x === 29 || x === 35 ? -1 : 0), x % 2 ? P.ink : mix(P.wax1, P.wood1, 0.5));
+    // the hat
+    c.hline(25, B - 41, 15, DWOOD.c1);
+    c.hline(26, B - 42, 13, DWOOD.c2);
+    c.rect(28, B - 46, 9, 4, DWOOD.c1);
+    c.hline(28, B - 46, 9, DWOOD.c3);
+    c.hline(28, B - 43, 9, P.poppy); // a faded band
+    c.set(29, B - 44, STRAW.c3); // straw poking out
+    c.set(37, B - 42, P.blossom); // a flower stuck in the band
+    push(c, 6);
+  }
+  // 6 skep bench (2 tiles): a plank on stone legs, three straw skeps, one with bees at the door
+  {
+    const c = cell();
+    box(c, 18, B - 8, 5, 8, HSTONE);
+    box(c, 42, B - 8, 5, 8, HSTONE);
+    box(c, 14, B - 11, 37, 3, WOOD);
+    skep(c, 22, B - 11, 6);
+    skep(c, 33, B - 11, 6);
+    skep(c, 44, B - 11, 5);
+    for (const [x, y] of [[27, B - 18], [30, B - 22], [36, B - 20]]) c.set(x, y, P.flame2); // bees
+    push(c, 18);
+  }
+  // 7 lavender bush: a round grey-green bush crowned with violet spikes
+  {
+    const c = cell();
+    const r = rng(17);
+    blob(c, 32, B - 6, 12, 7, { c0: mix(BL.g0, P.stone1, 0.3), c1: mix(BL.g1, P.stone2, 0.35), c2: mix(BL.g3, P.stone3, 0.35), c3: mix(BL.g4, P.stone4, 0.3) });
+    for (let i = 0; i < 18; i++) {
+      const x = 22 + Math.floor(r() * 21);
+      const h = 5 + Math.floor(r() * 6);
+      c.vline(x, B - 8 - h, h, mix(BL.g2, P.stone3, 0.3));
+      c.vline(x, B - 11 - h, 3, P.violet2);
+      c.set(x, B - 11 - h, P.violet3);
+      c.set(x + 1, B - 10 - h, P.violet1);
+    }
+    push(c, 9);
+  }
+  // 8 hive box: a whitewashed box hive on legs, a little gabled roof, a landing board
+  {
+    const c = cell();
+    box(c, 25, B - 5, 2, 5, WOOD);
+    box(c, 37, B - 5, 2, 5, WOOD);
+    boards(c, 23, B - 21, 18, 16, PAINT, false, 4, 18);
+    c.vline(40, B - 21, 16, PAINT.c0);
+    c.hline(23, B - 13, 18, PAINT.c0); // between the boxes
+    // roof
+    for (let i = 0; i < 5; i++) c.hline(21 + i, B - 22 - i, 22 - i * 2, i === 4 ? WOOD.c3 : WOOD.c1);
+    c.hline(21, B - 22, 22, WOOD.c0);
+    c.hline(28, B - 7, 8, P.ink); // the entrance
+    c.hline(27, B - 6, 10, WOOD.c2); // landing board
+    for (const [x, y] of [[30, B - 9], [33, B - 8], [44, B - 14]]) c.set(x, y, P.flame2);
+    push(c, 10);
+  }
+  // 9 the Synod's notice: nailed over the orchard's own sign, sealed in red wax
+  {
+    const c = cell();
+    box(c, 31, B - 30, 3, 30, WOOD);
+    boards(c, 22, B - 30, 21, 11, WOOD, false, 4, 19); // the old painted sign (a bee, just visible)
+    c.set(25, B - 24, P.flame2);
+    c.set(26, B - 24, P.ink);
+    c.rect(28, B - 29, 13, 12, P.wax2); // the notice
+    c.hline(28, B - 29, 13, mix(P.wax2, P.white, 0.4));
+    for (const y of [B - 27, B - 25, B - 23, B - 21]) c.hline(30, y, 9 - (y % 3), mix(P.ink, P.wax1, 0.4)); // its writing
+    c.disc(38, B - 19, 1.8, P.blood2); // the seal
+    c.set(37, B - 20, mix(P.blood2, P.wax2, 0.4));
+    c.set(29, B - 28, IRON.c2); // nails
+    c.set(40, B - 28, IRON.c2);
+    push(c, 5);
+  }
+  // 10 the orchard gate (3-tile way through): honey-stone pillars capped with stone skeps, the burned timber arch
+  {
+    const c = cell();
+    for (const x0 of [0, 55]) {
+      box(c, x0, B - 34, 9, 34, HSTONE);
+      for (let y = B - 30; y < B; y += 6) c.hline(x0 + 1, y, 7, HSTONE.c0); // courses
+      skep(c, x0 + 4, B - 34, 4); // a stone skep on top
+    }
+    // the arch beam, burnt through in the middle and sagging
+    box(c, 6, B - 40, 22, 4, CHAR);
+    box(c, 36, B - 40, 22, 4, CHAR);
+    line(c, 27, B - 37, 31, B - 33, CHAR.c1);
+    line(c, 37, B - 37, 34, B - 32, CHAR.c1);
+    for (const x of [14, 22, 42, 50]) c.set(x, B - 39, P.ember);
+    // what's left of the carved letters: BLOOM...
+    for (let x = 8; x < 26; x += 3) c.set(x, B - 38, mix(P.flame1, CHAR.c3, 0.5));
+    // a garland of dead flowers still hanging on one pillar
+    for (let y = B - 30; y < B - 18; y += 2) c.set(9, y, y % 4 ? mix(P.blossom, P.wood1, 0.5) : BL.g0);
+    c.outline(P.ink);
+    finish(c, 5, B, 5, 2);
+    finish(c, 59, B, 5, 2);
+    f.push(c);
+  }
+  // 11 honey barrels (2 tiles): two casks, one broached and dribbling
+  {
+    const c = cell();
+    kegAt(c, 24, B, 7);
+    kegAt(c, 40, B, 7);
+    c.rect(44, B - 9, 3, 2, WOOD.c2); // the tap
+    c.vline(46, B - 7, 7, BL.h2);
+    c.ellipse(46, B, 4, 1.4, BL.h1);
+    for (const x of [22, 38]) {
+      c.hline(x - 2, B - 8, 5, BL.h1); // honey-sticky hoops
+      c.set(x, B - 7, BL.h2);
+    }
+    push(c, 16);
+  }
+  // 12 mead rack (2 tiles, tall): a timber rack of small casks and stoppered jugs
+  {
+    const c = cell();
+    box(c, 14, B - 44, 3, 44, WOOD);
+    box(c, 47, B - 44, 3, 44, WOOD);
+    for (const y of [B - 30, B - 16, B - 2]) box(c, 14, y, 36, 3, WOOD);
+    for (const x of [22, 32, 42]) kegAt(c, x, B - 3, 4);
+    for (const [x, col] of [[20, BL.h2], [26, P.wax1], [31, BL.h1], [37, BL.h2], [43, P.wax1]] as const) {
+      c.rect(x, B - 26, 4, 9, col); // jugs
+      c.vline(x, B - 26, 9, mix(col, P.wax2, 0.35));
+      c.rect(x + 1, B - 28, 2, 2, WOOD.c1); // stoppers
+    }
+    for (const x of [20, 30, 40]) {
+      c.rect(x, B - 42, 5, 11, mix(P.teal1, P.ink, 0.2)); // dark bottles
+      c.vline(x + 1, B - 41, 9, P.teal2);
+    }
+    push(c, 18);
+  }
+  // 13 the bee altar (2 tiles): honey-stone, golden beeswax tapers, a gilded comb on a cloth
+  {
+    const c = cell();
+    box(c, 15, B - 14, 34, 14, HSTONE);
+    for (let y = B - 11; y < B; y += 4) c.hline(16, y, 32, HSTONE.c0);
+    c.rect(18, B - 16, 28, 3, P.wax2); // altar cloth
+    c.hline(18, B - 14, 28, P.poppy); // its red hem
+    for (let x = 19; x < 46; x += 3) c.set(x, B - 13, P.poppy);
+    // the comb: a gilded hexagon
+    for (let y = 0; y < 8; y++) {
+      const half = y < 2 ? 3 + y : y > 5 ? 10 - y : 5;
+      c.hline(32 - half, B - 24 + y, half * 2, y % 2 ? BL.h2 : BL.h3);
+    }
+    for (const x of [28, 31, 34]) c.set(x, B - 21, BL.h0);
+    // tapers, golden, lit
+    for (const [x, h] of [[20, 9], [23, 12], [41, 12], [44, 9]]) {
+      c.rect(x, B - 16 - h, 2, h, mix(P.wax2, P.honey, 0.3));
+      c.vline(x + 1, B - 16 - h, h, mix(P.wax1, P.honey, 0.4));
+      c.set(x, B - 17 - h, P.dark1);
+      c.set(x, B - 18 - h, P.flame2);
+      c.set(x, B - 19 - h, P.flame1);
+    }
+    push(c, 18);
+  }
+  // 14 the great skep: the Queen's hive, a straw hall taller than a man, bees at its door, comb bulging from its seams
+  {
+    const c = cell();
+    const cx = 32;
+    const r = 23;
+    const h = 52;
+    for (let y = 0; y < h; y++) {
+      const k = y / h;
+      const half = Math.round(r * Math.sqrt(Math.max(0, 1 - (1 - k) ** 1.6))); // a tall straw bell
+      for (let x = -half; x <= half; x++) {
+        const t = (x + half) / Math.max(1, half * 2);
+        let col = shadeT(t, STRAW);
+        if (y % 3 === 2) col = mix(col, STRAW.c0, 0.35);
+        c.set(cx + x, B - h + y, col);
+      }
+    }
+    // the great door, and honey welling out of it
+    c.ellipse(cx, B - 6, 6, 7, P.ink, (_x, y) => y < B);
+    c.ellipse(cx, B, 9, 2, BL.h2);
+    c.hline(cx - 5, B - 1, 10, BL.h3);
+    // comb bulging through a split in the straw
+    for (let y = 0; y < 10; y++) c.hline(cx + 8, B - 34 + y, 5 - Math.abs(y - 5) / 2, y % 2 ? BL.h2 : P.wax1);
+    c.vline(cx + 7, B - 35, 12, P.ink);
+    // a crown of wax on its peak
+    for (const [x, hh] of [[-3, 3], [0, 5], [3, 3]]) c.vline(cx + x, B - h - hh, hh, P.wax2);
+    c.set(cx, B - h - 6, P.flame2);
+    for (const [x, y] of [[-14, -40], [12, -46], [18, -22], [-20, -18], [-8, -50], [6, -12]]) c.set(cx + x, B + y, P.flame2); // bees
+    push(c, 26);
+  }
+  // 15 charred stump
+  {
+    const c = cell();
+    for (let y = 0; y < 9; y++) {
+      const w = 12 - Math.floor(y / 3);
+      for (let x = 0; x < w; x++) c.set(32 - Math.floor(w / 2) + x, B - y, shadeT(x / (w - 1), CHAR));
+    }
+    c.ellipse(32, B - 9, 4.5, 1.5, CHAR.c2);
+    for (let i = 0; i < 3; i++) c.set(29 + i * 3, B - 9, i === 1 ? P.ember : CHAR.c3);
+    line(c, 26, B, 22, B + 1, CHAR.c1);
+    push(c, 8);
+  }
+  // 16 honey cart (2 tiles): a hand cart of stoppered honey jars, one wheel
+  {
+    const c = cell();
+    boards(c, 16, B - 16, 30, 9, WOOD, false, 3, 26);
+    line(c, 46, B - 12, 58, B - 16, WOOD.c2); // handles
+    line(c, 46, B - 10, 58, B - 14, WOOD.c1);
+    c.disc(22, B - 5, 5, WOOD.c0);
+    c.disc(22, B - 5, 3.5, WOOD.c2);
+    c.disc(22, B - 5, 1.2, IRON.c2);
+    for (const x of [19, 25, 31, 37]) {
+      c.rect(x, B - 23, 5, 7, BL.h2);
+      c.vline(x, B - 23, 7, BL.h3);
+      c.vline(x + 4, B - 23, 7, BL.h1);
+      c.rect(x + 1, B - 25, 3, 2, P.wax1); // wax-sealed tops
+    }
+    push(c, 18);
+  }
+  // 17 a stack of comb frames, dripping
+  {
+    const c = cell();
+    for (let i = 0; i < 4; i++) {
+      const y = B - 5 - i * 5;
+      box(c, 22 + (i % 2), y, 20, 5, WOOD);
+      c.hline(24 + (i % 2), y + 2, 16, i % 2 ? BL.h2 : P.wax1);
+    }
+    c.vline(40, B - 8, 5, BL.h2);
+    push(c, 12);
+  }
+  // 18 a bee saint: a stone saint cradling a skep, bees for a halo
+  {
+    const c = cell();
+    box(c, 25, B - 6, 14, 6, HSTONE); // plinth
+    for (let y = B - 36; y < B - 6; y++) {
+      const w = 8 + Math.floor((y - (B - 36)) / 5);
+      for (let x = 0; x < w; x++) c.set(32 - Math.floor(w / 2) + x, y, shadeT(x / (w - 1), STN));
+    }
+    c.disc(32, B - 40, 4, STN.c2);
+    c.disc(31, B - 41, 2.5, STN.c3);
+    skep(c, 36, B - 20, 5);
+    c.vline(27, B - 30, 12, STN.c0); // a fold
+    for (let i = 0; i < 9; i++) {
+      const a = (i / 9) * Math.PI * 2;
+      c.set(Math.round(32 + Math.cos(a) * 7), Math.round(B - 41 + Math.sin(a) * 4), P.flame2);
+    }
+    for (const x of [28, 35]) c.set(x, B - 33, BL.g3); // moss on its shoulders
+    push(c, 9);
+  }
+  // 19 fallen skep (flat): a hive knocked off its bench, split, lying in its own honey
+  {
+    const c = cell();
+    c.ellipse(32, B - 1, 13, 3, BL.h1);
+    c.ellipse(30, B - 2, 8, 1.8, BL.h2);
+    skep(c, 34, B - 1, 6, true);
+    for (const [x, y] of [[22, B - 4], [42, B - 3]]) c.set(x, y, P.ink); // dead bees
+    push(c, 13);
+  }
+  // 20 pew (2 tiles): a chapel bench with a bee carved on its end
+  {
+    const c = cell();
+    box(c, 15, B - 12, 34, 4, WOOD);
+    box(c, 15, B - 20, 34, 3, WOOD);
+    for (const x of [16, 46]) box(c, x, B - 20, 3, 20, WOOD);
+    c.set(17, B - 16, P.flame1); // the carved bee
+    c.set(18, B - 16, WOOD.c0);
+    push(c, 18);
+  }
+  // 21 candle stand: an iron stand of golden beeswax votives
+  {
+    const c = cell();
+    box(c, 31, B - 20, 2, 20, IRON);
+    c.hline(26, B - 20, 12, IRON.c2);
+    c.hline(28, B - 1, 8, IRON.c1);
+    for (const x of [27, 30, 33, 36]) {
+      const h = 3 + (x % 3);
+      c.rect(x, B - 20 - h, 2, h, mix(P.wax2, P.honey, 0.3));
+      c.set(x, B - 21 - h, P.flame2);
+      c.set(x, B - 22 - h, P.flame1);
+    }
+    push(c, 5);
+  }
+  // 22 hollyhocks: tall spires of pink and red flowers against a wall
+  {
+    const c = cell();
+    const r = rng(32);
+    for (let i = 0; i < 4; i++) {
+      const x = 26 + i * 4;
+      const h = 22 + Math.floor(r() * 12);
+      c.vline(x, B - h, h, BL.g1);
+      for (let y = B - h; y < B - 6; y += 3) {
+        const col = i % 2 ? P.blossom : P.poppy;
+        c.rect(x - 1, y, 3, 2, col);
+        c.set(x, y, mix(col, P.flame2, 0.4));
+        if (y % 2) c.set(x + 2, y + 2, BL.g3); // a leaf
+      }
+    }
+    push(c, 8);
+  }
+  // 23 ash heap (flat): what the Synod's men burned: skeps, frames, a scorched comb
+  {
+    const c = cell();
+    c.ellipse(32, B - 1, 13, 3.5, BL.a1);
+    c.ellipse(31, B - 2, 9, 2.2, BL.a2);
+    line(c, 24, B - 2, 32, B - 4, P.ink);
+    line(c, 34, B - 1, 41, B - 4, CHAR.c1);
+    c.rect(28, B - 4, 4, 2, mix(P.wax1, P.ink, 0.5)); // a blackened comb
+    c.set(36, B - 3, P.ember);
+    push(c, 13);
+  }
+  const img = new Img(W * f.length, W);
+  f.forEach((c, i) => img.blit(c, i * W, 0));
+  sheet('decor_bloom', img, { cell: [W, W], pivot: [32, B], layer: 'single' });
+
+  // the hive prop (breakable): a skep on a post; frame 1 knocked down and split
+  const hive = new Img(48, 32);
+  {
+    const a = new Img(24, 32);
+    box(a, 11, 18, 3, 12, WOOD); // the post
+    box(a, 5, 16, 15, 3, WOOD); // its board
+    skep(a, 12, 16, 7);
+    a.set(6, 8, P.flame2);
+    a.set(18, 5, P.flame2);
+    a.outline(P.ink);
+    hive.blit(a, 0, 0);
+    const b = new Img(24, 32);
+    box(b, 11, 22, 3, 8, WOOD);
+    b.ellipse(12, 29, 10, 2.2, BL.h1);
+    skep(b, 13, 29, 6, true);
+    b.outline(P.ink);
+    hive.blit(b, 24, 0);
+  }
+  sheet('prop_hive', hive, { cell: [24, 32], pivot: [12, 29], layer: 'single' });
+
+  // the tallow seal (in a wall tile): the Order's grey tallow poured across an old doorway, stamped with the
+  // Synod's flame; frame 1 melted away to a puddle
+  const seal = new Img(32, 16);
+  {
+    const a = new Img(16, 16);
+    const TAL: Ramp = { c0: mix(P.wax1, P.stone2, 0.55), c1: mix(P.wax1, P.stone3, 0.4), c2: mix(P.wax1, P.stone4, 0.25), c3: P.wax1 };
+    for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) a.set(x, y, shadeT(x / 15, TAL));
+    for (const [x, l] of [[2, 5], [7, 8], [12, 4]]) a.vline(x, 16 - l, l, TAL.c3); // runs down its face
+    a.hline(0, 0, 16, TAL.c3);
+    // the stamp: the Synod's flame in a ring
+    a.ellipse(8, 7, 3.5, 3.5, TAL.c0);
+    a.ellipse(8, 7, 2.5, 2.5, TAL.c2);
+    a.vline(8, 5, 4, P.blood1);
+    a.set(7, 7, P.blood1);
+    a.set(9, 6, P.blood1);
+    seal.blit(a, 0, 0);
+    const b = new Img(16, 16);
+    b.ellipse(8, 14, 7, 1.8, mix(P.wax1, P.stone3, 0.4));
+    b.hline(4, 13, 6, P.wax1);
+    seal.blit(b, 16, 0);
+  }
+  sheet('prop_seal', seal, { cell: [16, 16], pivot: [8, 16], layer: 'single' });
+}
+
 function genBloom() {
   genOrchardTiles();
+  genBloomDecor();
 }
 
 genPlayer();
