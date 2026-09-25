@@ -1,12 +1,12 @@
 {
   "areas": {
-    "road": { "name": "Penance Road", "tileset": "tiles_road" },
-    "hub": { "name": "Wick's Rest", "tileset": "tiles_road" },
-    "abbey": { "name": "The Guttering Abbey", "tileset": "tiles" },
-    "works": { "name": "The Tallow Works", "tileset": "tiles_works" },
-    "mire": { "name": "The Waxmire", "tileset": "tiles_mire" },
-    "vault": { "name": "The Powder Vault", "tileset": "tiles_vault" },
-    "bloom": { "name": "Bloomhollow", "tileset": "tiles_orchard" },
-    "test": { "name": "Test Grounds", "tileset": "tiles" }
+    "road": { "name": "Penance Road", "tileset": "tiles_road", "tier": 1, "tallowMult": 1.25 },
+    "hub": { "name": "Wick's Rest", "tileset": "tiles_road", "tier": 1, "tallowMult": 1 },
+    "abbey": { "name": "The Guttering Abbey", "tileset": "tiles", "tier": 1, "tallowMult": 1.25 },
+    "works": { "name": "The Tallow Works", "tileset": "tiles_works", "tier": 2, "tallowMult": 1.5, "hpMult": 1.3 },
+    "mire": { "name": "The Waxmire", "tileset": "tiles_mire", "tier": 2, "tallowMult": 1.5, "hpMult": 1.3 },
+    "vault": { "name": "The Powder Vault", "tileset": "tiles_vault", "tier": 3, "tallowMult": 1.75, "hpMult": 1.2 },
+    "bloom": { "name": "Bloomhollow", "tileset": "tiles_orchard", "tier": 3, "tallowMult": 1.75, "hpMult": 1.2 },
+    "test": { "name": "Test Grounds", "tileset": "tiles", "tier": 0, "tallowMult": 1 }
   }
 }

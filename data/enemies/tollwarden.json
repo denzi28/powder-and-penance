@@ -18,7 +18,7 @@
   "weaponRestDeg": 60,
   "hp": 720,
   "poise": {"max": 200, "resetTicks": 240},
-  "tallow": 1200,
+  "tallow": 1500,
   "loot": "boss_ingots",
   "speed": 34,
   "strafeSpeed": 20,

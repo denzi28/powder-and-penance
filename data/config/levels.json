@@ -4,7 +4,7 @@
   "cost": {
     "base": 300,
     "linear": 90,
-    "quad": 8
+    "quad": 6
   },
   "vitality": {
     "hpPerPoint": 6,

@@ -71,7 +71,7 @@
   "deathBlast": {
     "fuseTicks": 75,
     "radius": 38,
-    "damage": 45,
+    "damage": 38,
     "poise": 70,
     "knockback": 220,
     "sfx": "b_keg_blast"

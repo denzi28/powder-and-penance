@@ -41,6 +41,7 @@
       "item": "ingot_cache",
       "at": [2, 3]
     },
+    { "type": "item", "id": "chest_ember_salt", "item": "salt_vault", "at": [6, 1] },
     {
       "type": "decor",
       "kind": "keg_stack",

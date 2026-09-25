@@ -17,7 +17,7 @@
   "weaponSprite": "chandler_snuffer_lit",
   "weaponRestDeg": 55,
   "wader": true,
-  "hp": 850,
+  "hp": 900,
   "poise": {"max": 240, "resetTicks": 240},
   "tallow": 6000,
   "loot": "boss_salt",

@@ -91,7 +91,7 @@
       "consumable": "ember_salt",
       "price": 2500,
       "limit": 2,
-      "when": "boss:mire_matron"
+      "when": "boss:master_gunner"
     },
     {
       "id": "shop_keg_charge",

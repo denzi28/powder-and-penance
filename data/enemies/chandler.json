@@ -24,7 +24,7 @@
   "sprite": "chandler",
   "weaponSprite": "chandler_snuffer",
   "weaponRestDeg": 60,
-  "hp": 900,
+  "hp": 1100,
   "poise": {"max": 260, "resetTicks": 300},
   "tallow": 0,
   "speed": 28,
@@ -125,7 +125,7 @@
       "cooldown": 150,
       "strikes": [
         {
-          "damage": 60,
+          "damage": 64,
           "poise": 90,
           "windup": 46,
           "active": 6,

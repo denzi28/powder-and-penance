@@ -1,0 +1,18 @@
+{
+  "id": "gate_rubble",
+  "name": "Fallen Gate",
+  "sprite": "prop_rubble",
+  "hp": 30,
+  "radius": 6,
+  "hurtbox": {
+    "w": 16,
+    "h": 16,
+    "offsetY": -6
+  },
+  "debris": "stone2",
+  "sfx": "break_wood",
+  "secretWall": true,
+  "blastOnly": {
+    "minRadius": 32
+  }
+}

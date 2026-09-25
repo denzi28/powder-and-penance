@@ -58,6 +58,7 @@ function loadAll(src: Record<string, unknown>) {
     load: one(S.LoadCfg, 'config/load'),
     levels: one(S.LevelsCfg, 'config/levels'),
     smith: one(S.SmithCfg, 'config/smith'),
+    balance: one(S.BalanceCfg, 'config/balance'),
     shop: one(S.ShopCfg, 'shop'),
     items: dir(S.ItemDef, 'items'),
     consumables: dir(S.ConsumableDef, 'consumables'),
@@ -116,6 +117,7 @@ function loadAll(src: Record<string, unknown>) {
       if (!data.palette[pr.debris]) errors.push(`data/props/${pr.id}.json: debris "${pr.debris}" is not a palette colour`);
       if (pr.hive && !data.swarms.swarms[pr.hive]) errors.push(`data/props/${pr.id}.json: unknown swarm "${pr.hive}"`);
       if (pr.melts && !pr.secretWall) errors.push(`data/props/${pr.id}.json: "melts" is for sealed ways ("secretWall": true)`);
+      if (pr.blastOnly && !pr.secretWall) errors.push(`data/props/${pr.id}.json: "blastOnly" is for blocked ways ("secretWall": true)`);
     }
     if (!data.weapons.fists) errors.push('data/weapons/fists.json: required (an empty weapon slot holds bare fists)');
     for (const w of data.player.loadout.slots)

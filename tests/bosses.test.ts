@@ -73,7 +73,7 @@ describe('the Nave', () => {
     const door = Object.values(DATA.rooms)
       .flatMap(r => r.entities)
       .find(e => e.id === 'abbey_door_nave');
-    expect(door?.requires).toEqual(['seal_of_tallow', 'seal_of_the_mire']);
+    expect(door?.requires).toEqual(['seal_of_tallow', 'seal_of_the_mire', 'seal_of_powder', 'seal_of_the_hive']);
   });
 
   it("the Chandler doesn't die when his health runs out: he walks to the altar and turns", () => {

@@ -2,13 +2,13 @@
 
 The Act 1 map. Every room is listed with its job: what it teaches, who is in it, and what it connects to. Rooms are built one at a time and ticked off here. The story is in [STORY.md](STORY.md).
 
-Target: **~2 h** first playthrough (2 h 15 min with the optional Powder Vault). **45 rooms**, 6 areas, 4 main bosses + 1 optional.
+Target: **~3 h** first playthrough. **55 rooms**, 7 areas, 6 bosses; every area is on the route. The difficulty curve is in `data/config/balance.json` (`npm run balance`).
 
 ```
                         [Act 2: the Cathedral]
                                   ^ ending cutscene
                           [Abbey nave: Chandler]
-                                  ^ sealed: needs both Seals
+                                  ^ sealed: needs all four Seals
    (one-way shortcut) ---> [Guttering Abbey: Tollwarden]
           |                       ^
    [The Waxmire] <--open-- [Wick's Rest (hub)] --toll key--> [Tallow Works]
@@ -27,15 +27,25 @@ Target: **~2 h** first playthrough (2 h 15 min with the optional Powder Vault). 
 | The Guttering Abbey | `abbey` | 13 | Abbey stone (built) | Tollwarden (mini), Chandler (final) | 40 + 15 min |
 | Tallow Works | `works` | 10 | Soot brick, iron, grease | Mother Tallow | 30 min |
 | The Waxmire | `mire` | 10 | Mud, wax pools, dead roots | Mire Matron | 30 min |
-| Powder Vault (optional) | `vault` | 4 | Oak-floored brick magazine, powder kegs | Master Gunner | 15 min |
-| Bloomhollow (optional) | `bloom` | 10 | Orchard grass, lavender, honey, honeycomb paving | Scarecrow Warden (mini), Hive Queen | 35 min |
+| Powder Vault | `vault` | 4 | Oak-floored brick magazine, powder kegs | Master Gunner | 15 min |
+| Bloomhollow | `bloom` | 10 | Orchard grass, lavender, honey, honeycomb paving | Scarecrow Warden (mini), Hive Queen | 35 min |
 
 **Critical path:**
 1. Penance Road
 2. Hub
 3. Abbey up to the Gatehouse: the Tollwarden drops the **Toll Key**.
-4. Tallow Works and the Waxmire, in either order. Each boss drops a **Seal**. The Waxmire is open from the start but hard.
-5. With both Seals, the Nave door opens: the **Chandler**, then the Act 1 ending.
+4. **Tier 2:** the Tallow Works and the Waxmire, in either order. Mother Tallow drops the **Seal of Tallow**, the Matron the **Seal of the Mire**. The Waxmire is open from the start.
+5. **Tier 3:** the Powder Vault (behind the cracked wall in the Works' stores; Oskar sells the way in), then Bloomhollow. The Gunner gives the **Seal of Powder** and two **Keg Charges**; a Keg Charge blows the fallen rubble out of Bloomhollow's gate on Penance Road (no blow or firebomb shifts it). The Hive Queen leaves the **Seal of the Hive**.
+6. With all four Seals, the Nave door opens: the **Chandler** (tier 4), then the Act 1 ending.
+
+**Tiers** (`tier` and the enemy multipliers in `data/areas.json`; the expected player and the rules in `data/config/balance.json`):
+
+| Tier | Areas | Expected at its bosses | Ordinary enemies |
+|---|---|---|---|
+| 1 | Road, Wick's Rest, the Abbey to the Tollwarden | level 3, weapon +1, 5 flasks | as written; Tallow ×1.25 |
+| 2 | Tallow Works, Waxmire | level 8, +3, 7 flasks | health ×1.3, Tallow ×1.5 |
+| 3 | Powder Vault, then Bloomhollow | level 12, +4, 8 flasks | health ×1.2, Tallow ×1.75 |
+| 4 | The Nave | level 15, +5, 8 flasks | Abbey figures |
 
 **Shrines (7):**
 - Hill Wick (road) ✅
@@ -56,7 +66,7 @@ Target: **~2 h** first playthrough (2 h 15 min with the optional Powder Vault). 
 | `weapon` entity: a weapon lying on the floor | road_01 ✅ |
 | `exit` entity: walk into it to change area (fade out, arrive at a named `spawn`, fade in) | road_05 ✅ |
 | Area name banner on entering an area | road_05 ✅ |
-| Keyed doors (`requires`: a key item): Toll Key ✅, the two Seals later | hub_01 ✅ |
+| Keyed doors (`requires`: a key item): Toll Key ✅, the four Seals ✅ | hub_01 ✅ |
 | Dialogue, NPCs, cutscenes (see STORY.md: "Writing dialogue and cutscenes") | ✅ road and hub |
 | Slain enemies stay dead until you rest or die (`slain:` flags) | ✅ |
 | Bosses: `ai: "boss"` + `boss` block (entrance, slams, line, last-words script), `arena` room entity (smoke seals), boss bar, stays dead (`boss:<kind>`), Tallow drops at the arena door | ✅ Tollwarden |
@@ -111,7 +121,7 @@ The 13 existing rooms stay. Changes:
   - Die and your Tallow lands just outside the doorway you came through.
   - When he falls, he kneels and speaks his last words.
 - **Undercroft:** a sluice down to the Waxmire in its south wall ✅, opened by the lever in the Sluice (mire_08).
-- **Nave Approach → Nave** ✅: the great door needs **both Seals** (`requires` takes a list). The Nave: the great altar and its fire, candelabra, pews, four pillars. The **Chandler** fight (two phases; the turn happens at the altar), the **Nave Wick** shrine after him, the ending, and the lift to Act 2 in the north-east corner (an exit that stays shut until `act2`; Act 2 will point it at the Cathedral).
+- **Nave Approach → Nave** ✅: the great door needs **all four Seals** (`requires` takes a list). The Nave: the great altar and its fire, candelabra, pews, four pillars. The **Chandler** fight (two phases; the turn happens at the altar), the **Nave Wick** shrine after him, the ending, and the lift to Act 2 in the north-east corner (an exit that stays shut until `act2`; Act 2 will point it at the Cathedral).
 
 ## Tallow Works (`works`)
 Where the dying pilgrims are "given to the flame": rendering vats, hooks, grease. The Act 1 twist is revealed here.
@@ -171,7 +181,7 @@ The low ground where the Drip pools: a swamp of melted wax and drowned graves. A
 | mire_09 | **Choir Pool** ✅ | One great wax pool with six drowned beneath it in a ring, and a Lantern over them |
 | mire_10 | **Matron's Bath** ✅ | **Boss: the Mire Matron.** "Hush now. Have you come to be born again?" Five moves: drowning sweep, an unblockable **embrace** (a grab), lobbed wax, a **wail** that blasts you away, and **calling the drowned** (they sink into the wax and rise around you). Her last words (the Abbey's midwife); **Seal of the Mire**; then the **Matron's Wick** appears. |
 
-## Powder Vault (`vault`): optional
+## Powder Vault (`vault`): tier 3
 Oskar's hidden powder cache under the Tallow Works: the heretics' old workshop.
 
 | # | Room | Contents |
@@ -179,9 +189,11 @@ Oskar's hidden powder cache under the Tallow Works: the heretics' old workshop.
 | vault_01 | **Collapsed Store** ✅ | Up from the cracked wall in the Tallow Stores. **Vault Wick shrine**, rubble, kegs, a Mule and a Fuse-Runner, the Gunner's log. |
 | vault_02 | **Fuse Corridor** ✅ | A long hall lined with ten kegs: two Mules, two Fuse-Runners, an Acolyte. Break the kegs to hurt them, or yourself. Chest: **Gunner's Coat**. |
 | vault_03 | **Oskar's Cache** ✅ | **Oskar's strongbox** (take it to him: Ring of the Steady Hand, and his full stock), two Keg Charges, two Tallow Ingots. |
-| vault_04 | **The Range** ✅ | **Optional boss: the Master Gunner**: his cannon on its rail, then a duel with his blunderbuss. Drops the **Blunderbuss**; then the **Range Wick** appears. |
+| vault_04 | **The Range** ✅ | **Boss: the Master Gunner**: his cannon on its rail, then a duel with his blunderbuss. Gives the **Blunderbuss**, the **Seal of Powder** and two **Keg Charges**; then the **Range Wick** appears. |
 
-## Bloomhollow (`bloom`): optional, the Apiary Orchard
+## Bloomhollow (`bloom`): tier 3, the Apiary Orchard
+
+Reached through the collapsed gate at the bottom of Penance Road, once a Keg Charge has blown the rubble out of it (prop `gate_rubble`, `blastOnly`).
 Hild's orchard valley, through the collapsed gate at the bottom of Penance Road. The Wax Synod burned it for making beeswax, "a light that asks nothing". All 10 rooms are built ✅ (`tools/level-gen/bloom.mjs`).
 
 **Hives** (prop `hive`) hum on posts and benches. Strike one and a swarm comes out after whoever struck it; break it and a bigger swarm comes out, with a spill of honey. Swarms sting everyone in their cloud: lead one through enemies, roll through it, or smoke it calm. **Honey** (`floor_honey`, and pools) slows like wax. **Tallow seals** (prop `tallow_seal`) close two old ways; they melt when you walk up with a lit **Beeswax Candle**.

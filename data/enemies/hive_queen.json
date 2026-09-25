@@ -29,7 +29,7 @@
   "sprite": "hive_queen",
   "weaponSprite": "comb_sceptre",
   "weaponRestDeg": 30,
-  "hp": 850,
+  "hp": 950,
   "poise": {
     "max": 220,
     "resetTicks": 240

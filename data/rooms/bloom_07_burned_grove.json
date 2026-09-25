@@ -105,7 +105,8 @@
         "id": "scarecrow_warden",
         "title": "The Scarecrow Warden",
         "drop": "gear_beekeepers_coat",
-        "hpMult": 1.3
+        "hpMult": 1.3,
+        "tallow": 400
       }
     },
     {

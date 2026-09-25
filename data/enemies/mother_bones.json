@@ -17,9 +17,9 @@
   "sprite": "mother_bones",
   "weaponSprite": "mother_ladle",
   "weaponRestDeg": 50,
-  "hp": 800,
+  "hp": 600,
   "poise": {"max": 240, "resetTicks": 240},
-  "tallow": 2500,
+  "tallow": 2000,
   "loot": "boss_salt",
   "speed": 52,
   "strafeSpeed": 34,
@@ -175,7 +175,7 @@
       "cooldown": 110,
       "strikes": [
         {
-          "damage": 62,
+          "damage": 54,
           "poise": 90,
           "windup": 30,
           "active": 6,

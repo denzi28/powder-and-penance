@@ -16,13 +16,13 @@
     "deathScript": "queen_death"
   },
   "sprite": "queen_swarm",
-  "hp": 650,
+  "hp": 700,
   "poise": {
     "max": 300,
     "resetTicks": 200
   },
   "smokePoise": 140,
-  "tallow": 4000,
+  "tallow": 5000,
   "loot": "boss_salt",
   "beeproof": true,
   "wader": true,

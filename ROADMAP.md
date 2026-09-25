@@ -167,7 +167,8 @@ Each new biome is somewhere the Order's grey never reached, and each hides a pie
 
 ## Step 8: Balance, difficulty curve and replay
 *Everything together, tuned.*
-- Pass over enemy HP and damage along the new route order, the Tallow economy, and upgrade costs.
+- ✅ **Act 1 balance pass** (done early, before the story stitching): every biome is on the route, in tiers (Road and Abbey → Works and Mire → Vault then Bloomhollow → the Chandler). The Nave wants four Seals; Bloomhollow's gate is rubble that only a Keg Charge from the Vault shifts. The expected player and the rules for each tier live in `data/config/balance.json`; `npm run balance` prints the table and `tests/balance.test.ts` keeps it true. Re-run it whenever a new biome or boss goes in.
+- Pass over enemy HP and damage along the new route order, the Tallow economy, and upgrade costs (again, once Madder Marsh and Brinewell exist).
 - **New Game+**: stronger enemies and some extra placements.
 - An end-of-game stats screen: time, deaths, bosses, and what killed you most.
 - Tests for level reachability, every item obtainable, and every lore note placed.

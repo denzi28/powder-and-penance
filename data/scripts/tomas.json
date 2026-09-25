@@ -19,8 +19,8 @@
               "then": [{ "say": "Nowhere, tonight. The bell's quiet up there for the first time in my life. Rest.", "who": "tomas" }],
               "else": [
                 {
-                  "if": ["key:seal_of_tallow", "key:seal_of_the_mire"],
-                  "then": [{ "say": "Both Seals? Then the great door in the Nave Approach will open for you. Up the Hill Stair, through the Abbey. The Chandler waits past it.", "who": "tomas" }],
+                  "if": ["key:seal_of_tallow", "key:seal_of_the_mire", "key:seal_of_powder", "key:seal_of_the_hive"],
+                  "then": [{ "say": "All four Seals? Then the great door in the Nave Approach will open for you. Up the Hill Stair, through the Abbey. The Chandler waits past it.", "who": "tomas" }],
                   "else": [
                     {
                       "if": "!key:toll_key",
@@ -29,14 +29,22 @@
                         { "say": "The Tollwarden keeps it. He has the key to our Toll Gate, east of here. Every cart for the Works goes through him.", "who": "tomas" }
                       ],
                       "else": [
-                        { "say": "The great door of the Nave wants two Seals.", "who": "tomas" },
+                        { "say": "The great door of the Nave wants four Seals. The Order pressed one for every place it shut.", "who": "tomas" },
                         {
                           "if": "!key:seal_of_tallow",
                           "then": [{ "say": "One is in the Tallow Works: east, through the Toll Gate you opened. Follow the carts.", "who": "tomas" }]
                         },
                         {
                           "if": "!key:seal_of_the_mire",
-                          "then": [{ "say": "One is down in the Waxmire: west, past the tents. It's the harder road. Keep to the reeds and out of the lanterns' light.", "who": "tomas" }]
+                          "then": [{ "say": "One is down in the Waxmire: west, past the tents. Keep to the reeds and out of the lanterns' light.", "who": "tomas" }]
+                        },
+                        {
+                          "if": "!key:seal_of_powder",
+                          "then": [{ "say": "One is under the Works, in the old powder stores the Order bricked up. Oskar knows the way in. Ask him, and go there after the Works and the Mire: it's worse down there.", "who": "tomas" }]
+                        },
+                        {
+                          "if": "!key:seal_of_the_hive",
+                          "then": [{ "say": "And one is in Bloomhollow, the orchard off the road where the gate fell in. No pick will shift those stones. The powder-men could. Save it for last.", "who": "tomas" }]
                         }
                       ]
                     }

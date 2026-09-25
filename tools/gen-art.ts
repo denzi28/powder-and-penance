@@ -2641,6 +2641,38 @@ function genWorks() {
   crack.set(10, 4, P.flame1); // a draught of warm air: something is behind it
   for (const [x, y, r] of [[20, 13, 2.5], [25, 14, 2], [28, 12, 1.5], [23, 11, 1.5]]) crack.ellipse(x, y, r, r * 0.7, P.wood1);
   sheet('prop_cracked_wall', crack, { cell: [16, 16], pivot: [8, 16], layer: 'single' });
+  // ---- fallen gate rubble (16x24, pivot 8,24): frame 0 a heap of dressed stone and a charred beam piled higher
+  // than a man can climb, frame 1 the stones thrown aside by a blast
+  const rubble = new Img(32, 24);
+  {
+    const stone: Ramp = { c0: mix(P.stone1, P.ink, 0.35), c1: P.stone2, c2: mix(P.stone2, P.stone3, 0.5), c3: P.stone3 };
+    const block = (c: Img, x: number, y: number, w: number, h: number) => {
+      c.rect(x, y, w, h, stone.c1);
+      c.hline(x, y, w, stone.c3);
+      c.vline(x, y, h, stone.c2);
+      c.hline(x, y + h - 1, w, stone.c0);
+      c.vline(x + w - 1, y + 1, h - 1, stone.c0);
+    };
+    const heap = new Img(16, 24);
+    for (const [x, y, w, h] of [[0, 18, 6, 6], [5, 19, 6, 5], [10, 18, 6, 6], [1, 13, 6, 6], [7, 12, 6, 7], [11, 14, 5, 5], [3, 7, 5, 6], [8, 6, 5, 6], [5, 2, 5, 5]]) block(heap, x, y, w, h);
+    line(heap, 0, 16, 15, 9, mix(P.wood1, P.ink, 0.5)); // a charred beam across it
+    line(heap, 0, 17, 15, 10, mix(P.wood1, P.ink, 0.3));
+    heap.set(6, 14, P.ember);
+    heap.set(2, 22, P.moss2); // weeds already through it
+    heap.set(13, 21, P.moss1);
+    heap.set(9, 8, P.moss2);
+    heap.outline(P.ink);
+    rubble.blit(heap, 0, 0);
+    const left = new Img(16, 24);
+    for (const [x, y, r] of [[3, 22, 2], [12, 21, 2.2], [8, 23, 1.4], [14, 18, 1.2]]) {
+      left.ellipse(x, y, r, r * 0.7, stone.c1);
+      left.set(Math.round(x - r * 0.4), Math.round(y - r * 0.4), stone.c3);
+    }
+    line(left, 1, 19, 6, 17, mix(P.wood1, P.ink, 0.5));
+    left.outline(P.ink);
+    rubble.blit(left, 16, 0);
+  }
+  sheet('prop_rubble', rubble, { cell: [16, 24], pivot: [8, 24], layer: 'single' });
 
   // ---- enemies
   const P7 = phased7();
@@ -7215,7 +7247,7 @@ function genCritters() {
 // 14 tallow lump, 15 powder pouch, 16 phial shard, 17 bitter salt, 18 cage key, 19 toll key, 20 igniter,
 // 21 ledger, 22 seal of tallow, 23 seal of the mire, 24 mending phial, 25 empty slot.
 function genIcons() {
-  const N = 64;
+  const N = 66;
   const img = new Img(16 * N, 16);
   const icon = (i: number, draw: (c: Img) => void, outline = true) => {
     const c = new Img(16, 16);
@@ -7777,6 +7809,22 @@ function genIcons() {
     line(c, 13, 11, 8, 7, P.wax1);
     c.disc(8, 7, 2.2, P.stone2);
     c.vline(8, 6, 2, P.flame2);
+  });
+  // 64 Seal of Powder: black wax pressed with the Abbey's candle, a grain of powder glinting in it
+  icon(64, c => {
+    c.disc(8, 8, 5.5, mix(P.dark1, P.stone1, 0.3));
+    c.disc(8, 8, 3.5, P.ink);
+    c.vline(8, 6, 4, P.stone3); // the candle stamped in it
+    c.set(8, 5, P.ember);
+    c.set(6, 5, P.stone4);
+    c.set(11, 10, P.flame1);
+  });
+  // 65 Seal of the Hive: golden beeswax, a six-sided cell stamped in it
+  icon(65, c => {
+    c.disc(8, 8, 5.5, P.honey);
+    c.disc(8, 8, 3.5, mix(P.honey, P.ember, 0.35));
+    for (const [x, y] of [[7, 6], [9, 6], [10, 8], [9, 10], [7, 10], [6, 8]]) c.set(x, y, P.flame2);
+    c.set(6, 5, P.wax2);
   });
   sheet('icons', img, { cell: [16, 16], pivot: [0, 0], layer: 'ui' });
 

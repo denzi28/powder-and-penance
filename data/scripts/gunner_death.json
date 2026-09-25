@@ -10,9 +10,13 @@
     { "wait": 30 },
     { "say": "Take the gun. Don't waste the last charge on me; I'm spent.", "who": "gunner" },
     { "say": "And if you find where the saltpetre comes from... Brinewell, the old salt-diggers called it... go and see why it's so bitter.", "who": "gunner" },
+    { "say": "And take the Order's seal off my door. They pressed one for every magazine they shut. Your Abbey will want it back.", "who": "gunner" },
+    { "say": "Two charges left in the rack, too. The powder-men opened walls with those. Go and open something.", "who": "gunner" },
     { "wait": 40 },
     { "say": "He salutes, very correctly, and his hand does not come down." },
     { "give": "gear_blunderbuss" },
+    { "give": "seal_of_powder" },
+    { "give": "cache_keg_charges" },
     { "set": "gunner_last_words" },
     { "camera": "player", "ticks": 45 }
   ]

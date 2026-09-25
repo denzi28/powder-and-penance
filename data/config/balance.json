@@ -1,0 +1,22 @@
+{
+  "roomTiers": { "abbey_11_nave_approach": 4, "abbey_12_nave": 4 },
+  "build": { "vitality": 0.4, "endurance": 0.2, "strength": 0.2, "dexterity": 0.2 },
+  "weapon": "straight_sword",
+  "shopShare": 0.1,
+  "tiers": [
+    { "tier": 1, "name": "Road and Abbey, to the Tollwarden", "level": 3, "upgrade": 1, "flasks": 5 },
+    { "tier": 2, "name": "The Tallow Works and the Waxmire", "level": 8, "upgrade": 3, "flasks": 7 },
+    { "tier": 3, "name": "The Powder Vault, then Bloomhollow", "level": 12, "upgrade": 4, "flasks": 8 },
+    { "tier": 4, "name": "The Chandler", "level": 15, "upgrade": 5, "flasks": 8 }
+  ],
+  "rules": {
+    "regularAverageHits": [2, 5],
+    "regularHitsMax": 7,
+    "regularHitMax": 0.4,
+    "bossHitsToKill": [25, 60],
+    "bossHitMax": 0.55,
+    "levelSlack": 2,
+    "minibossTallow": 5,
+    "shrineHops": { "boss": 1, "miniboss": 2 }
+  }
+}

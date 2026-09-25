@@ -234,6 +234,11 @@ export const PropDef = z.object({
    * carried within `near` px melts it away for good.
    */
   melts: z.object({ near: pos }).optional(),
+  /**
+   * A way blocked by fallen masonry (with `secretWall`): no blow shifts it, but a blast at least `minRadius` px
+   * wide within reach (a powder keg, a keg charge; a firebomb is too small) brings it down for good.
+   */
+  blastOnly: z.object({ minRadius: pos }).optional(),
 });
 
 /** One weighted outcome of a loot roll. */
@@ -388,6 +393,8 @@ export const MinibossPlacement = z.object({
   title: z.string(),
   drop: z.string(),
   hpMult: pos.default(1),
+  /** Tallow for killing it (in place of its kind's own, and not scaled by the area). */
+  tallow: int.min(0).optional(),
 });
 export type MinibossPlacement = z.infer<typeof MinibossPlacement>;
 
@@ -417,6 +424,44 @@ export const SmithCfg = z.object({
   levels: z.array(z.object({ tallow: int.positive(), materials: z.record(z.string(), int.positive()) })).min(1),
 });
 export type SmithCfg = z.infer<typeof SmithCfg>;
+
+/**
+ * The difficulty curve (data/config/balance.json): the player we expect at each tier of the route, and the
+ * rules every enemy and boss is held to against that player. Read by `npm run balance` and tests/balance.test.ts
+ * (see src/game/Balance.ts); nothing in the game itself reads it.
+ */
+export const BalanceCfg = z.object({
+  /** Rooms whose tier differs from their area's (the Nave, at the end of the Abbey, is the final fight). */
+  roomTiers: z.record(z.string(), int.min(0)).default({}),
+  /** How the expected player spends levels: shares of each point per stat. */
+  build: z.record(StatName, num.min(0)),
+  /** The weapon the model swings (its first light attack). */
+  weapon: z.string(),
+  /** Share of all Tallow earned that goes to the shops rather than levels and upgrades. */
+  shopShare: num.min(0).max(1),
+  tiers: z
+    .array(z.object({ tier: int.positive(), name: z.string(), level: int.positive(), upgrade: int.min(0), flasks: int.positive() }))
+    .min(1),
+  rules: z.object({
+    /** Light hits with the expected weapon to kill the tier's ordinary enemies, on average... */
+    regularAverageHits: z.tuple([pos, pos]),
+    /** ...and at most, for any one of them (a miniboss takes more). */
+    regularHitsMax: pos,
+    /** An ordinary enemy's hardest hit, as a share of the expected HP. */
+    regularHitMax: pos,
+    /** Light hits to kill a boss (every phase). */
+    bossHitsToKill: z.tuple([pos, pos]),
+    /** A boss's hardest hit, as a share of the expected HP. */
+    bossHitMax: pos,
+    /** How far the level the Tallow buys may fall from the target. */
+    levelSlack: int.min(0),
+    /** A miniboss's Tallow, as a multiple of its tier's average ordinary enemy (within ±30%). */
+    minibossTallow: pos,
+    /** Rooms from a boss (or a miniboss) to the nearest shrine. */
+    shrineHops: z.object({ boss: int.min(0), miniboss: int.min(0) }),
+  }),
+});
+export type BalanceCfg = z.infer<typeof BalanceCfg>;
 
 
 
@@ -1104,7 +1149,18 @@ export type LoadCfg = z.infer<typeof LoadCfg>;
 /** wall, void, floor, or a named floor variant ("floor_moss", "floor_dirt"...) looked up in the area's tileset. */
 export const TileKind = z.string().regex(/^(wall|void|floor|floor_[a-z0-9_]+)$/, 'expected wall, void, floor or floor_<variant>');
 /** data/areas.json: per-area presentation. */
-export const AreaDef = z.object({ name: z.string(), tileset: z.string() });
+/**
+ * An area: its name, tileset, and where it sits on the route. `tier` 1-3 are the stages of Act 1 (the final
+ * fight is tier 4, by room: see data/config/balance.json); `tallowMult` scales what its ordinary enemies drop and
+ * `hpMult` their health (bosses and minibosses have their own figures).
+ */
+export const AreaDef = z.object({
+  name: z.string(),
+  tileset: z.string(),
+  tier: int.min(0).default(0),
+  tallowMult: pos.default(1),
+  hpMult: pos.default(1),
+});
 export const Areas = z.object({ areas: z.record(z.string(), AreaDef) });
 /**
  * data/decor.json: static scenery. `blocks` are tile offsets from the entity's tile that become solid

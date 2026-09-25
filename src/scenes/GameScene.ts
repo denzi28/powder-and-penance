@@ -773,7 +773,10 @@ export class GameScene extends Phaser.Scene {
           this.flags.add(`miniboss:${mb.id}`);
           if (!this.flags.has(`item:${mb.id}`)) grantItem(this, mb.id, mb.drop, e.actor.x, e.actor.y);
         }
-        const gain = Math.round(e.actor.def.tallow * this.player.mods.tallowGain);
+        // an ordinary enemy's Tallow scales with its area's place on the route; bosses and minibosses have their own
+        const base = mb?.tallow ?? e.actor.def.tallow;
+        const areaMult = e.actor.def.boss || mb?.tallow !== undefined ? 1 : (DATA.areas.areas[this.area]?.tallowMult ?? 1);
+        const gain = Math.round(base * areaMult * this.player.mods.tallowGain);
         if (gain > 0) {
           this.player.tallow += gain;
           this.numbers.add(`+${gain}`, e.actor.x, e.actor.y - 20, hexToInt(DATA.palette.flame2));
@@ -913,6 +916,7 @@ export class GameScene extends Phaser.Scene {
       }
       this.bus.emit('sfx', { id: 'wax_spill', x: at.x, y: at.y });
     });
+    this.bus.on('blast', e => this.blastRubble(e.x, e.y, e.radius));
     this.bus.on('propBroken', e => {
       const p = e.prop;
       if (p.def.explode) this.explosions.arm(p.x, p.y - 4, p.def.explode, p, this); // a keg: it lights
@@ -922,6 +926,7 @@ export class GameScene extends Phaser.Scene {
         this.grid.set(Math.floor(p.x / TILE), Math.floor(p.y / TILE), Cell.Floor);
         this.worldView.build(this.grid, DATA.areas.areas[this.area].tileset);
         if (p.def.melts) this.showToast('THE SEAL MELTS', 'In the beeswax light the old tallow softens and runs, and a way opens behind it.');
+        else if (p.def.blastOnly) this.showToast('THE WAY IS CLEAR', 'The blast throws the fallen stones aside.');
         else this.showToast('A HIDDEN WAY', 'The cracked wall gives way.');
         this.save();
         return;
@@ -932,6 +937,17 @@ export class GameScene extends Phaser.Scene {
       this.loot.spawn(rollLoot(DATA.loot.tables[p.def.loot], this.rng), p.x, p.y, this.rng);
       this.dirty = true;
     });
+  }
+
+  /** A big enough blast brings down the fallen masonry (prop `blastOnly`) within its reach, for good. */
+  private blastRubble(x: number, y: number, radius: number) {
+    for (const pr of this.props.list) {
+      const b = pr.def.blastOnly;
+      if (!b || pr.dead || radius < b.minRadius || Math.hypot(pr.x - x, pr.y - 8 - y) > radius + 10) continue;
+      pr.dead = true;
+      this.particles.burst(pr.x, pr.y - 6, 12, -Math.PI / 2, Math.PI * 2, 30, 70, pr.def.debris, true);
+      this.bus.emit('propBroken', { prop: pr });
+    }
   }
 
   /** A beeswax light carried close melts the tallow seals (prop `melts`) away for good. */
@@ -1015,10 +1031,9 @@ export class GameScene extends Phaser.Scene {
         const e = this.spawnEnemy(String(en.kind), (r.origin[0] + en.at[0]) * TILE + TILE / 2, (r.origin[1] + en.at[1]) * TILE + TILE - 2, facing);
         if (!e) return;
         e.spawnId = spawnId;
-        if (mb) {
-          e.miniboss = mb;
-          e.hp = e.maxHp;
-        }
+        if (mb) e.miniboss = mb;
+        else if (!e.def.boss) e.areaHpMult = DATA.areas.areas[r.area]?.hpMult ?? 1;
+        e.hp = e.maxHp;
       });
   }
 

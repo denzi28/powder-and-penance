@@ -18,6 +18,8 @@
     { "burst": "honey", "at": "actor:aldith", "count": 14 },
     { "remove": "aldith" },
     { "give": "ring_of_the_queen" },
+    { "say": "Pressed into the comb where she lay is a seal of beeswax, stamped with the Abbey's candle." },
+    { "give": "seal_of_the_hive" },
     { "set": "queen_rests" },
     { "camera": "player", "ticks": 45 }
   ]

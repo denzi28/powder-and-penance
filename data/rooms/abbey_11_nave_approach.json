@@ -29,7 +29,9 @@
       "at": [10, 0],
       "requires": [
         "seal_of_tallow",
-        "seal_of_the_mire"
+        "seal_of_the_mire",
+        "seal_of_powder",
+        "seal_of_the_hive"
       ]
     },
     {
@@ -44,13 +46,13 @@
     },
     {
       "type": "enemy",
-      "kind": "wickling",
+      "kind": "bulwark_warden",
       "at": [10, 6],
       "facing": "E"
     },
     {
       "type": "enemy",
-      "kind": "wickling",
+      "kind": "bulwark_warden",
       "at": [8, 9],
       "facing": "E"
     },

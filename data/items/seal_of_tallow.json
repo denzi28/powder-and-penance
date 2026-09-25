@@ -3,5 +3,5 @@
   "name": "Seal of Tallow",
   "icon": 22,
   "description": "Pressed tallow, hard as horn, stamped with the Abbey's candle. It is warm, and it will not cool.",
-  "effect": { "type": "key", "opens": "the great door of the Abbey Nave, together with the Seal of the Mire" }
+  "effect": { "type": "key", "opens": "the great door of the Abbey Nave, with the other three Seals" }
 }

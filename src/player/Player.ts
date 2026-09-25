@@ -1,4 +1,5 @@
 // Player simulation state. No Phaser here: PlayerView renders it, interpolating prev -> current position.
+import { levelCostOf, scalingBonusOf, vitalityHpOf, weaponMultOf } from '../game/Balance';
 import { DATA } from '../data/config';
 import type { LoadCfg, Mods, StatName } from '../data/schemas';
 import { AnimPlayer } from '../anim/AnimPlayer';
@@ -758,31 +759,21 @@ export function levelOf(stats: Record<StatName, number>): number {
 
 /** Tallow to go from `level` to the next. */
 export function levelCost(level: number): number {
-  const c = DATA.levels.cost;
-  const n = level - 1;
-  return Math.round(c.base + c.linear * n + c.quad * n * n);
+  return levelCostOf(DATA.levels, level);
 }
 
 /** HP that Vitality adds over the start. */
 export function vitalityHp(vitality: number): number {
-  const v = DATA.levels.vitality;
-  const pts = vitality - DATA.levels.start;
-  const first = Math.min(pts, v.softCap - DATA.levels.start);
-  return first * v.hpPerPoint + Math.max(0, pts - first) * v.hpAfterCap;
+  return vitalityHpOf(DATA.levels, vitality);
 }
 
 /** How much a stat adds to a weapon with this grade: the grade's weight times progress to `full`. */
 export function scalingBonus(grade: string | undefined, stat: number): number {
-  if (!grade) return 0;
-  const sc = DATA.levels.scaling;
-  const k = Math.max(0, Math.min(1, (stat - DATA.levels.start) / (sc.full - DATA.levels.start)));
-  return (sc.grades[grade as keyof typeof sc.grades] ?? 0) * k;
+  return scalingBonusOf(DATA.levels, grade, stat);
 }
 
 /** A weapon's damage multiplier from your stats and its upgrade level. */
 export function weaponMult(weaponId: string, stats: Record<StatName, number>, upgrade: number): number {
   const w = DATA.weapons[weaponId];
-  if (!w) return 1;
-  const fromStats = scalingBonus(w.scaling.str, stats.strength) + scalingBonus(w.scaling.dex, stats.dexterity);
-  return (1 + fromStats) * (1 + upgrade * DATA.smith.damagePerLevel);
+  return w ? weaponMultOf(DATA.levels, DATA.smith, w, stats, upgrade) : 1;
 }

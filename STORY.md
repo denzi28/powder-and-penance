@@ -22,7 +22,7 @@ The map is in [WORLD.md](WORLD.md).
 4. **The Abbey** (abbey). The Tollwarden guards the Gatehouse and collects the "toll" of every pilgrim who passes: themselves. Killing him gives you the **Toll Key**, used by the Order's carts to the Tallow Works. In the Scriptorium, **Brother Aldous**, a deserter already half wax, begs you not to go down there.
 5. **The Tallow Works** (works). The pilgrims were never given to the flame. They were **rendered**. The vats, the hooks, the ledger in the Foreman's office: every Tallow in your pocket was a person. **Mother Tallow**, the Works' keeper, drowned in her own vats long ago and never stopped working.
 6. **The Waxmire** (mire). Where the Abbey dumps what the vats won't take. The **Mire Matron**, once the abbey's midwife, sings to the drowned. **Pip**, a pilgrim child who slipped away from the carts, hides here.
-7. **The Nave.** Both Seals open the great door. **The Chandler**, head of the Abbey, has fed the flame for forty years and watched it gutter anyway. Phase 2: he pours his own wax onto the altar fire.
+7. **The Nave.** Four Seals open the great door: Tallow, the Mire, Powder (the Gunner) and the Hive (the Queen). **The Chandler**, head of the Abbey, has fed the flame for forty years and watched it gutter anyway. Phase 2: he pours his own wax onto the altar fire.
 8. **Ending.** Dying, the Chandler says the Wick was never starving: *"Something up there is drinking it."* The lift to the Cathedral groans awake. **End of Act 1.**
 
 ## Characters

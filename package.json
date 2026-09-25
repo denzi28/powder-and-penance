@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "typecheck": "tsc",
     "test": "vitest run",
+    "balance": "vitest run tests/balance.test.ts",
     "gen:art": "tsx tools/gen-art.ts"
   },
   "dependencies": {

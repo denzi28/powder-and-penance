@@ -1,0 +1,7 @@
+{
+  "id": "seal_of_powder",
+  "name": "Seal of Powder",
+  "icon": 64,
+  "description": "Black wax stamped with the Abbey's candle, gritty with powder. The Order pressed one for every magazine it closed.",
+  "effect": { "type": "key", "opens": "the great door of the Abbey Nave, with the other three Seals" }
+}

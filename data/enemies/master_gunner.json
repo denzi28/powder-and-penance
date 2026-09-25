@@ -22,7 +22,7 @@
     }
   },
   "sprite": "gunner_cannon",
-  "hp": 1000,
+  "hp": 950,
   "poise": {"max": 400, "resetTicks": 300},
   "tallow": 0,
   "speed": 18,

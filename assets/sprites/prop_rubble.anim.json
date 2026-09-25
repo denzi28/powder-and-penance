@@ -1,0 +1,12 @@
+{
+  "image": "prop_rubble.png",
+  "cell": [
+    16,
+    24
+  ],
+  "pivot": [
+    8,
+    24
+  ],
+  "layer": "single"
+}

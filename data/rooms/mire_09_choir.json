@@ -119,8 +119,8 @@
     },
     {
       "type": "item",
-      "id": "salt_choir",
-      "item": "salt_choir",
+      "id": "choir_lump",
+      "item": "tallow_lump",
       "at": [14, 1]
     }
   ]

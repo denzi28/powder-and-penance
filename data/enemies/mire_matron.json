@@ -13,9 +13,9 @@
     "deathScript": "matron_death"
   },
   "sprite": "mire_matron",
-  "hp": 1100,
+  "hp": 1300,
   "poise": {"max": 260, "resetTicks": 280},
-  "tallow": 2600,
+  "tallow": 3500,
   "loot": "boss_salt",
   "speed": 34,
   "strafeSpeed": 22,

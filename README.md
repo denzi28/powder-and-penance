@@ -107,18 +107,18 @@ Act 1 is being built room by room: the plan is in [WORLD.md](WORLD.md) and the s
   - A sluice shortcut into the Abbey Undercroft.
   - The boss, **the Mire Matron**, who drops the Seal of the Mire.
     - Her lullaby and her wail look different now: when she rears back with her arms flung behind her and her mouth wide, the wail (unblockable) is coming. Roll away.
-- **The finale: the Chandler,** in the Abbey Nave. The great door in the Nave Approach needs **both Seals**.
+- **The finale: the Chandler,** in the Abbey Nave. The great door in the Nave Approach needs **all four Seals**.
   - Phase 1, the priest: wide snuffer sweeps, **Extinguish** (the bell comes down where you stand: unblockable, roll out), **taper volleys** thrown from his crown, and **censer smoke**: he vanishes and steps out behind you.
   - When his health runs out he doesn't fall. He walks to the altar and pours himself onto the fire, and **the Last Candle** rises out of it: fast combos, a leap slam that rings out black flame, lobbed volleys, and **wax floods** that leave slowing pools across the floor.
   - His last words, the lift waking, and **END OF ACT ONE**. The lift itself stays sealed until Act 2.
   - Tuning: `data/enemies/chandler.json` and `chandler_wick.json`.
-- **The Powder Vault** (optional; smash the cracked wall in the Tallow Stores), 4 rooms:
+- **The Powder Vault** (smash the cracked wall in the Tallow Stores), 4 rooms; the Gunner gives the Seal of Powder and two Keg Charges:
   - **Powder kegs** everywhere. Hit one (with anything: a blade, a shot, a blast) and it fizzes for a moment, then bursts, hurting everyone near it, you too, and setting off kegs beside it.
   - New enemies: **Powder Mules** (slow porters with a keg on their back: kill one and get clear, it goes up a second later) and **Fuse-Runners** (quick soot-black boys who throw sparks at the kegs next to you).
   - The Vault Wick shrine; the Master Gunner's log; **Oskar's strongbox** in his cache (take it to him: he gives you the Ring of the Steady Hand and opens his real stock, Keg Charges included); the **Gunner's Coat** in the Fuse Corridor.
   - The boss, **the Master Gunner**, in the Range. First his cannon: lobbed cannonballs (three at once; watch the landing rings), a fan of grapeshot, an unblockable ram, a point-blank blast. When the gun cracks he leaps clear, and it's a duel: blunderbuss blasts, stock swings, a tossed keg, a leap back and a parting shot. He leaves you his **Blunderbuss** (two-handed; eight balls a shot).
   - Tuning: `data/enemies/master_gunner.json`, `master_gunner_duel.json`, `powder_mule.json`, `fuse_runner.json`, `data/props/keg.json`.
-- **Bloomhollow** (optional; take the collapsed gate at the bottom of Penance Road), 10 rooms of orchard:
+- **Bloomhollow** (blow the rubble out of the collapsed gate at the bottom of Penance Road with a Keg Charge), 10 rooms of orchard; the Queen leaves the Seal of the Hive:
   - **Hives:** strike one and its bees come out after whoever struck it; break it and a bigger swarm and a spill of honey come out. A swarm stings everyone in its cloud, so you can lead it into enemies. Roll through it, or smoke it and it settles.
   - **Smoke** (the Smoker, the Husks' smokers) calms bees and blinds anything that breathes it, you too. **Honey** slows like wax.
   - **Tallow seals** close two old ways (the Mead Cellar, the Chapel vestry). Light a **Beeswax Candle** and walk up to one: it melts.
@@ -148,7 +148,7 @@ Act 1 is being built room by room: the plan is in [WORLD.md](WORLD.md) and the s
 | 8 Chapterhouse | Second shrine, behind a door |
 | 9 Scriptorium | Mixed group. **Lump of Tallow**. |
 | 10 Undercroft | Lift the bar on the gate north to open the shortcut back to the Porch |
-| 11 Nave Approach | The great door: set both Seals in it |
+| 11 Nave Approach | The great door: set all four Seals in it |
 | 12 Nave | **The Chandler** (final boss of Act 1), the Nave Wick after him, and the sealed lift to the Cathedral |
 
 - **Doors:** press E. Opened doors stay open (saved).
