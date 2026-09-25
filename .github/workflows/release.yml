@@ -1,11 +1,17 @@
 # Builds the desktop game and attaches it to a GitHub release.
-# Push a version tag (git tag v0.1.0 && git push origin v0.1.0), or run it by hand from the Actions tab.
+# Publish a release with a new version tag (or push the tag), or run it by hand from the Actions tab: give it an
+# existing tag (e.g. v0.1.0) to attach the builds to that release, or leave it empty to only build.
 name: Release
 
 on:
   push:
     tags: ['v*']
   workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Attach the builds to this release tag (e.g. v0.1.0); empty = just build'
+        required: false
+        default: ''
 
 permissions:
   contents: write
@@ -13,6 +19,7 @@ permissions:
 jobs:
   build:
     strategy:
+      fail-fast: false # one platform failing doesn't cancel the others
       matrix:
         include:
           - os: windows-latest
@@ -43,9 +50,10 @@ jobs:
             release/*.tar.gz
           if-no-files-found: error
       - name: Attach to the release
-        if: startsWith(github.ref, 'refs/tags/')
+        if: startsWith(github.ref, 'refs/tags/') || inputs.tag != ''
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ inputs.tag || github.ref_name }}
           files: |
             release/*.exe
             release/*.zip
