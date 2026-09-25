@@ -1,4 +1,4 @@
-# ASSETS.md — Sprite sheets and animation spec
+# ASSETS.md: Sprite sheets and animation spec
 
 This spec lets you replace any placeholder PNG with real art without touching code or gameplay data.
 

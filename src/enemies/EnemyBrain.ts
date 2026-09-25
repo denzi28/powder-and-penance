@@ -38,7 +38,7 @@ const suspicious: State<Enemy> = {
     const per = e.def.perception;
     if (e.awareness >= 1) return 'notice';
     if (e.visible) {
-      // "Was that something?" — freeze and stare while awareness builds.
+      // "Was that something?": freeze and stare while awareness builds.
       e.steer(0, 0);
       e.turnTo(e.angleToPlayer());
       e.searchLeft = per.investigateTicks;

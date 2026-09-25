@@ -58,7 +58,7 @@ function room(id, origin, w, h) {
 const rooms = [];
 const R = (...a) => { const r = room(...a); rooms.push(r); return r; };
 
-// 01 Orchard Gate — down from the Penance Road. The orchard's burned gate, the Synod's notice nailed over its
+// 01 Orchard Gate: down from the Penance Road. The orchard's burned gate, the Synod's notice nailed over its
 // sign, and two scarecrows standing in the grass with their arms out. They are not scarecrows.
 R('bloom_01_orchard_gate', [20, 0], 24, 16)
   .open(11, 0, 2, 1).open(6, 15, 2, 1)
@@ -76,7 +76,7 @@ R('bloom_01_orchard_gate', [20, 0], 24, 16)
   .enemy('orchard_guard', 5, 8, 'E').enemy('orchard_guard', 16, 10, 'W')
   .prop('hive', 18, 3);
 
-// 02 Lavender Rows — row upon row of lavender, humming. Drone swarms over the flowers; husks tending them.
+// 02 Lavender Rows: row upon row of lavender, humming. Drone swarms over the flowers; husks tending them.
 R('bloom_02_lavender_rows', [4, 15], 30, 18)
   .open(22, 0, 2, 1).open(29, 8, 1, 2).open(16, 17, 2, 1)
   .wall(1, 1, 3, 2).wall(26, 14, 3, 3).wall(1, 16, 2, 1)
@@ -91,7 +91,7 @@ R('bloom_02_lavender_rows', [4, 15], 30, 18)
   .item('bloom_honey', 'cache_honey', 27, 2)
   .note('note_hild_orchard', 20, 15);
 
-// 03 Hive Walls — terraces of bee-boles cut into the honey-stone, straw hives on every ledge.
+// 03 Hive Walls: terraces of bee-boles cut into the honey-stone, straw hives on every ledge.
 R('bloom_03_hive_walls', [33, 15], 24, 18)
   .open(0, 8, 1, 2).open(11, 17, 2, 1)
   .wall(1, 5, 15, 1).wall(8, 11, 15, 1)
@@ -102,7 +102,7 @@ R('bloom_03_hive_walls', [33, 15], 24, 18)
   .enemy('beekeeper_husk', 12, 8, 'W').enemy('beekeeper_husk', 16, 14, 'W').enemy('orchard_guard', 19, 3, 'S')
   .item('bloom_veil', 'gear_beekeepers_veil', 21, 2);
 
-// 04 Press House — the orchard's wax press, where Hild still works. The Press Wick burns on the old hearth.
+// 04 Press House: the orchard's wax press, where Hild still works. The Press Wick burns on the old hearth.
 R('bloom_04_press_house', [12, 32], 18, 14)
   .open(8, 0, 2, 1).open(17, 6, 1, 2).open(5, 13, 2, 1)
   .paint(1, 1, 16, 12, 'p').paint(7, 1, 4, 3, ':').paint(4, 10, 4, 3, ':')
@@ -121,7 +121,7 @@ R('bloom_04_press_house', [12, 32], 18, 14)
   .note('note_hild_ledger', 6, 2)
   .item('bloom_press_ingots', 'ingot_press', 1, 11);
 
-// 05 Apple Walk — the orchard proper: rows of old apple trees, fruit rotting in the grass, scarecrows among
+// 05 Apple Walk: the orchard proper: rows of old apple trees, fruit rotting in the grass, scarecrows among
 // them. Some of the scarecrows are only scarecrows.
 R('bloom_05_apple_walk', [29, 32], 28, 18)
   .open(0, 6, 1, 2).open(15, 0, 2, 1).open(27, 8, 1, 2).open(20, 17, 2, 1)
@@ -137,7 +137,7 @@ R('bloom_05_apple_walk', [29, 32], 28, 18)
   .swarm(4, 11)
   .item('bloom_orchard_ingot', 'ingot_orchard', 1, 1);
 
-// 06 Mead Cellar — under the press house: casks, mead racks, honey pooled on the flags where the Synod's men
+// 06 Mead Cellar: under the press house: casks, mead racks, honey pooled on the flags where the Synod's men
 // broke the barrels. A door in the east wall leads to the burned grove (barred from beyond), and a way the
 // Order sealed with tallow, which a beeswax light will melt.
 R('bloom_06_mead_cellar', [8, 45], 22, 14)
@@ -151,7 +151,7 @@ R('bloom_06_mead_cellar', [8, 45], 22, 14)
   .item('bloom_shard', 'phial_shard', 2, 3)
   .note('note_synod_ledger', 3, 10);
 
-// 07 Burned Grove — where the Synod's men burned the old trees and the keeper's hives with them. The keeper's
+// 07 Burned Grove: where the Synod's men burned the old trees and the keeper's hives with them. The keeper's
 // scarecrow still stands at the heart of it, in the keeper's own coat.
 R('bloom_07_burned_grove', [29, 49], 28, 18)
   .open(20, 0, 2, 1).open(0, 3).open(13, 17, 2, 1)
@@ -163,7 +163,7 @@ R('bloom_07_burned_grove', [29, 49], 28, 18)
   .note('note_decree', 3, 5)
   .item('bloom_grove_salt', 'salt_grove', 25, 15);
 
-// 08 Orchard Chapel — "The Orchard Chapel welcomes all pilgrims." A beeswax altar, saints with hives in their
+// 08 Orchard Chapel: "The Orchard Chapel welcomes all pilgrims." A beeswax altar, saints with hives in their
 // arms, and husks still kneeling in the pews. The side chapel was sealed with tallow.
 R('bloom_08_orchard_chapel', [56, 32], 16, 16)
   .open(0, 8, 1, 2)
@@ -178,7 +178,7 @@ R('bloom_08_orchard_chapel', [56, 32], 16, 16)
   .item('bloom_chapel_candles', 'cache_beeswax', 13, 2)
   .note('note_tallow_accounts', 12, 3);
 
-// 09 Queen's Garden — the old queen-rearing garden, run wild: flowers to the waist, great hives, and the
+// 09 Queen's Garden: the old queen-rearing garden, run wild: flowers to the waist, great hives, and the
 // Queen's own guard in the air. Her skep is through the gate at the bottom.
 R('bloom_09_queens_garden', [29, 66], 28, 18)
   .open(13, 0, 2, 1).open(5, 17, 2, 1)
@@ -190,7 +190,7 @@ R('bloom_09_queens_garden', [29, 66], 28, 18)
   .swarm(17, 3).swarm(23, 13, 'queens_guard')
   .enemy('beekeeper_husk', 9, 5, 'S').enemy('beekeeper_husk', 16, 9, 'W').enemy('orchard_guard', 24, 6, 'W');
 
-// 10 The Great Skep — the Queen's hive, a straw hall taller than a house, honey welling from its door. She
+// 10 The Great Skep: the Queen's hive, a straw hall taller than a house, honey welling from its door. She
 // waits before it. Smoke seals the gate behind you.
 R('bloom_10_great_skep', [31, 83], 24, 20)
   .open(3, 0, 2, 1)

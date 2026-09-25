@@ -12,7 +12,7 @@ npm run typecheck
 npm run gen:art    # regenerate missing placeholder art (--force to overwrite all)
 ```
 
-## Controls (defaults — `data/config/input.json`)
+## Controls (defaults: `data/config/input.json`)
 Every key can be changed in game: **Esc > CONTROLS**, select an action, press E, then the new key. **Esc > SETTINGS** has volume sliders (master, music, effects, ambience), screen shake, and switches for the HUD's button hints and the minimap. Both are kept in the browser, apart from the save.
 
 | Action | Keyboard + mouse | Gamepad |

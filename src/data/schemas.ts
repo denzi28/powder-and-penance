@@ -6,7 +6,7 @@ const pos = z.number().positive();
 const int = z.number().int();
 export const Vec2 = z.tuple([num, num]);
 export const Dir = z.enum(['E', 'SE', 'S', 'SW', 'W', 'NW', 'N', 'NE']);
-/** [scaleX, scaleY, ticks] — scale snaps to this then eases back to 1. */
+/** [scaleX, scaleY, ticks]: scale snaps to this then eases back to 1. */
 const SquashKey = z.tuple([pos, pos, int.nonnegative()]);
 
 export const GameCfg = z.object({
@@ -932,7 +932,7 @@ export const EnemyDef = z.object({
   bodyRadius: pos,
   knockbackResist: num.min(0).max(1).default(0),
   /**
-   * Stealth / awareness. Sight has no distance limit — only walls (line of sight) and the facing cone hide you.
+   * Stealth / awareness. Sight has no distance limit: only walls (line of sight) and the facing cone hide you.
    * While seen, awareness (0..1) fills in `detectTicksNear` ticks at <= nearDistance, slowing linearly to
    * `detectTicksFar` at >= farDistance. At `suspicionAt` the enemy turns suspicious ("?") and investigates;
    * at 1 it is sure ("!"), reacts after reactionTicks, and alerts its whole room.
@@ -1435,7 +1435,7 @@ export const RoomData = z
     });
   });
 
-// ---- Asset manifests (assets/sprites/*.anim.json) — see ASSETS.md ----
+// ---- Asset manifests (assets/sprites/*.anim.json): see ASSETS.md ----
 export const Box = z.object({ x: num, y: num, w: pos, h: pos });
 export const FrameDef = z.object({
   ticks: pos,

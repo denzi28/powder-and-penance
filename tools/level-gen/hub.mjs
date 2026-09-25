@@ -52,7 +52,7 @@ function room(id, origin, w, h) {
 const rooms = [];
 const R = (...a) => { const r = room(...a); rooms.push(r); return r; };
 
-// hub_01 Waystation Yard — the heart of Act 1. The shrine and campfire at the crossroads; Oskar's stall
+// hub_01 Waystation Yard: the heart of Act 1. The shrine and campfire at the crossroads; Oskar's stall
 // (once he's freed) to the north-east; tents and a well for the pilgrims who stopped here and never left.
 // South: back down to the road. West: the Waxmire. East: the Toll Gate (Toll Key), then the carters' road
 // to the Tallow Works. North: the Hill Stair up to the Abbey; north-west: Maudlin's chapel.
@@ -91,7 +91,7 @@ R('hub_01_yard', [0, 10], 34, 24)
   .npc('pip', 'pip', 22, 16, 'pip_hub', 'pip_rescued')
   .add({ type: 'cutscene', id: 'arrive_wicks_rest', script: 'arrive_wicks_rest', at: [16, 19], size: [4, 4] });
 
-// hub_02 Maudlin's Chapel — a grotto chapel dug into the hollow's side: flagstones, an altar, benches, her
+// hub_02 Maudlin's Chapel: a grotto chapel dug into the hollow's side: flagstones, an altar, benches, her
 // bedroll and shelves. Where the Chandler's ledger is brought later.
 R('hub_02_chapel', [0, 2], 11, 9)
   .open(5, 8)
@@ -100,7 +100,7 @@ R('hub_02_chapel', [0, 2], 11, 9)
   .decor('bedroll', 2, 6).prop('candles', 1, 1).prop('candles', 3, 1).prop('pot', 9, 6)
   .npc('maudlin_chapel', 'maudlin', 5, 3, null, 'maudlin_in_chapel');
 
-// hub_03 Hill Stair — a switchback path up the hollow's north side to the Abbey Porch. Ridges alternate
+// hub_03 Hill Stair: a switchback path up the hollow's north side to the Abbey Porch. Ridges alternate
 // open ends (right, left, right); rows directly above a ridge are under its cap, so each landing leaves one.
 R('hub_03_hill_stair', [12, -4], 12, 15)
   .open(5, 0, 2, 1).open(5, 14, 2, 1)

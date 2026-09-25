@@ -46,7 +46,7 @@ function room(id, origin, w, h) {
 const rooms = [];
 const R = (...a) => { const r = room(...a); rooms.push(r); return r; };
 
-// 01 Toll Gate — the carters' road arrives at an iron gate. The booth where carts were counted; Wicklings in
+// 01 Toll Gate: the carters' road arrives at an iron gate. The booth where carts were counted; Wicklings in
 // pilgrim robes still shuffle toward the vats.
 R('works_01_toll_gate', [0, 0], 22, 14)
   .open(0, 6, 1, 2).open(21, 6, 1, 2)
@@ -59,7 +59,7 @@ R('works_01_toll_gate', [0, 0], 22, 14)
   .enemy('wickling', 13, 5, 'W').enemy('wickling', 16, 9, 'W')
   .prop('crate', 5, 11).prop('crate', 6, 11).prop('pot', 17, 4);
 
-// 02 Receiving Pens — where the pilgrims waited. Empty cages, robes on racks with name tags. The first Renderer.
+// 02 Receiving Pens: where the pilgrims waited. Empty cages, robes on racks with name tags. The first Renderer.
 R('works_02_pens', [21, 0], 20, 14)
   .open(0, 6, 1, 2).open(8, 13, 2, 1)
   .paint(1, 6, 10, 2, ',').paint(8, 8, 2, 5, ',')
@@ -69,7 +69,7 @@ R('works_02_pens', [21, 0], 20, 14)
   .item('works_tallow', 'tallow_lump', 18, 6)
   .prop('pot', 18, 9).prop('crate', 1, 11);
 
-// 03 Tallow Stores — a maze of stacked tallow. Acolytes watch the aisles. A cracked section of the north
+// 03 Tallow Stores: a maze of stacked tallow. Acolytes watch the aisles. A cracked section of the north
 // wall hides the old heretics' workshop (the Powder Vault).
 const stores = R('works_03_stores', [21, 13], 24, 16).open(8, 0, 2, 1).open(23, 7, 1, 2);
 for (const [x0, x1, y] of [[3, 7, 4], [11, 15, 4], [19, 21, 4], [5, 9, 9], [13, 18, 9], [2, 4, 12], [9, 12, 12], [17, 20, 12]])
@@ -82,7 +82,7 @@ stores
   .item('works_shard', 'phial_shard', 2, 13)
   .prop('crate', 16, 2).prop('crate', 17, 2).prop('crate', 22, 13).prop('pot', 1, 7);
 
-// 04 Lift Shaft — the lift up to Wick's Rest. It only runs once the lever down here has called the cage.
+// 04 Lift Shaft: the lift up to Wick's Rest. It only runs once the lever down here has called the cage.
 R('works_04_lift', [44, 13], 12, 16)
   .open(0, 7, 1, 2).open(4, 15, 2, 1)
   .paint(3, 2, 4, 3, ',')
@@ -95,7 +95,7 @@ R('works_04_lift', [44, 13], 12, 16)
   .spawn('from_hub_lift', 4, 5)
   .enemy('renderer', 6, 10, 'N');
 
-// 05 Scalding Floor — great vats to hide behind, spilled tallow underfoot, and things crawling out of it.
+// 05 Scalding Floor: great vats to hide behind, spilled tallow underfoot, and things crawling out of it.
 R('works_05_scalding', [38, 28], 22, 14)
   .open(10, 0, 2, 1).open(0, 6, 1, 2)
   .paint(8, 6, 6, 3, '~').paint(2, 10, 5, 2, '~').paint(15, 2, 4, 2, '~')
@@ -104,7 +104,7 @@ R('works_05_scalding', [38, 28], 22, 14)
   .item('works_pouch', 'ammo_pouch', 20, 12)
   .prop('pot', 1, 1).prop('pot', 20, 1);
 
-// 06 Hook Gallery — hooks hang in rows from the dark. Renderers work here.
+// 06 Hook Gallery: hooks hang in rows from the dark. Renderers work here.
 const gallery = R('works_06_gallery', [17, 28], 22, 14).open(21, 6, 1, 2).open(5, 13).open(16, 13, 2, 1);
 for (let x = 3; x <= 18; x += 3) gallery.decor('hook_chain', x, 3).decor('hook_chain', x + 1, 10);
 gallery
@@ -113,7 +113,7 @@ gallery
   .enemy('renderer', 7, 4, 'E').enemy('renderer', 16, 9, 'W').enemy('wickling', 11, 6, 'E')
   .prop('crate', 1, 1).prop('crate', 20, 11);
 
-// 07 Foreman's Office — the Foreman's Wick; his desk; the Chandler's Ledger. A door into the Rendering Hall
+// 07 Foreman's Office: the Foreman's Wick; his desk; the Chandler's Ledger. A door into the Rendering Hall
 // that only opens from this side (a shortcut from the Hall back to the shrine).
 R('works_07_office', [17, 41], 14, 11)
   .open(5, 0).open(13, 5)
@@ -124,7 +124,7 @@ R('works_07_office', [17, 41], 14, 11)
   .item('works_ledger', 'chandler_ledger', 2, 7)
   .prop('candles', 1, 1).prop('candles', 10, 8);
 
-// 08 Rendering Hall — the heart of the Works, and the Act's twist (cutscene on entering).
+// 08 Rendering Hall: the heart of the Works, and the Act's twist (cutscene on entering).
 R('works_08_hall', [30, 41], 26, 18)
   .open(3, 0, 2, 1).open(0, 5).open(25, 9)
   .paint(1, 8, 24, 2, ',').paint(9, 3, 6, 2, '~').paint(15, 13, 5, 2, '~')
@@ -136,7 +136,7 @@ R('works_08_hall', [30, 41], 26, 18)
   .enemy('renderer', 17, 9, 'W').enemy('vat_crawler', 9, 10, 'E').enemy('vat_crawler', 22, 15, 'N').enemy('powder_acolyte', 22, 2, 'S')
   .prop('crate', 24, 15).prop('pot', 1, 1);
 
-// 09 Ember Flue — iron walkways over the furnaces. Hounds.
+// 09 Ember Flue: iron walkways over the furnaces. Hounds.
 R('works_09_flue', [55, 41], 18, 18)
   .open(0, 9).open(7, 17, 2, 1)
   // the furnace pit: walls everywhere except the walkways
@@ -146,7 +146,7 @@ R('works_09_flue', [55, 41], 18, 18)
   .enemy('taper_hound', 12, 4, 'W').enemy('taper_hound', 13, 12, 'W').enemy('renderer', 8, 5, 'S')
   .item('works_salt', 'bitter_salt', 15, 4);
 
-// 10 The Great Vat — Mother Tallow's vat, and her arena. Smoke seals the stair behind you.
+// 10 The Great Vat: Mother Tallow's vat, and her arena. Smoke seals the stair behind you.
 R('works_10_great_vat', [52, 58], 24, 20)
   .open(10, 0, 2, 1)
   .paint(6, 6, 12, 9, '~')

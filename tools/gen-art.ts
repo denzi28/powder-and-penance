@@ -63,7 +63,7 @@ class Img {
   disc(cx: number, cy: number, r: number, c: RGBA) {
     this.ellipse(cx, cy, r, r, c);
   }
-  /** 1px outline around all opaque pixels — the main readability trick for tiny sprites. */
+  /** 1px outline around all opaque pixels: the main readability trick for tiny sprites. */
   outline(c: RGBA) {
     const src = Uint8Array.from(this.px);
     const a = (x: number, y: number) => (x < 0 || y < 0 || x >= this.w || y >= this.h ? 0 : src[(y * this.w + x) * 4 + 3]);
@@ -312,7 +312,7 @@ function drawTorso(c: Img, dir: Dir5, breath: number, pose: TorsoPose = 'idle') 
       break;
   }
 
-  // Glove (weapon hand) — must match HAND anchors
+  // Glove (weapon hand): must match HAND anchors
   const [hx, hy2] = HAND[dir];
   c.rect(hx - 1, hy2 - 1, 2, 2, K.l2);
   c.set(hx, hy2, K.l1);
@@ -755,7 +755,7 @@ function drawWickling(c: Img, dir: Dir5, pose: WickPose) {
   c.set(hx + (o.flame ? -1 : 0), hy - 8, P.flame2);
   c.set(hx, hy - 9, o.flame ? P.flame2 : P.flame1);
   if (o.flame) c.set(hx, hy - 10, mix(P.flame1, P.ember, 0.5));
-  // Pale hand (weapon grip) — must match WICK_HAND
+  // Pale hand (weapon grip): must match WICK_HAND
   const [ax, ay] = WICK_HAND[dir];
   c.rect(ax - 1, ay - 1 + b, 2, 2, E.wax1);
   c.set(ax, ay + b, E.wax0);

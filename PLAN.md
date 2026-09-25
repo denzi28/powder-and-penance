@@ -1,4 +1,4 @@
-# PLAN.md — Milestones
+# PLAN.md: Milestones
 
 Each milestone ends with a playable build. I stop after each one and hand you:
 - **what to test**
