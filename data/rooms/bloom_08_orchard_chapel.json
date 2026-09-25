@@ -88,7 +88,8 @@
       "type": "enemy",
       "kind": "beekeeper_husk",
       "at": [4, 5],
-      "facing": "N"
+      "facing": "N",
+      "carries": { "id": "bloom_chapel_candles", "item": "cache_beeswax" }
     },
     {
       "type": "enemy",
@@ -100,12 +101,6 @@
       "type": "note",
       "note": "note_chapel_hymn",
       "at": [6, 4]
-    },
-    {
-      "type": "item",
-      "id": "bloom_chapel_candles",
-      "item": "cache_beeswax",
-      "at": [13, 2]
     },
     {
       "type": "note",

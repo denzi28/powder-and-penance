@@ -50,13 +50,8 @@
       "type": "enemy",
       "kind": "bulwark_warden",
       "at": [10, 12],
-      "facing": "E"
-    },
-    {
-      "type": "item",
-      "id": "abbey_tallow",
-      "item": "tallow_lump",
-      "at": [2, 13]
+      "facing": "E",
+      "carries": { "id": "abbey_tallow", "item": "tallow_lump" }
     },
     {
       "type": "prop",

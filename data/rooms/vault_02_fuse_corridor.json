@@ -113,7 +113,8 @@
       "type": "enemy",
       "kind": "powder_mule",
       "at": [10, 5],
-      "facing": "W"
+      "facing": "W",
+      "carries": { "id": "chest_ember_salt", "item": "salt_vault" }
     },
     {
       "type": "enemy",

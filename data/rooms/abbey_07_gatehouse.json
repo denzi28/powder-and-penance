@@ -48,12 +48,6 @@
       "at": [0, 0]
     },
     {
-      "type": "item",
-      "id": "abbey_pouch",
-      "item": "ammo_pouch",
-      "at": [3, 13]
-    },
-    {
       "type": "prop",
       "kind": "pot",
       "at": [2, 2]

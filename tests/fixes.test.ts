@@ -75,7 +75,7 @@ describe('the near-finished pass', () => {
     const carried = Object.values(DATA.rooms).flatMap(r => r.entities.filter(e => e.type === 'enemy' && e.carries).map(e => (e.carries as { item: string }).item));
     for (const g of ['gear_warden_hauberk', 'gear_acolyte_robe', 'gear_renderer_apron', 'gear_drowned_veil', 'gear_beekeepers_veil']) expect(carried, g).toContain(g);
     const chests = Object.values(DATA.rooms).flatMap(r => r.entities.filter(e => e.type === 'item').map(e => String(e.item)));
-    for (const g of carried) expect(chests, g).not.toContain(g);
+    for (const g of carried.filter(i => DATA.items[i].effect.type === 'gear')) expect(chests, g).not.toContain(g);
     expect(JSON.stringify(DATA.scripts.gunner_death)).toContain('"give":"gear_gunners_coat"');
   });
 

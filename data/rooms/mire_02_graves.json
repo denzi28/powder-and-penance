@@ -129,19 +129,14 @@
       "type": "enemy",
       "kind": "drowned_pilgrim",
       "at": [15, 9],
-      "facing": "W"
+      "facing": "W",
+      "carries": { "id": "mire_tallow", "item": "tallow_lump" }
     },
     {
       "type": "enemy",
       "kind": "drowned_pilgrim",
       "at": [10, 13],
       "facing": "N"
-    },
-    {
-      "type": "item",
-      "id": "mire_tallow",
-      "item": "tallow_lump",
-      "at": [21, 1]
     },
     {
       "type": "item",

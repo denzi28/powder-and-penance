@@ -48,7 +48,8 @@
       "type": "enemy",
       "kind": "bulwark_warden",
       "at": [10, 6],
-      "facing": "E"
+      "facing": "E",
+      "carries": { "id": "salt_nave", "item": "salt_nave" }
     },
     {
       "type": "enemy",
@@ -101,12 +102,6 @@
       "type": "decor",
       "kind": "rubble",
       "at": [10, 10]
-    },
-    {
-      "type": "item",
-      "id": "salt_nave",
-      "item": "salt_nave",
-      "at": [14, 5]
     }
   ]
 }

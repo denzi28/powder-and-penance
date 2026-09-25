@@ -33,6 +33,7 @@
       "type": "enemy",
       "kind": "belfry_brute",
       "at": [13, 9],
+      "carries": { "id": "abbey_salt", "item": "bitter_salt" },
       "facing": "N",
       "miniboss": {
         "id": "mb_belfry_brute",
@@ -40,12 +41,6 @@
         "drop": "ring_steady_breath",
         "hpMult": 1.35
       }
-    },
-    {
-      "type": "item",
-      "id": "abbey_salt",
-      "item": "bitter_salt",
-      "at": [22, 15]
     },
     {
       "type": "prop",

@@ -106,7 +106,8 @@
       "type": "enemy",
       "kind": "renderer",
       "at": [7, 4],
-      "facing": "E"
+      "facing": "E",
+      "carries": { "id": "ingot_gallery", "item": "ingot_gallery" }
     },
     {
       "type": "enemy",
@@ -130,12 +131,6 @@
       "type": "prop",
       "kind": "crate",
       "at": [20, 11]
-    },
-    {
-      "type": "item",
-      "id": "ingot_gallery",
-      "item": "ingot_gallery",
-      "at": [9, 1]
     }
   ]
 }

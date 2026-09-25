@@ -45,7 +45,8 @@
       "type": "enemy",
       "kind": "taper_hound",
       "at": [8, 7],
-      "facing": "S"
+      "facing": "S",
+      "carries": { "id": "ingot_undercroft", "item": "ingot_undercroft" }
     },
     {
       "type": "enemy",
@@ -87,13 +88,7 @@
       "type": "item",
       "id": "abbey_10_undercroft_heavy_crossbow",
       "item": "gear_heavy_crossbow",
-      "at": [11, 5]
-    },
-    {
-      "type": "item",
-      "id": "ingot_undercroft",
-      "item": "ingot_undercroft",
-      "at": [11, 10]
+      "at": [14, 1]
     }
   ]
 }

@@ -35,7 +35,8 @@
       "type": "enemy",
       "kind": "taper_hound",
       "at": [12, 4],
-      "facing": "W"
+      "facing": "W",
+      "carries": { "id": "flue_lump", "item": "tallow_lump" }
     },
     {
       "type": "enemy",
@@ -47,24 +48,13 @@
       "type": "enemy",
       "kind": "renderer",
       "at": [8, 5],
-      "facing": "S"
-    },
-    {
-      "type": "item",
-      "id": "works_salt",
-      "item": "bitter_salt",
-      "at": [15, 4]
+      "facing": "S",
+      "carries": { "id": "works_salt", "item": "bitter_salt" }
     },
     {
       "type": "note",
       "note": "note_miners_prayer",
       "at": [8, 9]
-    },
-    {
-      "type": "item",
-      "id": "flue_lump",
-      "item": "tallow_lump",
-      "at": [10, 11]
     }
   ]
 }

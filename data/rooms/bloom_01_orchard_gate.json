@@ -125,7 +125,8 @@
       "type": "enemy",
       "kind": "orchard_guard",
       "at": [5, 8],
-      "facing": "E"
+      "facing": "E",
+      "carries": { "id": "bloom_press_ingots", "item": "ingot_press" }
     },
     {
       "type": "enemy",

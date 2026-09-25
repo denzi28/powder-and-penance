@@ -66,12 +66,6 @@
       "facing": "E"
     },
     {
-      "type": "item",
-      "id": "works_pouch",
-      "item": "ammo_pouch",
-      "at": [20, 12]
-    },
-    {
       "type": "prop",
       "kind": "pot",
       "at": [1, 1]

@@ -125,7 +125,8 @@
       "type": "enemy",
       "kind": "orchard_guard",
       "at": [9, 12],
-      "facing": "N"
+      "facing": "N",
+      "carries": { "id": "bloom_orchard_ingot", "item": "ingot_orchard" }
     },
     {
       "type": "enemy",
@@ -143,12 +144,6 @@
       "type": "swarm",
       "swarm": "drones",
       "at": [4, 11]
-    },
-    {
-      "type": "item",
-      "id": "bloom_orchard_ingot",
-      "item": "ingot_orchard",
-      "at": [1, 1]
     }
   ]
 }

@@ -40,7 +40,8 @@
       "type": "enemy",
       "kind": "wickling",
       "at": [20, 6],
-      "facing": "S"
+      "facing": "S",
+      "carries": { "id": "ingot_cloister", "item": "ingot_cloister" }
     },
     {
       "type": "prop",
@@ -86,12 +87,6 @@
       "type": "decor",
       "kind": "rubble",
       "at": [12, 11]
-    },
-    {
-      "type": "item",
-      "id": "ingot_cloister",
-      "item": "ingot_cloister",
-      "at": [12, 14]
     }
   ]
 }

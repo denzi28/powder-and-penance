@@ -101,12 +101,6 @@
       "type": "note",
       "note": "note_hild_ledger",
       "at": [6, 2]
-    },
-    {
-      "type": "item",
-      "id": "bloom_press_ingots",
-      "item": "ingot_press",
-      "at": [1, 11]
     }
   ]
 }

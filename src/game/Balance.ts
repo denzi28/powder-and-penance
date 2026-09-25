@@ -205,8 +205,10 @@ export function balanceReport(d: BalanceData): BalanceReport {
     if (!tier) continue; // test rooms
     const p = player.get(tier);
     for (const e of room.entities) {
-      if (e.type === 'item') {
-        const item = d.items[String(e.item)];
+      // what a chest holds, or what an enemy carries (dropped the first time it falls): counted in its room's tier
+      const placed = e.type === 'item' ? String(e.item) : e.type === 'enemy' ? (e.carries as { item?: string } | undefined)?.item : undefined;
+      if (placed) {
+        const item = d.items[placed];
         const eff = item?.effect;
         if (eff?.type === 'tallow') add(before, tier, eff.amount);
         if (eff?.type === 'phialMax') add(shards, tier, eff.amount);
@@ -215,8 +217,8 @@ export function balanceReport(d: BalanceData): BalanceReport {
           m[eff.id] = (m[eff.id] ?? 0) + eff.count;
           mats.set(tier, m);
         }
-        continue;
       }
+      if (e.type === 'item') continue;
       if (e.type !== 'enemy' || !p) continue;
       const kind = String(e.kind);
       const def = d.enemies[kind];

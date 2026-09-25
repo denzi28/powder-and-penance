@@ -44,7 +44,8 @@
       "type": "enemy",
       "kind": "wickling",
       "at": [18, 14],
-      "facing": "N"
+      "facing": "N",
+      "carries": { "id": "ingot_gibbet", "item": "ingot_gibbet" }
     },
     {
       "type": "enemy",
@@ -128,12 +129,6 @@
       "at": [26, 5]
     },
     {
-      "type": "item",
-      "id": "road_pouch",
-      "item": "ammo_pouch",
-      "at": [16, 4]
-    },
-    {
       "type": "prop",
       "kind": "crate",
       "at": [29, 13]
@@ -148,12 +143,6 @@
       "id": "road_03_gibbet_bend_pilgrims_hood",
       "item": "gear_pilgrims_hood",
       "at": [17, 8]
-    },
-    {
-      "type": "item",
-      "id": "ingot_gibbet",
-      "item": "ingot_gibbet",
-      "at": [19, 8]
     }
   ]
 }
