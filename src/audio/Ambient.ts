@@ -6,6 +6,7 @@
 // - Decor: sounds near scenery (a crackling fire, bubbling vats), louder as you get close and panned.
 // - Critters call `play` when they flee (wings, squeaks, a plop).
 // Drips and bells can go through a shared echo, set per area.
+import { releaseAt } from './release';
 import { SETTINGS } from '../game/Settings';
 import { DATA } from '../data/config';
 import { check } from '../story/conditions';
@@ -344,6 +345,7 @@ export class AmbientAudio {
     }
     const o: Out = { node: g, t: ctx.currentTime + 0.02 };
     RECIPES[id](ctx, o, this.sfx.noiseBuffer!);
+    releaseAt(ctx, ctx.currentTime + 8, panner, g); // (the echo send goes with g)
   }
 }
 
@@ -640,6 +642,7 @@ export function harp(ctx: BaseAudioContext, out: AudioNode, t: number, midi: num
     o.start(t);
     o.stop(t + sustain / k + 0.05);
   }
+  releaseAt(ctx, t + sustain + 0.1, lp);
 }
 
 /** Chord roots (MIDI, low register) and whether they're minor. */

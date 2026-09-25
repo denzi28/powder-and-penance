@@ -58,7 +58,7 @@ import { BossSfx } from '../audio/BossSfx';
 import { GearScreen } from '../ui/GearScreen';
 import { LevelUpScreen, ShopScreen, SmithScreen, type AnyServiceScreen } from '../ui/ServiceScreens';
 import { ControlsScreen, SettingsScreen, type AnyOptionsScreen } from '../ui/OptionsScreens';
-import { BossMusic, ExploreMusic } from '../audio/Music';
+import { BossMusic, ExploreMusic, musicLoad } from '../audio/Music';
 import { SaveSystem, type SaveData } from '../save/SaveSystem';
 import { MenuNav, type Menu } from '../ui/Menu';
 import { DebugOverlay } from '../debug/DebugOverlay';
@@ -86,6 +86,8 @@ export interface GameStartData {
 }
 
 export class GameScene extends Phaser.Scene {
+  /** Music notes played / dropped over the voice budget (debugging the audio load). */
+  readonly musicLoad = musicLoad;
   // Core services
   loop!: FixedLoop;
   controls!: Input;

@@ -1,4 +1,5 @@
 // Placeholder sound: every effect is synthesised with WebAudio from a preset in data/audio/sfx.json
+import { releaseAt } from './release';
 // (oscillator or noise -> optional low-pass sweep -> envelope). No audio files needed.
 // For "noise" presets, `freq` is the noise playback rate (1 = white noise, lower = darker).
 import { SETTINGS } from '../game/Settings';
@@ -70,5 +71,6 @@ export class Sfx {
     gain.connect(ctx.destination);
     src.start(t0);
     src.stop(end + 0.02);
+    releaseAt(ctx, end + 0.05, gain);
   }
 }

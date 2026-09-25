@@ -4,7 +4,8 @@
 // They play into a stone-hall reverb, panned toward where the boss is.
 import { SETTINGS } from '../game/Settings';
 import { DATA } from '../data/config';
-import { hallImpulse } from './Music';
+import { audioStrained, watchLoad } from './Music';
+import { releaseAt } from './release';
 import type { Sfx } from './Sfx';
 import type { LayeredSound } from '../data/schemas';
 
@@ -28,14 +29,34 @@ export class BossSfx {
       comp.connect(ctx.destination);
       this.out = ctx.createGain();
       this.out.connect(comp);
-      const verb = ctx.createConvolver();
-      verb.buffer = hallImpulse(ctx, 2.6);
+      // The stone hall: a few damped feedback echoes (a second long convolution reverb beside the music's
+      // was more than the audio thread could render in a busy fight).
       this.wet = ctx.createGain();
       this.wet.gain.value = 0.35;
-      this.wet.connect(verb).connect(comp);
+      const tone = ctx.createBiquadFilter();
+      tone.type = 'lowpass';
+      tone.frequency.value = 3200;
+      this.wet.connect(tone);
+      for (const [d, fb, pan] of [[0.047, 0.5, -0.5], [0.071, 0.46, 0.5], [0.113, 0.4, 0]] as const) {
+        const delay = ctx.createDelay(0.2);
+        delay.delayTime.value = d;
+        const back = ctx.createGain();
+        back.gain.value = fb;
+        const damp = ctx.createBiquadFilter();
+        damp.type = 'lowpass';
+        damp.frequency.value = 2400;
+        const out = ctx.createStereoPanner();
+        out.pan.value = pan;
+        tone.connect(delay);
+        delay.connect(damp).connect(back).connect(delay);
+        delay.connect(out).connect(comp);
+      }
     }
     return ctx;
   }
+
+  /** Layered sounds ringing now: when each started and roughly when it's done. */
+  private active: { id: string; at: number; end: number }[] = [];
 
   static has(id: string): id is LayeredSound {
     return id in RECIPES;
@@ -45,6 +66,21 @@ export class BossSfx {
   play(id: LayeredSound, volume = 1, pan = 0) {
     const ctx = this.ready();
     if (!ctx || volume <= 0.01) return;
+    // Each layered sound is a dozen or more nodes: past a handful at once the audio thread falls behind and
+    // everything (music too) stutters. Footsteps give way first, then anything over the cap; the same sound
+    // twice in the same instant plays once.
+    const live = !(ctx instanceof OfflineAudioContext);
+    if (live) {
+      watchLoad(ctx);
+      const now = ctx.currentTime;
+      this.active = this.active.filter(a => a.end > now);
+      const strained = audioStrained();
+      const cap = strained ? 4 : 8;
+      const minor = id.startsWith('b_step') || id.startsWith('e_step') || id === 'e_buzz';
+      if (this.active.length >= (minor ? cap / 2 : cap)) return;
+      if (this.active.some(a => a.id === id && now - a.at < 0.08)) return;
+      this.active.push({ id, at: now, end: now + (id.includes('scream') || id.includes('roar') ? 2 : 0.9) });
+    }
     const g = ctx.createGain();
     const soft = id.startsWith('b_matron') || id === 'b_wet_swipe' || id === 'b_embrace'; // her voice is thin: lift it
     g.gain.value = volume * DATA.audio.master * DATA.audio.sfx * SETTINGS.master * SETTINGS.sfx * 0.8 * (soft ? 1.8 : 1);
@@ -54,6 +90,7 @@ export class BossSfx {
     p.connect(this.out!);
     p.connect(this.wet!);
     RECIPES[id](new Kit(ctx, g, ctx.currentTime + 0.01));
+    releaseAt(ctx, ctx.currentTime + 6, p); // every layer is done well within this
   }
 }
 

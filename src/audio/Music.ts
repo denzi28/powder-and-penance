@@ -10,6 +10,7 @@ import { SETTINGS } from '../game/Settings';
 import { DATA } from '../data/config';
 import { harp } from './Ambient';
 import type { Sfx } from './Sfx';
+import { releaseAt } from './release';
 import type { MusicLayer, MusicTheme } from '../data/schemas';
 
 export interface MusicState {
@@ -113,7 +114,39 @@ function musicContext(sfx: Sfx): BaseAudioContext | null {
  * rhythm, the bass and the lead lines always get through, washes and ornaments give way first. And a guard
  * watches the audio clock: if it falls behind the wall clock, the budget shrinks until it keeps up.
  */
-const VOICES = { ends: [] as number[], budget: 26, max: 26, lastWall: 0, lastAudio: 0, good: 0 };
+const VOICES = { ends: [] as { end: number; cost: number }[], budget: 520, max: 520, lastWall: 0, lastAudio: 0, good: 0, strain: 0, played: 0, dropped: 0, byInst: {} as Record<string, { played: number; dropped: number }> };
+/**
+ * What a note of each instrument costs the audio thread: milliseconds of rendering per second it sounds
+ * (measured in Chromium), and how long it really rings past its written length (bells hum for seconds,
+ * cymbals wash). The budget is in the same milliseconds per second of music: roughly the share of the audio
+ * thread the music may take, leaving the rest for effects and the world's sounds.
+ */
+const COST: Record<string, { cost: number; tail: (len: number) => number }> = {
+  drum: { cost: 3, tail: () => 0.75 },
+  timpani: { cost: 3, tail: () => 1.3 },
+  snare: { cost: 1.5, tail: () => 0.2 },
+  hat: { cost: 1, tail: () => 0.06 },
+  cymbal: { cost: 2, tail: len => (len > 0.3 ? len + 0.4 : 2.8) },
+  anvil: { cost: 3, tail: () => 0.7 },
+  bell: { cost: 3.5, tail: len => Math.max(4, len * 0.6) },
+  bass: { cost: 4, tail: len => len + 0.3 },
+  pad: { cost: 7.5, tail: len => len + 0.8 },
+  strings: { cost: 7.5, tail: len => len + 0.8 },
+  spiccato: { cost: 2, tail: () => 0.2 },
+  choir: { cost: 12, tail: len => len + 0.9 },
+  organ: { cost: 5.5, tail: len => len + 0.3 },
+  lead: { cost: 5.5, tail: len => len + 0.4 },
+  brass: { cost: 5, tail: len => len + 0.35 },
+  horn: { cost: 7, tail: len => len + 0.5 },
+  hum: { cost: 4, tail: len => len + 0.35 },
+  musicbox: { cost: 1.5, tail: () => 1.4 },
+  celesta: { cost: 2, tail: () => 1.8 },
+  pluck: { cost: 1.5, tail: () => 0.25 },
+  harp: { cost: 5, tail: () => 1.2 },
+  hit: { cost: 3.5, tail: () => 0.45 },
+  riser: { cost: 6, tail: len => len },
+  roll: { cost: 25, tail: len => len + 0.3 },
+};
 /** Parts that can be dropped first when the budget is tight. */
 const ORNAMENT: ReadonlySet<string> = new Set(['pad', 'strings', 'spiccato', 'celesta', 'musicbox', 'pluck', 'harp', 'hum', 'riser', 'organ', 'bell']);
 
@@ -126,24 +159,52 @@ function loadGuard(ctx: BaseAudioContext) {
     return;
   }
   const dw = wall - VOICES.lastWall;
-  if (dw < 1) return;
+  if (dw < 0.5) return;
   const ratio = (ctx.currentTime - VOICES.lastAudio) / dw;
   VOICES.lastWall = wall;
   VOICES.lastAudio = ctx.currentTime;
   if (dw > 3) return; // the tab was asleep: no verdict
-  if (ratio < 0.93) {
-    VOICES.budget = Math.max(8, Math.floor(VOICES.budget * 0.7));
+  if (ratio < 0.965) {
+    VOICES.budget = Math.max(140, Math.floor(VOICES.budget * 0.75));
     VOICES.good = 0;
-  } else if (ratio > 0.985 && ++VOICES.good >= 6 && VOICES.budget < VOICES.max) VOICES.budget += 2;
+    VOICES.strain = 8; // the effects hold back too, for the next few seconds
+  } else {
+    if (VOICES.strain > 0) VOICES.strain--;
+    if (ratio > 0.99 && ++VOICES.good >= 8 && VOICES.budget < VOICES.max) VOICES.budget = Math.min(VOICES.max, VOICES.budget + 30);
+  }
 }
 
-/** May a note of this part start at `t` (ringing until `end`)? Books it if so. */
-function voiceFree(inst: string, t: number, end: number): boolean {
-  const e = VOICES.ends.filter(x => x > t);
+/** Notes played and dropped over the budget so far, and the budget now (the debug overlay, tests). */
+export function musicLoad() {
+  return { played: VOICES.played, dropped: VOICES.dropped, budget: VOICES.budget, byInst: VOICES.byInst };
+}
+
+/** The audio thread is struggling (or only just recovered): sound effects should thin themselves out too. */
+export function audioStrained(): boolean {
+  return VOICES.strain > 0 || VOICES.budget < VOICES.max * 0.8;
+}
+
+/** Sound effects check the load too (the music may be quiet while a boss is roaring). */
+export function watchLoad(ctx: BaseAudioContext) {
+  loadGuard(ctx);
+}
+
+/** May a note of this part start at `t` (written `len` long)? Books its cost until it stops ringing if so. */
+function voiceFree(inst: string, t: number, len: number): boolean {
+  const e = VOICES.ends.filter(x => x.end > t);
   VOICES.ends = e;
+  const c = COST[inst] ?? { cost: 4, tail: (l: number) => l + 0.5 };
+  const used = e.reduce((a, x) => a + x.cost, 0);
   const cap = ORNAMENT.has(inst) ? VOICES.budget * 0.6 : VOICES.budget;
-  if (e.length >= cap) return false;
-  e.push(end);
+  const k = (VOICES.byInst[inst] ??= { played: 0, dropped: 0 });
+  if (used + c.cost > cap) {
+    VOICES.dropped++;
+    k.dropped++;
+    return false;
+  }
+  VOICES.played++;
+  k.played++;
+  e.push({ end: t + c.tail(len), cost: c.cost });
   return true;
 }
 
@@ -151,7 +212,7 @@ function voiceFree(inst: string, t: number, end: number): boolean {
  * Plays one theme from the top: schedules its steps a little ahead into its own fader (dry and reverb send,
  * so a fade takes the echo with it). Throw it away after fading it out; start a new one for the next theme.
  */
-class Sequencer {
+export class Sequencer {
   readonly bus: GainNode;
   private send: GainNode;
   private next: number;
@@ -287,21 +348,20 @@ class Sequencer {
 
   private note(L: MusicLayer, t: number, midi: number, len: number, accent: number) {
     const ctx = this.ctx;
-    if (!voiceFree(L.inst, t, t + len + 0.6)) return; // over budget: the part rests
+    if (!voiceFree(L.inst, t, len)) return; // over budget: the part rests
     const g = ctx.createGain();
     g.gain.value = (L.vol ?? 1) * accent * rnd(0.9, 1.05);
-    let out: AudioNode = g;
-    if (L.pan) {
-      const p = ctx.createStereoPanner();
-      p.pan.value = L.pan;
-      g.connect(p);
-      out = p;
-    }
+    // each note is panned once, after its filters: the layer's place, or a little to either side
+    const p = ctx.createStereoPanner();
+    p.pan.value = L.pan ?? rnd(-0.3, 0.3);
+    g.connect(p);
+    const out: AudioNode = p;
     out.connect(this.bus);
     const send = ctx.createGain();
     send.gain.value = L.rev ?? REVERB[L.inst];
     out.connect(send).connect(this.send);
     INSTRUMENTS[L.inst](ctx, g, t + rnd(0, 0.008), midi, len);
+    releaseAt(ctx, t + (COST[L.inst]?.tail(len) ?? len + 0.5) + 0.3, p, send);
   }
 
   /** The closing chord: the key's major chord across the whole orchestra, a cymbal and a timpani roll under it. */
@@ -321,6 +381,12 @@ class Sequencer {
     for (let i = 0; i < 10; i++) INSTRUMENTS.timpani(ctx, out, t - 0.9 + i * 0.09, r - 12, 0); // roll into it
     INSTRUMENTS.timpani(ctx, out, t, r - 12, 0);
     for (const iv of [0, 7, 12, 16, 19, 24]) harp(ctx, out, t + 0.1 + iv * 0.012, r + 12 + iv, 0.15);
+    releaseAt(ctx, t + 9, out, send);
+  }
+
+  /** Done with this theme: once its fade (`after` seconds) is over, unplug it from the hall. */
+  retire(after: number) {
+    releaseAt(this.ctx, this.ctx.currentTime + after, this.bus, this.send);
   }
 }
 
@@ -347,6 +413,7 @@ export class BossMusic {
         const win = won(this.last.arena);
         if (win) this.seq.stinger(ctx.currentTime + 0.05);
         this.seq.fade(0, win ? 1.5 : 0.35, win ? 5 : 0);
+        this.seq.retire(win ? 16 : 3);
       }
       this.seq = null;
       this.themeId = null;
@@ -358,6 +425,7 @@ export class BossMusic {
     if (themeId !== this.themeId) {
       // a new fight or the next phase: its theme from the top (the last one cuts off)
       this.seq?.fade(0, 0.08);
+      this.seq?.retire(2);
       this.seq = new Sequencer(ctx, DATA.music.themes[themeId], state.level);
       this.seq.fade(vol, 0.3);
       this.themeId = themeId;
@@ -369,6 +437,7 @@ export class BossMusic {
 
   stop() {
     this.seq?.fade(0, 0.2);
+    this.seq?.retire(2);
     this.seq = null;
     this.themeId = null;
     this.last = null;
@@ -398,7 +467,10 @@ export class ExploreMusic {
     const cfg = DATA.music.explore;
     const vol = cfg.volume * DATA.audio.master;
     if (fighting) {
-      if (this.seq) this.seq.fade(0, 0.6);
+      if (this.seq) {
+        this.seq.fade(0, 0.6);
+        this.seq.retire(5);
+      }
       this.seq = null;
       this.away = cfg.resumeAfter;
       this.area = area;
@@ -411,6 +483,7 @@ export class ExploreMusic {
     if (area !== this.area || !this.seq) {
       // a new area (or back from a fight): crossfade into its theme
       this.seq?.fade(0, 1.2);
+      this.seq?.retire(7);
       this.seq = null;
       this.area = area;
       const id = DATA.music.areas[area];
@@ -462,6 +535,10 @@ export function hallImpulse(ctx: BaseAudioContext, secs: number): AudioBuffer {
 }
 
 // ---------------------------------------------------------------- instruments
+/** The instruments, for measuring what each costs to render (dev only). */
+export function instrumentsForBenchmark() {
+  return INSTRUMENTS;
+}
 type Inst = (ctx: BaseAudioContext, out: AudioNode, t: number, midi: number, len: number) => void;
 
 function env(ctx: BaseAudioContext, out: AudioNode, t: number, attack: number, hold: number, release: number, peak: number) {
@@ -507,6 +584,14 @@ function panned(ctx: BaseAudioContext, pan: number, out: AudioNode) {
 
 /** A slow vibrato on these oscillators, fading in after `delay`. */
 function vibrato(ctx: BaseAudioContext, oscs: OscillatorNode[], t: number, end: number, rate: number, cents: number, delay = 0.25) {
+  // A 5 Hz wobble needs no sample-accurate pitch: updated once per render block (2.7 ms) it sounds the same, and
+  // each oscillator costs about half as much as one re-pitched every sample.
+  for (const o of oscs)
+    try {
+      o.detune.automationRate = 'k-rate';
+    } catch {
+      /* not supported here: stays sample-accurate */
+    }
   const v = ctx.createOscillator();
   v.frequency.value = rate;
   const g = ctx.createGain();
@@ -538,19 +623,17 @@ function noise(ctx: BaseAudioContext, t: number, end: number, out: AudioNode, ty
 }
 
 /**
- * A section: detuned sawtooth voices spread across the stereo field, into `out`. Half the nominal `n` voices
- * are synthesised (at most 3), split between one left and one right panner: a full orchestra of notes, each
- * with six bows and a panner per bow, was more than the audio thread could render in real time (the music
- * stuttered, then fell silent). The wider detune keeps the section sounding thick.
+ * A section: detuned sawtooth voices, into `out`. Half the nominal `n` voices are synthesised (at most 3), and
+ * they stay mono through the note's filters (a note is panned once, at its end): voices panned left and right
+ * before filtering doubled every filter's work, and a full orchestra of such notes was more than the audio
+ * thread could render in real time (the music stuttered, then fell silent). The wide detune keeps it thick.
  */
-function section(ctx: BaseAudioContext, f: number, t: number, end: number, out: AudioNode, n: number, spreadCents: number, width: number, type: OscillatorType = 'sawtooth') {
+function section(ctx: BaseAudioContext, f: number, t: number, end: number, out: AudioNode, n: number, spreadCents: number, _width: number, type: OscillatorType = 'sawtooth') {
   const oscs: OscillatorNode[] = [];
   const voices = Math.min(3, Math.max(1, Math.round(n / 2)));
-  const sides = voices === 1 ? [out] : [panned(ctx, -width, out), panned(ctx, width, out)];
   for (let i = 0; i < voices; i++) {
     const k = voices === 1 ? 0 : i / (voices - 1) - 0.5; // -0.5 .. 0.5
-    const side = voices === 1 ? out : sides[k < 0 || (k === 0 && i % 2 === 0) ? 0 : 1];
-    oscs.push(osc(ctx, type, f, t, end, side, k * 2 * spreadCents * 1.15 + rnd(-2, 2)));
+    oscs.push(osc(ctx, type, f, t, end, out, k * 2 * spreadCents * 1.15 + rnd(-2, 2)));
   }
   return oscs;
 }
@@ -659,30 +742,32 @@ const INSTRUMENTS: Record<MusicLayer['inst'], Inst> = {
   choir: (ctx, out, t, m, len) => {
     const attack = Math.min(0.5, Math.max(0.025, len * 0.25)); // short notes: a chanted stab
     const e = env(ctx, out, t, attack, Math.max(0, len - attack), len < 0.4 ? 0.35 : 0.9, 0.5);
-    const lp = filter(ctx, 'lowpass', 3800, e.g);
-    const f1 = filter(ctx, 'bandpass', 780, lp, 5, 1);
-    const f2 = filter(ctx, 'bandpass', 1150, lp, 6, 0.55);
-    const f3 = filter(ctx, 'bandpass', 2800, lp, 9, 0.22);
+    // the vowel's formants straight into the envelope (a lowpass after them took out almost nothing)
+    const f1 = filter(ctx, 'bandpass', 780, e.g, 5, 1);
+    const f2 = filter(ctx, 'bandpass', 1150, e.g, 6, 0.55);
+    const f3 = filter(ctx, 'bandpass', 2800, e.g, 9, 0.18);
     const mix = ctx.createGain();
     mix.connect(f1);
     mix.connect(f2);
     mix.connect(f3);
     const choir: OscillatorNode[] = [];
-    for (let i = 0; i < 2; i++) choir.push(osc(ctx, 'sawtooth', hz(m), t, e.end, panned(ctx, i ? 0.6 : -0.6, mix), i ? 9 : -9));
+    for (let i = 0; i < 2; i++) choir.push(osc(ctx, 'sawtooth', hz(m), t, e.end, mix, i ? 9 : -9));
     vibrato(ctx, choir, t, e.end, 5.1, 9, 0.4); // one vibrato for both singers
-    // breath
-    const b = env(ctx, e.g, t, attack, Math.max(0, len - attack), 0.5, 0.02);
-    noise(ctx, t, b.end, b.g, 'bandpass', 1200);
+    // breath, on held notes (a chanted stab is over before you'd hear it)
+    if (len >= 0.4) {
+      const b = env(ctx, e.g, t, attack, Math.max(0, len - attack), 0.5, 0.02);
+      noise(ctx, t, b.end, b.g, 'bandpass', 1200);
+    }
   },
   // a pipe organ: 8', 4' and 2' ranks and a 16' under them, stereo
   organ: (ctx, out, t, m, len) => {
     const e = env(ctx, out, t, 0.03, Math.max(0, len - 0.06), 0.25, 0.06);
     const l = filter(ctx, 'lowpass', 3000, e.g);
     const f = hz(m);
-    osc(ctx, 'square', f, t, e.end, panned(ctx, -0.2, l), -3);
-    osc(ctx, 'square', f, t, e.end, panned(ctx, 0.2, l), 3);
+    osc(ctx, 'square', f, t, e.end, l, -3);
+    osc(ctx, 'square', f, t, e.end, l, 3);
     osc(ctx, 'sine', f * 2, t, e.end, l);
-    osc(ctx, 'sine', f * 4, t, e.end, panned(ctx, 0.4, l)).detune.value = 2;
+    osc(ctx, 'sine', f * 4, t, e.end, l).detune.value = 2;
     osc(ctx, 'sine', f / 2, t, e.end, e.g);
   },
   // a singing solo line
@@ -733,7 +818,7 @@ const INSTRUMENTS: Record<MusicLayer['inst'], Inst> = {
   celesta: (ctx, out, t, m) => {
     const f = hz(m);
     const e = env(ctx, out, t, 0.002, 0, 1.8, 0.18);
-    osc(ctx, 'sine', f, t, e.end, panned(ctx, rnd(-0.3, 0.3), e.g));
+    osc(ctx, 'sine', f, t, e.end, e.g);
     const e2 = env(ctx, out, t, 0.002, 0, 0.7, 0.07);
     osc(ctx, 'sine', f * 3, t, e2.end, e2.g);
     const e3 = env(ctx, out, t, 0.002, 0, 0.25, 0.04);

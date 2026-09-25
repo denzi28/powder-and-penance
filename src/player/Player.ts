@@ -202,7 +202,7 @@ export class Player extends Actor {
   get mods(): FullMods {
     const list: Mods[] = [];
     for (const r of this.rings) if (r && DATA.rings[r]) list.push(DATA.rings[r].mods);
-    for (const a of this.armourPieces) if (a.mods) list.push(a.mods);
+    if (this.worn) for (const a of this.armourPieces) if (a.mods) list.push(a.mods); // (read while the player is still being built)
     for (const b of this.buffs) {
       const u = DATA.consumables[b.id]?.use;
       if (u?.type === 'buff') list.push(u.mods);
