@@ -1,0 +1,8 @@
+{
+  "swarms": {
+    "hive": { "bees": 26, "radius": 18, "speed": 70, "damage": 4, "poise": 4, "everyTicks": 24, "angerTicks": 600, "giveUp": 240, "calmTicks": 900 },
+    "hive_broken": { "bees": 40, "radius": 22, "speed": 74, "damage": 5, "poise": 6, "everyTicks": 22, "angerTicks": 900, "giveUp": 280, "calmTicks": 900 },
+    "drones": { "bees": 22, "radius": 16, "speed": 64, "damage": 3, "poise": 3, "everyTicks": 26, "angerTicks": 420, "giveUp": 200, "sense": 56, "calmTicks": 720 },
+    "queens_guard": { "bees": 18, "radius": 15, "speed": 78, "damage": 5, "poise": 4, "everyTicks": 24, "angerTicks": 480, "giveUp": 400, "calmTicks": 1200 }
+  }
+}

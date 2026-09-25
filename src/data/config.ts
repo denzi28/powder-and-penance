@@ -75,6 +75,7 @@ function loadAll(src: Record<string, unknown>) {
     ambient: one(S.AmbientAudioCfg, 'audio/ambient'),
     music: one(S.MusicCfg, 'audio/music'),
     terrain: one(S.Terrain, 'terrain'),
+    swarms: one(S.SwarmCfg, 'swarms'),
     scripts: dir(S.ScriptDef, 'scripts'),
   };
 
@@ -99,6 +100,7 @@ function loadAll(src: Record<string, unknown>) {
           if (v && (v.count - 1) * v.everyTicks >= s.active)
             errors.push(`data/enemies/${e.id}.json: move "${m.id}": ${v.count} volleys every ${v.everyTicks} ticks need "active" of at least ${(v.count - 1) * v.everyTicks + 1}`);
           if (s.followSweep && s.hitbox.shape !== 'arc') errors.push(`data/enemies/${e.id}.json: move "${m.id}": followSweep needs an arc hitbox`);
+          if (s.swarm && !data.swarms.swarms[s.swarm.id]) errors.push(`data/enemies/${e.id}.json: move "${m.id}" releases unknown swarm "${s.swarm.id}"`);
         }
     }
     for (const r of Object.values(data.rooms))
@@ -112,6 +114,8 @@ function loadAll(src: Record<string, unknown>) {
     for (const pr of Object.values(data.props)) {
       if (pr.loot !== 'none' && !data.loot.tables[pr.loot]) errors.push(`data/props/${pr.id}.json: unknown loot table "${pr.loot}"`);
       if (!data.palette[pr.debris]) errors.push(`data/props/${pr.id}.json: debris "${pr.debris}" is not a palette colour`);
+      if (pr.hive && !data.swarms.swarms[pr.hive]) errors.push(`data/props/${pr.id}.json: unknown swarm "${pr.hive}"`);
+      if (pr.melts && !pr.secretWall) errors.push(`data/props/${pr.id}.json: "melts" is for sealed ways ("secretWall": true)`);
     }
     if (!data.weapons.fists) errors.push('data/weapons/fists.json: required (an empty weapon slot holds bare fists)');
     for (const w of data.player.loadout.slots)
@@ -125,6 +129,8 @@ function loadAll(src: Record<string, unknown>) {
       for (const en of r.entities) {
         if (en.type === 'prop' && !data.props[String(en.kind)])
           errors.push(`data/rooms/${r.id}.json: unknown prop kind "${String(en.kind)}"`);
+        if (en.type === 'swarm' && !data.swarms.swarms[String(en.swarm)])
+          errors.push(`data/rooms/${r.id}.json: unknown swarm "${String(en.swarm)}"`);
         if (en.type === 'decor' && !data.decor.decor[String(en.kind)])
           errors.push(`data/rooms/${r.id}.json: unknown decor kind "${String(en.kind)}"`);
         if (en.type === 'weapon' && !data.weapons[String(en.weapon)])

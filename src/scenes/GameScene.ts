@@ -34,6 +34,8 @@ import { Notes } from '../world/Notes';
 import { ScreenFx } from '../game/ScreenFx';
 import { Eruptions } from '../game/Eruptions';
 import { Explosions, nearestKeg } from '../game/Explosions';
+import { Swarms, type Swarm } from '../game/Swarms';
+import { Prop } from '../world/Props';
 import { Pathfinder } from '../world/Pathfinder';
 import { Player } from '../player/Player';
 import { PlayerView } from '../player/PlayerView';
@@ -62,6 +64,7 @@ import { MenuNav, type Menu } from '../ui/Menu';
 import { DebugOverlay } from '../debug/DebugOverlay';
 import { installDebugKeys } from '../debug/DebugKeys';
 import { hexToInt } from '../ui/colors';
+import { DEPTH } from '../render/depth';
 import { wirePresentation } from '../game/Presentation';
 import { handleInteract, nearestInteractable } from '../game/Interactions';
 import { beltKeys, grantItem, useLine } from '../game/Items';
@@ -72,6 +75,7 @@ import type { Actor } from '../actors/Actor';
 import type { Dir8 } from '../core/math';
 import { MinibossPlacement, type RoomData } from '../data/schemas';
 
+const DEPTH_LIGHT = (y: number) => DEPTH.actor(y) + 1;
 const DIR_ANGLE: Record<Dir8, number> = { E: 0, SE: 45, S: 90, SW: 135, W: 180, NW: 225, N: 270, NE: 315 };
 /** How long an item banner stays up (ticks), fade included: long enough to read the explanation. */
 const TOAST_TICKS = 360;
@@ -125,6 +129,12 @@ export class GameScene extends Phaser.Scene {
   /** Letterbox bars, flashes and cinema holds (cutscenes and boss moments). */
   screenFx = new ScreenFx();
   eruptions = new Eruptions();
+  /** Bees: swarms out of struck hives, drone swarms over the flowers. */
+  swarms = new Swarms();
+  /** The swarm each hive has out (struck again, it turns on the new culprit instead of sending more). */
+  private hiveOut = new Map<Prop, Swarm>();
+  /** A warm glow round the player while a beeswax light burns. */
+  private playerLight: Phaser.GameObjects.Image | null = null;
   loot!: LootDrops;
   marker!: DeathMarker;
   /** Current area (rooms with this `area` are built into one world). */
@@ -165,7 +175,7 @@ export class GameScene extends Phaser.Scene {
   /** Equipment / inventory screen (from the pause menu): the world is paused. */
   gear: GearScreen | AnyServiceScreen | AnyOptionsScreen | null = null;
   /** A townsperson's screen to open when the conversation ends (script step "open"). */
-  pendingScreen: 'levelup' | 'shop' | 'smith' | null = null;
+  pendingScreen: 'levelup' | 'shop' | 'smith' | 'apiary' | null = null;
   /** Quick travel between shrines in progress (game/Warp): the world is paused. */
   warp: { to: WarpTarget; t: number } | null = null;
 
@@ -371,6 +381,10 @@ export class GameScene extends Phaser.Scene {
     this.explosions.tick(this);
     this.eruptions.tick(this);
     this.pools.tick();
+    this.swarms.tick(this);
+    this.meltSeals();
+    for (const e of this.enemies)
+      if (e.blind > 0 && e.blind % 9 === 0 && !e.dead) this.particles.burst(e.x, e.y - e.hurtbox.h - 4, 4, -Math.PI / 2, 1.8, 2, 20, 'stone4', false); // smoke still in its eyes
     for (const e of this.enemies)
       if (e.veiled > 0 && e.veiled % 4 === 0) this.particles.burst(e.x + (this.rng() - 0.5) * 16, e.y - 6, 4, -Math.PI / 2, 1.4, 3, 18, e.veiled % 8 ? 'stone3' : 'stone2', false); // its smoke clings to it
     tickShrineSeq(this);
@@ -550,7 +564,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   /** Open Maudlin's, Oskar's or Bede's screen; closing it returns to the game. */
-  openService(kind: 'levelup' | 'shop' | 'smith') {
+  openService(kind: 'levelup' | 'shop' | 'smith' | 'apiary') {
     this.menu = null;
     this.controls.clearBuffer();
     const close = () => {
@@ -558,7 +572,8 @@ export class GameScene extends Phaser.Scene {
       this.markDirty();
       this.controls.clearBuffer();
     };
-    this.gear = kind === 'levelup' ? new LevelUpScreen(this, close) : kind === 'shop' ? new ShopScreen(this, close) : new SmithScreen(this, close);
+    this.gear =
+      kind === 'levelup' ? new LevelUpScreen(this, close) : kind === 'shop' ? new ShopScreen(this, close) : kind === 'apiary' ? new ShopScreen(this, close, 'hild') : new SmithScreen(this, close);
   }
 
   closeMenu() {
@@ -667,6 +682,8 @@ export class GameScene extends Phaser.Scene {
     this.eruptions.clear();
     this.screenFx.reset();
     this.pools.clear();
+    this.swarms.reset(this.ctxObj);
+    this.hiveOut.clear();
   }
 
   private tickDeath() {
@@ -777,6 +794,61 @@ export class GameScene extends Phaser.Scene {
       p.tallow = kept;
       this.save();
     });
+    this.bus.on('hit', h => {
+      // a struck hive: out come the bees, after whoever struck it (a blast or a stray sting: after you)
+      const hive = h.target instanceof Prop ? h.target : null;
+      if (!hive?.def.hive) return;
+      const culprit = h.attacker === this.player || h.attacker instanceof Enemy ? h.attacker : this.player;
+      const out = this.hiveOut.get(hive);
+      if (h.killed) {
+        const big = DATA.swarms.swarms[`${hive.def.hive}_broken`] ? `${hive.def.hive}_broken` : hive.def.hive;
+        this.swarms.release(this.ctxObj, big, hive.x, hive.y - 10, culprit);
+        this.particles.burst(hive.x, hive.y, 12, -Math.PI / 2, Math.PI * 2, 18, 80, 'flame1', true); // honey everywhere
+        this.pools.add(hive.x, hive.y + 2, 14, 900, 0.6, 'honey');
+      } else if (out && this.swarms.list.includes(out) && out.target) {
+        out.target = culprit;
+        out.anger = out.def.angerTicks;
+      } else this.hiveOut.set(hive, this.swarms.release(this.ctxObj, hive.def.hive, hive.x, hive.y - 10, culprit));
+    });
+    this.bus.on('smoke', e => {
+      const sm = e.strike.smoke!;
+      const x = e.actor.x + Math.cos(e.angle) * sm.offset;
+      const y = e.actor.y + Math.sin(e.angle) * sm.offset * 0.7;
+      this.particles.burst(x, y - 6, 8, e.angle, 1.6, Math.round(sm.radius * 0.8), 45, 'stone4', false);
+      this.particles.burst(x, y - 10, 14, -Math.PI / 2, Math.PI, Math.round(sm.radius * 0.6), 30, 'stone3', false);
+      this.bus.emit('sfx', { id: e.strike.sfx, x, y });
+      if (sm.calm) this.swarms.calm(x, y, sm.radius, this);
+      // everyone caught in it (bar the one puffing, and anyone rolling through) is blinded
+      for (const a of [this.player, ...this.enemies]) {
+        if (a === e.actor || a.dead || a.invulnerable || Math.hypot(a.x - x, a.y - y) > sm.radius + 6) continue;
+        if (a === this.player) {
+          if (sm.blind > 0) this.player.blind = Math.max(this.player.blind, sm.blind);
+        } else if (a instanceof Enemy) {
+          if (a.team === e.actor.team) continue; // husks don't smoke each other
+          if (a.def.smokePoise > 0 && !a.bossWaiting) this.combat.applyHit({ owner: e.actor, kind: 'projectile', damage: 0, poise: a.def.smokePoise, knockback: 20, hitstop: 2, shake: 0.1, angle: e.angle, unblockable: true, unparryable: true }, a, this.bus);
+          if (sm.blind > 0) a.setBlind(sm.blind);
+        }
+      }
+    });
+    this.bus.on('swarm', e => {
+      const sw = e.strike.swarm!;
+      for (let i = 0; i < sw.count; i++) {
+        const a = (i / sw.count) * Math.PI * 2 + e.actor.facing;
+        this.swarms.release(this.ctxObj, sw.id, e.actor.x + Math.cos(a) * 12, e.actor.y + Math.sin(a) * 8 - 6, e.actor === this.player ? null : this.player);
+      }
+    });
+    this.bus.on('trail', e => {
+      const tr = (e.actor as Enemy).def.trail!;
+      this.pools.add(e.x, e.y + 1, tr.radius, tr.ticks, tr.speedMult, 'honey');
+    });
+    this.bus.on('critical', e => {
+      // the Ring of the Queen: a clean kill from behind feeds you
+      const heal = this.player.mods.critHeal;
+      if (e.attacker !== this.player || heal <= 0 || this.player.dead) return;
+      this.player.hp = Math.min(this.player.maxHp, this.player.hp + heal);
+      this.numbers.add(`+${heal}`, this.player.x, this.player.y - 30, hexToInt(DATA.palette.flame2));
+      this.bus.emit('healed', { actor: this.player });
+    });
     this.bus.on('eruptions', e => this.eruptions.start(e.actor, e.strike.eruptions!, e.target, e.angle, this));
     this.bus.on('summon', e => {
       const caster = e.actor as Enemy;
@@ -847,7 +919,8 @@ export class GameScene extends Phaser.Scene {
         this.flags.add(`wall:${p.uid}`);
         this.grid.set(Math.floor(p.x / TILE), Math.floor(p.y / TILE), Cell.Floor);
         this.worldView.build(this.grid, DATA.areas.areas[this.area].tileset);
-        this.showToast('A HIDDEN WAY', 'The cracked wall gives way.');
+        if (p.def.melts) this.showToast('THE SEAL MELTS', 'In the beeswax light the old tallow softens and runs, and a way opens behind it.');
+        else this.showToast('A HIDDEN WAY', 'The cracked wall gives way.');
         this.save();
         return;
       }
@@ -857,6 +930,33 @@ export class GameScene extends Phaser.Scene {
       this.loot.spawn(rollLoot(DATA.loot.tables[p.def.loot], this.rng), p.x, p.y, this.rng);
       this.dirty = true;
     });
+  }
+
+  /** A beeswax light carried close melts the tallow seals (prop `melts`) away for good. */
+  private meltSeals() {
+    const p = this.player;
+    if (p.dead || p.mods.light <= 0) return;
+    for (const pr of this.props.list) {
+      const m = pr.def.melts;
+      if (!m || pr.dead || Math.hypot(pr.x - p.x, pr.y - p.y) > m.near) continue;
+      pr.dead = true;
+      this.particles.burst(pr.x, pr.y, 8, -Math.PI / 2, Math.PI * 2, 24, 60, 'wax1', true);
+      this.particles.burst(pr.x, pr.y - 8, 12, -Math.PI / 2, 1.2, 10, 40, 'flame2', false);
+      this.bus.emit('sfx', { id: 'wax_spill', x: pr.x, y: pr.y });
+      this.bus.emit('propBroken', { prop: pr });
+    }
+  }
+
+  /** A warm, flickering glow round you while a beeswax light burns. */
+  private drawPlayerLight(x: number, y: number) {
+    const on = this.player.mods.light > 0 && !this.player.dead;
+    if (!on && !this.playerLight) return;
+    if (!this.playerLight && this.textures.exists('light_glow'))
+      this.playerLight = this.add.image(x, y, 'light_glow').setBlendMode(Phaser.BlendModes.ADD);
+    const l = this.playerLight;
+    if (!l) return;
+    const flick = 0.9 + Math.sin(this.time.now * 0.013) * 0.05 + Math.sin(this.time.now * 0.031) * 0.04;
+    l.setVisible(on).setPosition(x, y - 14).setScale(2.4 * flick).setAlpha(0.55 * flick).setDepth(DEPTH_LIGHT(y));
   }
 
   /** A billow of censer smoke (size 1 = a full cloud). */
@@ -947,6 +1047,8 @@ export class GameScene extends Phaser.Scene {
     this.eruptions.draw(this);
     this.story.stage.draw();
     this.pools.draw(this);
+    this.swarms.draw(this, this.time.now);
+    this.drawPlayerLight(feet.x, feet.y);
     const still = !!(this.menu || this.gear || this.mapOpen || this.story.active || this.warp);
     this.npcs.update(delta, this.player, still);
     const fightOn = !!this.arena.musicState() || this.enemies.some(e => !e.dead && COMBAT_STATES.has(e.stateName));
@@ -1136,6 +1238,8 @@ export class GameScene extends Phaser.Scene {
     this.pickups.build(this.rooms, id => this.flags.has(`item:${id}`));
     this.doors.build(this.rooms, this.grid, id => this.flags.has(`door:${id}`));
     this.props.build(this.ctxObj, this.rooms, this.brokenWall);
+    this.swarms.build(this.ctxObj, this.rooms);
+    this.hiveOut.clear();
     this.exits.build(this.rooms);
     this.npcs.build(this.rooms, this.flags);
     this.chatter.reset();

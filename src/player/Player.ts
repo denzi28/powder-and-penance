@@ -115,6 +115,8 @@ export class Player extends Actor {
 
   // Critical (riposte / backstab) in progress
   crit: { victim: Enemy; kind: 'riposte' | 'backstab' } | null = null;
+  /** Ticks left blinded by smoke (the world goes dark around you). */
+  blind = 0;
   /** Held by a grab strike. */
   grabbedBy: { by: Actor; holdTicks: number; damage: number; throwKnockback: number } | null = null;
 
@@ -200,6 +202,7 @@ export class Player extends Actor {
   get mods(): FullMods {
     const list: Mods[] = [];
     for (const r of this.rings) if (r && DATA.rings[r]) list.push(DATA.rings[r].mods);
+    for (const a of this.armourPieces) if (a.mods) list.push(a.mods);
     for (const b of this.buffs) {
       const u = DATA.consumables[b.id]?.use;
       if (u?.type === 'buff') list.push(u.mods);
@@ -351,6 +354,7 @@ export class Player extends Actor {
   }
 
   private tickEffects() {
+    if (this.blind > 0) this.blind--;
     for (const b of this.buffs) b.ticks--;
     const ended = this.buffs.filter(b => b.ticks <= 0);
     if (ended.length) {
@@ -551,6 +555,7 @@ export class Player extends Actor {
   /** Shrine rest / respawn: full HP, stamina, phials and ammo. */
   refill() {
     this.buffs = [];
+    this.blind = 0;
     this.regen = null;
     this.hp = this.maxHp;
     this.stamina.refill();
@@ -721,15 +726,17 @@ export function combineMods(list: readonly Mods[]): FullMods {
   const m: FullMods = {
     maxHp: 0, stamina: 0, poise: 0,
     staminaRegen: 1, rollCost: 1, damage: 1, rangedDamage: 1, desperate: 1, damageTaken: 1, heal: 1, notice: 1, tallowGain: 1, capacity: 1,
-    reload: 1, prices: 1, spread: 1,
-    keepTallow: 0, sureFooted: 0,
+    reload: 1, prices: 1, spread: 1, stings: 1,
+    keepTallow: 0, sureFooted: 0, light: 0, critHeal: 0,
   };
   for (const x of list) {
     m.maxHp += x.maxHp ?? 0;
     m.stamina += x.stamina ?? 0;
     m.poise += x.poise ?? 0;
-    for (const k of ['staminaRegen', 'rollCost', 'damage', 'rangedDamage', 'desperate', 'damageTaken', 'heal', 'notice', 'tallowGain', 'capacity', 'reload', 'prices', 'spread'] as const)
+    for (const k of ['staminaRegen', 'rollCost', 'damage', 'rangedDamage', 'desperate', 'damageTaken', 'heal', 'notice', 'tallowGain', 'capacity', 'reload', 'prices', 'spread', 'stings'] as const)
       m[k] *= x[k] ?? 1;
+    m.critHeal += x.critHeal ?? 0;
+    m.light = Math.max(m.light, x.light ?? 0);
     m.keepTallow = Math.max(m.keepTallow, x.keepTallow ?? 0);
     m.sureFooted = Math.max(m.sureFooted, x.sureFooted ?? 0);
   }

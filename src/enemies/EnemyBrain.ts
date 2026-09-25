@@ -102,6 +102,7 @@ function retreat(e: Enemy, d: number): boolean {
 
 const approach: State<Enemy> = {
   tick(e) {
+    if (e.blind > 0) return 'blinded';
     const exit = combatExit(e);
     if (exit) return exit;
     if (e.bubble) return 'channel';
@@ -125,6 +126,7 @@ const strafe: State<Enemy> = {
     e.strafeDir = e.ctx.rng() < 0.5 ? -1 : 1;
   },
   tick(e) {
+    if (e.blind > 0) return 'blinded';
     const exit = combatExit(e);
     if (exit) return exit;
     if (e.bubble) return 'channel';
@@ -297,11 +299,14 @@ const dummyStagger: State<Enemy> = {
  */
 const submerged: State<Enemy> = {
   enter(e) {
-    e.alpha = 0;
+    const hidden = e.def.ambush?.hidden !== false;
+    e.alpha = hidden ? 0 : 1;
+    if (!hidden) e.anim.play(e.anim.has('dormant') ? 'dormant' : 'idle', { restart: true }); // stock still, like scenery
   },
   tick(e, t) {
     e.steer(0, 0);
-    if (t % 110 === 55) e.ctx.bus.emit('dust', { x: e.x, y: e.y, kind: 'step' });
+    if (e.def.ambush?.hidden === false) e.turnTo(e.homeFacing);
+    else if (t % 110 === 55) e.ctx.bus.emit('dust', { x: e.x, y: e.y, kind: 'step' });
     if (!e.player.dead && e.distToPlayer() <= e.def.ambush!.radius) return 'rise';
   },
 };
@@ -422,14 +427,44 @@ const turn: State<Enemy> = {
   },
 };
 
-const FIGHTER = { idle, suspicious, notice, approach, strafe, attack, stagger, parried, guardBroken, critVictim, return: ret, dead, channel, submerged, rise };
-const BOSS = { idle: dormant, intro, approach, strafe, attack, stagger, parried, guardBroken, critVictim, dead, channel, turn };
+/**
+ * Smoke in its eyes (Enemy.setBlind): it can't fight. It reels, coughs and paws at its face, stumbling in small
+ * aimless loops, until it can see again; then it comes for where it last saw you.
+ */
+const blinded: State<Enemy> = {
+  enter(e) {
+    e.runner = null;
+    e.ctx.tokens.release(e);
+    e.strafeDir = e.ctx.rng() < 0.5 ? -1 : 1;
+    e.anim.play('stagger', { restart: true });
+    e.ctx.bus.emit('sfx', { id: e.def.voice?.hurt ?? 'stagger', x: e.x, y: e.y, volume: 0.6 });
+  },
+  tick(e, t) {
+    if (e.blind <= 0) {
+      e.attackGap = Math.max(e.attackGap, 20);
+      if (e.isFighter) {
+        e.awareness = 1;
+        return 'approach';
+      }
+      return 'idle';
+    }
+    // a slow stagger in circles, turning this way and that
+    if (t % 40 === 0) e.strafeDir = e.ctx.rng() < 0.5 ? -1 : 1;
+    e.facing += 2.2 * DEG * e.strafeDir;
+    const sp = e.def.speed * 0.25;
+    e.steer(Math.cos(e.facing) * sp, Math.sin(e.facing) * sp);
+    if (t % 50 === 25) e.ctx.bus.emit('dust', { x: e.x, y: e.y, kind: 'step' });
+  },
+};
+
+const FIGHTER = { idle, suspicious, notice, approach, strafe, attack, stagger, parried, guardBroken, critVictim, return: ret, dead, channel, submerged, rise, blinded };
+const BOSS = { idle: dormant, intro, approach, strafe, attack, stagger, parried, guardBroken, critVictim, dead, channel, turn, blinded };
 
 export const BRAINS: Record<'melee' | 'ranged' | 'dummy' | 'rhythm' | 'boss', Record<string, State<Enemy>>> = {
   // Ranged differs only through data: spacing.retreatBelow and moves whose strikes throw projectiles.
   melee: FIGHTER,
   ranged: FIGHTER,
   boss: BOSS,
-  rhythm: { idle: rhythmIdle, attack, stagger, parried, critVictim },
-  dummy: { idle: { tick: () => {} }, stagger: dummyStagger, critVictim },
+  rhythm: { idle: rhythmIdle, attack, stagger, parried, critVictim, blinded },
+  dummy: { idle: { tick: () => {} }, stagger: dummyStagger, critVictim, blinded: { tick: e => (e.blind > 0 ? undefined : 'idle') } },
 };

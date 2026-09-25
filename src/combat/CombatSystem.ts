@@ -37,6 +37,8 @@ export interface HitSource {
   grab?: { holdTicks: number; damage: number; throwKnockback: number };
   /** Knockback drags the target toward the attacker instead of away (hooks). */
   pull?: boolean;
+  /** A small hurt (a bee sting): no sparks, blood or thud, just a prick. */
+  quiet?: boolean;
 }
 
 /** An actor's active guard (raised shield). */

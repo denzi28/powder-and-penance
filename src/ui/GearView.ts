@@ -294,7 +294,7 @@ export class GearView {
   }
 
   private drawShop(s: ShopScreen, p: Player) {
-    this.serviceHeader("OSKAR'S STALL", p);
+    this.serviceHeader(s.title, p);
     const list = s.list();
     const max = 8;
     const first = Math.max(0, Math.min(s.index - 3, list.length - max));

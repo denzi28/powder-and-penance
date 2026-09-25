@@ -240,6 +240,7 @@ export class UIScene extends Phaser.Scene {
       const pulse = 0.12 + 0.1 * Math.sin(this.time.now / 180);
       for (const s of sides) s.a = Math.max(s.a, pulse);
     }
+    this.drawBlind(g);
     const bands = 6;
     const bw = 3;
     for (const s of sides) {
@@ -254,6 +255,27 @@ export class UIScene extends Phaser.Scene {
       }
     }
   }
+
+  /** Smoke in your eyes: the dark closes in to a small ring round you, and opens again as it clears. */
+  private drawBlind(g: Phaser.GameObjects.Graphics) {
+    const p = this.gs.player;
+    if (p.blind <= 0 || p.dead) return;
+    const k = Math.min(1, p.blind / 40) * Math.min(1, (this.blindT = p.blind > this.blindLast ? 0 : this.blindT + 1) / 8 + 0.2);
+    this.blindLast = p.blind;
+    const cam = this.gs.cameras.main;
+    const sx = (p.x - cam.worldView.x) * cam.zoom;
+    const sy = (p.y - 12 - cam.worldView.y) * cam.zoom;
+    const r0 = (30 + (1 - k) * 260) * cam.zoom;
+    const smoke = hexToInt(DATA.palette.ink);
+    const rings = 10;
+    const step = 5 * cam.zoom;
+    for (let i = 0; i < rings; i++) g.lineStyle(step + 1, smoke, 0.9 * k * ((i + 1) / rings) ** 1.4).strokeCircle(sx, sy, r0 + i * step);
+    const outer = r0 + rings * step;
+    const far = Math.hypot(DATA.game.width, DATA.game.height) * 1.2;
+    g.lineStyle(far, smoke, 0.92 * k).strokeCircle(sx, sy, outer + far / 2 - 1);
+  }
+  private blindT = 0;
+  private blindLast = 0;
 
   /** Phial charges under the bars: lit icon per charge left, dark icon per spent charge. */
   private drawPhials(y: number) {

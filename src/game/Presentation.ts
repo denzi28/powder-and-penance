@@ -56,6 +56,13 @@ export function wirePresentation(gs: GameScene) {
       t.flinch(h.angle, fb.flinchBlocked);
       return;
     }
+    if (s.quiet && !h.killed) {
+      // a sting: a speck of blood and a flinch, no thud
+      gs.particles.burst(t.x, t.y, z, h.angle, 2, 2, 50, t.bloodColor, true);
+      t.flinch(h.angle, fb.flinch * 0.5);
+      if (t === gs.player) gs.hurt = { angle: Math.atan2(h.attacker.y - t.y, h.attacker.x - t.x), strength: 0.3, t: 0 };
+      return;
+    }
     const heavy = s.hitstop >= DATA.combat.heavyHitstop || h.staggered || h.killed || s.kind === 'critical';
     gs.hitstop = Math.max(gs.hitstop, s.hitstop + (h.killed ? 2 : 0));
     const trauma = s.shake * (t === gs.player ? 1.4 : 1) + (h.staggered ? 0.1 : 0);

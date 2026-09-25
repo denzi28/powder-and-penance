@@ -81,12 +81,14 @@ export class AttackRunner {
     if (this.t === s.windup) {
       if (s.pools) bus.emit('pools', { actor: o, strike: s, target: this.target });
       if (s.eruptions) bus.emit('eruptions', { actor: o, strike: s, target: this.target, angle: this.angle });
+      if (s.smoke) bus.emit('smoke', { actor: o, strike: s, angle: this.angle });
+      if (s.swarm) bus.emit('swarm', { actor: o, strike: s });
       if (s.summon) bus.emit('summon', { actor: o, strike: s });
       else if (s.vanish) bus.emit('vanish', { actor: o, strike: s });
       else if (s.projectile) {
         this.volley(0);
         bus.emit('thrown', { actor: o, strike: s });
-      } else bus.emit('swing', { actor: o, strike: s, angle: this.angle, mirror: this.mirror });
+      } else if (!s.smoke) bus.emit('swing', { actor: o, strike: s, angle: this.angle, mirror: this.mirror }); // (a puff of smoke is no swing)
     }
     // more volleys through the active frames (a barrage, a spiral)
     const v = s.projectile?.volleys;
@@ -99,7 +101,7 @@ export class AttackRunner {
     }
     // a spin can catch you more than once
     if (s.rehitTicks && this.phase === 'active' && this.t > s.windup && (this.t - s.windup) % s.rehitTicks === 0) this.hitSet.clear();
-    const spellOnly = s.summon || s.vanish || ((s.pools || s.eruptions) && s.damage === 0);
+    const spellOnly = s.summon || s.vanish || ((s.pools || s.eruptions || s.smoke || s.swarm) && s.damage === 0);
     if (this.phase === 'active' && !this.visualOnly && !s.projectile && !spellOnly)
       o.ctx.combat.add({
         owner: o,

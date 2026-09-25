@@ -61,6 +61,12 @@ export interface GameEvents {
   /** A strike spills wax: the scene lays slowing pools (`target` = where the strike was aimed). */
   pools: { actor: Actor; strike: StrikeDef; target: { x: number; y: number } | null };
   eruptions: { actor: Actor; strike: StrikeDef; target: { x: number; y: number } | null; angle: number };
+  /** A strike puffs smoke (strike.smoke): the scene blinds whoever is in it and settles bees. */
+  smoke: { actor: Actor; strike: StrikeDef; angle: number };
+  /** A strike sends out bees (strike.swarm). */
+  swarm: { actor: Actor; strike: StrikeDef };
+  /** Something walking leaves a slowing puddle behind it (enemy `trail`). */
+  trail: { actor: Actor; x: number; y: number };
   erupted: { x: number; y: number; radius: number; fx: 'spikes' | 'wax' | 'flame' | 'water' | 'ember'; sfx: string };
   /** Player caught by a grab / released from it. */
   grabbed: { by: Actor };

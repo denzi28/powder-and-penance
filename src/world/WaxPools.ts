@@ -14,6 +14,8 @@ export interface Pool {
   t: number;
   ticks: number;
   speedMult: number;
+  /** Molten wax, or honey (a Honey Slime's trail). */
+  kind: 'wax' | 'honey';
 }
 
 /** Older pools set first once there are this many. */
@@ -26,8 +28,8 @@ export class WaxPools {
   list: Pool[] = [];
   private g: Phaser.GameObjects.Graphics | null = null;
 
-  add(x: number, y: number, r: number, ticks: number, speedMult: number) {
-    this.list.push({ x, y, r, t: 0, ticks, speedMult });
+  add(x: number, y: number, r: number, ticks: number, speedMult: number, kind: 'wax' | 'honey' = 'wax') {
+    this.list.push({ x, y, r, t: 0, ticks, speedMult, kind });
     if (this.list.length > MAX_POOLS) this.list.shift();
   }
 
@@ -70,9 +72,10 @@ export class WaxPools {
       const r = Math.round(this.radius(p));
       if (r < 2) continue;
       const ry = Math.max(1, Math.round(r * FLAT));
-      g.fillStyle(hexToInt(pal.ember), 0.55).fillEllipse(p.x, p.y + 1, r * 2 + 2, ry * 2 + 2);
-      g.fillStyle(hexToInt(pal.wax1), 0.92).fillEllipse(p.x, p.y, r * 2, ry * 2);
-      g.fillStyle(hexToInt(pal.wax2), 0.9).fillEllipse(p.x - r * 0.3, p.y - ry * 0.3, r * 0.7, ry * 0.6);
+      const honey = p.kind === 'honey';
+      g.fillStyle(hexToInt(honey ? pal.wood1 : pal.ember), honey ? 0.5 : 0.55).fillEllipse(p.x, p.y + 1, r * 2 + 2, ry * 2 + 2);
+      g.fillStyle(hexToInt(honey ? pal.flame1 : pal.wax1), honey ? 0.8 : 0.92).fillEllipse(p.x, p.y, r * 2, ry * 2);
+      g.fillStyle(hexToInt(honey ? pal.flame2 : pal.wax2), honey ? 0.75 : 0.9).fillEllipse(p.x - r * 0.3, p.y - ry * 0.3, r * 0.7, ry * 0.6);
     }
   }
 }

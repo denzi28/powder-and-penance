@@ -18,7 +18,9 @@ import type { MinibossPlacement, MoveDef } from '../data/schemas';
 /** States in which the enemy is actively fighting (knows where you are). */
 export const COMBAT_STATES: ReadonlySet<string> = new Set(['approach', 'strafe', 'attack']);
 /** States in which it is not expecting you: backstabs allowed from behind. */
-const UNAWARE_STATES: ReadonlySet<string> = new Set(['idle', 'suspicious', 'return', 'stagger', 'parried', 'guardBroken']);
+const UNAWARE_STATES: ReadonlySet<string> = new Set(['idle', 'suspicious', 'return', 'stagger', 'parried', 'guardBroken', 'blinded']);
+/** States smoke can't blind it out of (it's busy being hurt, rising, dying, or not yet in the fight). */
+const UNBLINDABLE: ReadonlySet<string> = new Set(['dead', 'critVictim', 'submerged', 'rise', 'turn', 'intro']);
 
 /** Ticks of trying to move without getting anywhere before an enemy counts as stuck. */
 const STUCK_TICKS = 30;
@@ -120,6 +122,10 @@ export class Enemy extends Actor {
     return { x: this.x, y: this.y };
   }
   alpha = 1;
+  /** Ticks left blinded by smoke: it can't see to fight, and stumbles about coughing. */
+  blind = 0;
+  /** Ticks until it next leaves a puddle behind (enemy `trail`). */
+  private trailIn = 0;
   /** 0..1: sagging and darkening as it burns (a boss's remains going up); px of shuddering. Visual only. */
   melt = 0;
   quiver = 0;
@@ -137,6 +143,7 @@ export class Enemy extends Actor {
     this.anim.play('idle');
     this.dir = dir8FromAngle(facing);
     this.sm = new StateMachine<Enemy>(this, BRAINS[this.def.ai], this.def.ambush ? 'submerged' : 'idle');
+    if (this.def.boss && this.sm.name === 'submerged') this.sm.change('idle'); // bosses wait for their arena
     // no brood in the first moments of a fight (or of a new phase): half the move's rest first
     for (const m of this.def.moves)
       if (m.strikes.some(st => st.summon)) {
@@ -230,6 +237,7 @@ export class Enemy extends Actor {
       else this.guardPoints = Math.min(g.max, this.guardPoints + g.regenPerSec / DATA.game.tickRate);
     }
 
+    if (this.blind > 0) this.blind--;
     if (this.isFighter && !this.dead && this.sm.name !== 'critVictim') this.perceive();
     if (this.bubble && !this.summons.some(s => !s.dead)) {
       this.bubble = false; // the last summon fell: the bubble bursts
@@ -240,7 +248,9 @@ export class Enemy extends Actor {
       this.alpha = 1; // steps out of the smoke
       this.ctx.bus.emit('dust', { x: this.x, y: this.y, kind: 'roll' });
     }
-    this.invulnerable = (this.bubble || this.sm.name === 'submerged' || this.sm.name === 'turn') && !this.dead;
+    // hidden in the wax it can't be touched; one waiting in plain sight (a scarecrow) can be struck awake
+    const hiddenAmbush = this.sm.name === 'submerged' && this.def.ambush?.hidden !== false;
+    this.invulnerable = (this.bubble || hiddenAmbush || this.sm.name === 'turn') && !this.dead;
     this.sm.tick();
     this.applyKnockback();
     this.hyperArmor = this.runner?.hyperArmor ?? 0;
@@ -256,6 +266,12 @@ export class Enemy extends Actor {
       this.weaponReach = 0;
     }
     this.dir = dir8FromAngle(this.facing);
+    // honey (or anything sticky) left behind as it goes
+    const tr = this.def.trail;
+    if (tr && !this.dead && this.sm.name !== 'submerged' && Math.hypot(this.vx, this.vy) > 4 && --this.trailIn <= 0) {
+      this.trailIn = tr.everyTicks;
+      this.ctx.bus.emit('trail', { actor: this, x: this.x, y: this.y });
+    }
 
     const st = this.sm.name;
     const speed = Math.hypot(this.vx, this.vy);
@@ -264,6 +280,7 @@ export class Enemy extends Actor {
       this.anim.tick();
     } else if (
       st === 'attack' || st === 'stagger' || st === 'dead' || st === 'parried' || st === 'critVictim' || st === 'guardBroken' || st === 'intro' || st === 'rise' ||
+      (st === 'submerged' && this.def.ambush?.hidden === false) ||
       (st === 'turn' && (this.turnT >= 0 || this.sm.t < 30))
     ) {
       this.anim.tick();
@@ -295,6 +312,7 @@ export class Enemy extends Actor {
     const inCombat = COMBAT_STATES.has(this.sm.name);
     this.visible =
       !p.dead &&
+      this.blind <= 0 &&
       canSee(this.ctx.grid(), this.x, this.chestY, this.facing, p.x, p.chestY, Infinity, inCombat ? Math.PI : per.halfAngleDeg * DEG);
     if (this.visible) {
       this.noteSighting();
@@ -341,6 +359,10 @@ export class Enemy extends Actor {
       if (h.staggered && st !== 'critVictim') this.sm.change('stagger', true);
       return;
     }
+    if (st === 'submerged' && !h.killed) {
+      this.sm.change('rise'); // struck where it stood still: it wakes
+      return;
+    }
     if (h.killed && this.def.boss?.turn) {
       // Not a death: this phase is spent, and the boss goes to make its turn.
       this.hp = 1;
@@ -381,6 +403,16 @@ export class Enemy extends Actor {
       if (t >= s && t < s + 14) return down;
     }
     return rest;
+  }
+
+  /**
+   * Smoke in its eyes: for `ticks` it can't see you and stumbles about coughing (a boss shakes it off in a
+   * third of the time). It remembers where you were.
+   */
+  setBlind(ticks: number) {
+    if (this.dead || ticks <= 0 || UNBLINDABLE.has(this.sm.name) || (this.def.boss && this.bossWaiting)) return;
+    this.blind = Math.max(this.blind, this.def.boss ? Math.round(ticks / 3) : ticks);
+    if (this.sm.name !== 'attack' || !this.def.boss) this.sm.change('blinded', true);
   }
 
   /** Become certain and fight immediately (hit, or alerted by the room). */

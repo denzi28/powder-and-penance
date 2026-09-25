@@ -22,6 +22,7 @@ export class Prop extends Actor {
   constructor(ctx: WorldCtx, readonly kind: string, readonly uid: string, x: number, y: number) {
     super(ctx, x, y);
     this.hp = this.def.hp;
+    this.invulnerable = !!this.def.melts; // a tallow seal: no blow breaks it, only a beeswax light
   }
 
   get def() {

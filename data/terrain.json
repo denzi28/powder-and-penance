@@ -1,5 +1,10 @@
 {
   "floors": {
-    "floor_wax": { "speedMult": 0.55 }
+    "floor_wax": {
+      "speedMult": 0.55
+    },
+    "floor_honey": {
+      "speedMult": 0.55
+    }
   }
 }

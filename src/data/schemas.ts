@@ -181,6 +181,33 @@ export const BlastDef = z.object({
 });
 export type BlastDef = z.infer<typeof BlastDef>;
 
+/**
+ * A swarm of bees (data/swarms.json): a cloud that hunts one creature and stings everything in it (you, or the
+ * enemies you lead it through). It chases for `angerTicks`, or until its quarry is `giveUp` px away, then goes
+ * home and settles. Weapons pass through it; smoke calms it at once. A settled swarm hovering at home (a Drone
+ * Swarm, room entity "swarm") rises at whoever comes within `sense` px.
+ */
+export const SwarmDef = z.object({
+  /** Bees drawn in the cloud. */
+  bees: int.min(3).max(80),
+  /** Cloud radius (px): everything inside is stung. */
+  radius: pos,
+  /** Chase speed (px/s); the player walks at about 80. */
+  speed: pos,
+  /** Each sting: damage and poise, every `everyTicks` to each creature in the cloud. */
+  damage: num.min(0),
+  poise: num.min(0).default(0),
+  everyTicks: int.positive(),
+  angerTicks: int.positive(),
+  giveUp: pos.default(260),
+  /** Settled at home: rises at whoever comes this close (0 = never; a hive's swarm only comes out when struck). */
+  sense: num.min(0).default(0),
+  /** Settled again this long after being calmed by smoke. */
+  calmTicks: int.nonnegative().default(600),
+});
+export type SwarmDef = z.infer<typeof SwarmDef>;
+export const SwarmCfg = z.object({ swarms: z.record(z.string(), SwarmDef) });
+
 export const PropDef = z.object({
   id: z.string(),
   name: z.string(),
@@ -200,6 +227,13 @@ export const PropDef = z.object({
   secretWall: z.boolean().default(false),
   /** A powder keg: broken, it lights and bursts (setting off other kegs in reach). */
   explode: BlastDef.optional(),
+  /** A hive (data/swarms.json id): struck, a swarm pours out after whoever struck it; broken, a bigger one. */
+  hive: z.string().optional(),
+  /**
+   * A way sealed with tallow (with `secretWall`): no blow breaks it, but a beeswax light (the `light` modifier)
+   * carried within `near` px melts it away for good.
+   */
+  melts: z.object({ near: pos }).optional(),
 });
 
 /** One weighted outcome of a loot roll. */
@@ -285,6 +319,12 @@ export const Mods = z
     spread: pos.optional(),
     /** Multiplier on shop prices. */
     prices: pos.optional(),
+    /** A beeswax light: sealed ways melt as you pass, and the dark is warmer. */
+    light: num.min(0).optional(),
+    /** HP back when your backstab or riposte lands. */
+    critHeal: num.min(0).optional(),
+    /** Multiplier on the damage bee stings do to you. */
+    stings: num.min(0).optional(),
   })
   .strict();
 export type Mods = z.infer<typeof Mods>;
@@ -399,6 +439,8 @@ export const ShopCfg = z.object({
       z
         .object({
           id: z.string(),
+          /** Who sells it: Oskar at Wick's Rest, or Hild at her apiary in Bloomhollow. */
+          seller: z.enum(['oskar', 'hild']).default('oskar'),
           consumable: z.string().optional(),
           item: z.string().optional(),
           note: z.string().optional(),
@@ -443,7 +485,7 @@ export type Step =
   | { give: string }
   | { toast: [string, string] }
   | { card: string; sub?: string; ticks?: number }
-  | { open: 'levelup' | 'shop' | 'smith' }
+  | { open: 'levelup' | 'shop' | 'smith' | 'apiary' }
   | { respec: true }
   | ({ actor: string; sprite: string; at: At; lift?: number; z?: number; shadow?: boolean; bob?: number } & Pose)
   | ({ move: string; to: At; ticks: number; arc?: number; face?: boolean; wait?: boolean } & Pose)
@@ -483,7 +525,7 @@ export const Step: z.ZodType<Step> = z.lazy(() =>
     /** A title card in the middle of the screen (over a fade, it reads like a chapter's end), for `ticks`. */
     z.object({ card: z.string(), sub: z.string().optional(), ticks: int.positive().optional() }).strict(),
     /** Open a townsperson's screen (level up, shop, smith) once the conversation ends. */
-    z.object({ open: z.enum(['levelup', 'shop', 'smith']) }).strict(),
+    z.object({ open: z.enum(['levelup', 'shop', 'smith', 'apiary']) }).strict(),
     /** Put every stat back where it started and give back all the Tallow spent levelling. */
     z.object({ respec: z.literal(true) }).strict(),
     // ---- the cutscene stage (story/Stage.ts): actors, bubbles, bursts, flashes, letterbox bars
@@ -694,6 +736,13 @@ export const StrikeDef = z.object({
    */
   followSweep: z.boolean().default(false),
   rehitTicks: int.positive().optional(),
+  /**
+   * A puff of smoke when the active frames start, `offset` px ahead: everyone caught in its `radius` (not the
+   * one puffing) is blinded for `blind` ticks (they can't see to fight), and bee swarms in it settle.
+   */
+  smoke: z.object({ radius: pos, offset: num.default(16), blind: int.nonnegative().default(0), calm: z.boolean().default(true) }).optional(),
+  /** Swarms of bees (data/swarms.json id) pour out of the attacker after its target when the active frames start. */
+  swarm: z.object({ id: z.string(), count: int.positive().default(1) }).optional(),
   pools: z
     .object({
       count: int.positive(),
@@ -869,11 +918,18 @@ export const EnemyDef = z.object({
   voice: z.object({ alert: z.string().optional(), hurt: z.string().optional(), die: z.string().optional(), rise: z.string().optional() }).optional(),
   /** Not slowed by terrain (creatures of the mire move freely through its wax). */
   wader: z.boolean().default(false),
+  /** Bees leave it be (beekeepers, the hive's own). */
+  beeproof: z.boolean().default(false),
+  /** Smoke staggers it (a swarm given a body): a puff deals this much poise damage. */
+  smokePoise: num.min(0).default(0),
+  /** Leaves slowing puddles behind as it walks (honey): one every `everyTicks`. */
+  trail: z.object({ everyTicks: int.positive(), radius: pos, ticks: int.positive(), speedMult: num.min(0.05).max(1).default(0.6) }).optional(),
   /**
    * Ambusher: waits unseen under the surface (invulnerable, not perceiving) until the player comes within
-   * `radius` px, then rises (anim "rise", `riseTicks`) and fights.
+   * `radius` px, then rises (anim "rise", `riseTicks`) and fights. Not `hidden`: it waits in plain sight,
+   * still as scenery (a scarecrow), and a blow wakes it too.
    */
-  ambush: z.object({ radius: pos, riseTicks: int.positive() }).optional(),
+  ambush: z.object({ radius: pos, riseTicks: int.positive(), hidden: z.boolean().default(true) }).optional(),
   /** Sweeps its gaze back and forth by this many degrees each side of its facing while idle (lanterns). */
   scan: z.object({ arcDeg: pos, degPerTick: pos }).optional(),
   /** Draw its sight cone in the world as a pale light (lanterns: so the player can read the sweep). */
@@ -1013,6 +1069,10 @@ export const ArmourDef = z.object({
   /** The colours it dresses the player in, dark to light: the cloak's teal is repainted with them (the hood by
    *  head armour, the rest by body armour). */
   ramp: z.tuple([z.string(), z.string(), z.string(), z.string()]),
+  /** Worn, it changes you like a ring (a beekeeper's veil against stings). */
+  mods: Mods.optional(),
+  /** One plain line saying what `mods` do (the equipment screen shows it). */
+  effect: z.string().optional(),
 });
 export type ArmourDef = z.infer<typeof ArmourDef>;
 
@@ -1164,6 +1224,8 @@ export const LAYERED_SOUNDS = [
   'b_grapeshot', 'b_cannon_ram', 'b_gunner_roar', 'b_gunner_grunt', 'b_stock_swing', 'b_blunderbuss',
   'b_spikes', 'b_geyser', 'b_spout', 'b_ember_pop', 'b_whirl', 'b_spin', 'b_notes', 'b_wave', 'b_chain_shot',
   'b_tallow_scream', 'b_chandler_scream', 'b_cannon_burst', 'b_boss_fall',
+  // Bloomhollow
+  'e_buzz', 'e_sting', 'e_swarm_rise', 'e_swarm_calm', 'p_smoker', 'e_husk_puff',
   'c_shriek', 'c_neigh', 'c_crash', 'c_cart', 'c_crows', 'c_bell_toll', 'c_steam', 'c_bubble', 'p_blunderbuss', 'p_throw', 'p_throw_knife', 'p_eat', 'p_incense', 'p_cartridge', 'p_oil', 'p_smoke', 'p_drink_grog', 'p_candle', 'p_ring', 'p_paper',
 ] as const;
 export type LayeredSound = (typeof LAYERED_SOUNDS)[number];

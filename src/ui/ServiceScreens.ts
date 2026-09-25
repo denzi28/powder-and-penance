@@ -176,11 +176,19 @@ export interface ShopRow {
 export class ShopScreen extends ServiceScreen {
   readonly kind = 'shop' as const;
 
+  /** Whose stall: Oskar's at Wick's Rest, or Hild's apiary in Bloomhollow. */
+  constructor(gs: GameScene, onClose: () => void, readonly seller: 'oskar' | 'hild' = 'oskar') {
+    super(gs, onClose);
+  }
+  get title() {
+    return this.seller === 'hild' ? "HILD'S APIARY" : "OSKAR'S STALL";
+  }
+
   /** What's on sale now (the stock grows with world flags). */
   list(): ShopRow[] {
     const p = this.p;
     return DATA.shop.stock
-      .filter(e => check(this.gs.flags, e.when))
+      .filter(e => e.seller === this.seller && check(this.gs.flags, e.when))
       .map(e => {
         const limit = e.limit ?? (e.note ? 1 : undefined);
         const n = p.bought[e.id] ?? 0;
@@ -192,7 +200,7 @@ export class ShopScreen extends ServiceScreen {
         }
         if (e.note) {
           const note = DATA.notes[e.note];
-          return { entry: e, name: note.title, icon: NOTE_ICON, price, soldOut, stats: ['A NOTE: KEPT UNDER INVENTORY > NOTES'], description: 'Oskar won\'t say where he got it. "Read it and you\'ll see why."' };
+          return { entry: e, name: note.title, icon: NOTE_ICON, price, soldOut, stats: ['A NOTE: KEPT UNDER INVENTORY > NOTES'], description: this.seller === 'hild' ? 'Hild keeps it pressed flat under a comb frame.' : 'Oskar won\'t say where he got it. "Read it and you\'ll see why."' };
         }
         const it = DATA.items[e.item!];
         const ring = it.effect.type === 'ring' ? DATA.rings[it.effect.id] : null;

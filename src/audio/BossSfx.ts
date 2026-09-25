@@ -391,6 +391,41 @@ class Kit {
     this.noiseSrc(at, 0.02).connect(this.filt('bandpass', f * 4, 2)).connect(this.env(at, 0.001, 0.02, vol * 0.5));
   }
 
+  /**
+   * Bees: `n` wings at slightly different pitches around `f` (Hz), each fluttering in loudness, through a
+   * nasal band; `swell` > 1 rises toward the end (a swarm coming up), < 1 falls away (settling).
+   */
+  buzz(dt: number, dur: number, f: number, vol: number, n = 6, swell = 1) {
+    const ctx = this.ctx;
+    const at = this.t + dt;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, at);
+    g.gain.linearRampToValueAtTime(vol * (swell >= 1 ? 0.5 : 1), at + Math.min(0.12, dur * 0.3));
+    g.gain.linearRampToValueAtTime(vol * (swell >= 1 ? 1 : 0.4), at + dur * 0.8);
+    g.gain.exponentialRampToValueAtTime(0.0001, at + dur);
+    g.connect(this.out);
+    const bp = this.filt('bandpass', f * 3.2, 1.6);
+    const hp = this.filt('highpass', f * 0.8, 0.7);
+    bp.connect(hp).connect(g);
+    for (let i = 0; i < n; i++) {
+      const fi = f * rnd(0.86, 1.18);
+      const o = this.osc(i % 2 ? 'sawtooth' : 'square', fi, at, dur);
+      o.frequency.setValueAtTime(fi, at);
+      o.frequency.linearRampToValueAtTime(fi * (swell >= 1 ? rnd(1.02, 1.12) : rnd(0.85, 0.95)), at + dur);
+      const wob = this.osc('sine', rnd(5, 13), at, dur); // each bee weaving in and out
+      const wg = ctx.createGain();
+      wg.gain.value = fi * 0.03;
+      wob.connect(wg).connect(o.frequency);
+      const amp = ctx.createGain();
+      amp.gain.value = 0.5;
+      const flut = this.osc('sine', rnd(3, 9), at, dur);
+      const fg = ctx.createGain();
+      fg.gain.value = 0.45;
+      flut.connect(fg).connect(amp.gain);
+      o.connect(amp).connect(bp);
+    }
+  }
+
   /** Breath drawn in (or out): shaped noise. */
   breath(dt: number, dur: number, vol: number, inhale = true) {
     const at = this.t + dt;
@@ -1252,6 +1287,37 @@ const RECIPES: Record<LayeredSound, Recipe> = {
     k.boom(0, 55, 28, 1.6, 0.9);
     k.rumble(0, 2.6, 0.6);
     k.bell(0.1, 73, 4, 0.45);
+  },
+  // ---- Bloomhollow
+  /** A swarm near you: a short swell of buzzing, never quite the same. */
+  e_buzz: k => k.buzz(0, rnd(0.5, 0.8), rnd(190, 240), 0.14, 5, 1),
+  /** A sting: a sharp little whine cut off, and the prick. */
+  e_sting: k => {
+    k.buzz(0, 0.12, rnd(300, 360), 0.16, 2, 1.2);
+    k.pop(0.08, rnd(1500, 1900), 0.12);
+  },
+  /** A swarm rising out of a struck hive: the hum climbing into a roar of wings. */
+  e_swarm_rise: k => {
+    k.buzz(0, 1.1, 170, 0.22, 9, 1.4);
+    k.buzz(0.15, 0.9, 260, 0.12, 5, 1.4);
+    k.clang(0, 420, 0.25, 0.08); // the skep knocked
+  },
+  /** Smoke over a swarm: its note falls, the buzz thins, and it settles. */
+  e_swarm_calm: k => {
+    k.buzz(0, 1.2, 200, 0.14, 6, 0.6);
+    k.breath(0, 0.5, 0.1, false);
+  },
+  /** The smoker's bellows: a wheeze of leather, and smoke blown out. */
+  p_smoker: k => {
+    k.breath(0, 0.28, 0.2, true);
+    k.breath(0.24, 0.45, 0.3, false);
+    k.rattle(0.22, 0.05, 0.06);
+  },
+  /** A husk's smoker, pumped hard: bellows, a cough of smoke. */
+  e_husk_puff: k => {
+    k.breath(0, 0.22, 0.2, true);
+    k.breath(0.2, 0.5, 0.34, false);
+    k.voice(0.2, 0.25, 140, 110, 'uh', 0.05, 0.6);
   },
   c_shriek: k => {
     // something in the trees, far off, not an animal
