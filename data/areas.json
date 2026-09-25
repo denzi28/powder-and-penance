@@ -5,7 +5,7 @@
     "abbey": { "name": "The Guttering Abbey", "tileset": "tiles" },
     "works": { "name": "The Tallow Works", "tileset": "tiles_works" },
     "mire": { "name": "The Waxmire", "tileset": "tiles_mire" },
-    "vault": { "name": "The Powder Vault", "tileset": "tiles" },
+    "vault": { "name": "The Powder Vault", "tileset": "tiles_vault" },
     "bloom": { "name": "Bloomhollow", "tileset": "tiles_orchard" },
     "test": { "name": "Test Grounds", "tileset": "tiles" }
   }

@@ -27,7 +27,7 @@ Target: **~2 h** first playthrough (2 h 15 min with the optional Powder Vault). 
 | The Guttering Abbey | `abbey` | 13 | Abbey stone (built) | Tollwarden (mini), Chandler (final) | 40 + 15 min |
 | Tallow Works | `works` | 10 | Soot brick, iron, grease | Mother Tallow | 30 min |
 | The Waxmire | `mire` | 10 | Mud, wax pools, dead roots | Mire Matron | 30 min |
-| Powder Vault (optional) | `vault` | 4 | Cellar stone, powder kegs | Master Gunner | 15 min |
+| Powder Vault (optional) | `vault` | 4 | Oak-floored brick magazine, powder kegs | Master Gunner | 15 min |
 | Bloomhollow (optional) | `bloom` | 10 | Orchard grass, lavender, honey, honeycomb paving | Scarecrow Warden (mini), Hive Queen | 35 min |
 
 **Critical path:**

@@ -8758,6 +8758,245 @@ function cannonDeath(c: Img, f: number) {
   drawCannon(c, 'S', { flinch: true, smoke: f * 0.4, bob: f });
 }
 
+// ---- The Powder Vault's tileset: a gunpowder magazine under the fort. Oak boards pinned with copper nails (iron
+// strikes sparks), black powder spilled between them; red brick walls shored with oak posts, a lantern behind
+// glass in its niche; heavy beams along the wall tops.
+function genVaultTiles() {
+  const T = 16;
+  const img = new Img(T * 8, T * 8);
+  const at = tileAt;
+  const speck = (ox: number, oy: number, r: () => number, n: number, col: RGBA) => {
+    for (let i = 0; i < n; i++) img.set(ox + Math.floor(r() * 16), oy + Math.floor(r() * 16), col);
+  };
+  const VB = {
+    mortar: hex('#2a1a1c'),
+    b0: mix(P.blood1, P.dark1, 0.55),
+    b1: mix(P.blood1, P.wood1, 0.45),
+    b2: mix(P.blood1, P.wood2, 0.4),
+    b3: mix(P.ember, P.wood2, 0.45),
+    lime: mix(P.wax1, P.stone3, 0.35),
+    copper: hex('#b8733a'),
+    copperD: hex('#6e3f22'),
+    powder: mix(P.ink, P.stone1, 0.35),
+    powder2: mix(P.dark1, P.stone2, 0.3),
+  };
+  const OAK = [mix(P.wood1, P.wood2, 0.35), mix(P.wood1, P.wood2, 0.6), mix(P.wood1, P.dark2, 0.2), P.wood2];
+  const cool: SlabPal = { base: mix(P.stone1, P.wood1, 0.25), mortar: mix(P.dark1, P.ink, 0.4), hi: mix(P.stone2, P.wood2, 0.3), lo: mix(P.stone1, P.dark1, 0.5) };
+
+  // 0-3 floor: worn flags, powder in the joints
+  for (let v = 0; v < 4; v++) {
+    const [ox, oy] = at(v);
+    const r = rng(12000 + v);
+    if (v < 2) flagstone(img, ox, oy, 0, 0, 16, 16, r, cool, v ? -0.2 : 0.1);
+    else {
+      flagstone(img, ox, oy, 0, 0, 16, 7, r, cool, 0.15);
+      flagstone(img, ox, oy, 0, 7, 10, 9, r, cool, -0.1);
+      flagstone(img, ox, oy, 10, 7, 6, 9, r, cool);
+    }
+    speck(ox, oy, r, 5, VB.powder);
+  }
+  // 4-11 floor_plank: broad oak boards, staggered joints, copper nails, grain, powder dust; rarer: a spilled trail
+  // of powder, a scorch where a spark caught, a dropped musket ball
+  for (let v = 0; v < 8; v++) {
+    const [ox, oy] = at(4 + v);
+    const r = rng(12100 + v);
+    for (let b = 0; b < 4; b++) {
+      const y = oy + b * 4;
+      const c = OAK[(b * 3 + v) % 4];
+      img.rect(ox, y, T, 4, c);
+      img.hline(ox, y, T, mix(c, P.wax1, 0.18)); // the lit edge of the board
+      img.hline(ox, y + 3, T, mix(P.wood1, P.ink, 0.55)); // the gap between boards
+      for (let i = 0; i < 2; i++) img.hline(ox + Math.floor(r() * 11), y + 1 + Math.floor(r() * 2), 3 + Math.floor(r() * 3), mix(c, P.wood1, 0.45)); // grain
+      const j = (3 + b * 7 + v * 5) % 16;
+      if ((b + v) % 3 === 0) {
+        // a board's end (boards run longer than a tile), a copper nail either side of it
+        img.vline(ox + j, y, 3, mix(P.wood1, P.ink, 0.5));
+        img.set(ox + ((j + 15) % 16), y + 1, VB.copperD);
+        img.set(ox + ((j + 1) % 16), y + 1, VB.copper);
+      } else if ((b + v) % 3 === 1) img.set(ox + j, y + 1, VB.copperD); // a nail into the joist below
+      // powder settled in the gap
+      for (let x = 0; x < T; x++) if (r() < 0.18) img.set(ox + x, y + 3, VB.powder2);
+    }
+    speck(ox, oy, r, 3, VB.powder);
+    if (v === 5) {
+      // a trail of spilled powder, from a split keg carried through
+      for (let x = 0; x < T; x++) {
+        const y = oy + 7 + Math.round(Math.sin(x * 0.5) * 1.5);
+        img.set(ox + x, y, VB.powder);
+        if (r() < 0.6) img.set(ox + x, y + 1, VB.powder2);
+        if (r() < 0.2) img.set(ox + x, y - 1, VB.powder2);
+      }
+    }
+    if (v === 6) {
+      // a scorch where a spark caught (and was put out)
+      for (let y = -3; y <= 3; y++)
+        for (let x = -5; x <= 5; x++) {
+          const d = (x * x) / 25 + (y * y) / 9;
+          if (d < 1 && r() < 1.2 - d) img.set(ox + 8 + x, oy + 8 + y, mix(P.wood1, P.ink, 0.35 + (1 - d) * 0.35));
+        }
+    }
+    if (v === 7) {
+      img.rect(ox + 10, oy + 9, 2, 2, IRON.c1); // a dropped musket ball
+      img.set(ox + 10, oy + 9, IRON.c3);
+      img.hline(ox + 10, oy + 11, 2, mix(P.wood1, P.ink, 0.5));
+    }
+  }
+  // 44-45 grate: an iron grille over the powder drain
+  for (const v of [44, 45]) {
+    const [ox, oy] = at(v);
+    img.rect(ox, oy, T, T, P.ink);
+    for (let x = 1; x < T; x += 4) {
+      img.vline(ox + x, oy, T, IRON.c1);
+      img.vline(ox + x + 1, oy, T, IRON.c0);
+      img.set(ox + x, oy + 1, IRON.c2);
+    }
+    for (const y of [0, 8]) {
+      img.hline(ox, oy + y, T, IRON.c2);
+      img.hline(ox, oy + y + 1, T, IRON.c0);
+    }
+    if (v === 45) img.set(ox + 6, oy + 12, VB.powder2);
+  }
+  // 46-47 rock: packed black earth and fieldstones behind the magazine walls
+  for (const idx of [46, 47]) {
+    const [ox, oy] = at(idx);
+    const r = rng(12200 + idx);
+    img.rect(ox, oy, T, T, mix(P.ink, P.dark1, 0.3));
+    for (let i = 0; i < 3; i++) {
+      const x = ox + 2 + r() * 11;
+      const y = oy + 2 + r() * 11;
+      img.ellipse(x, y, 1.5 + r() * 1.5, 1 + r(), mix(P.dark1, P.stone1, 0.3));
+      img.set(x - 1, y - 1, mix(P.dark2, P.stone2, 0.3));
+    }
+    speck(ox, oy, r, 4, P.dark1);
+  }
+  // wall faces: red brick in English bond, limewash flaking from the top, soot above the lamps
+  const brick = (ox: number, oy: number, r: () => number) => {
+    img.rect(ox, oy, T, T, VB.mortar);
+    for (let row = 0; row < 5; row++) {
+      const y = oy + 1 + row * 3;
+      const header = row % 2 === 1;
+      const len = header ? 4 : 8;
+      const off = header ? 2 : row % 4 === 0 ? 0 : 4;
+      for (let x0 = -off; x0 < T; x0 += len) {
+        const x = Math.max(0, x0);
+        const w = Math.min(x0 + len - 1, T) - x;
+        if (w <= 0) continue;
+        const tone = r();
+        const c = tone < 0.25 ? VB.b0 : tone < 0.7 ? VB.b1 : VB.b2;
+        img.rect(ox + x, y, w, 2, c);
+        img.hline(ox + x, y, w, mix(c, VB.b3, 0.5));
+        if (r() < 0.3) img.set(ox + x + Math.floor(r() * w), y + 1, mix(c, VB.mortar, 0.5));
+      }
+    }
+    // limewash, flaking away down the wall
+    for (let x = 0; x < T; x++) {
+      const drip = Math.floor(r() * 4);
+      for (let y = 0; y < drip; y++) img.set(ox + x, oy + y, mix(VB.lime, VB.b1, y * 0.25));
+    }
+    img.hline(ox, oy + 15, T, P.ink);
+    img.hline(ox, oy + 14, T, mix(VB.mortar, P.ink, 0.5));
+  };
+  const post = (ox: number, oy: number, x: number) => {
+    // an oak shoring post, iron-strapped
+    img.rect(ox + x, oy, 4, 15, OAK[1]);
+    img.vline(ox + x, oy, 15, OAK[3]);
+    img.vline(ox + x + 3, oy, 15, mix(P.wood1, P.ink, 0.4));
+    img.vline(ox + x + 1, oy + 3, 5, OAK[0]);
+    for (const y of [3, 11]) {
+      img.hline(ox + x - 1, oy + y, 6, IRON.c1);
+      img.set(ox + x, oy + y, IRON.c3);
+      img.set(ox + x + 3, oy + y, IRON.c3);
+    }
+  };
+  for (const [idx, kind] of [[12, 0], [13, 1], [14, 2], [15, 3], [40, 4], [41, 5], [42, 0], [43, 6]] as const) {
+    const [ox, oy] = at(idx);
+    const r = rng(12300 + idx);
+    brick(ox, oy, r);
+    if (kind === 1) post(ox, oy, 6);
+    if (kind === 2) {
+      // a lantern behind a glass pane in a niche (lamps in a magazine burn behind glass, never in the open)
+      img.rect(ox + 4, oy + 3, 8, 10, P.ink);
+      img.rect(ox + 5, oy + 4, 6, 8, mix(P.ink, P.flame1, 0.25));
+      img.rect(ox + 7, oy + 7, 2, 3, P.flame2);
+      img.set(ox + 7, oy + 6, P.flame1);
+      img.set(ox + 8, oy + 10, P.honey);
+      img.hline(ox + 5, oy + 4, 6, mix(P.wax2, P.flame1, 0.4)); // light on the glass
+      img.set(ox + 5, oy + 5, withAlpha(P.wax2, 200));
+      for (const y of [3, 12]) img.hline(ox + 4, oy + y, 8, VB.copper);
+      img.vline(ox + 4, oy + 3, 10, VB.copperD);
+      img.vline(ox + 11, oy + 3, 10, VB.copperD);
+      for (let y = 0; y < 3; y++) img.hline(ox + 5, oy + y, 6, mix(VB.mortar, P.ink, 0.3)); // soot above it
+    }
+    if (kind === 3) {
+      // a painted warning: a black keg with a red flame struck through
+      img.rect(ox + 4, oy + 3, 8, 9, mix(VB.lime, P.wax2, 0.3));
+      img.rect(ox + 6, oy + 5, 4, 5, P.ink);
+      img.hline(ox + 6, oy + 6, 4, P.dark2);
+      img.hline(ox + 6, oy + 8, 4, P.dark2);
+      line(img, ox + 5, oy + 11, ox + 11, oy + 4, P.poppy);
+      img.set(ox + 9, oy + 4, P.flame1);
+    }
+    if (kind === 4) {
+      // pegs for hanging powder horns, one horn still on its peg
+      for (const x of [4, 11]) {
+        img.set(ox + x, oy + 6, OAK[3]);
+        img.set(ox + x, oy + 7, OAK[0]);
+      }
+      img.set(ox + 4, oy + 8, P.dark2); // the cord
+      line(img, ox + 3, oy + 9, ox + 6, oy + 12, mix(P.wax1, P.wood2, 0.4));
+      line(img, ox + 3, oy + 10, ox + 5, oy + 12, mix(P.wax1, P.wood2, 0.7));
+      img.set(ox + 6, oy + 12, VB.copper);
+    }
+    if (kind === 5) {
+      // a crack, a brick fallen out
+      img.rect(ox + 9, oy + 7, 4, 2, P.ink);
+      line(img, ox + 3, oy + 2, ox + 7, oy + 8, VB.mortar);
+      line(img, ox + 7, oy + 8, ox + 9, oy + 8, VB.mortar);
+    }
+    if (kind === 6) post(ox, oy, 2);
+  }
+  // 16-31 wall tops: dark brick under heavy oak beams where the wall meets the room, iron-strapped
+  for (let mask = 0; mask < 16; mask++) {
+    const [ox, oy] = at(16 + mask);
+    const r = rng(12400 + mask);
+    img.rect(ox, oy, T, T, mix(VB.b0, P.ink, 0.5));
+    for (let y = 1; y < T; y += 3) for (let x = (y % 2) * 3; x < T; x += 6) img.hline(ox + x, oy + y, 4, mix(VB.b0, P.ink, 0.25));
+    speck(ox, oy, r, 3, P.ink);
+    const N = mask & 1, E = mask & 2, S = mask & 4, Wt = mask & 8;
+    const beamH = (y: number, lit: boolean) => {
+      img.rect(ox, oy + y, T, 3, OAK[lit ? 3 : 1]);
+      img.hline(ox, oy + y, T, lit ? mix(OAK[3], P.wax1, 0.3) : OAK[3]);
+      img.hline(ox, oy + y + 2, T, mix(P.wood1, P.ink, 0.4));
+      for (const x of [2, 13]) img.set(ox + x, oy + y + 1, IRON.c2);
+    };
+    const beamV = (x: number, lit: boolean) => {
+      img.rect(ox + x, oy, 3, T, OAK[lit ? 3 : 2]);
+      img.vline(ox + x, oy, T, lit ? mix(OAK[3], P.wax1, 0.3) : OAK[1]);
+      img.vline(ox + x + 2, oy, T, mix(P.wood1, P.ink, 0.4));
+    };
+    if (N) beamH(0, true);
+    if (S) beamH(13, false);
+    if (Wt) beamV(0, true);
+    if (E) beamV(13, false);
+  }
+  shadeTiles(img, 32, 1);
+  sheet('tiles_vault', img, {
+    cell: [T, T],
+    pivot: [0, 0],
+    layer: 'tiles',
+    tiles: {
+      floor: [0, 0, 1, 1, 2, 3],
+      floor_plank: [...Array(14).fill(4), ...Array(14).fill(5), ...Array(12).fill(6), ...Array(12).fill(7), 8, 8, 8, 9, 10, 11], // the spill, scorch and shot are rare
+      floor_grate: [44, 44, 45],
+      wall_front: [12, 12, 13, 12, 42, 14, 12, 40, 12, 15, 41, 43, 12, 13],
+      wall_cap: Array.from({ length: 16 }, (_, i) => 16 + i),
+      rock: [46, 46, 47],
+      shade: Array.from({ length: 8 }, (_, i) => 32 + i),
+      glow: [14],
+    },
+  });
+}
+
 function genVault() {
   const P7 = phased7();
   // Blunderbuss (the player's and the Gunner's): a short stock, a brass barrel that flares to a bell
@@ -9058,23 +9297,44 @@ function genOrchardTiles() {
       img.set(ox + 12, oy + 3, P.blossom); // a petal blown from the trees
     }
   }
-  // 4-7 orchard path: packed warm earth, a few stones, fallen blossom
+  // 4-7 orchard path: packed warm earth in soft patches, worn hollows, a few rounded pebbles, fallen blossom
   for (let v = 0; v < 4; v++) {
     const [ox, oy] = at(4 + v);
     const r = rng(9100 + v);
     img.rect(ox, oy, T, T, BL.e2);
-    speck(ox, oy, r, 14, BL.e1);
-    speck(ox, oy, r, 10, BL.e3);
-    speck(ox, oy, r, 3, BL.e0);
+    for (let i = 0; i < 3; i++) {
+      // lighter, drier patches where the earth is packed hardest (wrapping so the tiles join)
+      const cx = r() * 16;
+      const cy = r() * 16;
+      const rr = 2 + r() * 2.5;
+      for (let y = -4; y <= 4; y++)
+        for (let x = -5; x <= 5; x++)
+          if ((x * x) / (rr * rr * 1.4) + (y * y) / (rr * rr * 0.8) < 1) img.set(ox + ((Math.floor(cx + x) + 16) % 16), oy + ((Math.floor(cy + y) + 16) % 16), mix(BL.e2, BL.e3, 0.55));
+    }
     for (let i = 0; i < 2; i++) {
-      const x = ox + 1 + Math.floor(r() * 12);
-      const y = oy + 1 + Math.floor(r() * 12);
-      img.rect(x, y, 2, 1, BL.s3); // a pebble
-      img.set(x, y + 1, BL.e0);
+      // hollows worn by feet: a dark rim below, lit edge above
+      const x = ox + 2 + Math.floor(r() * 10);
+      const y = oy + 2 + Math.floor(r() * 11);
+      img.hline(x, y, 3, mix(BL.e1, BL.e2, 0.4));
+      img.hline(x, y + 1, 3, BL.e1);
+      img.hline(x, y - 1, 3, mix(BL.e2, BL.e3, 0.7));
+    }
+    speck(ox, oy, r, 6, BL.e1);
+    speck(ox, oy, r, 5, BL.e3);
+    speck(ox, oy, r, 2, BL.e0);
+    for (let i = 0; i < 1 + (v % 2); i++) {
+      // a rounded pebble: lit top-left, a shadow under it
+      const x = ox + 2 + Math.floor(r() * 11);
+      const y = oy + 2 + Math.floor(r() * 11);
+      img.rect(x, y, 2, 2, BL.s2);
+      img.set(x, y, BL.s4);
+      img.hline(x, y + 2, 2, BL.e0);
+      img.set(x + 2, y + 1, BL.e1);
     }
     if (v === 1 || v === 3) {
       img.set(ox + 5 + v, oy + 9, P.blossom);
       img.set(ox + 6 + v, oy + 9, mix(P.blossom, P.wax2, 0.5));
+      img.set(ox + 5 + v, oy + 10, mix(P.blossom, BL.e1, 0.5));
     }
     if (v === 2) img.set(ox + 10, oy + 4, P.blossom);
   }
@@ -9323,15 +9583,31 @@ function genOrchardTiles() {
     else if (r() < 0.6) img.set(x, y, BL.h0);
   });
   // 64-79 the path's worn edge fraying into the grass
-  fringeTiles(64, 3, 10000, (x, y, d, r) => {
-    if (d > 0.6 ? r() < 0.5 : r() < 0.12) return;
-    img.set(x, y, d < 0.4 ? BL.e2 : r() < 0.5 ? BL.e3 : BL.e1);
+  fringeTiles(64, 5, 10000, (x, y, d, r) => {
+    if (d > 0.75 ? r() < 0.65 : d > 0.45 ? r() < 0.25 : false) return;
+    img.set(x, y, d < 0.45 ? (r() < 0.15 ? BL.e3 : BL.e2) : d < 0.75 ? (r() < 0.5 ? BL.e2 : mix(BL.e1, BL.g0, 0.3)) : r() < 0.5 ? mix(BL.e1, BL.g1, 0.4) : BL.g0);
   });
   // 80-95 meadow flowers spilling over their bed's edge
-  fringeTiles(80, 3, 10100, (x, y, d, r) => {
-    if (r() < 0.55 + d * 0.3) return;
-    const c = [P.poppy, P.wax2, P.violet3, P.flame2, BL.g4, BL.g3][Math.floor(r() * 6)];
-    img.set(x, y, c);
+  fringeTiles(80, 5, 10100, (x, y, d, r) => {
+    const ox = x - (x % 16);
+    const oy = y - (y % 16);
+    const put = (px: number, py: number, col: RGBA) => {
+      if (px >= ox && px < ox + 16 && py >= oy && py < oy + 16) img.set(px, py, col);
+    };
+    const k = r();
+    if (k < 0.035 * (1 - d) && d > 0.15) {
+      // a flower that has seeded itself past the bed
+      const petal = [P.poppy, P.wax2, P.violet3, P.flame2][Math.floor(r() * 4)];
+      put(x, y - 1, petal);
+      put(x - 1, y, petal);
+      put(x + 1, y, mix(petal, P.ink, 0.2));
+      put(x, y + 1, mix(petal, P.ink, 0.3));
+      put(x, y, petal === P.flame2 ? P.honey : P.flame2);
+    } else if (k < 0.3 * (1 - d * 0.7)) {
+      // the meadow's taller, lusher grass
+      put(x, y, BL.g3);
+      if (r() < 0.5) put(x, y - 1, BL.g4);
+    } else if (k < 0.36 && d < 0.5) put(x, y, BL.g1);
   });
   // 96-97 rock (outside the rooms): deep orchard canopy, dark, a blossom here and there
   for (let v = 0; v < 2; v++) {
@@ -9437,12 +9713,12 @@ function skep(c: Img, cx: number, base: number, r: number, broken = false) {
   for (let y = 0; y < h; y++) {
     const k = (y + 0.5) / h;
     const half = Math.round(r * Math.sqrt(Math.max(0, 1 - (1 - k) ** 2))); // a round dome
-    const coil = y % 2 === 0;
+    const band = y % 2; // each coil of straw rope bulges: lit on top, a dark groove below
     for (let x = -half; x <= half; x++) {
-      const t = (x + half) / Math.max(1, half * 2);
-      let col = shadeT(t, STRAW);
-      if (!coil) col = mix(col, STRAW.c0, 0.3); // the groove between coils
-      c.set(cx + x, base - h + y, col);
+      const nx = x / Math.max(1, half);
+      let l = -nx * 0.9 + (band === 0 ? 0.25 : -0.35) + (1 - k) * 0.2;
+      if (band === 0 && (x + y * 2) % 5 === 0) l -= 0.3; // the bramble bindings
+      c.set(cx + x, base - h + y, l > 0.5 ? STRAW.c3 : l > 0 ? STRAW.c2 : l > -0.55 ? STRAW.c1 : STRAW.c0);
     }
   }
   c.hline(cx - r + 1, base - h - 1, 1, STRAW.c3);
@@ -9574,36 +9850,64 @@ function genBloomDecor() {
     }
     push(c, 16);
   }
-  // 5 scarecrow: a sack head with a stitched grin, a battered hat, a coat stuffed with straw, arms on a cross-bar
+  // 5 scarecrow: a sack head with a stitched grin, a battered felt hat, a patched coat stuffed with straw, arms on a cross-bar
   {
     const c = cell();
     box(c, 31, B - 36, 3, 36, WOOD); // the post
-    box(c, 17, B - 30, 30, 3, WOOD); // the cross-bar
-    // coat
-    for (let y = B - 30; y < B - 14; y++) {
-      const w = 12 + Math.floor((y - (B - 30)) / 4);
-      for (let x = 0; x < w; x++) c.set(32 - Math.floor(w / 2) + x, y, shadeT(x / (w - 1), { c0: mix(P.teal1, P.ink, 0.3), c1: P.teal1, c2: mix(P.teal1, P.teal2, 0.6), c3: P.teal2 }));
+    box(c, 16, B - 30, 32, 3, WOOD); // the cross-bar
+    // the coat, lit from the left, lapels and odd buttons, a red patch and a sackcloth one
+    for (let y = B - 31; y < B - 13; y++) {
+      const w = y === B - 31 ? 10 : 13 + Math.floor((y - (B - 30)) / 4);
+      for (let x = 0; x < w; x++) c.set(32 - Math.floor(w / 2) + x, y, shadeT(x / (w - 1), GUARDCOAT));
     }
-    c.vline(32, B - 29, 14, P.teal1);
-    for (const y of [B - 26, B - 21]) c.set(33, y, P.wax1); // buttons (odd ones)
-    c.rect(24, B - 22, 3, 3, mix(P.blood1, P.wood2, 0.3)); // a patch
-    // straw hands and hem
-    for (const x of [16, 47]) for (let i = 0; i < 4; i++) c.set(x + (x < 30 ? -i % 2 : i % 2), B - 30 + i, i % 2 ? STRAW.c2 : STRAW.c3);
-    for (let x = 26; x < 39; x += 2) c.vline(x, B - 14, 2 + (x % 3), STRAW.c2);
-    // the sack head
-    c.disc(32, B - 36, 5.5, mix(P.wax1, P.wood2, 0.45));
-    c.disc(31, B - 37, 4, mix(P.wax1, P.wood2, 0.25));
-    c.set(30, B - 37, P.ink); // painted eyes, a stitched grin
-    c.set(34, B - 37, P.ink);
-    for (let x = 29; x <= 35; x++) c.set(x, B - 34 + (x === 29 || x === 35 ? -1 : 0), x % 2 ? P.ink : mix(P.wax1, P.wood1, 0.5));
-    // the hat
-    c.hline(25, B - 41, 15, DWOOD.c1);
-    c.hline(26, B - 42, 13, DWOOD.c2);
-    c.rect(28, B - 46, 9, 4, DWOOD.c1);
-    c.hline(28, B - 46, 9, DWOOD.c3);
-    c.hline(28, B - 43, 9, P.poppy); // a faded band
-    c.set(29, B - 44, STRAW.c3); // straw poking out
-    c.set(37, B - 42, P.blossom); // a flower stuck in the band
+    // sleeves along the bar
+    for (const [x0, x1, lit] of [[18, 25, true], [39, 46, false]] as const) {
+      c.rect(x0, B - 31, x1 - x0 + 1, 4, lit ? GUARDCOAT.c2 : GUARDCOAT.c1);
+      c.hline(x0, B - 31, x1 - x0 + 1, lit ? GUARDCOAT.c3 : GUARDCOAT.c2);
+      c.hline(x0, B - 28, x1 - x0 + 1, GUARDCOAT.c0);
+    }
+    strawTuft(c, 17, B - 29, -1, 0);
+    strawTuft(c, 47, B - 29, 1, 0);
+    c.vline(32, B - 30, 16, GUARDCOAT.c0);
+    line(c, 29, B - 31, 31, B - 25, GUARDCOAT.c3);
+    line(c, 36, B - 31, 34, B - 25, GUARDCOAT.c1);
+    for (const [y, col] of [[B - 25, BL.h2], [B - 21, P.stone3], [B - 17, WOOD.c3]] as const) c.set(33, y, col);
+    c.rect(25, B - 22, 3, 3, mix(P.blood1, P.wood2, 0.3));
+    c.set(25, B - 22, mix(P.blood2, P.wood2, 0.3));
+    c.rect(35, B - 18, 3, 2, SACK.c1);
+    c.set(35, B - 18, SACK.c2);
+    for (let x = 26; x <= 38; x++) c.set(x, B - 22, x % 2 ? EN.rope : WOOD.c3); // twine belt
+    for (let x = 25; x < 40; x++) {
+      const t = (x * 5) % 3; // the hem, burst with straw
+      c.vline(x, B - 13, t + 1, [STRAW.c1, STRAW.c3, STRAW.c2][(x * 7) % 3]);
+    }
+    strawTuft(c, 27, B - 32, -1, -1);
+    strawTuft(c, 37, B - 32, 1, -1);
+    // the sack head, tied at the neck
+    sackHead(c, 32, B - 37, 5, SACK, false);
+    c.hline(29, B - 32, 7, EN.rope);
+    c.set(30, B - 38, P.ink); // painted eyes, a stitch over each
+    c.set(34, B - 38, P.ink);
+    c.set(30, B - 39, SACK.c0);
+    c.set(34, B - 39, SACK.c0);
+    for (let x = 29; x <= 35; x++) c.set(x, B - 35 + (x === 29 || x === 35 ? -1 : 0), x % 2 ? P.ink : SACK.c0);
+    // the hat: battered felt, dented, the brim drooping, a flower stuck in its band
+    c.ellipse(32, B - 42, 8, 1.8, FELT.c1);
+    c.hline(24, B - 42, 6, FELT.c2);
+    c.set(40, B - 41, FELT.c1);
+    c.set(40, B - 40, FELT.c0);
+    c.rect(28, B - 47, 9, 5, FELT.c2);
+    c.vline(28, B - 47, 5, FELT.c3);
+    c.vline(36, B - 47, 5, FELT.c1);
+    c.set(32, B - 47, FELT.c1);
+    c.set(31, B - 47, FELT.c3);
+    c.hline(28, B - 43, 9, mix(P.moss1, FELT.c1, 0.4));
+    c.set(35, B - 44, P.blossom);
+    c.set(36, B - 44, mix(P.blossom, P.poppy, 0.3));
+    c.set(26, B - 41, STRAW.c3);
+    c.set(38, B - 40, STRAW.c2);
+    // a crow resting on the bar
+    perchedCrow(c, 41, B - 33, false);
     push(c, 6);
   }
   // 6 skep bench (2 tiles): a plank on stone legs, three straw skeps, one with bees at the door
@@ -9753,24 +10057,32 @@ function genBloomDecor() {
     for (let y = 0; y < h; y++) {
       const k = y / h;
       const half = Math.round(r * Math.sqrt(Math.max(0, 1 - (1 - k) ** 1.6))); // a tall straw bell
+      const band = y % 3; // coils of straw rope, each lit on top with a dark groove below, bound with bramble
       for (let x = -half; x <= half; x++) {
-        const t = (x + half) / Math.max(1, half * 2);
-        let col = shadeT(t, STRAW);
-        if (y % 3 === 2) col = mix(col, STRAW.c0, 0.35);
-        c.set(cx + x, B - h + y, col);
+        const nx = x / Math.max(1, half);
+        let l = -nx * 0.95 + (band === 0 ? 0.3 : band === 2 ? -0.4 : 0) + (1 - k) * 0.15;
+        if (band === 1 && (x + Math.floor(y / 3) * 5) % 11 === 0) l -= 0.35;
+        c.set(cx + x, B - h + y, l > 0.45 ? STRAW.c3 : l > 0 ? STRAW.c2 : l > -0.55 ? STRAW.c1 : STRAW.c0);
       }
     }
-    // the great door, and honey welling out of it
+    // the great door: a dark arch with a warm glow deep inside, honey welling out of it
     c.ellipse(cx, B - 6, 6, 7, P.ink, (_x, y) => y < B);
+    c.ellipse(cx, B - 1, 3.5, 2, mix(P.ink, BL.h1, 0.4), (_x, y) => y < B);
     c.ellipse(cx, B, 9, 2, BL.h2);
     c.hline(cx - 5, B - 1, 10, BL.h3);
-    // comb bulging through a split in the straw
-    for (let y = 0; y < 10; y++) c.hline(cx + 8, B - 34 + y, 5 - Math.abs(y - 5) / 2, y % 2 ? BL.h2 : P.wax1);
-    c.vline(cx + 7, B - 35, 12, P.ink);
+    c.vline(cx - 6, B - 9, 5, BL.h2); // running down the straw beside it
+    c.set(cx - 6, B - 4, BL.h1);
+    // comb bulging through a split in the straw, its cells full and dripping
+    c.ellipse(cx + 10, B - 29, 3.5, 6, mix(P.wax1, BL.h2, 0.35));
+    c.ellipse(cx + 9, B - 30, 2, 3.5, mix(P.wax1, BL.h3, 0.3));
+    for (let y = 0; y < 12; y += 2) for (let x = 0; x < 6; x += 2) if (c.alpha(cx + 7 + x + ((y / 2) % 2), B - 35 + y)) c.set(cx + 7 + x + ((y / 2) % 2), B - 35 + y, BL.h1);
+    c.vline(cx + 7, B - 36, 13, P.ink);
+    c.vline(cx + 10, B - 23, 4, BL.h2);
+    c.set(cx + 10, B - 19, BL.h1);
     // a crown of wax on its peak
     for (const [x, hh] of [[-3, 3], [0, 5], [3, 3]]) c.vline(cx + x, B - h - hh, hh, P.wax2);
     c.set(cx, B - h - 6, P.flame2);
-    for (const [x, y] of [[-14, -40], [12, -46], [18, -22], [-20, -18], [-8, -50], [6, -12]]) c.set(cx + x, B + y, P.flame2); // bees
+    for (const [x, y] of [[-14, -40], [12, -46], [18, -22], [-20, -18], [-8, -50], [6, -12]]) crawlingBee(c, cx + x, B + y, x > 0); // bees
     push(c, 26);
   }
   // 15 charred stump
@@ -9947,34 +10259,63 @@ const HUSKWAX: Ramp = { c0: mix(P.wax1, P.wood1, 0.45), c1: mix(P.wax1, P.honey,
 const GUARDCOAT: Ramp = { c0: mix(P.teal1, P.ink, 0.35), c1: P.teal1, c2: mix(P.teal1, P.teal2, 0.6), c3: P.teal2 };
 const SACK: Ramp = { c0: mix(P.wood1, P.dark1, 0.3), c1: mix(P.wax1, P.wood2, 0.6), c2: mix(P.wax1, P.wood2, 0.4), c3: mix(P.wax1, P.wood2, 0.2) };
 
-/** A wide straw hat with a veil of dark mesh falling to the shoulders, a wax face just seen through it. */
+const VEIL: Ramp = { c0: mix(P.ink, P.dark1, 0.4), c1: P.dark1, c2: mix(P.dark2, P.stone2, 0.3), c3: mix(P.stone2, P.stone3, 0.4) };
+
+/** A bee crawling on something: a gold body with a black band and a glint of wing. */
+function crawlingBee(c: Img, x: number, y: number, flip = false) {
+  c.set(x, y, P.flame2);
+  c.set(x + (flip ? -1 : 1), y, P.ink);
+  c.set(x + (flip ? 1 : -1), y, mix(P.honey, P.ink, 0.3));
+  c.set(x, y - 1, withAlpha(P.wax2, 210));
+}
+
+/** A wide straw hat with a veil of black gauze falling to the shoulders, a wax face just seen through it. */
 function veiledHead(c: Img, dir: Dir5, hx: number, hy: number, flinch: boolean) {
   const back = dir === 'N' || dir === 'NE';
-  // the veil: a dark mesh bell from the brim to the shoulders; a wax face shows through the holes
+  const side = dir === 'E';
+  const f = faceX(dir, hx);
+  // the veil: a bell of gauze from the brim to the shoulders, lit down its left side, the mesh just showing
   for (let y = hy - 1; y <= hy + 6; y++) {
-    const half = 3 + Math.min(2, Math.floor((y - hy + 1) / 3));
-    for (let x = hx - half; x <= hx + half; x++) {
-      const mesh = (x + y) % 2 === 0;
-      const face = !back && Math.abs(x - hx - (dir === 'E' ? 1 : dir === 'SE' ? 0.5 : 0)) <= 2 && y >= hy && y <= hy + 4;
-      const col = mesh ? (x === hx - half ? mix(P.dark2, P.stone2, 0.5) : P.dark1) : face ? HUSKWAX.c2 : P.dark2;
+    const half = 3.4 + Math.max(0, y - hy) * 0.42;
+    const x0 = Math.round(hx - half);
+    const x1 = Math.round(hx + half);
+    for (let x = x0; x <= x1; x++) {
+      const t = (x - x0) / Math.max(1, x1 - x0);
+      let col = t < 0.18 ? VEIL.c2 : t > 0.8 ? VEIL.c0 : VEIL.c1;
+      if ((x + y) % 2 === 0) col = mix(col, VEIL.c3, 0.22);
+      const fx = x - f;
+      if (!back && Math.abs(fx) <= 2 && y >= hy && y <= hy + 4 && !(Math.abs(fx) === 2 && (y === hy || y === hy + 4))) {
+        // the face, pale wax seen through black mesh
+        const lit = fx < 0 || (fx === 0 && y < hy + 3);
+        col = (x + y) % 2 ? mix(lit ? HUSKWAX.c3 : HUSKWAX.c1, VEIL.c1, 0.2) : mix(lit ? HUSKWAX.c2 : HUSKWAX.c0, VEIL.c1, 0.45);
+      }
       c.set(x, y, col);
     }
   }
+  c.hline(Math.round(hx - 5.9), hy + 6, 12, VEIL.c2); // the veil's hem where it lies on the shoulders
   if (!back) {
-    const f = hx + (dir === 'E' ? 1 : dir === 'SE' ? 1 : 0);
-    const eye = flinch ? P.ember : P.flame1; // a honey glint in empty sockets
-    c.set(f - 1, hy + 2, P.ink);
-    if (dir !== 'E') c.set(f + 1, hy + 2, P.ink);
-    c.set(f - 1, hy + 1, eye);
-    if (dir !== 'E') c.set(f + 1, hy + 1, eye);
+    const eye = flinch ? P.flame2 : P.ember; // a honey glint deep in empty sockets
+    const socket = mix(HUSKWAX.c0, P.ink, 0.6);
+    c.set(f - 1, hy + 1, socket);
+    c.set(f - 1, hy + 2, eye);
+    if (!side) {
+      c.set(f + 1, hy + 1, socket);
+      c.set(f + 1, hy + 2, eye);
+    }
+    c.set(f, hy + 3, mix(HUSKWAX.c0, P.ink, 0.35)); // a slack mouth
   }
-  // hat: a flat crown and a wide brim, lit on its left
-  c.hline(hx - 6, hy - 2, 13, STRAW.c1);
-  c.hline(hx - 6, hy - 2, 4, STRAW.c3);
-  c.hline(hx - 5, hy - 1, 11, STRAW.c0);
-  c.rect(hx - 3, hy - 5, 7, 3, STRAW.c2);
-  c.hline(hx - 3, hy - 5, 7, STRAW.c3);
-  c.hline(hx - 3, hy - 3, 7, mix(P.poppy, P.wood1, 0.3)); // a faded band
+  // the hat: a woven brim seen a little from above, a rounded crown, a faded red band
+  c.ellipse(hx, hy - 2, 6.8, 1.9, STRAW.c1);
+  c.ellipse(hx, hy - 2.4, 6.3, 1.4, STRAW.c2, (_x, y) => y <= hy - 3);
+  c.hline(hx - 6, hy - 1, 13, STRAW.c0); // the brim's shaded underside
+  for (let x = -6; x <= 6; x += 2) c.set(hx + x, hy - 2, x < 0 ? STRAW.c2 : STRAW.c0); // the weave
+  c.set(hx - 5, hy - 3, STRAW.c3);
+  c.ellipse(hx, hy - 4.2, 3.4, 2.6, STRAW.c1, (_x, y) => y <= hy - 3);
+  c.ellipse(hx - 0.8, hy - 4.8, 2.3, 1.8, STRAW.c2, (_x, y) => y <= hy - 4);
+  c.set(hx - 2, hy - 6, STRAW.c3);
+  c.hline(hx - 3, hy - 3, 7, mix(P.poppy, P.wood1, 0.35));
+  c.hline(hx - 3, hy - 3, 2, mix(P.poppy, P.flame1, 0.25));
+  if (!back) c.set(hx + 3, hy - 3, mix(P.poppy, P.ink, 0.4)); // the band's knot
 }
 
 // --- Beekeeper Husk: a beekeeper the Synod rendered and set back to work, a wax figure in a veiled hat and a
@@ -9989,49 +10330,82 @@ function huskHand(dir: Dir5, p: HuskPose): [number, number] {
   const bash = p.bash ?? 0;
   return [Math.round(hx + lx + fx * pump * 3 - bash * 2), Math.round(hy + ly + (p.bob ?? 0) - pump * 4 + fy * pump * 2 - bash * 6)];
 }
+/** A baggy smock sleeve from the shoulder to a gathered cuff and a leather glove. */
+function smockArm(c: Img, sx: number, sy: number, hx: number, hy: number, far: boolean) {
+  const inner = hx < 16 ? 1 : -1; // the edge against the body is in shadow
+  for (let t = -1; t <= 1; t++) line(c, sx + t, sy, hx + t, hy - 2, far ? (t === inner ? SMOCK.c0 : SMOCK.c1) : t === inner ? SMOCK.c0 : t === -inner ? SMOCK.c3 : SMOCK.c2);
+  c.hline(hx - 1, hy - 2, 3, far ? SMOCK.c0 : SMOCK.c1); // the cuff tie
+  c.rect(hx - 1, hy - 1, 3, 2, far ? DWOOD.c1 : DWOOD.c2);
+  c.set(hx - 1, hy - 1, far ? DWOOD.c2 : DWOOD.c3);
+  c.set(hx + 1, hy, DWOOD.c0);
+}
 function drawHusk(c: Img, dir: Dir5, pose: HuskPose) {
   const o = { bob: 0, lean: 0, hunch: 0, step: -1, flinch: false, pump: 0, bash: 0, ...pose };
   const b = o.bob;
   const { lx, ly, sh } = leanOffsets(dir, o.lean);
   const back = dir === 'N' || dir === 'NE';
+  const side = dir === 'E';
   const liftL = o.step === 1 ? 2 : 0;
   const liftR = o.step === 3 ? 2 : 0;
-  c.rect(13, 24 - liftL + b, 3, 3, WOOD.c1); // boots
-  c.rect(17, 24 - liftR + b, 3, 3, WOOD.c0);
-  // the smock, to the shins, stained with honey
+  // dark breeches into heavy boots
+  for (const [x, lift, dark] of [[13, liftL, 0], [17, liftR, 1]] as const) {
+    c.rect(x, 23 + b, 3, 2 - Math.min(1, lift), dark ? VEIL.c1 : VEIL.c2);
+    c.rect(x, 25 - lift + b, 3, 2, dark ? WOOD.c0 : WOOD.c1);
+    c.set(x, 25 - lift + b, dark ? WOOD.c1 : WOOD.c2);
+    c.hline(x, 26 - lift + b, 3, dark ? P.ink : WOOD.c0);
+  }
+  // the far arm, behind the body in profile
+  const [ax, ay] = huskHand(dir, o);
+  if (side) smockArm(c, 14 + sh, 14 + b, 13 + sh, 21 + b, true);
+  // the smock, to the shins: round shoulders, a waist cinched by the belt, full skirts, lit from the left
   for (let y = 13; y <= 24; y++) {
-    const w = 8 + Math.floor((y - 13) / 3);
+    const w = y === 13 ? 7 : y < 19 ? 9 : 10 + Math.floor((y - 19) / 2);
     const x0 = 16 - Math.floor(w / 2) + (y < 19 ? sh : 0);
     for (let x = 0; x < w; x++) c.set(x0 + x, y + b, shadeT(x / (w - 1), SMOCK));
   }
-  c.hline(12 + sh, 18 + b, 8, EN.rope); // rope belt
-  if (!back) for (const [x, y] of [[14, 20], [15, 21], [17, 16], [18, 22]]) c.set(x + sh, y + b, x === 17 ? BL.h1 : BL.h2);
-  c.vline(16 + sh, 19 + b, 5, SMOCK.c1); // a fold
-  // wax running from the cuffs
-  c.set(11 + sh, 21 + b, HUSKWAX.c1);
-  c.set(11 + sh, 22 + b, HUSKWAX.c2);
-  // off arm, gloved; the smoker arm goes to its hand
-  c.rect(10 + sh, 14 + b, 2, 6, SMOCK.c2);
-  c.rect(10 + sh, 20 + b, 2, 2, WOOD.c2);
-  const [ax, ay] = huskHand(dir, o);
-  line(c, 20 + sh, 14 + b, ax, ay - 1, back ? SMOCK.c0 : SMOCK.c1);
-  line(c, 21 + sh, 14 + b, ax + 1, ay - 1, SMOCK.c0);
-  c.rect(ax - 1, ay - 1, 2, 2, WOOD.c2);
-  // bees crawling over it, as they crawl over anything that smells of honey
-  c.set(13 + sh, 15 + b, P.flame2);
-  c.set(18 + sh, 23 + b, P.flame2);
+  // folds falling from the belt, a scalloped hem, wax running off it
+  c.vline(14, 20 + b, 4, SMOCK.c2);
+  c.vline(15, 20 + b, 4, SMOCK.c1);
+  c.vline(18, 20 + b, 4, SMOCK.c0);
+  for (let x = 10; x < 23; x++) if (c.alpha(x, 24 + b) && x % 3 === 0) c.set(x, 24 + b, SMOCK.c0);
+  c.vline(20, 25 + b, 2, HUSKWAX.c1);
+  c.set(20, 26 + b, HUSKWAX.c0);
+  // rope belt, knotted, its ends hanging
+  for (let x = 12; x <= 20; x++) c.set(x + sh, 18 + b, x % 2 ? EN.rope : WOOD.c3);
+  if (!back) {
+    c.set(13 + sh, 19 + b, EN.rope);
+    c.set(13 + sh, 20 + b, WOOD.c3);
+    // the honey it worked in, soaked down the front from the chest
+    for (const [x, y, col] of [[17, 14, BL.h3], [17, 15, BL.h2], [18, 15, BL.h1], [17, 16, BL.h1], [17, 17, BL.h0], [17, 19, BL.h1], [17, 20, BL.h0]] as const)
+      c.set(x + (y < 19 ? sh : 0), y + b, col);
+    c.hline(13 + sh, 15 + b, 2, SMOCK.c1); // a breast pocket
+    c.set(13 + sh, 14 + b, SMOCK.c3);
+  } else {
+    c.vline(16 + sh, 14 + b, 4, SMOCK.c1); // the back seam
+    c.vline(16, 19 + b, 5, SMOCK.c1);
+  }
+  // arms: the near off arm hanging, the smoker arm out to its hand; a shadow where each meets the body
+  if (!side) smockArm(c, 11 + sh, 14 + b, 10 + sh, 21 + b, false);
+  smockArm(c, 21 + sh, 14 + b, ax, ay + 1, back);
+  // a bee or two crawling over it, as they crawl over anything that smells of honey
+  crawlingBee(c, 13 + sh, 17 + b);
+  if (!back) crawlingBee(c, 19, 23 + b, true);
   const hx = 16 + lx + (o.flinch ? -1 : 0);
   const hy = 7 + b + o.hunch + ly;
   veiledHead(c, dir, hx, hy, o.flinch);
 }
 function huskDeath(c: Img, f: number) {
   if (f < 2) return drawHusk(c, 'S', { bob: 2 + f, hunch: 2 + f, flinch: true });
-  c.ellipse(16, 25, 8, 3, SMOCK.c1);
-  c.ellipse(14, 24.5, 5, 1.5, SMOCK.c2);
-  c.ellipse(21, 25, 4, 1.4, HUSKWAX.c2); // it slumps into a puddle of wax
-  c.hline(8, 23, 8, STRAW.c1); // the hat
-  c.hline(9, 22, 5, STRAW.c3);
-  if (f < 4) c.set(18, 22, P.flame2);
+  // it slumps into a puddle of wax in its own smock; the hat rolls off
+  c.ellipse(16, 25, 9, 3, HUSKWAX.c1);
+  c.ellipse(15, 24.5, 6.5, 2.2, SMOCK.c1);
+  c.ellipse(14, 24, 4, 1.4, SMOCK.c2);
+  c.ellipse(22, 25.5, 3, 1.2, HUSKWAX.c2);
+  c.set(20, 24, BL.h2);
+  c.ellipse(8, 23, 4.5, 1.4, STRAW.c1);
+  c.ellipse(8, 22.5, 2.4, 1.2, STRAW.c2);
+  c.hline(6, 23, 5, mix(P.poppy, P.wood1, 0.35));
+  if (f < 4) crawlingBee(c, 18, 23);
 }
 
 // --- Orchard Guard: a scarecrow that stands in the rows with its arms out, and then doesn't.
@@ -10045,79 +10419,167 @@ function guardHand(dir: Dir5, p: GuardPose): [number, number] {
   // asleep, the arm is straight out along the cross-bar
   return [Math.round(hx + lx + (1 - wake) * 4 - reap * 3), Math.round(hy + ly + (p.bob ?? 0) - (1 - wake) * 4 - reap * 5)];
 }
+const FELT: Ramp = { c0: mix(P.dark1, P.ink, 0.3), c1: mix(P.wood1, P.dark1, 0.55), c2: mix(P.wood1, P.dark2, 0.3), c3: mix(P.wood1, P.stone2, 0.35) };
+/** A burst of straw: a few stiff strands fanning out from (x, y) toward (dx, dy). */
+function strawTuft(c: Img, x: number, y: number, dx: number, dy: number) {
+  const px = -dy;
+  const py = dx;
+  for (const [k, col] of [[-1, STRAW.c1], [0, STRAW.c3], [1, STRAW.c2]] as const) {
+    c.set(x + dx + px * k, y + dy + py * k, col);
+    c.set(x + Math.round(dx * 1.8) + px * k * 1.5, y + Math.round(dy * 1.8) + Math.round(py * k * 1.5), k ? STRAW.c1 : STRAW.c2);
+  }
+  c.set(x, y, STRAW.c2);
+}
+/** A sack head: stitched burlap, lit from the top left; `back` shows the seam and the tie. */
+function sackHead(c: Img, hx: number, hy: number, r: number, R: Ramp, back: boolean) {
+  litBall(c, hx, hy, r, r * 0.95, R);
+  for (let y = Math.floor(hy - r); y <= hy + r; y++)
+    for (let x = Math.floor(hx - r); x <= hx + r; x++) if (c.alpha(x, y) && (x * 3 + y * 5) % 11 === 0) c.set(x, y, mix(R.c1, R.c0, 0.4)); // the weave
+  if (back) c.vline(hx, Math.round(hy - r + 1), Math.round(r * 2 - 1), R.c0); // the seam
+}
 function drawGuard(c: Img, dir: Dir5, pose: GuardPose) {
   const o = { bob: 0, lean: 0, hunch: 0, step: -1, flinch: false, wake: 1, reap: 0, ...pose };
   const b = o.bob;
   const w = o.wake;
   const { lx, ly, sh } = leanOffsets(dir, o.lean * w);
   const back = dir === 'N' || dir === 'NE';
-  // below the coat: the post it stood on, or two stick legs once it walks
+  const side = dir === 'E';
+  // below the coat: the post it stood on, or two stick legs in rag puttees once it walks
   if (w < 0.5) box(c, 15, 21 + b, 3, 7, WOOD);
   else {
     const liftL = o.step === 1 ? 2 : 0;
     const liftR = o.step === 3 ? 2 : 0;
-    box(c, 13, 21 + b, 2, 7 - liftL, WOOD);
-    box(c, 18, 21 + b, 2, 7 - liftR, DWOOD);
+    for (const [x, lift, R] of [[13, liftL, WOOD], [18, liftR, DWOOD]] as const) {
+      box(c, x, 21 + b, 2, 7 - lift, R);
+      c.hline(x, 24 + b - lift, 2, SACK.c1); // rag bindings
+      c.hline(x, 26 + b - lift, 2, SACK.c0);
+    }
   }
   // the cross-bar under the coat's shoulders (asleep)
-  if (w < 0.5) box(c, 5, 13 + b, 22, 2, WOOD);
-  // coat, patched, straw poking from the hem
+  if (w < 0.5) box(c, 4, 13 + b, 24, 2, WOOD);
+  // the far arm in profile, behind the coat
+  const [ax, ay] = guardHand(dir, o);
+  if (side && w >= 0.5) {
+    line(c, 14 + sh, 13 + b, 13 + sh, 19 + b, GUARDCOAT.c0);
+    strawTuft(c, 13 + sh, 20 + b, 0, 1);
+  }
+  // the coat: an old keeper's frock, too big for the sticks inside it, patched and burst at the hem
   for (let y = 12; y <= 22; y++) {
-    const cw = 9 + Math.floor((y - 12) / 4);
+    const cw = y === 12 ? 7 : y < 18 ? 10 : 10 + Math.floor((y - 17) / 2);
     const x0 = 16 - Math.floor(cw / 2) + (y < 17 ? sh : 0);
     for (let x = 0; x < cw; x++) c.set(x0 + x, y + b, shadeT(x / (cw - 1), GUARDCOAT));
   }
-  for (let x = 12; x < 21; x += 2) c.vline(x, 22 + b, 2 + (x % 3), x % 4 ? STRAW.c2 : STRAW.c3);
-  if (!back) {
-    c.rect(13 + sh, 17 + b, 3, 3, mix(P.blood1, P.wood2, 0.3)); // patch
-    c.set(13 + sh, 17 + b, mix(P.blood2, P.wood2, 0.3));
-    c.vline(16 + sh, 13 + b, 9, GUARDCOAT.c0); // the coat's opening
+  for (let x = 11; x <= 21; x++) {
+    const tatter = (x * 5) % 3; // a ragged hem, straw bursting through
+    if (c.alpha(x, 22 + b)) {
+      if (tatter === 0) c.set(x, 22 + b, null);
+      c.vline(x, 23 + b - (tatter === 0 ? 1 : 0), tatter + 1, [STRAW.c1, STRAW.c3, STRAW.c2][(x * 7) % 3]);
+    }
   }
-  c.hline(12 + sh, 18 + b, 9, EN.rope); // twine for a belt
+  if (!back) {
+    // lapels, a line of odd buttons, a sackcloth patch and a red one
+    c.vline(16 + sh, 13 + b, 9, GUARDCOAT.c0);
+    line(c, 14 + sh, 12 + b, 15 + sh, 16 + b, GUARDCOAT.c3);
+    line(c, 18 + sh, 12 + b, 17 + sh, 16 + b, GUARDCOAT.c1);
+    for (const [y, col] of [[15, BL.h2], [18, P.stone3], [20, WOOD.c3]] as const) c.set(17 + sh * (y < 17 ? 1 : 0), y + b, col);
+    c.rect(12 + sh, 17 + b, 3, 3, mix(P.blood1, P.wood2, 0.3));
+    c.set(12 + sh, 17 + b, mix(P.blood2, P.wood2, 0.3));
+    c.set(14 + sh, 19 + b, P.ink); // a stitch
+    c.rect(18, 19 + b, 2, 2, SACK.c1);
+    c.set(18, 19 + b, SACK.c2);
+  } else {
+    c.rect(15, 16 + b, 3, 3, SACK.c1); // a patch on the back
+    c.set(15, 16 + b, SACK.c2);
+    c.set(17, 18 + b, P.ink);
+  }
+  for (let x = 11; x <= 20; x++) c.set(x + sh, 17 + b, x % 2 ? EN.rope : WOOD.c3); // twine for a belt
+  // straw poking from the collar
+  c.set(13 + sh, 11 + b, STRAW.c2);
+  c.set(19 + sh, 11 + b, STRAW.c3);
   // arms: out stiff along the bar asleep; bent and gripping awake
-  const straw = (x: number, y: number) => {
-    c.set(x, y, STRAW.c3);
-    c.set(x + 1, y + 1, STRAW.c2);
-    c.set(x - 1, y + 1, STRAW.c1);
+  const sleeve = (sx: number, sy: number, hx: number, hy: number, lit: boolean) => {
+    for (let t = 0; t <= 1; t++) line(c, sx + t, sy, hx + t, hy, lit ? (t ? GUARDCOAT.c2 : GUARDCOAT.c3) : t ? GUARDCOAT.c0 : GUARDCOAT.c1);
   };
   if (w < 0.5) {
-    c.rect(6, 12 + b, 6, 3, GUARDCOAT.c2);
-    c.rect(21, 12 + b, 6, 3, GUARDCOAT.c1);
-    straw(5, 12 + b);
-    straw(27, 12 + b);
+    for (const [x0, x1, lit] of [[6, 11, true], [21, 26, false]] as const) {
+      c.rect(x0, 12 + b, x1 - x0 + 1, 3, lit ? GUARDCOAT.c2 : GUARDCOAT.c1);
+      c.hline(x0, 12 + b, x1 - x0 + 1, lit ? GUARDCOAT.c3 : GUARDCOAT.c2);
+      c.hline(x0, 14 + b, x1 - x0 + 1, GUARDCOAT.c0);
+    }
+    strawTuft(c, 5, 13 + b, -1, 0);
+    strawTuft(c, 27, 13 + b, 1, 0);
   } else {
-    c.rect(10 + sh, 13 + b, 2, 6, GUARDCOAT.c2);
-    straw(10 + sh, 19 + b);
-    const [ax, ay] = guardHand(dir, o);
-    line(c, 20 + sh, 13 + b, ax, ay, GUARDCOAT.c1);
-    straw(ax, ay);
+    if (!side) {
+      sleeve(11 + sh, 13 + b, 10 + sh, 18 + b, true);
+      strawTuft(c, 10 + sh, 19 + b, 0, 1);
+    }
+    sleeve(20 + sh, 13 + b, ax, ay - 1, !back);
+    strawTuft(c, ax, ay, 0, 1);
   }
-  // the sack head: painted eyes (they burn when it wakes), a stitched grin, a battered hat
+  // the sack head: painted eyes (they burn when it wakes), a stitched grin, a battered felt hat
   const tilt = w < 0.5 ? 1 : 0;
   const hx = 16 + lx + (o.flinch ? -1 : 0) + tilt;
   const hy = 7 + b + o.hunch + ly;
-  c.disc(hx, hy, 3.6, SACK.c1);
-  c.disc(hx - 0.6, hy - 0.6, 2.6, SACK.c2);
-  c.set(hx - 2, hy - 2, SACK.c3);
+  sackHead(c, hx, hy, 3.8, SACK, back);
+  c.hline(hx - 2, hy + 4, 5, EN.rope); // tied off at the neck
+  c.set(hx - 3, hy + 5, STRAW.c3);
+  c.set(hx + 3, hy + 5, STRAW.c2);
   if (!back) {
-    const f = hx + (dir === 'E' ? 1 : dir === 'SE' ? 1 : 0);
-    const eye = w > 0.5 ? (o.flinch ? P.flame2 : P.ember) : P.ink;
-    c.set(f - 1, hy - 1, eye);
-    if (dir !== 'E') c.set(f + 1, hy - 1, eye);
-    for (let x = -2; x <= 2; x++) c.set(f + x, hy + 1 + (Math.abs(x) === 2 ? -1 : 0), x % 2 ? P.ink : SACK.c0); // the grin
-  } else c.vline(hx, hy - 2, 5, SACK.c0); // the sack's seam
-  c.hline(hx - 5, hy - 3, 11, DWOOD.c1); // hat brim
-  c.rect(hx - 3, hy - 6, 7, 3, DWOOD.c1);
-  c.hline(hx - 3, hy - 6, 7, DWOOD.c3);
-  c.set(hx + 3, hy - 4, STRAW.c3); // straw from under the hat
+    const f = faceX(dir, hx);
+    const lit = w > 0.5;
+    const eye = lit ? (o.flinch ? P.flame2 : P.ember) : P.ink;
+    // painted eyes, a stitch over each; awake, a coal glows through the cloth
+    for (const ex of side ? [f] : [f - 1, f + 1]) {
+      c.set(ex, hy, eye);
+      c.set(ex, hy - 1, SACK.c0);
+    }
+    for (let x = -2; x <= 2; x++) c.set(f + x, hy + 2 + (Math.abs(x) === 2 ? -1 : 0), x % 2 ? P.ink : SACK.c0); // the grin, stitched
+  }
+  // the hat: a battered felt crown, dented, a floppy brim, straw escaping under it
+  const ty = hy - 1;
+  c.ellipse(hx, ty - 3, 6.2, 1.5, FELT.c1);
+  c.hline(hx - 6, ty - 3, 5, FELT.c2);
+  c.set(hx + 6, ty - 2, FELT.c1); // the brim droops on one side
+  c.set(hx + 6, ty - 1, FELT.c0);
+  c.rect(hx - 3, ty - 7, 7, 4, FELT.c2);
+  c.vline(hx - 3, ty - 7, 4, FELT.c3);
+  c.vline(hx + 3, ty - 7, 4, FELT.c1);
+  c.set(hx, ty - 7, FELT.c1); // the dent
+  c.set(hx - 1, ty - 7, FELT.c3);
+  c.hline(hx - 3, ty - 4, 7, mix(P.moss1, FELT.c1, 0.4)); // a band gone green
+  c.set(hx + 2, ty - 6, P.ink); // a hole
+  c.set(hx - 5, ty - 1, STRAW.c3);
+  c.set(hx + 4, ty - 1, STRAW.c2);
 }
 function guardDeath(c: Img, f: number) {
   if (f < 2) return drawGuard(c, 'S', { bob: 2 + f, hunch: 2 + f, flinch: true });
-  // it falls apart into a heap of coat and straw
-  c.ellipse(16, 25, 8, 2.5, GUARDCOAT.c1);
-  for (let i = 0; i < 9; i++) c.set(9 + i * 2, 25 + (i % 2), i % 3 ? STRAW.c2 : STRAW.c3);
-  c.disc(22, 24, 2.5, SACK.c1);
-  c.hline(6, 23, 7, DWOOD.c1);
+  // it falls apart into a heap of coat and straw, the head rolled clear
+  c.ellipse(16, 25, 8, 2.6, GUARDCOAT.c1);
+  c.ellipse(15, 24.5, 5, 1.6, GUARDCOAT.c2);
+  for (let i = 0; i < 10; i++) c.set(8 + i * 2, 25 + (i % 2) - (i % 3 === 0 ? 1 : 0), [STRAW.c1, STRAW.c2, STRAW.c3][i % 3]);
+  sackHead(c, 23, 23, 2.6, SACK, false);
+  if (f < 4) c.set(22, 23, P.ember);
+  c.ellipse(8, 23, 4, 1.2, FELT.c1);
+  c.rect(6, 21, 4, 2, FELT.c2);
+  line(c, 12, 26, 20, 27, WOOD.c1);
+}
+
+/** A crow perched at (x, y) facing right (or left when `flip`): a glossy black body, tail, beak, a lit eye. */
+function perchedCrow(c: Img, x: number, y: number, flip: boolean) {
+  const X = (dx: number) => (flip ? x + 3 - dx : x + dx);
+  const sheen = mix(P.dark2, P.violet1, 0.55);
+  for (let dx = 0; dx < 4; dx++) c.set(X(dx), y, dx === 1 || dx === 2 ? sheen : P.ink);
+  for (let dx = 0; dx < 4; dx++) c.set(X(dx), y + 1, P.ink);
+  c.set(X(1), y + 1, mix(P.ink, P.violet1, 0.3)); // the folded wing
+  c.set(X(-1), y + 1, P.ink); // the tail
+  c.set(X(-2), y + 2, P.ink);
+  c.set(X(4), y - 1, P.ink); // the head
+  c.set(X(3), y - 1, P.ink);
+  c.set(X(4), y, P.ink);
+  c.set(X(4), y - 1, P.ember); // an eye
+  c.set(X(5), y, mix(P.stone3, P.ink, 0.35)); // the beak
+  c.set(X(1), y + 2, P.dark2); // feet gripping
+  c.set(X(3), y + 2, P.dark2);
 }
 
 // --- The Scarecrow Warden (48 cell): the old orchard-keeper's scarecrow, burned with the grove and still
@@ -10133,109 +10595,180 @@ function swardenHand(dir: Dir5, p: WardenPose): [number, number] {
   const reap = p.reap ?? 0;
   return [Math.round(hx + lx + (1 - wake) * 6 - reap * 5 + fx * Math.max(0, -reap) * 4), Math.round(hy + ly + (p.bob ?? 0) + (p.crouch ?? 0) * 2 - (1 - wake) * 6 - reap * 8 + fy * Math.max(0, -reap) * 2)];
 }
+const COAT_B: Ramp = { c0: mix(SMOCK.c0, P.ink, 0.45), c1: mix(SMOCK.c1, P.ink, 0.25), c2: SMOCK.c1, c3: SMOCK.c2 }; // scorched cream
+const SACK_B: Ramp = { c0: mix(SACK.c0, P.ink, 0.4), c1: mix(SACK.c1, P.ink, 0.35), c2: mix(SACK.c2, P.ink, 0.25), c3: mix(SACK.c3, P.ink, 0.15) }; // smoked burlap
 function drawScarecrowWarden(c: Img, dir: Dir5, pose: WardenPose) {
   const o = { bob: 0, lean: 0, hunch: 0, step: -1, flinch: false, wake: 1, reap: 0, crow: 0, crouch: 0, ...pose };
   const b = o.bob + o.crouch * 2;
   const w = o.wake;
   const { lx, ly, sh } = leanOffsets(dir, o.lean * w);
   const back = dir === 'N' || dir === 'NE';
-  const COAT_B: Ramp = { c0: mix(SMOCK.c0, P.ink, 0.45), c1: mix(SMOCK.c1, P.ink, 0.25), c2: SMOCK.c1, c3: SMOCK.c2 }; // scorched cream
+  const side = dir === 'E';
+  // below the coat: the burnt stake it hung on, or two charred poles bound in rags once it walks
   if (w < 0.5) box(c, 22, 32 + b, 4, 12, CHAR);
   else {
     const liftL = o.step === 1 ? 3 : 0;
     const liftR = o.step === 3 ? 3 : 0;
-    box(c, 19, 32 + b, 3, 12 - liftL, CHAR);
-    box(c, 27, 32 + b, 3, 12 - liftR, CHAR);
+    for (const [x, lift, far] of [[19, liftL, 0], [27, liftR, 1]] as const) {
+      box(c, x, 32 + b, 3, 12 - lift, CHAR);
+      c.vline(x, 33 + b, 10 - lift, far ? CHAR.c1 : CHAR.c3);
+      for (const y of [36, 39]) c.hline(x, y + b - lift, 3, far ? SACK_B.c0 : SACK_B.c1); // rag bindings
+      c.set(x + 1, 43 - lift + b, P.ember); // still smouldering where it stood in the fire
+    }
   }
-  if (w < 0.5) box(c, 6, 18 + b, 36, 3, CHAR);
-  // the coat: long, its hem burnt ragged and still glowing at the edges
-  for (let y = 16; y <= 34; y++) {
-    const cw = 14 + Math.floor((y - 16) / 3);
-    const x0 = 24 - Math.floor(cw / 2) + (y < 25 ? sh : 0);
-    for (let x = 0; x < cw; x++) c.set(x0 + x, y + b, shadeT(x / (cw - 1), COAT_B));
-  }
-  for (let x = 17; x < 33; x++) {
-    const ragged = (x * 7) % 5;
-    c.vline(x, 33 + b - ragged, ragged + 2, ragged > 2 ? P.ink : CHAR.c1);
-    if (ragged === 3) c.set(x, 32 + b - ragged, P.ember); // smouldering
-  }
-  for (const [x, y] of [[19, 22], [28, 26], [22, 30]]) {
-    c.rect(x + sh, y + b, 2, 2, CHAR.c1); // burn holes
-    c.set(x + sh, y + b, P.ember);
-  }
-  if (!back) {
-    c.vline(24 + sh, 17 + b, 15, COAT_B.c0);
-    for (let y = 19; y < 31; y += 4) c.set(23 + sh, y + b, BL.h2); // the keeper's buttons, brass once
-  }
-  c.hline(17 + sh, 26 + b, 15, EN.rope);
-  for (let x = 18; x < 31; x += 2) c.vline(x, 34 + b, 2, x % 4 ? STRAW.c1 : CHAR.c3); // charred straw
-  // arms
-  const straw = (x: number, y: number) => {
-    c.set(x, y, STRAW.c2);
-    c.set(x + 1, y + 1, CHAR.c3);
-    c.set(x - 1, y + 1, STRAW.c1);
-  };
   if (w < 0.5) {
-    c.rect(7, 17 + b, 10, 4, COAT_B.c2);
-    c.rect(31, 17 + b, 10, 4, COAT_B.c1);
-    straw(6, 17 + b);
-    straw(42, 17 + b);
-  } else {
-    const off: [number, number] = o.crow > 0 ? [13 + sh - Math.round(o.crow * 2), 10 + b - Math.round(o.crow * 6)] : [13 + sh, 28 + b];
-    line(c, 17 + sh, 17 + b, off[0], off[1], COAT_B.c2);
-    line(c, 18 + sh, 17 + b, off[0] + 1, off[1], COAT_B.c1);
-    straw(off[0], off[1] + 1);
-    const [ax, ay] = swardenHand(dir, o);
-    line(c, 31 + sh, 17 + b, ax, ay, COAT_B.c1);
-    line(c, 32 + sh, 17 + b, ax + 1, ay, COAT_B.c0);
-    straw(ax, ay + 1);
+    box(c, 5, 18 + b, 38, 3, CHAR); // the cross-bar
+    c.set(5, 18 + b, P.ember);
   }
-  // crows on its shoulders (one flies when it throws)
-  const crowAt = (x: number, y: number, flip: boolean) => {
-    c.rect(x, y, 4, 2, P.ink);
-    c.set(x + (flip ? -1 : 4), y, P.ink); // the head
-    c.set(x + (flip ? -2 : 5), y, P.flame1); // the beak
-    c.set(x + (flip ? 0 : 3), y - 1, P.dark1);
-    c.set(x + 1, y + 2, P.dark2);
+  const [ax, ay] = swardenHand(dir, o);
+  const sleeve = (sx: number, sy: number, hx: number, hy: number, far: boolean) => {
+    const inner = hx < 24 ? 1 : -1; // the edge against the coat is in shadow
+    for (let t = -1; t <= 1; t++) line(c, sx + t, sy, hx + t, hy, t === inner ? COAT_B.c0 : far ? COAT_B.c1 : t === -inner ? COAT_B.c3 : COAT_B.c2);
+    c.hline(hx - 1, hy, 3, CHAR.c1); // a burnt cuff
   };
-  crowAt(16 + sh, 14 + b, true);
-  if (o.crow < 0.5) crowAt(29 + sh, 14 + b, false);
+  if (side && w >= 0.5) {
+    sleeve(21 + sh, 17 + b, 20 + sh, 29 + b, true);
+    strawTuft(c, 20 + sh, 30 + b, 0, 1);
+  }
+  // the coat: long and too wide for the poles inside it, scorched darker toward a ragged hem that still glows
+  const r = rng(4242);
+  for (let y = 15; y <= 35; y++) {
+    const cw = y === 15 ? 12 : y < 26 ? 16 : y === 26 ? 15 : 16 + Math.floor((y - 26) / 2);
+    const x0 = 24 - Math.floor(cw / 2) + (y < 26 ? sh : 0);
+    const burn = Math.max(0, (y - 27) / 9);
+    for (let x = 0; x < cw; x++) c.set(x0 + x, y + b, mix(shadeT(x / (cw - 1), COAT_B), CHAR.c1, burn * 0.8));
+  }
+  for (let x = 15; x <= 33; x++) {
+    if (!c.alpha(x, 34 + b)) continue;
+    const ragged = Math.floor(r() * 4);
+    for (let k = 0; k < ragged; k++) c.set(x, 35 + b - k, null);
+    const tip = 35 + b - ragged;
+    if (ragged > 0 && c.alpha(x, tip)) c.set(x, tip, r() < 0.45 ? P.ember : CHAR.c0); // the edge still burning
+    if (ragged === 0 && r() < 0.3) c.set(x, 36 + b, x % 2 ? STRAW.c1 : CHAR.c3); // charred straw below it
+  }
+  const burnHole = (x: number, y: number) => {
+    c.rect(x, y, 2, 2, CHAR.c0);
+    c.set(x - 1, y, P.ember);
+    c.set(x + 2, y + 1, P.ember);
+    c.set(x, y - 1, mix(COAT_B.c1, P.ember, 0.5));
+  };
+  if (!back) {
+    // the keeper's coat: the opening, lapels, brass buttons gone green, burn holes, a lantern at its hip
+    c.vline(24 + sh, 16 + b, 17, COAT_B.c0);
+    line(c, 21 + sh, 15 + b, 23 + sh, 21 + b, COAT_B.c3);
+    line(c, 27 + sh, 15 + b, 25 + sh, 21 + b, COAT_B.c1);
+    for (let y = 19; y < 31; y += 4) c.set(25 + (y < 26 ? sh : 0), y + b, y === 23 ? mix(BL.h2, P.moss1, 0.4) : BL.h2);
+    burnHole(19 + sh, 21 + b);
+    burnHole(28, 29 + b);
+  } else {
+    c.vline(24 + sh, 16 + b, 9, COAT_B.c1); // the back seam, split
+    c.vline(24, 27 + b, 7, CHAR.c1);
+    burnHole(20 + sh, 19 + b);
+    burnHole(27, 25 + b);
+  }
+  for (let x = 16; x <= 32; x++) c.set(x + sh, 26 + b, x % 2 ? EN.rope : WOOD.c3); // a rope belt
+  if (!back && !side) {
+    // the keeper's lantern, still lit, swinging from the belt
+    const lx0 = 18 + sh;
+    c.set(lx0 + 1, 27 + b, IRON.c1);
+    c.rect(lx0, 28 + b, 3, 4, IRON.c0);
+    c.set(lx0 + 1, 29 + b, P.flame2);
+    c.set(lx0 + 1, 30 + b, P.flame1);
+    c.hline(lx0, 28 + b, 3, IRON.c2);
+  }
+  // straw bursting from the collar
+  strawTuft(c, 18 + sh, 15 + b, -1, -1);
+  strawTuft(c, 30 + sh, 15 + b, 1, -1);
+  // arms: out stiff along the bar asleep; long and loose-jointed awake
+  if (w < 0.5) {
+    for (const [x0, x1, lit] of [[7, 16, true], [32, 41, false]] as const) {
+      c.rect(x0, 17 + b, x1 - x0 + 1, 4, lit ? COAT_B.c2 : COAT_B.c1);
+      c.hline(x0, 17 + b, x1 - x0 + 1, lit ? COAT_B.c3 : COAT_B.c2);
+      c.hline(x0, 20 + b, x1 - x0 + 1, COAT_B.c0);
+      c.vline(lit ? x0 : x1, 17 + b, 4, CHAR.c1);
+    }
+    strawTuft(c, 6, 19 + b, -1, 0);
+    strawTuft(c, 42, 19 + b, 1, 0);
+  } else {
+    if (!side) {
+      const off: [number, number] = o.crow > 0 ? [13 + sh - Math.round(o.crow * 2), 10 + b - Math.round(o.crow * 6)] : [14 + sh, 29 + b];
+      sleeve(17 + sh, 17 + b, off[0], off[1], false);
+      strawTuft(c, off[0], off[1] + 1, o.crow > 0 ? -1 : 0, o.crow > 0 ? -1 : 1);
+    }
+    sleeve(31 + sh, 17 + b, ax, ay, back);
+    strawTuft(c, ax, ay + 1, 0, 1);
+  }
+  // crows riding its shoulders (one takes off when it throws)
+  perchedCrow(c, 15 + sh, 13 + b, true);
+  if (o.crow < 0.5) perchedCrow(c, 30 + sh, 13 + b, false);
   // the head: a burnt sack with a candle inside, light through the eye-holes and the grin
   const hx = 24 + lx + (o.flinch ? -2 : 0) + (w < 0.5 ? 2 : 0);
-  const hy = 9 + b + o.hunch + ly;
-  c.disc(hx, hy, 5.5, mix(SACK.c1, P.ink, 0.35));
-  c.disc(hx - 1, hy - 1, 4, mix(SACK.c2, P.ink, 0.25));
-  c.set(hx - 3, hy - 3, SACK.c2);
+  const hy = 10 + b + o.hunch + ly;
+  sackHead(c, hx, hy, 5.6, SACK_B, back);
+  c.hline(hx - 3, hy + 6, 7, EN.rope); // tied at the neck
   if (!back) {
     const f = hx + (dir === 'E' ? 2 : dir === 'SE' ? 1 : 0);
-    const lit = w > 0.5 ? (o.flinch ? P.wax2 : P.flame2) : mix(P.flame1, P.ink, 0.4);
-    for (const dx of dir === 'E' ? [1] : [-2, 2]) {
+    const awake = w > 0.5;
+    const lit = awake ? (o.flinch ? P.wax2 : P.flame2) : mix(P.flame1, P.ink, 0.4);
+    const glow = awake ? mix(SACK_B.c2, P.flame1, 0.45) : SACK_B.c1;
+    for (const dx of side ? [1] : [-2, 2]) {
+      // a ragged hole, the flame's light bleeding into the burlap round it
       c.rect(f + dx - 1, hy - 2, 2, 2, lit);
-      c.set(f + dx - 1, hy - 2, P.flame1);
+      c.set(f + dx - 1, hy - 2, awake ? P.wax2 : lit);
+      c.set(f + dx, hy - 1, P.flame1);
+      c.set(f + dx - 2, hy - 1, glow);
+      c.set(f + dx + 1, hy - 2, glow);
+      c.set(f + dx - 1, hy - 3, SACK_B.c0); // a scorched brow
+      c.set(f + dx, hy - 3, SACK_B.c0);
     }
-    for (let x = -3; x <= 3; x++) c.set(f + x, hy + 2 + (Math.abs(x) === 3 ? -1 : 0), x % 2 ? lit : P.ink); // a jagged grin, lit
+    for (let x = -3; x <= 3; x++) {
+      const y = hy + 2 + (Math.abs(x) === 3 ? -1 : 0) + (x % 2 ? 1 : 0);
+      c.set(f + x, y, x % 2 ? lit : P.ink); // a jagged grin, lit from inside
+      if (x % 2 && awake) c.set(f + x, y - 1, P.flame1);
+    }
   }
-  // the hat: wide, the brim burnt through
-  c.hline(hx - 8, hy - 4, 17, CHAR.c1);
-  c.hline(hx - 7, hy - 3, 15, CHAR.c0);
-  c.rect(hx - 4, hy - 9, 9, 5, CHAR.c1);
-  c.hline(hx - 4, hy - 9, 9, CHAR.c3);
-  c.set(hx + 6, hy - 4, null); // a hole in the brim
-  c.set(hx + 2, hy - 9, P.ember);
-  // smoke still curling off it
-  c.set(hx + 1, hy - 11, withAlpha(P.stone3, 170));
-  c.set(hx + 2, hy - 13, withAlpha(P.stone3, 110));
+  // the hat: a tall crooked crown gone black, a wide brim burnt through, a dull buckle, a coal in its band
+  const ty = hy - 4;
+  c.ellipse(hx, ty, 9, 2, CHAR.c1);
+  c.ellipse(hx - 1, ty - 0.4, 7.5, 1.3, CHAR.c2, (_x, y) => y < ty);
+  c.hline(hx - 8, ty + 1, 17, CHAR.c0);
+  for (let k = 0; k < 7; k++) {
+    const y = ty - 1 - k;
+    const half = 4.5 - k * 0.35;
+    const bend = k > 4 ? k - 4 : 0; // the tip folds over
+    for (let x = Math.round(hx - half) + bend; x <= Math.round(hx + half) + bend; x++) {
+      const t = (x - (hx - half) - bend) / (half * 2);
+      c.set(x, y, t < 0.25 ? CHAR.c3 : t < 0.7 ? CHAR.c2 : CHAR.c1);
+    }
+  }
+  c.hline(hx - 4, ty - 2, 9, mix(P.wood1, P.ink, 0.4)); // the band
+  c.rect(hx - 1, ty - 3, 2, 2, mix(BL.h1, P.stone2, 0.5)); // the buckle
+  c.set(hx + 3, ty - 2, P.ember);
+  c.set(hx + 6, ty, null); // holes in the brim
+  c.set(hx - 6, ty + 1, null);
+  c.set(hx + 7, ty, P.ember);
+  // smoke curling off the fold
+  c.set(hx + 6, ty - 7, withAlpha(P.stone3, 170));
+  c.set(hx + 7, ty - 8, withAlpha(P.stone3, 110));
 }
 function swardenDeath(c: Img, f: number) {
   if (f < 2) return drawScarecrowWarden(c, 'S', { bob: 3 + f * 2, hunch: 2 + f, flinch: true });
-  c.ellipse(24, 41, 13, 3.5, mix(SMOCK.c1, P.ink, 0.3));
-  for (let i = 0; i < 12; i++) c.set(12 + i * 2, 41 + (i % 2), i % 3 ? STRAW.c1 : CHAR.c3);
-  c.disc(34, 39, 4, mix(SACK.c1, P.ink, 0.35));
+  // it collapses into a smoking heap of coat and straw; the head rolls clear, its candle guttering
+  c.ellipse(24, 41, 14, 3.5, mix(COAT_B.c1, CHAR.c1, 0.4));
+  c.ellipse(22, 40, 9, 2.2, COAT_B.c2);
+  for (let i = 0; i < 13; i++) c.set(11 + i * 2, 41 + (i % 2) - (i % 3 === 0 ? 1 : 0), i % 3 ? STRAW.c1 : CHAR.c3);
+  c.set(18, 41, P.ember);
+  c.set(27, 42, P.ember);
+  sackHead(c, 36, 39, 4, SACK_B, false);
   if (f < 4) {
-    c.set(34, 38, P.flame2); // the candle in its head, guttering
-    c.set(34, 37, P.flame1);
+    c.set(35, 38, P.flame2); // the candle in its head, guttering
+    c.set(37, 38, P.flame1);
   }
-  c.hline(9, 38, 13, CHAR.c1);
+  c.ellipse(10, 39, 6, 1.5, CHAR.c1); // the hat
+  c.rect(7, 35, 6, 4, CHAR.c2);
+  c.vline(7, 35, 4, CHAR.c3);
+  if (f < 4) c.set(12, 33, withAlpha(P.stone3, 150));
+  perchedCrow(c, 20, 37, false); // one crow stays with it
 }
 
 // --- The Hive Queen (64 cell): the orchard's queen, grown into her own great skep. A pale gold woman to the
@@ -10256,90 +10789,162 @@ function drawQueen(c: Img, dir: Dir5, pose: QueenPose) {
   const o = { bob: 0, lean: 0, hunch: 0, step: -1, flinch: false, rise: 0, arm: 0, reach: 0, spread: 0, mouth: 0, sink: 0, wing: 0, ...pose };
   const { lx, ly, sh } = leanOffsets(dir, o.lean);
   const back = dir === 'N' || dir === 'NE';
+  const side = dir === 'E';
   const SKIN_Q: Ramp = { c0: mix(P.honey, P.wood1, 0.45), c1: mix(P.wax1, P.honey, 0.45), c2: mix(P.wax2, P.honey, 0.3), c3: P.wax2 };
-  // the skep she has become: a great straw bell, the door at its foot pouring bees and honey
+  const HAIR: Ramp = { c0: mix(P.honey, P.wood1, 0.5), c1: mix(P.honey, P.ember, 0.2), c2: P.honey, c3: mix(P.flame2, P.wax2, 0.3) };
+  const wb = o.bob + o.rise + o.sink;
+  // her wings, behind everything: two pairs of gauze shimmering pale gold and violet, veined with honey
+  const wy = 18 + o.bob + o.rise + o.sink + ly;
+  const flap = o.wing ? 2 : 0;
+  if (o.sink < 14)
+    for (const s of [-1, 1]) {
+      const wing = (cx: number, cy: number, rx: number, ry: number, clip: number) => {
+        for (let y = Math.floor(cy - ry); y <= cy + ry; y++)
+          for (let x = Math.floor(cx - rx); x <= cx + rx; x++) {
+            const dx = (x + 0.5 - cx) / rx;
+            const dy = (y + 0.5 - cy) / ry;
+            const d = dx * dx + dy * dy;
+            if (d > 1 || y > clip) continue;
+            const edge = d > 0.7;
+            const tint = mix(P.wax2, P.violet3, 0.25 + 0.3 * ((x + y) % 5 === 0 ? 1 : 0) * (1 - d));
+            c.set(x, y, withAlpha(edge ? P.wax2 : tint, edge ? 200 : 120));
+          }
+      };
+      wing(32 + s * 13 + sh, wy - flap, 9.5, 5, wy + 3);
+      wing(32 + s * 11 + sh, wy + 7 - flap, 7, 3.2, 99);
+      line(c, 32 + s * 4 + sh, wy + 2, 32 + s * 20 + sh, wy - 4 - flap, withAlpha(P.honey, 220)); // veins
+      line(c, 32 + s * 10 + sh, wy, 32 + s * 15 + sh, wy + 3 - flap, withAlpha(P.honey, 170));
+      line(c, 32 + s * 5 + sh, wy + 5, 32 + s * 16 + sh, wy + 8 - flap, withAlpha(P.honey, 170));
+    }
+  // the skep she has become: a great bell of coiled straw, each coil round and bound, lit from the left
   const base = 57;
   const sk = 24;
   const top = 30 + o.bob;
   for (let y = top; y <= base; y++) {
     const k = (y - top) / (base - top);
     const half = Math.round(10 + (sk - 10) * Math.sqrt(k));
+    const band = (y - top) % 3;
     for (let x = -half; x <= half; x++) {
-      const t = (x + half) / (half * 2);
-      let col = shadeT(t, STRAW);
-      if ((y - top) % 3 === 2) col = mix(col, STRAW.c0, 0.35);
-      c.set(32 + x, y, col);
+      const nx = x / half;
+      let l = -nx * 0.95 + (band === 0 ? 0.3 : band === 2 ? -0.4 : 0) - k * 0.1;
+      if (band === 1 && (x + Math.floor((y - top) / 3) * 5) % 11 === 0) l -= 0.35; // the bramble bindings
+      c.set(32 + x, y, l > 0.45 ? STRAW.c3 : l > 0 ? STRAW.c2 : l > -0.55 ? STRAW.c1 : STRAW.c0);
     }
   }
   if (!back) {
-    c.ellipse(32, base - 3, 5, 4, P.ink, (_x, y) => y <= base);
-    for (const [x, y] of [[26, 52], [37, 50], [30, 48], [41, 54], [22, 55]]) c.set(x, y, P.flame2);
+    // the door: a dark arch with a warm glow deep inside, its sill worn gold, bees crawling out over the straw
+    c.ellipse(32, base - 3, 5, 4.5, P.ink, (_x, y) => y <= base);
+    c.ellipse(32, base - 1, 3, 1.6, mix(P.ink, BL.h1, 0.4), (_x, y) => y <= base);
+    c.hline(31, base, 3, mix(P.ink, BL.h2, 0.55));
+    c.hline(27, base, 11, BL.h1);
+    for (const [x, y] of [[25, 53], [39, 52], [36, 49], [26, 49], [42, 55], [21, 56], [30, 47]]) crawlingBee(c, x, y, x > 32);
+    // honey running from the rim of the door
+    c.vline(27, base - 5, 3, BL.h2);
+    c.set(27, base - 2, BL.h1);
   }
-  c.ellipse(32, base + 1, 14, 2, BL.h1); // honey welling round its foot
-  c.hline(24, base + 1, 8, BL.h3);
-  // comb bulging from a split in the straw
-  for (let y = 0; y < 8; y++) c.hline(40, top + 12 + y, 4 - Math.abs(y - 4) / 2, y % 2 ? BL.h2 : P.wax1);
-  // her wings: two pairs of gauze, lit gold at the veins
-  const wy = 18 + o.bob + o.rise + o.sink + ly;
-  const flap = o.wing ? 2 : 0;
-  for (const s of [-1, 1]) {
-    c.ellipse(32 + s * 13 + sh, wy - flap, 9, 5, withAlpha(P.wax2, 120), (_x, y) => y < wy + 3);
-    c.ellipse(32 + s * 11 + sh, wy + 7 - flap, 7, 3, withAlpha(P.wax2, 100));
-    line(c, 32 + s * 4 + sh, wy + 2, 32 + s * 20 + sh, wy - 4 - flap, withAlpha(P.honey, 200)); // a vein
-  }
+  // honey welling round its foot
+  c.ellipse(32, base + 1, 15, 2.2, BL.h1);
+  c.ellipse(29, base + 0.6, 9, 1.2, BL.h2);
+  c.hline(22, base + 1, 4, BL.h3);
+  // comb bulging from a split in the straw, its cells full and dripping
+  const kx = 40;
+  const ky = top + 11;
+  c.ellipse(kx + 2, ky + 4, 3.5, 5, mix(P.wax1, BL.h2, 0.35));
+  c.ellipse(kx + 1, ky + 3, 2, 3, mix(P.wax1, BL.h3, 0.3));
+  for (let y = 0; y < 9; y++) for (let x = 0; x < 6; x++) if (c.alpha(kx + x, ky + y) && (x + (y % 2)) % 2 === 0 && y % 2 === 0) c.set(kx - 1 + x, ky + y, BL.h1);
+  c.vline(kx + 1, ky + 9, 3, BL.h2);
+  c.set(kx + 1, ky + 12, BL.h1);
+  c.set(kx - 1, ky + 1, P.wax2);
   // her body to the waist, rising out of the hive
-  const wb = o.bob + o.rise + o.sink;
   if (o.sink < 14) {
-    for (let y = 20; y <= 32; y++) {
-      if (y + wb > top + 2) continue; // below the rim of the hive
-      const half = y < 24 ? 5 : 4 + Math.floor((y - 24) / 4);
-      const x0 = 32 - half + sh;
-      for (let x = 0; x <= half * 2; x++) {
-        const t = x / (half * 2);
-        // a bodice of comb: little golden hexes
-        const hex = (x + (y % 2 ? 1 : 0)) % 3 === 0 || y % 3 === 0;
-        c.set(x0 + x, y + wb, back ? shadeT(t, SKIN_Q) : hex ? shadeT(t, HONEY) : mix(shadeT(t, HONEY), P.wax1, 0.4));
+    for (let y = 19; y <= 32; y++) {
+      if (y + wb > top + 1) continue; // below the rim of the hive
+      const half = y === 19 ? 3.6 : y < 22 ? 5 : y < 26 ? 5 - (y - 22) * 0.25 : 4 + Math.floor((y - 26) / 3);
+      const x0 = Math.round(32 - half + sh);
+      const x1 = Math.round(32 + half + sh);
+      for (let x = x0; x <= x1; x++) {
+        const t = (x - x0) / Math.max(1, x1 - x0);
+        if (back) {
+          c.set(x, y + wb, shadeT(t, HAIR)); // her hair falls down her back
+          continue;
+        }
+        if (y < 23) {
+          c.set(x, y + wb, shadeT(t, SKIN_Q)); // bare shoulders and collarbone
+          continue;
+        }
+        // a bodice of comb: golden cells with dark rims, a pale wax lacing down the middle
+        const cell = (x + (Math.floor((y - 23) / 2) % 2 ? 1 : 0)) % 2 === 0 && (y - 23) % 2 === 0;
+        const col = cell ? mix(shadeT(t, HONEY), P.ink, 0.25) : shadeT(t, HONEY);
+        c.set(x, y + wb, col);
       }
     }
-    // arms: long and pale; the right holds the sceptre, the left beckons (or both spread wide)
+    if (!back) {
+      c.hline(Math.round(28 + sh), 22 + wb, 9, mix(BL.h1, P.wood1, 0.3)); // the bodice's neckline
+      c.set(Math.round(29 + sh), 21 + wb, SKIN_Q.c3);
+      c.vline(Math.round(32 + sh), 23 + wb, Math.max(0, Math.min(7, top - 24 - wb)), P.wax2); // lacing
+    }
+    // arms: long and pale, shaded; the right holds the sceptre, the left beckons (or both spread wide)
     const shoulderY = 21 + wb;
+    const arm = (sx: number, hx: number, hy: number, far: boolean) => {
+      for (let t = -1; t <= 0; t++) line(c, sx + t, shoulderY, hx + t, hy - 1, far ? (t ? SKIN_Q.c0 : SKIN_Q.c1) : t ? SKIN_Q.c2 : SKIN_Q.c1);
+      c.set(sx - 1, shoulderY - 1, far ? SKIN_Q.c1 : SKIN_Q.c3); // the round of the shoulder
+      c.hline(hx - 1, hy - 2, 2, BL.h2); // a bracelet of comb
+      c.rect(hx - 1, hy - 1, 2, 2, far ? SKIN_Q.c2 : SKIN_Q.c3);
+    };
     const [rx, ry] = queenHand(dir, o);
-    for (let t = -1; t <= 0; t++) line(c, 38 + sh + t, shoulderY, rx + t, ry - 1, t ? SKIN_Q.c1 : SKIN_Q.c2);
-    c.rect(rx - 1, ry - 1, 2, 2, SKIN_Q.c3);
-    const lh: [number, number] = o.spread > 0 ? [18 + sh - Math.round(o.spread * 4), shoulderY - Math.round(o.spread * 10)] : [23 + sh, shoulderY + 10];
-    for (let t = 0; t <= 1; t++) line(c, 26 + sh + t, shoulderY, lh[0] + t, lh[1], t ? SKIN_Q.c1 : SKIN_Q.c2);
-    c.rect(lh[0] - 1, lh[1] - 1, 2, 2, SKIN_Q.c3);
+    arm(Math.round(38 + sh), rx, ry, back);
+    const lh: [number, number] = o.spread > 0 ? [18 + sh - Math.round(o.spread * 4), shoulderY - Math.round(o.spread * 10)] : [23 + sh, shoulderY + 9];
+    if (!side) arm(Math.round(27 + sh), lh[0], lh[1], false);
     // the head: long golden hair, a calm face like a mask, amber eyes, the crown
     const hx = 32 + lx + (o.flinch ? -2 : 0);
     const hy = 13 + wb + o.hunch + ly;
-    for (const s of [-1, 1]) for (let y = hy - 2; y < hy + 12; y++) c.set(hx + s * (4 + Math.floor((y - hy) / 5)), y, y % 3 ? P.honey : P.flame2); // hair falling
-    c.ellipse(hx, hy + 1, 4, 5, back ? P.honey : SKIN_Q.c1);
-    if (!back) {
-      c.ellipse(hx - 0.7, hy, 3, 4, SKIN_Q.c2);
-      c.set(hx - 2, hy - 3, SKIN_Q.c3);
-      const f = hx + (dir === 'E' ? 2 : dir === 'SE' ? 1 : 0);
-      const eye = o.flinch ? P.wax2 : P.honey;
-      c.hline(f - 3, hy, 2, eye);
-      if (dir !== 'E') c.hline(f + 1, hy, 2, eye);
-      c.set(f - 3, hy, P.flame1);
-      c.set(f + 2, hy, P.flame1);
-      if (o.mouth > 0) c.rect(f - 1, hy + 3, 2, 2, P.ink);
-      else c.hline(f - 1, hy + 3, 2, SKIN_Q.c0);
-    } else {
-      c.ellipse(hx, hy + 1, 3.5, 4.5, P.honey);
-      for (let y = hy - 2; y < hy + 5; y += 2) c.hline(hx - 2, y, 4, P.flame2);
+    for (const s of [-1, 1]) {
+      // hair falling past her shoulders in two heavy locks
+      for (let y = hy - 2; y < hy + 13; y++) {
+        const x = hx + s * (4 + Math.floor((y - hy) / 5));
+        c.set(x, y, s < 0 ? HAIR.c2 : HAIR.c1);
+        c.set(x + s, y, y % 3 ? HAIR.c1 : HAIR.c0);
+        if (y % 4 === 0) c.set(x, y, HAIR.c3);
+      }
     }
-    // the crown: a ring of comb, three lit beeswax tapers
+    c.rect(hx - 1, hy + 4, 3, 4, SKIN_Q.c1); // her neck
+    c.vline(hx - 1, hy + 5, 3, SKIN_Q.c2);
+    if (back) {
+      litBall(c, hx, hy + 0.5, 4.6, 5.4, HAIR);
+      for (let y = hy - 3; y < hy + 5; y += 2) c.hline(hx - 2, y, 4, HAIR.c3);
+    } else {
+      litBall(c, hx, hy + 1, 4.2, 5.2, SKIN_Q);
+      // her hair, parted and swept back from the brow
+      c.ellipse(hx, hy - 2.5, 4.6, 2.4, HAIR.c2, (_x, y) => y < hy - 1);
+      c.hline(hx - 3, hy - 3, 2, HAIR.c3);
+      c.set(hx, hy - 3, HAIR.c0); // the parting
+      const f = faceX(dir, hx);
+      const eye = o.flinch ? P.wax2 : P.flame2;
+      // almond eyes of amber, lit from inside, under dark brows
+      for (const ex of side ? [f] : [f - 2, f + 1]) {
+        c.hline(ex, hy - 1, 2, SKIN_Q.c0);
+        c.set(ex, hy, eye);
+        c.set(ex + 1, hy, P.honey);
+      }
+      c.set(f, hy + 2, SKIN_Q.c1); // the nose's shadow
+      if (o.mouth > 0) {
+        c.rect(f - 1, hy + 3, 2, 2, P.ink);
+        c.set(f - 1, hy + 3, mix(P.blood1, P.ink, 0.3));
+      } else c.hline(f - 1, hy + 3, 2, mix(P.blood2, SKIN_Q.c1, 0.55)); // pale lips
+      c.set(hx - 3, hy + 1, mix(SKIN_Q.c2, P.blossom, 0.35)); // a flush on the cheek
+    }
+    // the crown: a ring of comb, five lit beeswax tapers
     c.hline(hx - 4, hy - 4, 9, BL.h2);
     c.hline(hx - 4, hy - 5, 9, BL.h3);
-    for (const [dx, h] of [[-3, 3], [0, 5], [3, 3]]) {
-      c.vline(hx + dx, hy - 5 - h, h, mix(P.wax2, P.honey, 0.3));
+    for (let x = -4; x <= 4; x += 2) c.set(hx + x, hy - 4, BL.h1);
+    for (const [dx, h] of [[-4, 2], [-2, 3], [0, 5], [2, 3], [4, 2]]) {
+      c.vline(hx + dx, hy - 5 - h, h, dx ? mix(P.wax2, P.honey, 0.3) : P.wax2);
       c.set(hx + dx, hy - 6 - h, P.flame2);
-      c.set(hx + dx, hy - 7 - h, P.flame1);
+      if (h > 2) c.set(hx + dx, hy - 7 - h, P.flame1);
     }
   } else {
     // sunk into her hive: only the crown's flames show over its rim
-    for (const dx of [-3, 0, 3]) c.set(32 + dx, top - 1, P.flame2);
+    for (const dx of [-4, -2, 0, 2, 4]) c.set(32 + dx, top - 1, dx ? P.flame1 : P.flame2);
   }
 }
 function queenDeath(c: Img, f: number) {
@@ -10352,53 +10957,90 @@ type SwarmQPose = BodyPose & { spread?: number; stretch?: number; scatter?: numb
 function drawQueenSwarm(c: Img, dir: Dir5, pose: SwarmQPose) {
   const o = { bob: 0, lean: 0, hunch: 0, flinch: false, spread: 0, stretch: 0, scatter: 0, seed: 0, coalesce: 1, ...pose };
   const [fx, fy] = FACE_VEC[dir];
-  const r = rng(700 + o.seed * 31 + DIR5.indexOf(dir) * 7);
+  const back = dir === 'N' || dir === 'NE';
   const cx = 32 + Math.round(fx * o.stretch * 6);
   const cy = 30 + o.bob + Math.round(fy * o.stretch * 3);
-  // her shape: head, torso, a tail of bees trailing to the ground, arms (spread wide, or thrust forward)
-  const parts: [number, number, number, number, number][] = [
-    [cx, cy - 16, 5, 5, 60],
-    [cx, cy - 4, 8, 9, 170],
-    [cx, cy + 10, 11, 9, 180],
-    [cx, cy + 22, 7, 5, 70],
+  const loose = o.scatter * 1.2 + (1 - o.coalesce) * 1.5; // how far the shape has come apart
+  // her shape, as a field: a head, shoulders, a gown belling out and trailing to the ground, two arms
+  const blobs: [number, number, number, number][] = [
+    [cx, cy - 16, 4.2, 5],
+    [cx, cy - 6, 7.5, 5],
+    [cx, cy + 3, 8.5, 7],
+    [cx + fx * 2, cy + 13, 10.5, 8],
+    [cx + fx * 3, cy + 23, 7, 4],
   ];
-  const armA = o.spread > 0 ? -0.9 - o.spread * 0.5 : 0.4;
+  const armA = o.spread > 0 ? -0.9 - o.spread * 0.5 : 0.5;
   for (const s of [-1, 1]) {
-    const ax = cx + s * (12 + o.spread * 6) + fx * o.stretch * 8;
-    const ay = cy - 6 + Math.round(armA * 6) + fy * o.stretch * 4;
-    parts.push([ax, ay, 4 + o.spread * 2, 3, 40]);
-    parts.push([(cx + ax) / 2, (cy - 8 + ay) / 2, 4, 3, 30]);
+    const ax = cx + s * (11 + o.spread * 7) + fx * o.stretch * 8;
+    const ay = cy - 6 + Math.round(armA * 7) + fy * o.stretch * 4;
+    const n = 5;
+    for (let i = 1; i <= n; i++) blobs.push([cx + s * 5 + ((ax - cx - s * 5) * i) / n, cy - 9 + ((ay - cy + 9) * i) / n, 2.2 + (i === n ? 1 : 0), 2]);
   }
-  const spread = 1 + o.scatter * 1.2 + (1 - o.coalesce) * 1.5;
-  const bees: [number, number][] = [];
-  for (const [px, py, rx, ry, n] of parts)
-    for (let i = 0; i < n; i++) {
-      const a = r() * Math.PI * 2;
-      const d = Math.sqrt(r());
-      bees.push([Math.round(px + Math.cos(a) * rx * d * spread), Math.round(py + Math.sin(a) * ry * d * spread)]);
+  const field = (x: number, y: number) => {
+    let v = -9;
+    for (const [bx, by, rx, ry] of blobs) {
+      const dx = (x - bx) / rx;
+      const dy = (y - by) / ry;
+      v = Math.max(v, 1 - (dx * dx + dy * dy));
     }
-  // a dark heart, then bees over it: black bodies, gold bands, wings catching the light
-  for (const [px, py, rx, ry] of parts.slice(0, 3)) c.ellipse(px, py, rx * 0.7 * spread, ry * 0.7 * spread, withAlpha(P.ink, Math.round(210 * o.coalesce)));
-  bees.forEach(([x, y], i) => {
-    if (x < 1 || x > 62 || y < 1 || y > 62) return;
-    const k = i % 10;
-    c.set(x, y, k < 5 ? P.ink : k < 7 ? P.dark1 : k < 9 ? P.honey : P.flame2); // mostly dark bodies, gold where the light catches
-    if (k === 8) c.set(x + 1, y, P.ink);
-    if (i % 13 === 0) c.set(x, y - 1, withAlpha(P.wax2, 170)); // a wing
-  });
+    return v;
+  };
+  const noise = (x: number, y: number) => {
+    const h = Math.sin(x * 12.9898 + y * 78.233 + o.seed * 37.719) * 43758.5453;
+    return h - Math.floor(h);
+  };
+  for (let y = 1; y < 63; y++)
+    for (let x = 1; x < 63; x++) {
+      const v = field(x, y);
+      const edge = 0.28 * (1 + loose);
+      if (v <= 0) {
+        // stray bees flying off the edge of her
+        if (v > -0.6 - loose && noise(x, y) < 0.04 + loose * 0.05) c.set(x, y, noise(y, x) < 0.5 ? P.honey : P.ink);
+        continue;
+      }
+      if (v < edge && noise(x, y) > (v / edge) * 0.9) continue; // a crawling, broken edge
+      if (o.coalesce < 1 && noise(x, y) > o.coalesce + 0.15) continue;
+      // lit from the upper left: gold bees on the lit rim, dark bodies deeper in, a violet sheen of wings
+      const lit = field(x - 2, y - 1) < v * 0.6;
+      const n = noise(x, y);
+      let col: RGBA;
+      if (lit) col = n < 0.45 ? P.flame2 : n < 0.8 ? P.honey : P.ink;
+      else if (v < 0.35) col = n < 0.2 ? P.honey : n < 0.35 ? mix(P.honey, P.ink, 0.5) : n < 0.5 ? mix(P.violet1, P.dark1, 0.4) : P.ink;
+      else col = n < 0.06 ? P.honey : n < 0.16 ? mix(P.violet1, P.dark1, 0.5) : n < 0.6 ? P.dark1 : P.ink;
+      c.set(x, y, col);
+    }
+  // her heart: a lump of glowing comb in her breast, seen through the bees
+  if (o.coalesce > 0.5 && !back) {
+    const hx = cx - 1;
+    const hy = cy - 3;
+    c.ellipse(hx + 0.5, hy + 0.5, 2.2, 2.6, mix(BL.h1, P.ink, 0.25));
+    c.rect(hx, hy, 2, 2, o.flinch ? P.wax2 : P.flame2);
+    c.set(hx, hy, P.wax2);
+    for (const [dx, dy] of [[-2, 0], [3, 1], [0, -2], [1, 3]]) c.set(hx + dx, hy + dy, mix(P.flame1, P.ink, 0.3));
+  }
+  // streams of bees falling from her head like hair
+  for (const s of [-1, 1])
+    for (let k = 0; k < 7; k++) {
+      const x = Math.round(cx + s * (4 + k * 0.45));
+      const y = cy - 17 + k * 2;
+      if (noise(x, y + k) < 0.75) c.set(x, y, k % 2 ? P.honey : P.ink);
+    }
   // her crown, floating where her head was, and her eyes
   const hy = cy - 17;
   c.hline(cx - 4, hy - 4, 9, BL.h2);
-  for (const [dx, h] of [[-3, 3], [0, 5], [3, 3]]) {
-    c.vline(cx + dx, hy - 4 - h, h, mix(P.wax2, P.honey, 0.3));
-    c.set(cx + dx, hy - 5 - h, P.flame2);
+  c.hline(cx - 4, hy - 5, 9, BL.h3);
+  for (const [dx, h] of [[-4, 2], [-2, 3], [0, 5], [2, 3], [4, 2]]) {
+    c.vline(cx + dx, hy - 5 - h, h, mix(P.wax2, P.honey, 0.3));
+    c.set(cx + dx, hy - 6 - h, P.flame2);
   }
-  if (dir !== 'N' && dir !== 'NE' && o.coalesce > 0.5) {
+  if (!back && o.coalesce > 0.5) {
     const f = cx + (dir === 'E' ? 2 : dir === 'SE' ? 1 : 0);
-    c.set(f - 2, hy + 1, o.flinch ? P.wax2 : P.flame2);
-    if (dir !== 'E') c.set(f + 2, hy + 1, o.flinch ? P.wax2 : P.flame2);
+    const eye = o.flinch ? P.wax2 : P.flame2;
+    for (const ex of dir === 'E' ? [f] : [f - 2, f + 2]) {
+      c.set(ex, hy + 1, eye);
+      c.set(ex, hy + 2, mix(P.flame1, P.ink, 0.4)); // the glow running down like tears
+    }
   }
-  c.ellipse(32, 58, 12 * spread, 2, withAlpha(P.ink, 60)); // its shadow on the ground
 }
 function queenSwarmDeath(c: Img, f: number) {
   // the swarm lets go: bees scatter, the crown drops to the ground
@@ -10407,6 +11049,73 @@ function queenSwarmDeath(c: Img, f: number) {
   c.hline(28, y, 9, BL.h2);
   for (const dx of [-3, 0, 3]) c.vline(32 + dx, y - 3, 3, mix(P.wax2, P.honey, 0.3));
   if (f < 4) c.set(32, y - 4, P.flame2);
+}
+
+// --- Honey Slime: a crawler of honey instead of wax, drowned bees hanging in it, a scrap of comb on its back.
+function drawHoneySlime(c: Img, _dir: Dir5, pose: BodyPose & { sunk?: number }) {
+  const o = { bob: 0, lean: 0, flinch: false, sunk: 0, ...pose };
+  const sq = o.bob * 0.7; // squash: wider and lower as it gathers itself
+  const w = 9.5 + sq;
+  const h = 6.5 - sq * 0.6;
+  const cx = 16 + o.lean;
+  const base = 27;
+  const cy = base - h;
+  const r = rng(91);
+  // the body, shaded per pixel: lit from the upper left, dark amber underneath, light glowing through the far side
+  for (let y = Math.floor(cy - h); y <= base; y++)
+    for (let x = Math.floor(cx - w - 1); x <= cx + w + 1; x++) {
+      const nx = (x + 0.5 - cx) / w;
+      const ny = (y + 0.5 - (cy + h * 0.25)) / h;
+      if (nx * nx + ny * ny > 1 && !(y === base && Math.abs(nx) < 1.12)) continue; // a foot of honey spreading at the floor
+      const lit = -0.55 * nx - 0.75 * ny;
+      const rim = nx > 0.55 && ny < 0.4 && ny > -0.5;
+      let col = lit > 0.55 ? BL.h3 : lit > -0.05 ? BL.h2 : lit > -0.6 ? BL.h1 : BL.h0;
+      if (rim) col = mix(col, BL.h3, 0.45);
+      if (y === base) col = Math.abs(nx) > 0.9 ? BL.h1 : BL.h0; // where it meets the floor
+      c.set(x, y, col);
+    }
+  // drowned bees hanging inside
+  for (const [dx, dy] of [[-5, 2.5], [4, 3.5], [1, 5]]) {
+    const x = Math.round(cx + dx);
+    const y = Math.round(cy + dy);
+    if (!c.alpha(x, y) || !c.alpha(x + 1, y)) continue;
+    c.set(x, y, mix(P.ink, BL.h0, 0.35));
+    c.set(x + 1, y, mix(P.flame2, BL.h1, 0.4));
+    if (r() < 0.5) c.set(x, y - 1, mix(P.wax2, BL.h2, 0.5));
+  }
+  // a scrap of comb riding on its back
+  const kx = Math.round(cx + 2);
+  const ky = Math.round(cy - h * 0.8);
+  c.rect(kx - 1, ky, 5, 3, P.wax1);
+  c.hline(kx - 1, ky, 5, P.wax2);
+  for (const [x, y] of [[0, 1], [2, 1], [1, 2], [3, 2]]) c.set(kx + x, ky + y, BL.h1);
+  c.set(kx + 3, ky + 3, BL.h2); // honey running from it
+  // the gloss: a long highlight and a white spark
+  c.hline(Math.round(cx - w * 0.6), Math.round(cy - h * 0.35), 3, BL.h3);
+  c.hline(Math.round(cx - w * 0.5), Math.round(cy - h * 0.55), 2, P.wax2);
+  c.set(Math.round(cx - w * 0.65), Math.round(cy - h * 0.2), P.white);
+  // two hollow sockets and a sagging mouth
+  const eye = o.flinch ? P.flame2 : P.ink;
+  for (const ex of [cx - 3, cx + 1]) {
+    c.set(Math.round(ex), Math.round(cy + 0.5), BL.h0);
+    c.set(Math.round(ex), Math.round(cy + 1.5), eye);
+  }
+  c.hline(Math.round(cx - 2), Math.round(cy + 3.5), 3, BL.h0);
+  const sunk = o.sunk;
+  if (sunk > 0) for (let y = 0; y < 32; y++) for (let x = 0; x < 32; x++) if (y < base - 1 - (8 - sunk) && c.alpha(x, y)) c.set(x, y, null); // still mostly under the honey
+}
+function honeySlimeDeath(c: Img, f: number) {
+  if (f < 2) return drawHoneySlime(c, 'S', { bob: 3 + f * 2, flinch: true });
+  // it runs flat into a spreading pool; the comb and a bee or two are left on the top
+  c.ellipse(16, 26, 9 + f, 2.6, BL.h1);
+  c.ellipse(15, 25.6, 6 + f * 0.5, 1.6, BL.h2);
+  c.hline(11, 25, 3, BL.h3);
+  c.rect(18, 24, 3, 2, P.wax1);
+  c.set(19, 25, BL.h1);
+  if (f < 4) {
+    c.set(12, 26, P.ink);
+    c.set(13, 26, P.flame2);
+  }
 }
 
 function genBloomCreatures() {
@@ -10533,23 +11242,7 @@ function genBloomCreatures() {
     GUARD_HAND,
   );
   // ---- Honey Slime: a crawler of honey instead of wax, drowned bees suspended in it
-  const honeyDraw = (c: Img, d: Dir5, p: BodyPose & { sunk?: number }) => {
-    drawCrawler(c, d, { ...p, size: 0.85 });
-    for (let y = 0; y < 32; y++)
-      for (let x = 0; x < 32; x++) {
-        const i = (y * 32 + x) * 4;
-        if (c.px[i + 3] === 0) continue;
-        const [r, g, bl] = [c.px[i], c.px[i + 1], c.px[i + 2]];
-        if (r < 150 || r < bl) continue; // outline, eyes, wick
-        const l = (r + g + bl) / 3;
-        c.set(x, y, l > 225 ? P.wax2 : l > 200 ? BL.h3 : l > 170 ? BL.h2 : BL.h1);
-      }
-    // no wick: bees caught inside instead
-    for (let y = 0; y < 16; y++) for (let x = 14; x < 20; x++) if (c.px[(y * 32 + x) * 4 + 3] && y < 17) c.set(x, y, null);
-    for (const [x, y] of [[13, 23], [18, 22], [16, 25]]) if (c.alpha(x, y)) c.set(x, y, P.ink);
-    const sunk = p.sunk ?? 0;
-    if (sunk > 0) for (let y = 0; y < 32; y++) for (let x = 0; x < 32; x++) if (y < 26 - (8 - sunk) && c.alpha(x, y)) c.set(x, y, null); // still mostly under the honey
-  };
+  const honeyDraw = drawHoneySlime;
   rosterSheet(
     'honey_slime',
     CELL,
@@ -10562,10 +11255,7 @@ function genBloomCreatures() {
       { name: 'engulf', frames: frames(honeyDraw, [{ bob: 2 }, { bob: 3 }, { bob: 4 }, { bob: -3, lean: 2 }, { bob: -2, lean: 2 }, { bob: 1 }, {}]), timing: P7, loop: false },
       { name: 'stagger', frames: frames(honeyDraw, [{ bob: 3, flinch: true }, { bob: 2, flinch: true }, { bob: 1 }]), timing: staggerT, loop: false },
     ],
-    [0, 1, 2, 3, 4].map(f => (c: Img) => {
-      crawlerDeath(c, f, 0.85);
-      for (let y = 0; y < 32; y++) for (let x = 0; x < 32; x++) if (c.alpha(x, y)) c.set(x, y, f < 2 ? c.px[(y * 32 + x) * 4] > 150 ? BL.h2 : BL.h0 : c.px[(y * 32 + x) * 4] > 200 ? BL.h3 : BL.h1);
-    }),
+    [0, 1, 2, 3, 4].map(f => (c: Img) => honeySlimeDeath(c, f)),
     null,
   );
   // ---- the Scarecrow Warden (48)
@@ -10702,6 +11392,7 @@ genWorks();
 genMire();
 genNave();
 genVault();
+genVaultTiles();
 genBloom();
 genFont();
 console.log(
