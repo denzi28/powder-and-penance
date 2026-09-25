@@ -101,6 +101,7 @@
       "id": "works_01_toll_gate_gaolers_helm",
       "item": "gear_gaolers_helm",
       "at": [11, 1]
-    }
+    },
+    { "type": "point", "id": "works_gate", "at": [15, 6] }
   ]
 }

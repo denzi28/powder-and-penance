@@ -2,7 +2,29 @@
   "id": "mire_arrive",
   "skippable": true,
   "steps": [
-    { "say": "The path drops into the low ground below the Abbey, where everything it doesn't want ends up." },
-    { "say": "The pools here aren't water. They're wax, pale and warm, and they pull at your boots. Something moves under the surface, now and then." }
+    {"bars": true},
+    {"camera": "point:wax_pool", "ticks": 70},
+    {"sfx": "c_bubble"},
+    {"burst": "wax", "at": [7, 4], "count": 10},
+    {"wait": 18},
+    {"burst": "wax", "at": [9, 5], "count": 8},
+    {"say": "The path drops into the low ground below the Abbey, where everything it doesn't want ends up."},
+    {"actor": "drowned", "sprite": "drowned_pilgrim", "anim": "rise", "dir": "S", "at": [8, 5]},
+    {"sfx": "c_bubble"},
+    {"burst": "wax", "at": [8, 5], "count": 16},
+    {"wait": 60},
+    {"play": "drowned", "anim": "idle", "dir": "E"},
+    {"wait": 40},
+    {"move": "drowned", "to": [8, 5.6], "ticks": 30},
+    {"burst": "wax", "at": [8, 5], "count": 16},
+    {"sfx": "c_bubble"},
+    {"wait": 14},
+    {"remove": "drowned"},
+    {"camera": "point:wax_pool_east", "ticks": 50},
+    {"burst": "wax", "at": [13, 9], "count": 8},
+    {"burst": "wax", "at": [15, 10], "count": 8},
+    {"say": "The pools here aren't water. They're wax, pale and warm, and they pull at your boots. Something moves under the surface, now and then."},
+    {"camera": "player", "ticks": 45},
+    {"bars": false}
   ]
 }

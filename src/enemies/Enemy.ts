@@ -120,6 +120,9 @@ export class Enemy extends Actor {
     return { x: this.x, y: this.y };
   }
   alpha = 1;
+  /** 0..1: sagging and darkening as it burns (a boss's remains going up); px of shuddering. Visual only. */
+  melt = 0;
+  quiver = 0;
 
   constructor(ctx: WorldCtx, readonly kind: string, x: number, y: number, facing: number) {
     super(ctx, x, y);

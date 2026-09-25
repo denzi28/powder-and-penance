@@ -1,0 +1,90 @@
+{
+  "image": "cart_horse.png",
+  "cell": [
+    48,
+    32
+  ],
+  "pivot": [
+    24,
+    30
+  ],
+  "layer": "single",
+  "animations": {
+    "walk": {
+      "row": 0,
+      "dirs": [
+        "E"
+      ],
+      "loop": true,
+      "frames": [
+        {
+          "col": 0,
+          "ticks": 7
+        },
+        {
+          "col": 1,
+          "ticks": 7
+        },
+        {
+          "col": 2,
+          "ticks": 7
+        },
+        {
+          "col": 3,
+          "ticks": 7
+        }
+      ]
+    },
+    "idle": {
+      "row": 0,
+      "dirs": [
+        "E"
+      ],
+      "loop": true,
+      "frames": [
+        {
+          "col": 4,
+          "ticks": 30
+        },
+        {
+          "col": 5,
+          "ticks": 30
+        }
+      ]
+    },
+    "rear": {
+      "row": 0,
+      "dirs": [
+        "E"
+      ],
+      "loop": false,
+      "frames": [
+        {
+          "col": 6,
+          "ticks": 5
+        },
+        {
+          "col": 7,
+          "ticks": 18
+        },
+        {
+          "col": 8,
+          "ticks": 8
+        }
+      ]
+    },
+    "shy": {
+      "row": 0,
+      "dirs": [
+        "E"
+      ],
+      "loop": false,
+      "frames": [
+        {
+          "col": 9,
+          "ticks": 12
+        }
+      ]
+    }
+  }
+}

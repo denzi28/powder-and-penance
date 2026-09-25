@@ -103,6 +103,8 @@
       "type": "decor",
       "kind": "gravestone",
       "at": [21, 11]
-    }
+    },
+    { "type": "point", "id": "wax_pool", "at": [8, 5] },
+    { "type": "point", "id": "wax_pool_east", "at": [14, 9] }
   ]
 }

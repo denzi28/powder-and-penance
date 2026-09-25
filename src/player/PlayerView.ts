@@ -15,6 +15,8 @@ export class PlayerView {
   private body: Phaser.GameObjects.Sprite;
   readonly weapon: HeldWeapon;
   private shield: Phaser.GameObjects.Sprite | null = null;
+  /** Hidden by a cutscene (the player is somewhere in the scene, not standing here). */
+  hidden = false;
 
   constructor(scene: Phaser.Scene, private p: Player, private lib: SpriteLib) {
     this.shadow = lib.sprite('shadow').setDepth(DEPTH.shadow);
@@ -88,7 +90,7 @@ export class PlayerView {
     }
     this.renderShield(x, y + torsoDy, depth, bf.flip, anchor, flash);
     // Quick travel: the whole figure fades (legs, body, weapon, shield, shadow together).
-    for (const s of [this.shadow, this.legs, this.body, this.weapon.sprite, this.shield]) s?.setAlpha(p.fade);
+    for (const s of [this.shadow, this.legs, this.body, this.weapon.sprite, this.shield]) s?.setAlpha(this.hidden ? 0 : p.fade);
     return { x: feetX, y: feetY };
   }
 

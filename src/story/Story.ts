@@ -6,6 +6,7 @@ import { TILE } from '../world/TileGrid';
 import { grantItem } from '../game/Items';
 import { levelCost, startStats } from '../player/Player';
 import { check, storyFlag } from './conditions';
+import { Stage } from './Stage';
 import type { Cond, Step, Voice } from '../data/schemas';
 import type { GameScene } from '../scenes/GameScene';
 
@@ -54,7 +55,14 @@ export class Story {
   private focus: { x: number; y: number } | null = null;
   private pan: { fromX: number; fromY: number; toX: number; toY: number; t: number; ticks: number; release: boolean } | null = null;
 
-  constructor(private gs: GameScene) {}
+  /** Actors, bubbles and bursts put on for the running script. */
+  readonly stage: Stage;
+  /** An actor the script is waiting on (a `move` with `wait`). */
+  private waitFor: string | null = null;
+
+  constructor(private gs: GameScene) {
+    this.stage = new Stage(gs);
+  }
 
   get active() {
     return this.running;
@@ -105,6 +113,8 @@ export class Story {
     if (this.skippable && !this.skipping && c.pressed('back')) this.skipping = true;
     this.tickPan();
     this.tickFade();
+    this.stage.tick();
+    if (this.stage.follow) this.focus = this.stage.pos(`actor:${this.stage.follow}`);
     if (this.card && ++this.card.t > this.card.ticks) this.card = null;
 
     for (let guard = 0; guard < 200; guard++) {
@@ -116,6 +126,12 @@ export class Story {
         if (this.fade) this.fade.t = this.fade.ticks;
         this.tickPan();
         this.tickFade();
+        this.stage.skip();
+        this.waitFor = null;
+      }
+      if (this.waitFor) {
+        if (this.stage.moving(this.waitFor)) return;
+        this.waitFor = null;
       }
       if (this.wait > 0) {
         this.wait--;
@@ -147,6 +163,7 @@ export class Story {
   // ------------------------------------------------------------------ steps
   private exec(s: Step) {
     const gs = this.gs;
+    if (this.stageStep(s)) return;
     if ('say' in s) {
       const who = s.who ? DATA.npcs.npcs[s.who] : null;
       gs.npcs.speaking = s.who ?? null;
@@ -177,7 +194,7 @@ export class Story {
     } else if ('clear' in s) {
       for (const f of [s.clear].flat()) gs.flags.delete(storyFlag(f));
       this.onFlags();
-    } else if ('wait' in s) {
+    } else if ('wait' in s && typeof s.wait === 'number') {
       this.wait = s.wait;
     } else if ('camera' in s) {
       const ticks = s.ticks ?? DEFAULT_CAMERA_TICKS;
@@ -192,7 +209,7 @@ export class Story {
       this.wait = ticks;
     } else if ('sfx' in s) {
       gs.bus.emit('sfx', { id: s.sfx });
-    } else if ('shake' in s) {
+    } else if ('shake' in s && typeof s.shake === 'number') {
       gs.cam.addTrauma(s.shake);
     } else if ('give' in s) {
       grantItem(gs, `script_${s.give}`, s.give, gs.player.x, gs.player.y);
@@ -207,6 +224,30 @@ export class Story {
       this.card = { title: s.card, sub: s.sub ?? null, t: 0, ticks };
       this.wait = ticks;
     }
+  }
+
+  /** Steps for the cutscene stage (actors, bubbles, bursts, flashes, bars). Returns false for other steps. */
+  private stageStep(s: Step): boolean {
+    const st = this.stage;
+    const fx = this.gs.screenFx;
+    if ('actor' in s) st.add(s.actor, s.sprite, s.at, s, { lift: s.lift, z: s.z, shadow: s.shadow, bob: s.bob });
+    else if ('move' in s) {
+      st.moveTo(s.move, s.to, s.ticks, { arc: s.arc, face: s.face, anim: s.anim, dir: s.dir });
+      if (s.frames || s.frame !== undefined) st.play(s.move, s);
+      if (s.wait) this.waitFor = s.move;
+    } else if ('play' in s) st.play(s.play, s);
+    else if ('remove' in s) for (const id of [s.remove].flat()) st.remove(id);
+    else if ('bubble' in s) st.bubble(s.bubble, s.over, s.ticks);
+    else if ('flash' in s) fx.flashOn(s.flash, s.ticks ?? 12, s.peak ?? 1);
+    else if ('burst' in s) st.burst(s.burst, s.at, s.count);
+    else if ('hide' in s) for (const h of s.hide) st.setHidden(h, true);
+    else if ('show' in s) for (const h of s.show) st.setHidden(h, false);
+    else if ('bars' in s) fx.setBars('script', s.bars);
+    else if ('follow' in s) {
+      st.follow = s.follow ? s.follow.replace(/^actor:/, '') : null;
+      if (!s.follow) this.focus = this.focus ?? null;
+    } else return false;
+    return true;
   }
 
   /**
@@ -287,6 +328,9 @@ export class Story {
     this.fadeAlpha = 0;
     this.focus = null;
     this.pan = null;
+    this.waitFor = null;
+    this.stage.end();
+    this.gs.screenFx?.setBars('script', false);
     this.gs.controls.clearBuffer(); // the last confirm press must not swing the sword
     this.gs.markDirty();
   }
@@ -302,6 +346,7 @@ export class Story {
   }
 
   private targetPos(target: string): { x: number; y: number } {
+    if (target.startsWith('actor:')) return this.stage.pos(target);
     if (target === 'player') return this.playerPoint();
     const [kind, id] = target.split(/:(.*)/);
     if (kind === 'npc') {

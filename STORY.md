@@ -142,6 +142,20 @@ Everything is data; the game hot-reloads it and checks every reference when it l
 | `{ "sfx": id }`, `{ "shake": 0..1 }`, `{ "toast": [title, body] }` | Presentation |
 | `{ "give": itemId }` | Give an item, explained like a chest's |
 
+**The cutscene stage** (`src/story/Stage.ts`). A place is a target (`"player"`, `"npc:<id>"`, `"point:<id>"`, `"actor:<id>"`) or `[x, y]` tiles in the player's room (fractions allowed).
+| Step | Does |
+|---|---|
+| `{ "actor": id, "sprite": sheet, "at": place, "anim"?, "dir"?, "frames"?, "every"?, "frame"?, "lift"?, "z"?, "bob"?, "shadow"? }` | Put an actor on stage: an animation (with a direction), a strip of frames, or one frame of any sheet. `lift` draws it higher (sat on a cart). |
+| `{ "move": id, "to": place, "ticks", "arc"?, "anim"?, "dir"?, "wait"? }` | Move it (hopping `arc` px). Doesn't hold the script unless `wait`. |
+| `{ "play": id, "anim"? \| "frame"?, "shake"? }` / `{ "remove": id \| [ids] }` | Change its pose or jitter it / take it off |
+| `{ "bubble": text, "over": target, "ticks"? }` | A speech bubble; several can be up at once (they stack) |
+| `{ "burst": dust\|debris\|sparks\|flame\|wax\|blood\|smoke\|water\|feathers, "at": place, "count"? }` | Particles |
+| `{ "flash": colour, "ticks"?, "peak"? }`, `{ "bars": true\|false }` | A full-screen flash; letterbox bars |
+| `{ "hide": [...] }` / `{ "show": [...] }` | Hide `"player"`, `"npc:<id>"` or `"decor:<kind>"` while a stand-in plays their part (all shown again at the end) |
+| `{ "follow": "actor:<id>" \| null }` | The camera rides with an actor |
+
+Boss moments (entrances, phase changes, falls) are cinematic too (`src/game/BossArena.ts`, `src/game/ScreenFx.ts`): the camera holds on the boss with the bars in and the controls taken. `boss.next` / `boss.turn` take a `scream` sound and a `flash` colour.
+
 **Conditions:**
 - A bare name is a story flag (`"oskar_freed"`).
 - A name with a colon can be any world flag (`"key:toll_key"`, `"shrine:shrine_rest"`).

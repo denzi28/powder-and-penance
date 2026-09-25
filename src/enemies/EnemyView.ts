@@ -33,12 +33,15 @@ export class EnemyView {
     const e = this.e;
     const feetX = (this.x = Math.round(lerp(e.prevX, e.x, alpha)));
     const feetY = (this.y = Math.round(lerp(e.prevY, e.y, alpha)));
-    const x = feetX + Math.round(e.flinchX); // recoil from hits (visual only)
+    const shudder = e.quiver ? Math.round((Math.random() - 0.5) * 2 * e.quiver) : 0;
+    const x = feetX + Math.round(e.flinchX) + shudder; // recoil from hits (visual only)
     const y = feetY + Math.round(e.flinchY);
     const depth = DEPTH.actor(feetY);
     const sheet = e.def.sprite;
     const f = this.lib.frame(sheet, e.anim.name, e.dir, e.anim.index);
-    const { sx, sy } = e.squash;
+    const squash = e.squash;
+    const sx = squash.sx * (1 + e.melt * 0.35); // melting: it slumps wide and low
+    const sy = squash.sy * (1 - e.melt * 0.6);
 
     this.shadow.setPosition(feetX, feetY).setAlpha(e.alpha);
     this.body
@@ -48,6 +51,11 @@ export class EnemyView {
       .setDepth(depth + 0.1)
       .setAlpha(e.alpha);
     tint(this.body, e.flash > 0);
+    if (e.melt > 0 && e.flash <= 0) {
+      const k = Math.min(1, e.melt);
+      const c = Phaser.Display.Color.Interpolate.ColorWithColor(Phaser.Display.Color.ValueToColor(0xffffff), Phaser.Display.Color.ValueToColor(0xb8502a), 100, k * 80);
+      this.body.setTint(Phaser.Display.Color.GetColor(c.r, c.g, c.b)); // charring as it burns
+    }
 
     const pip = e.stateName === 'notice' ? 'exclaim' : e.stateName === 'suspicious' ? 'question' : null;
     this.pip.setVisible(pip !== null && e.alpha > 0);

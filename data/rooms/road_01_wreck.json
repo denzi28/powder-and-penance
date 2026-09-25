@@ -140,6 +140,7 @@
       "id": "wagon",
       "at": [8, 7]
     },
+    { "type": "point", "id": "road_east", "at": [23, 9] },
     {
       "type": "npc",
       "id": "oskar_wreck",

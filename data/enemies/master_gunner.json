@@ -16,7 +16,9 @@
       "altar": [13, 4],
       "anim": "dismount",
       "ticks": 110,
-      "line": "\"She's cracked! Fine. I'll finish this the old way.\""
+      "line": "\"She's cracked! Fine. I'll finish this the old way.\"",
+      "scream": "b_cannon_burst",
+      "flash": "white"
     }
   },
   "sprite": "gunner_cannon",

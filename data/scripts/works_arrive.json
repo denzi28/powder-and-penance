@@ -2,7 +2,23 @@
   "id": "works_arrive",
   "skippable": true,
   "steps": [
-    { "say": "The carters' road ends at a gate of black iron. Past it, chimneys, and a smell like a kitchen that never stops cooking." },
-    { "say": "Every cart that came down this road was counted. None were counted going back." }
+    {"bars": true},
+    {"camera": "point:works_gate", "ticks": 60},
+    {"sfx": "c_steam"},
+    {"burst": "smoke", "at": [8, 1], "count": 14},
+    {"burst": "smoke", "at": [15, 1], "count": 14},
+    {"actor": "cart", "sprite": "decor_road", "frame": 0, "at": [6, 7], "bob": 1},
+    {"actor": "carter", "sprite": "npc_driver", "frame": 10, "at": [4.6, 7], "lift": 15, "z": 3, "shadow": false},
+    {"sfx": "c_cart"},
+    {"move": "cart", "to": [25, 7], "ticks": 260},
+    {"move": "carter", "to": [23.6, 7], "ticks": 260},
+    {"say": "The carters' road ends at a gate of black iron. Past it, chimneys, and a smell like a kitchen that never stops cooking."},
+    {"burst": "smoke", "at": [11, 1], "count": 14},
+    {"sfx": "c_steam"},
+    {"say": "Every cart that came down this road was counted. None were counted going back."},
+    {"wait": 30},
+    {"remove": ["cart", "carter"]},
+    {"camera": "player", "ticks": 45},
+    {"bars": false}
   ]
 }

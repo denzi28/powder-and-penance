@@ -121,6 +121,56 @@ class Kit {
     return o;
   }
 
+  /**
+   * A scream: `voices` throats at clashing, inharmonic pitches sliding from f0 to f1, through shriek
+   * formants, a rasp of noise, and a hard clipping stage (`grit`) that tears it apart. Held, not decaying.
+   */
+  scream(dt: number, dur: number, f0: number, f1: number, vol: number, voices = 4, grit = 1) {
+    const ctx = this.ctx;
+    const at = this.t + dt;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, at);
+    g.gain.linearRampToValueAtTime(vol, at + 0.05);
+    g.gain.setValueAtTime(vol, at + dur * 0.7);
+    g.gain.exponentialRampToValueAtTime(0.0001, at + dur);
+    g.connect(this.out);
+    const shaper = ctx.createWaveShaper();
+    const k = 20 + 120 * grit;
+    const curve = new Float32Array(1024);
+    for (let i = 0; i < curve.length; i++) {
+      const x = (i / (curve.length - 1)) * 2 - 1;
+      curve[i] = ((1 + k) * x) / (1 + k * Math.abs(x));
+    }
+    shaper.curve = curve;
+    const post = this.filt('lowpass', 6500, 0.5);
+    shaper.connect(post).connect(g);
+    const pre = ctx.createGain();
+    pre.gain.value = 0.5;
+    pre.connect(shaper);
+    for (const [f, q, a] of [[950, 4, 1], [2300, 6, 0.8], [3400, 8, 0.5]] as const) {
+      const b = this.filt('bandpass', f, q);
+      const bg = ctx.createGain();
+      bg.gain.value = a;
+      b.connect(bg).connect(pre);
+      for (let i = 0; i < voices; i++) {
+        const ratio = [1, 1.063, 1.498, 0.51, 1.26, 2.01][i % 6];
+        const o = this.osc('sawtooth', f0 * ratio, at, dur);
+        o.frequency.setValueAtTime(f0 * ratio, at);
+        o.frequency.exponentialRampToValueAtTime(f1 * ratio, at + dur);
+        const lfo = this.osc('square', rnd(22, 38), at, dur); // the throat tearing
+        const lg = ctx.createGain();
+        lg.gain.value = f0 * ratio * 0.05 * grit;
+        lfo.connect(lg).connect(o.frequency);
+        const v = this.osc('sine', rnd(5, 7), at, dur);
+        const vg = ctx.createGain();
+        vg.gain.value = 40;
+        v.connect(vg).connect(o.detune);
+        o.connect(b);
+      }
+    }
+    this.noiseSrc(at, dur).connect(this.filt('highpass', 1800, 0.7)).connect(this.env(at, 0.04, dur, vol * 0.6 * grit, pre));
+  }
+
   /** Air cut by something big: band-passed noise sweeping from f0 to f1, swelling to its peak at `peakAt`. */
   whoosh(dt: number, dur: number, f0: number, f1: number, vol: number, peakAt = 0.6) {
     const at = this.t + dt;
@@ -1174,6 +1224,74 @@ const RECIPES: Record<LayeredSound, Recipe> = {
     k.boom(0, 90, 40, 0.8, 1);
     k.chain(0.05, 0.7, 0.5);
     k.whoosh(0.05, 0.6, 180, 500, 0.4);
+  },
+  // ---- cutscenes and boss moments
+  b_tallow_scream: k => {
+    // Mother Tallow burning: an ear-splitting, torn, many-throated shriek over the roar of the fire
+    k.scream(0, 3.2, 1250, 620, 0.95, 5, 1);
+    k.scream(0.15, 2.8, 420, 190, 0.6, 3, 0.8);
+    k.fire(0, 3.4, 0.9, 1.2);
+    k.rumble(0, 3.2, 0.7);
+    k.sizzle(0.3, 2.8, 0.4);
+  },
+  b_chandler_scream: k => {
+    // the Chandler going into the black flame: a choir of him, too low and too high at once
+    k.scream(0, 2.6, 180, 95, 0.75, 4, 0.7);
+    k.scream(0.2, 2.2, 1500, 1900, 0.4, 2, 0.6);
+    k.fire(0, 2.8, 0.8, 0.6);
+    k.voice(0.1, 2.4, 311, 294, 'oo', 0.3, 0, 3, 25);
+  },
+  b_cannon_burst: k => {
+    k.boom(0, 70, 25, 1.4, 1);
+    k.clang(0.02, 180, 2.2, 0.6); // the barrel splitting
+    k.debris(0.03, 1.4, 0.7);
+    k.rumble(0, 2.2, 0.8);
+    k.glass(0.1, 0.3);
+  },
+  b_boss_fall: k => {
+    k.boom(0, 55, 28, 1.6, 0.9);
+    k.rumble(0, 2.6, 0.6);
+    k.bell(0.1, 73, 4, 0.45);
+  },
+  c_shriek: k => {
+    // something in the trees, far off, not an animal
+    k.scream(0, 1.6, 1700, 1100, 0.35, 3, 0.5);
+    k.voice(0.3, 1.2, 880, 620, 'eh', 0.15, 0.4, 2, 30);
+  },
+  c_neigh: k => {
+    k.voice(0, 1.1, 1100, 520, 'eh', 0.55, 0.3, 1, 380); // the whinny's wobble
+    k.voice(0.05, 1.0, 560, 300, 'ah', 0.3, 0.5, 1, 300);
+    k.breath(0.9, 0.4, 0.3, false);
+  },
+  c_crash: k => {
+    k.boom(0, 80, 30, 1.1, 1);
+    k.debris(0, 1.4, 0.9); // timber splintering
+    k.slice(0.02, 0.2, 0.4);
+    k.clang(0.05, 340, 1.2, 0.5); // the cage's iron
+    k.chain(0.1, 0.8, 0.5);
+    k.rumble(0, 1.6, 0.8);
+  },
+  c_cart: k => {
+    // a prison cart rolling: wheels grinding, the cage rattling, hooves clopping
+    k.rumble(0, 5, 0.45);
+    k.chain(0.2, 4.6, 0.25);
+    for (let i = 0; i < 18; i++) k.pop(i * 0.27 + (i % 2) * 0.06, 140 + (i % 2) * 30, 0.35);
+  },
+  c_crows: k => {
+    for (let i = 0; i < 4; i++) k.voice(i * 0.22, 0.2, 720 - i * 30, 560, 'ah', 0.3, 0.9);
+    for (let i = 0; i < 6; i++) k.whoosh(i * 0.09, 0.12, 400, 900, 0.2);
+  },
+  c_bell_toll: k => {
+    k.bell(0, 110, 5, 0.55);
+    k.bell(0.02, 220.5, 3, 0.2);
+  },
+  c_steam: k => {
+    k.sizzle(0, 1.4, 0.6);
+    k.whoosh(0, 1.2, 1200, 3000, 0.4, 0.2);
+  },
+  c_bubble: k => {
+    k.bubbles(0, 6, 0.5, true);
+    k.splash(0.3, 0.5, 0.3, true);
   },
   p_blunderbuss: k => {
     k.boom(0, 170, 55, 0.5, 0.8);

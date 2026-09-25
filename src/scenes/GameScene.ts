@@ -31,6 +31,7 @@ import { tickWarp, type WarpTarget } from '../game/Warp';
 import { Exits, findSpawn, type Exit } from '../world/Exits';
 import { LootDrops, rollLoot, type LootDrop } from '../world/LootDrops';
 import { Notes } from '../world/Notes';
+import { ScreenFx } from '../game/ScreenFx';
 import { Eruptions } from '../game/Eruptions';
 import { Explosions, nearestKeg } from '../game/Explosions';
 import { Pathfinder } from '../world/Pathfinder';
@@ -121,6 +122,8 @@ export class GameScene extends Phaser.Scene {
   notes!: Notes;
   /** Lit powder: kegs and mules on a fuse. */
   explosions = new Explosions();
+  /** Letterbox bars, flashes and cinema holds (cutscenes and boss moments). */
+  screenFx = new ScreenFx();
   eruptions = new Eruptions();
   loot!: LootDrops;
   marker!: DeathMarker;
@@ -169,7 +172,7 @@ export class GameScene extends Phaser.Scene {
   private ctxObj!: WorldCtx;
   private rooms: RoomData[] = [];
   private worldView!: WorldView;
-  private playerView!: PlayerView;
+  playerView!: PlayerView;
   private enemyViews = new Map<Enemy, EnemyView>();
   private projectileView!: ProjectileView;
   private enemyBars!: EnemyBars;
@@ -298,6 +301,8 @@ export class GameScene extends Phaser.Scene {
   private tick() {
     this.tickCount++;
     this.controls.beginTick(this.simTick);
+    this.screenFx.tick();
+    if (this.screenFx.locked && !this.story.active) this.controls.mute(); // a boss moment has the camera and the controls
     this.tickDeath(); // fades keep running under menus
     if (this.warp) {
       tickWarp(this);
@@ -660,6 +665,7 @@ export class GameScene extends Phaser.Scene {
     this.projectiles.clear();
     this.explosions.clear();
     this.eruptions.clear();
+    this.screenFx.reset();
     this.pools.clear();
   }
 
@@ -939,6 +945,7 @@ export class GameScene extends Phaser.Scene {
     this.loot.render();
     this.projectileView.render(this.projectiles.list, alpha);
     this.eruptions.draw(this);
+    this.story.stage.draw();
     this.pools.draw(this);
     const still = !!(this.menu || this.gear || this.mapOpen || this.story.active || this.warp);
     this.npcs.update(delta, this.player, still);
@@ -956,7 +963,7 @@ export class GameScene extends Phaser.Scene {
     this.exploreMusic.update(Math.min(delta, 100) / 1000, this.area, !!fight || this.bossMusic.playing, 1 - 0.9 * this.ambientAudio.harpNear);
     this.arena.update(delta);
     // A script can point the camera elsewhere (cutscenes); otherwise it follows the player.
-    const focus = this.story.cameraPoint;
+    const focus = this.story.cameraPoint ?? this.screenFx.cameraPoint;
     const camX = focus ? Math.round(focus.x) : feet.x;
     const camY = focus ? Math.round(focus.y) : feet.y;
     this.cam.apply(this.cameras.main, camX, camY, alpha, this.roomBounds(focus ? focus.x : this.player.x, focus ? focus.y : this.player.y), delta);
@@ -979,6 +986,7 @@ export class GameScene extends Phaser.Scene {
     this.projectiles.clear();
     this.explosions.clear();
     this.eruptions.clear();
+    this.screenFx.reset();
     this.pools.clear();
     this.ground.setArea(area);
     this.marker.setArea(area);

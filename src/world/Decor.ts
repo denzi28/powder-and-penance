@@ -9,6 +9,7 @@ import type { RoomData } from '../data/schemas';
 
 export class Decor {
   private sprites: Phaser.GameObjects.Sprite[] = [];
+  private kinds: string[] = [];
 
   constructor(private lib: SpriteLib) {}
 
@@ -30,11 +31,18 @@ export class Decor {
           .setFlipX(en.flip === true)
           .setDepth(def.flat ? DEPTH.floor + 1 : DEPTH.actor(y));
         this.sprites.push(s);
+        this.kinds.push(String(en.kind));
       }
+  }
+
+  /** Hide or show every piece of one kind (a cutscene playing out before the wreck). */
+  setKindVisible(kind: string, visible: boolean) {
+    this.sprites.forEach((s, i) => this.kinds[i] === kind && s.setVisible(visible));
   }
 
   clear() {
     this.sprites.forEach(s => s.destroy());
     this.sprites = [];
+    this.kinds = [];
   }
 }

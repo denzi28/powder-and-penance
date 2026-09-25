@@ -158,6 +158,14 @@ export class Input {
     for (const a of this.pressedNow) if (BUFFERED.has(a)) this.bufferedAt.set(a, tick);
   }
 
+  /** Ignore everything sampled this tick (a cinematic has the controls). */
+  mute() {
+    this.pressedNow.clear();
+    this.heldNow.clear();
+    this.bufferedAt.clear();
+    this.moveX = this.moveY = 0;
+  }
+
   pressed(a: Action) {
     return this.pressedNow.has(a);
   }

@@ -414,7 +414,20 @@ export type ShopEntry = z.infer<typeof ShopCfg>['stock'][number];
 /** A camera target: "player", "npc:<placement id>", "point:<point id>" or "enemy:<enemy kind>" (e.g. a boss). */
 const Target = z
   .string()
-  .regex(/^(player|npc:.+|point:.+|enemy:.+)$/, 'expected "player", "npc:<id>", "point:<id>" or "enemy:<kind>"');
+  .regex(/^(player|npc:.+|point:.+|enemy:.+|actor:.+)$/, 'expected "player", "npc:<id>", "point:<id>", "enemy:<kind>" or "actor:<id>"');
+/** A place in a cutscene: a target, or [x, y] tiles in the player's room. */
+const At = z.union([Target, z.tuple([num, num])]);
+type At = string | [number, number];
+/** How a cutscene actor looks: an animation (with a direction), a strip of frames, or one frame. */
+const Pose = {
+  anim: z.string().optional(),
+  dir: z.enum(['E', 'SE', 'S', 'SW', 'W', 'NW', 'N', 'NE']).optional(),
+  frames: z.array(int.nonnegative()).min(1).optional(),
+  every: int.positive().optional(),
+  frame: int.nonnegative().optional(),
+  flip: z.boolean().optional(),
+};
+type Pose = { anim?: string; dir?: 'E' | 'SE' | 'S' | 'SW' | 'W' | 'NW' | 'N' | 'NE'; frames?: number[]; every?: number; frame?: number; flip?: boolean };
 
 export type Step =
   | { say: string; who?: string }
@@ -431,7 +444,18 @@ export type Step =
   | { toast: [string, string] }
   | { card: string; sub?: string; ticks?: number }
   | { open: 'levelup' | 'shop' | 'smith' }
-  | { respec: true };
+  | { respec: true }
+  | ({ actor: string; sprite: string; at: At; lift?: number; z?: number; shadow?: boolean; bob?: number } & Pose)
+  | ({ move: string; to: At; ticks: number; arc?: number; face?: boolean; wait?: boolean } & Pose)
+  | ({ play: string; shake?: number } & Pose)
+  | { remove: string | string[] }
+  | { bubble: string; over: string; ticks?: number }
+  | { flash: string; ticks?: number; peak?: number }
+  | { burst: string; at: At; count?: number }
+  | { hide: string[] }
+  | { show: string[] }
+  | { bars: boolean }
+  | { follow: string | null };
 export const Step: z.ZodType<Step> = z.lazy(() =>
   z.union([
     /** A line of dialogue. `who`: a character id (data/npcs.json); omitted = narration. */
@@ -462,6 +486,27 @@ export const Step: z.ZodType<Step> = z.lazy(() =>
     z.object({ open: z.enum(['levelup', 'shop', 'smith']) }).strict(),
     /** Put every stat back where it started and give back all the Tallow spent levelling. */
     z.object({ respec: z.literal(true) }).strict(),
+    // ---- the cutscene stage (story/Stage.ts): actors, bubbles, bursts, flashes, letterbox bars
+    /** Put an actor on stage: any sprite sheet, in a pose. `lift`: drawn higher (sat on a cart); `z`: depth bias. */
+    z.object({ actor: z.string(), sprite: z.string(), at: At, lift: num.optional(), z: num.optional(), shadow: z.boolean().optional(), bob: int.nonnegative().optional(), ...Pose }).strict(),
+    /** Move an actor over `ticks` (hopping `arc` px); `wait` holds the script until it arrives. */
+    z.object({ move: z.string(), to: At, ticks: int.positive(), arc: num.optional(), face: z.boolean().optional(), wait: z.boolean().optional(), ...Pose }).strict(),
+    /** Change an actor's pose; `shake` px jitter (0 stops it). */
+    z.object({ play: z.string(), shake: num.min(0).optional(), ...Pose }).strict(),
+    z.object({ remove: z.union([z.string(), z.array(z.string())]) }).strict(),
+    /** A speech bubble over an actor ("actor:<id>"), an NPC or the player, for `ticks`. Doesn't wait. */
+    z.object({ bubble: z.string(), over: Target, ticks: int.positive().optional() }).strict(),
+    /** The whole screen flashes a colour (palette name or #hex). */
+    z.object({ flash: z.string(), ticks: int.positive().optional(), peak: num.min(0).max(1).optional() }).strict(),
+    /** A burst of particles: dust, debris, sparks, flame, wax, blood, smoke, water, feathers. */
+    z.object({ burst: z.string(), at: At, count: int.positive().optional() }).strict(),
+    /** Hide / show "player", "npc:<placement>" or "decor:<kind>" while the scene plays (shown again at its end). */
+    z.object({ hide: z.array(z.string()) }).strict(),
+    z.object({ show: z.array(z.string()) }).strict(),
+    /** Letterbox bars in or out. */
+    z.object({ bars: z.boolean() }).strict(),
+    /** The camera rides with an actor ("actor:<id>"), or stops (null). */
+    z.object({ follow: z.union([Target, z.null()]) }).strict(),
   ]),
 );
 /** data/scripts/*.json: a dialogue or cutscene. `skippable`: Esc jumps to the end (flags are still set). */
@@ -707,6 +752,9 @@ export const EnemyDef = z.object({
           hint: z.string(),
           fallenLine: z.string(),
           igniteTicks: int.positive().default(70),
+          /** Screamed (a sound id) as the remains go up, with a flash of this palette colour. */
+          scream: z.string().optional(),
+          flash: z.string().default('ember'),
         })
         .optional(),
       /**
@@ -715,7 +763,16 @@ export const EnemyDef = z.object({
        * then `kind` takes its place with its own entrance. `line` is shown as a banner as the turn begins.
        */
       turn: z
-        .object({ kind: z.string(), altar: Vec2, anim: z.string().default('pour'), ticks: int.positive(), line: z.string().optional() })
+        .object({
+          kind: z.string(),
+          altar: Vec2,
+          anim: z.string().default('pour'),
+          ticks: int.positive(),
+          line: z.string().optional(),
+          /** The sound at the height of the turn, and the colour the screen flashes. */
+          scream: z.string().optional(),
+          flash: z.string().default('white'),
+        })
         .optional(),
       /** On its final death the body crumbles away to dust instead of leaving a corpse. */
       dust: z.boolean().default(false),
@@ -1105,7 +1162,9 @@ export const LAYERED_SOUNDS = [
   'b_keg_blast', 'e_spark_pop', 'e_step_mule', 'e_mule_alert', 'e_mule_hurt', 'e_mule_die', 'e_mule_heave', 'e_mule_shove',
   'e_runner_alert', 'e_runner_hurt', 'e_runner_die', 'e_linstock_jab', 'b_cannon_roll', 'b_cannon_crank', 'b_cannon_fire',
   'b_grapeshot', 'b_cannon_ram', 'b_gunner_roar', 'b_gunner_grunt', 'b_stock_swing', 'b_blunderbuss',
-  'b_spikes', 'b_geyser', 'b_spout', 'b_ember_pop', 'b_whirl', 'b_spin', 'b_notes', 'b_wave', 'b_chain_shot', 'p_blunderbuss', 'p_throw', 'p_throw_knife', 'p_eat', 'p_incense', 'p_cartridge', 'p_oil', 'p_smoke', 'p_drink_grog', 'p_candle', 'p_ring', 'p_paper',
+  'b_spikes', 'b_geyser', 'b_spout', 'b_ember_pop', 'b_whirl', 'b_spin', 'b_notes', 'b_wave', 'b_chain_shot',
+  'b_tallow_scream', 'b_chandler_scream', 'b_cannon_burst', 'b_boss_fall',
+  'c_shriek', 'c_neigh', 'c_crash', 'c_cart', 'c_crows', 'c_bell_toll', 'c_steam', 'c_bubble', 'p_blunderbuss', 'p_throw', 'p_throw_knife', 'p_eat', 'p_incense', 'p_cartridge', 'p_oil', 'p_smoke', 'p_drink_grog', 'p_candle', 'p_ring', 'p_paper',
 ] as const;
 export type LayeredSound = (typeof LAYERED_SOUNDS)[number];
 export const SURFACES = ['dirt', 'grass', 'stone', 'wood', 'metal', 'mud', 'grease', 'wax', 'moss'] as const;

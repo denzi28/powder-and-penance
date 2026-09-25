@@ -2,9 +2,15 @@
   "id": "arrive_wicks_rest",
   "skippable": true,
   "steps": [
-    { "wait": 20 },
-    { "camera": "npc:maudlin", "ticks": 60 },
-    { "say": "Another one... Come up to the fire, pilgrim. Nobody here will hurt you.", "who": "maudlin" },
-    { "camera": "player", "ticks": 45 }
+    {"bars": true},
+    {"wait": 20},
+    {"camera": "npc:maudlin", "ticks": 70},
+    {"burst": "sparks", "at": [18, 9], "count": 18},
+    {"sfx": "ignite"},
+    {"wait": 20},
+    {"say": "Another one... Come up to the fire, pilgrim. Nobody here will hurt you.", "who": "maudlin"},
+    {"burst": "flame", "at": [18, 9], "count": 10},
+    {"camera": "player", "ticks": 45},
+    {"bars": false}
   ]
 }

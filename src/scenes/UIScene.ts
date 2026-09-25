@@ -45,6 +45,9 @@ export class UIScene extends Phaser.Scene {
   private bossBar!: BossBar;
   private menuUi!: MenuRenderer;
   private gearView!: GearView;
+  /** Letterbox bars (under the dialogue box), and full-screen flashes (over everything). */
+  private cinema!: Phaser.GameObjects.Graphics;
+  private flashG!: Phaser.GameObjects.Graphics;
   private hpTrail!: TrailBar;
   private vignette!: Phaser.GameObjects.Graphics;
 
@@ -92,6 +95,8 @@ export class UIScene extends Phaser.Scene {
     this.gearView = new GearView(this, 100); // over everything else in the HUD
     this.hpTrail = new TrailBar(this.gs.player.hp);
     this.vignette = this.add.graphics().setDepth(12);
+    this.cinema = this.add.graphics().setDepth(21);
+    this.flashG = this.add.graphics().setDepth(30);
     const offErr = onDataError(msg => this.err.setText(`DATA ERROR (see console)\n${msg.split('\n').slice(0, 6).join('\n')}`));
     const offOk = onDataReload(() => this.err.setText(''));
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
@@ -172,6 +177,22 @@ export class UIScene extends Phaser.Scene {
     this.gearView.draw(this.gs.gear, this.gs.player);
     this.drawDeath();
     this.drawCard();
+    this.drawCinema();
+  }
+
+  /** Letterbox bars sliding in from top and bottom, and a flash over the whole screen. */
+  private drawCinema() {
+    const fx = this.gs.screenFx;
+    const W = DATA.game.width;
+    const H = DATA.game.height;
+    const g = this.cinema.clear();
+    const h = Math.round(24 * (1 - (1 - fx.bars) ** 2));
+    if (h > 0) {
+      g.fillStyle(0x000000, 1).fillRect(0, 0, W, h).fillRect(0, H - h, W, h);
+    }
+    const f = this.flashG.clear();
+    const a = fx.flashAlpha;
+    if (a > 0.01 && fx.flash) f.fillStyle(fx.flash.color, a).fillRect(0, 0, W, H);
   }
 
   /** A script's title card (`card` step): big and centred, fading in and out, over whatever fade is up. */

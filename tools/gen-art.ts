@@ -7725,6 +7725,135 @@ function genIcons() {
   sheet('note', note, { cell: [10, 7], pivot: [5, 4], layer: 'single' });
 }
 
+// ---------------------------------------------------------------- cutscene cast: the wagon's driver and its horse
+// The driver: a hired carter in a brown coat and a low hat, a pipe, sitting up on the box (frame 10: sat).
+// The cart horse: a tired bay with blinkers and harness, authored facing east (west is mirrored), 48x32 cells:
+// walk (4), idle (2), rear (3: up on its hind legs, forelegs pawing), shy (1: flinching sideways).
+function genCutsceneCast() {
+  villagerSheet('npc_driver', {
+    cloth: { c0: mix(P.wood1, P.ink, 0.5), c1: mix(P.wood1, P.dark2, 0.3), c2: P.wood1, c3: mix(P.wood2, P.stone3, 0.3) },
+    long: true, legs: P.dark2, skin: mix(P.wax1, P.wood2, 0.45), head: 'cap', headCol: mix(P.dark2, P.wood1, 0.3), beard: P.stone3,
+    job: (c, f, g) => {
+      c.set(g.cx + 2, g.top + 7, P.wood2); // a clay pipe
+      c.set(g.cx + 3, g.top + 7, P.wood1);
+      c.set(g.cx + 4, g.top + 6, P.stone3);
+      if (f.kind !== 'sit') return;
+      const l: [number, number] = [g.cx - 4, g.waist - 1];
+      const r: [number, number] = [g.cx + 4, g.waist - 1];
+      c.hline(g.cx - 12, g.waist - 1, 8, P.wood1); // the reins, running forward
+      return { l, r };
+    },
+  });
+
+  const W = 48;
+  const H = 32;
+  const coat = { c0: hex('#2a1812'), c1: mix(P.wood1, P.ink, 0.25), c2: P.wood1, c3: P.wood2, c4: mix(P.wood2, P.wax1, 0.3) };
+  const mane = mix(P.dark2, P.ink, 0.4);
+  const hoof = P.ink;
+  const leather = mix(P.dark2, P.wood1, 0.35);
+  /** One horse pose into a fresh cell: `step` 0-3 walk phase (-1 standing), `lift` forelegs raised. */
+  const horse = (step: number, breathe: number, lift = 0, shy = false): Img => {
+    const c = new Img(W, H);
+    const bodyY = 15 + breathe;
+    // tail
+    for (let i = 0; i < 9; i++) c.set(9 - Math.round(i * 0.3) + (step >= 0 ? (step % 2) : 0), bodyY - 2 + i, i < 2 ? coat.c1 : mane);
+    c.set(10, bodyY - 3, mane);
+    // legs: far pair darker, drawn first; the walk swings them in opposite pairs
+    const swing = (phase: number) => (step < 0 ? 0 : [2, 0, -2, 0][(step + phase) % 4]);
+    const leg = (x: number, phase: number, far: boolean, fore: boolean) => {
+      const col = far ? coat.c1 : coat.c2;
+      const dx = swing(phase);
+      const up = fore ? lift : 0;
+      const kneeY = bodyY + 5 - up;
+      const footY = H - 3 - up * 1.4;
+      const kx = x + Math.round(dx / 2) + (fore && lift ? 3 : 0);
+      const fx = x + dx + (fore && lift ? 5 : 0);
+      for (const o of [0, 1]) {
+        line(c, x + o, bodyY + 2, kx + o, kneeY, o ? mix(col, P.ink, 0.2) : col); // a thick thigh
+        line(c, kx + o, kneeY, fx + o, footY, far ? mix(coat.c1, P.ink, 0.3) : o ? mix(coat.c1, P.ink, 0.2) : coat.c1);
+      }
+      c.set(kx, kneeY, far ? coat.c1 : coat.c3); // the knee catching the light
+      c.hline(fx - 1, footY + 1, 3, hoof);
+    };
+    leg(15, 2, true, false);
+    leg(31, 0, true, true);
+    // body: a barrel, lit from above
+    c.ellipse(22, bodyY, 12, 6.5, coat.c2);
+    c.ellipse(22, bodyY - 2, 10, 3.5, coat.c3);
+    c.ellipse(19, bodyY - 3, 5, 1.5, coat.c4);
+    c.ellipse(22, bodyY + 4, 10, 2, coat.c1); // belly shadow
+    c.ellipse(12, bodyY - 1, 4.5, 5, coat.c2); // haunch
+    c.ellipse(11, bodyY - 3, 3, 2, coat.c3);
+    // neck and head, raised higher when it rears or shies
+    const hx = 38 + (shy ? -2 : 0);
+    const hy = 5 - lift * 0.4 + breathe + (shy ? -2 : 0);
+    for (let i = 0; i <= 8; i++) {
+      const x = Math.round(30 + (hx - 30) * (i / 8));
+      const y = Math.round(bodyY - 3 + (hy + 3 - (bodyY - 3)) * (i / 8));
+      c.rect(x - 2, y - 1, 5, 4, i < 6 ? coat.c2 : coat.c3);
+      c.set(x - 2, y - 2, mane); // mane along the crest
+      c.set(x - 1, y - 2, mane);
+    }
+    c.ellipse(hx + 2, hy + 2, 3.5, 2.6, coat.c2); // skull
+    c.ellipse(hx + 5, hy + 4, 2.5, 2, coat.c3); // muzzle
+    c.set(hx + 7, hy + 4, P.ink); // nostril
+    c.set(hx, hy - 1, coat.c1); // ear
+    c.set(hx, hy - 2, coat.c1);
+    c.set(hx + 2, hy + 1, shy ? P.white : P.ink); // eye (white-rimmed with fright)
+    if (shy) c.set(hx + 3, hy + 1, P.ink);
+    c.rect(hx + 1, hy, 2, 2, leather); // blinker
+    // harness: collar, a strap along the back, brass buckles, the traces running back
+    for (let i = 0; i < 5; i++) c.set(30 + (i > 2 ? 1 : 0), bodyY - 5 + i * 2, leather);
+    c.rect(29, bodyY - 5, 3, 9, leather);
+    c.set(30, bodyY - 1, P.flame1);
+    c.hline(14, bodyY - 5, 14, leather);
+    c.set(21, bodyY - 5, P.flame1);
+    c.hline(0, bodyY + 1, 12, leather); // traces to the cart behind
+    // near legs over the body
+    leg(18, 0, false, false);
+    leg(34, 2, false, true);
+    c.outline(hex('#140f14'));
+    return c;
+  };
+  /** Rotate a cell about its hind hooves (for rearing). */
+  const tilt = (src: Img, deg: number): Img => {
+    const out = new Img(W, H);
+    const a = (deg * Math.PI) / 180;
+    const px = 16;
+    const py = H - 2;
+    for (let y = 0; y < H; y++)
+      for (let x = 0; x < W; x++) {
+        const dx = x - px;
+        const dy = y - py;
+        const sx = Math.round(px + dx * Math.cos(a) + dy * Math.sin(a));
+        const sy = Math.round(py - dx * Math.sin(a) + dy * Math.cos(a));
+        if (sx < 0 || sy < 0 || sx >= W || sy >= H) continue;
+        const i = (sy * W + sx) * 4;
+        if (src.px[i + 3]) out.set(x, y, [src.px[i], src.px[i + 1], src.px[i + 2], 255]);
+      }
+    return out;
+  };
+  const cells: Img[] = [
+    horse(0, 0), horse(1, -1), horse(2, 0), horse(3, -1), // walk
+    horse(-1, 0), horse(-1, 1), // idle
+    tilt(horse(-1, 0, 4), -14), tilt(horse(-1, -1, 6), -24), tilt(horse(-1, 0, 5), -18), // rear
+    horse(-1, 0, 0, true), // shy
+  ];
+  const img = new Img(W * cells.length, H);
+  cells.forEach((c, i) => img.blit(c, i * W, 0));
+  sheet('cart_horse', img, {
+    cell: [W, H],
+    pivot: [24, 30],
+    layer: 'single',
+    animations: {
+      walk: { row: 0, dirs: ['E'], loop: true, frames: [0, 1, 2, 3].map(col => ({ col, ticks: 7 })) },
+      idle: { row: 0, dirs: ['E'], loop: true, frames: [4, 5].map(col => ({ col, ticks: 30 })) },
+      rear: { row: 0, dirs: ['E'], loop: false, frames: [{ col: 6, ticks: 5 }, { col: 7, ticks: 18 }, { col: 8, ticks: 8 }] },
+      shy: { row: 0, dirs: ['E'], loop: false, frames: [{ col: 9, ticks: 12 }] },
+    },
+  });
+}
+
 // ---------------------------------------------------------------- font (original 5x7, ASCII 32..126, 16 per row)
 const GLYPHS: Record<string, string> = {
   ' ': '.....|.....|.....|.....|.....|.....|.....',
@@ -8301,6 +8430,7 @@ genNaveDecor();
 genAbbeyDecor();
 genChest();
 genNpcs();
+genCutsceneCast();
 genCritters();
 genIcons();
 genTollwarden();

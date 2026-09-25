@@ -1,5 +1,6 @@
 // Story scripts: conditions, and every script in data/scripts can be played to the end without getting stuck
 // (a menu nobody can leave, a loop). Runs the real Story runner against a minimal stand-in for the game.
+import { ScreenFx } from '../src/game/ScreenFx';
 import { describe, expect, it } from 'vitest';
 import { DATA } from '../src/data/config';
 import { check, storyFlag } from '../src/story/conditions';
@@ -20,6 +21,11 @@ describe('conditions', () => {
   });
 });
 
+/** A stand-in for any Phaser object: every method call returns it again (sprites, graphics, texts). */
+const anything: unknown = new Proxy(() => anything, { get: (_t, k) => (k === 'then' ? undefined : k === 'width' || k === 'height' ? 10 : anything), apply: () => anything });
+/** Any animation a cutscene asks for exists. */
+const anyAnims = new Proxy({}, { get: () => ({ row: 0, dirs: ['S'], loop: true, frames: [{ ticks: 5 }] }), has: () => true });
+
 /** Plays a script: confirms every few ticks and walks the menu cursor upward, so every menu is eventually left. */
 function play(id: string, flags: Set<string>, maxTicks = 20000) {
   let t = 0;
@@ -29,7 +35,14 @@ function play(id: string, flags: Set<string>, maxTicks = 20000) {
       pressed: (a: string) => (a === 'moveUp' ? t % 4 === 0 : a === 'confirm' ? t % 4 === 2 : false),
       clearBuffer: () => {},
     },
-    npcs: { speaking: null, refresh: () => {}, get: () => null },
+    npcs: { speaking: null, refresh: () => {}, get: () => null, setSceneHidden: () => {} },
+    // the cutscene stage: sprites, graphics and effects that go nowhere
+    lib: { sprite: () => anything, manifest: () => ({ animations: anyAnims, cell: [32, 32] }), frame: () => ({ frame: 0, flip: false }) },
+    add: anything,
+    decor: { setKindVisible: () => {} },
+    playerView: { hidden: false },
+    screenFx: new ScreenFx(),
+    roomAt: () => null,
     // enough of a player for `give` steps (grantItem)
     player: {
       x: 0, y: 0, tallow: 0, slots: [], phials: { max: 3, charges: 3, level: 0 }, healAmount: 45, ammoFor: () => ({ reserve: 0 }),
@@ -39,7 +52,7 @@ function play(id: string, flags: Set<string>, maxTicks = 20000) {
     particles: { burst: () => {} },
     save: () => {},
     enemies: [],
-    areaRoomList: [],
+    areaRoomList: Object.values(DATA.rooms),
     bus: { emit: () => {} },
     cam: { addTrauma: () => {} },
     showToast: () => {},

@@ -192,6 +192,10 @@ function loadAll(src: Record<string, unknown>) {
           if (st.projectile?.lob?.sfx) ids.push(st.projectile.lob.sfx);
         }
       if (e.boss) ids.push(e.boss.slamSfx, ...(e.boss.roarSfx ? [e.boss.roarSfx] : []));
+      for (const ph of [e.boss?.next, e.boss?.turn]) {
+        if (ph?.scream) ids.push(ph.scream);
+        if (ph && !data.palette[ph.flash]) errors.push(`data/enemies/${e.id}.json: flash "${ph.flash}" is not a palette colour`);
+      }
       if (e.steps) ids.push(e.steps.sfx);
       if (e.deathBlast) ids.push(e.deathBlast.sfx);
       for (const v of Object.values(e.voice ?? {})) if (v) ids.push(v);
@@ -293,7 +297,7 @@ function checkStory(data: {
     for (const s of steps) {
       if ('say' in s && s.who && !data.npcs.npcs[s.who]) errors.push(`${file}: unknown speaker "${s.who}"`);
       if ('give' in s && !data.items[s.give]) errors.push(`${file}: gives unknown item "${s.give}"`);
-      if ('sfx' in s && !data.sfx.presets[s.sfx]) errors.push(`${file}: unknown sound "${s.sfx}"`);
+      if ('sfx' in s && !data.sfx.presets[s.sfx] && !(S.LAYERED_SOUNDS as readonly string[]).includes(s.sfx)) errors.push(`${file}: unknown sound "${s.sfx}"`);
       if ('camera' in s) {
         const [kind, id] = s.camera.split(/:(.*)/);
         if (kind === 'npc' && !npcPlacements.has(id)) errors.push(`${file}: camera target "${s.camera}": no npc placement "${id}"`);

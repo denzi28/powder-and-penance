@@ -16,7 +16,9 @@
       "altar": [10, 4],
       "anim": "pour",
       "ticks": 170,
-      "line": "\"Forty years I fed it. Then let it have the last of me.\""
+      "line": "\"Forty years I fed it. Then let it have the last of me.\"",
+      "scream": "b_chandler_scream",
+      "flash": "ink"
     }
   },
   "sprite": "chandler",

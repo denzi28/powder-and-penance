@@ -132,8 +132,17 @@ export class Npcs {
   refresh(flags: ReadonlySet<string>) {
     for (const n of this.list) {
       n.visible = check(flags, n.when);
-      n.sprite.setVisible(n.visible);
+      n.sprite.setVisible(n.visible && !this.sceneHidden.has(n.id));
     }
+  }
+
+  /** Placement ids a cutscene has hidden (an actor stands in for them); cleared when it ends. */
+  readonly sceneHidden = new Set<string>();
+  setSceneHidden(id: string, hidden: boolean) {
+    if (hidden) this.sceneHidden.add(id);
+    else this.sceneHidden.delete(id);
+    const n = this.get(id);
+    if (n) n.sprite.setVisible(n.visible && !hidden);
   }
 
   get(id: string) {

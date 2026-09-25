@@ -52,8 +52,15 @@ export class BossArena {
   private smokeT = 0;
   /** Created on first build: the scene's display list doesn't exist yet when the arena is constructed. */
   private bubbles: Phaser.GameObjects.Graphics | null = null;
+  /** The pyre: flames drawn over a body burning or a boss giving itself to the fire. */
+  private fire: Phaser.GameObjects.Graphics | null = null;
 
   constructor(private gs: GameScene) {}
+
+  /** A boss moment: the camera holds on it (bars in, controls taken) for `ticks`. */
+  private spotlight(e: Enemy, ticks: number, lift = 18) {
+    this.gs.screenFx.cinema(() => (e.dead && !this.stage ? null : { x: e.x, y: e.y - lift }), ticks, true);
+  }
 
   build(rooms: RoomData[]) {
     this.clear();
@@ -114,6 +121,7 @@ export class BossArena {
       use: () => {
         this.stage = { name: 'burning', body: st.body, t: 0 };
         this.gs.bus.emit('sfx', { id: 'ignite', x: st.body.x, y: st.body.y });
+        this.spotlight(st.body, next.igniteTicks + 30, 12);
       },
     };
   }
@@ -152,6 +160,12 @@ export class BossArena {
         return;
       }
       if (!b.dead) return;
+      if (st.deathT === 0) {
+        this.spotlight(b, b.def.deathTicks + AFTER_DEATH, 14);
+        gs.screenFx.flashOn('white', 14, 0.7);
+        gs.bus.emit('sfx', { id: 'b_boss_fall', x: b.x, y: b.y });
+        gs.bus.emit('shake', { trauma: 0.5 });
+      }
       if (st.deathT === 0 && b.def.boss?.dust) this.crumble(b, 0);
       st.deathT++;
       if (b.def.boss?.dust && st.deathT % 12 === 0) this.crumble(b, st.deathT); // dust keeps drifting off
@@ -178,12 +192,29 @@ export class BossArena {
       // Fire climbs the remains, then the next phase gets up out of it.
       st.t++;
       const b = st.body;
-      if (st.t % 3 === 0) gs.particles.burst(b.x + (Math.random() - 0.5) * 20, b.y - 4, 6, -Math.PI / 2, 1.2, 3, 50, st.t % 2 ? 'flame2' : 'flame1', false);
-      if (st.t % 20 === 0) gs.bus.emit('shake', { trauma: 0.12 });
       const next = b.def.boss!.next!;
+      const k = st.t / next.igniteTicks;
+      const peak = Math.round(next.igniteTicks * 0.35);
+      // the fire climbs higher and thicker; the body shudders, then slumps and chars as it melts
+      if (st.t % 3 === 0) gs.particles.burst(b.x + (Math.random() - 0.5) * (20 + k * 24), b.y - 4, 6 + k * 10, -Math.PI / 2, 1.2, 3 + Math.round(k * 5), 50 + k * 60, st.t % 2 ? 'flame2' : 'flame1', false);
+      b.quiver = k > 0.2 ? 1 + k * 2 : 0;
+      b.melt = Math.max(0, Math.min(1, (k - 0.35) / 0.6));
+      if (st.t === peak) {
+        // the scream: an ear-splitting shriek, a hot flash, the hall shaking
+        if (next.scream) gs.bus.emit('sfx', { id: next.scream, x: b.x, y: b.y });
+        gs.screenFx.flashOn(next.flash, 12, 0.65);
+        gs.bus.emit('shake', { trauma: 0.85 });
+        gs.particles.burst(b.x, b.y - 20, 16, -Math.PI / 2, Math.PI * 2, 30, 140, 'flame2', false);
+      }
+      if (st.t > peak && k < 0.9) {
+        if (st.t % 8 === 0) gs.bus.emit('shake', { trauma: 0.28 });
+        if (st.t % 4 === 0) gs.particles.burst(b.x, b.y - 26, 24, -Math.PI / 2, 0.4, 3, 45, 'dark1', false); // a column of black smoke
+        if (st.t % 5 === 0) gs.particles.burst(b.x + (Math.random() - 0.5) * 16, b.y - 14, 10, -Math.PI / 2, 2.2, 3, 90, 'wax1', true); // boiling wax spat out
+      } else if (st.t % 20 === 0) gs.bus.emit('shake', { trauma: 0.12 });
       if (st.t < next.igniteTicks) return;
       const x = b.x;
       const y = b.y;
+      gs.screenFx.flashOn('white', 20);
       gs.despawn(b);
       const risen = gs.spawnEnemy(next.kind, x, y, -Math.PI / 2);
       if (!risen) return;
@@ -192,6 +223,7 @@ export class BossArena {
       this.active = { enemy: risen, title: risen.def.boss?.title ?? risen.def.name };
       this.stage = { name: 'fight', boss: risen, deathT: 0 };
       risen.startIntro();
+      this.spotlight(risen, (risen.def.boss?.introTicks ?? 60) + 10);
       if (risen.def.boss?.introLine) gs.showToast(this.active.title.toUpperCase(), risen.def.boss.introLine);
     }
   }
@@ -207,7 +239,14 @@ export class BossArena {
       st.turning = true;
       if (tr.line) gs.showToast(b.def.boss!.title.toUpperCase(), tr.line);
       gs.bus.emit('sfx', { id: 'stagger', x: b.x, y: b.y, pitch: 0.6 });
+      this.spotlight(b, tr.ticks + 120, 22); // the walk to the altar and the turn, on camera
     }
+    if (b.turnT === Math.round(tr.ticks * 0.55)) {
+      if (tr.scream) gs.bus.emit('sfx', { id: tr.scream, x: b.x, y: b.y });
+      gs.screenFx.flashOn(tr.flash, 14, 0.6);
+      gs.bus.emit('shake', { trauma: 0.7 });
+    }
+    if (b.turnT > tr.ticks * 0.55) b.quiver = 1.5;
     if (b.turnT >= 0) {
       const k = Math.min(1, b.turnT / tr.ticks);
       const ay = b.y - TILE; // the altar, just north of where it stands
@@ -228,9 +267,11 @@ export class BossArena {
     gs.particles.burst(x, y - 20, 12, -Math.PI / 2, 1.2, 30, 90, 'dark1', false);
     gs.bus.emit('shake', { trauma: 0.6 });
     gs.bus.emit('sfx', { id: 'explosion', x, y });
+    gs.screenFx.flashOn('white', 18);
     this.active = { enemy: risen, title: risen.def.boss?.title ?? risen.def.name };
     this.stage = { name: 'fight', boss: risen, deathT: 0 };
     risen.startIntro();
+    this.spotlight(risen, (risen.def.boss?.introTicks ?? 60) + 10);
     if (risen.def.boss?.introLine) gs.showToast(this.active.title.toUpperCase(), risen.def.boss.introLine);
   }
 
@@ -254,6 +295,7 @@ export class BossArena {
     }
     this.active = { enemy: boss, title: boss.def.boss!.title };
     boss.startIntro();
+    this.spotlight(boss, boss.def.boss!.introTicks + 20); // its entrance, on camera
     gs.bus.emit('sfx', { id: 'veil' });
     const line = boss.def.boss!.introLine;
     if (line) gs.showToast(boss.def.boss!.title.toUpperCase(), line);
@@ -313,6 +355,7 @@ export class BossArena {
 
   update(deltaMs: number) {
     this.smokeT += deltaMs;
+    this.drawPyre();
     const frame = Math.floor(this.smokeT / 120) % 4;
     for (const a of this.arenas)
       for (const s of a.seals)
@@ -328,6 +371,51 @@ export class BossArena {
       g.fillStyle(Phaser.Display.Color.HexStringToColor(pal.wax2).color, 0.12).fillEllipse(e.x, cy, r * 2, r * 2.4);
       g.lineStyle(1, Phaser.Display.Color.HexStringToColor(pal.flame2).color, 0.7).strokeEllipse(e.x, cy, r * 2, r * 2.4);
     }
+  }
+
+  /**
+   * Flickering tongues of flame over whatever is burning: the remains being lit (growing with the burn, flaring
+   * at the scream), or the altar a boss is pouring itself into (black fire for the Chandler).
+   */
+  private drawPyre() {
+    const st = this.stage;
+    let at: { x: number; y: number } | null = null;
+    let k = 0;
+    let black = false;
+    if (st?.name === 'burning') {
+      const next = st.body.def.boss!.next!;
+      k = Math.min(1, st.t / next.igniteTicks);
+      const flare = Math.max(0, 1 - Math.abs(st.t - next.igniteTicks * 0.35) / 25);
+      k = Math.min(1.4, 0.25 + k * 0.9 + flare * 0.5);
+      at = { x: st.body.x, y: st.body.y + 2 };
+    } else if (st?.name === 'fight' && st.boss.stateName === 'turn' && st.boss.turnT >= 0 && st.boss.def.boss?.turn?.anim === 'pour') {
+      const tr = st.boss.def.boss.turn;
+      k = 0.3 + Math.min(1, st.boss.turnT / tr.ticks) * 0.9;
+      at = { x: st.boss.x, y: st.boss.y - TILE + 4 };
+      black = true;
+    }
+    if (!at) {
+      this.fire?.clear();
+      return;
+    }
+    this.fire ??= this.gs.add.graphics();
+    const g = this.fire.clear().setDepth(DEPTH.actor(at.y) + 2);
+    const col = (n: string) => Phaser.Display.Color.HexStringToColor(DATA.palette[n]).color;
+    const [outer, mid, core, tip] = black ? [col('ink'), col('dark2'), col('stone2'), col('flame1')] : [col('ember'), col('flame1'), col('flame2'), col('wax2')];
+    const t = this.smokeT / 1000;
+    // a warm (or cold) glow on the floor round it
+    g.fillStyle(black ? col('dark1') : col('flame1'), 0.1 + 0.08 * k).fillEllipse(at.x, at.y, 70 * k, 30 * k);
+    const tongues = 7;
+    const width = 26 * k;
+    for (const [c, scale, alpha] of [[outer, 1, 0.85], [mid, 0.72, 0.9], [core, 0.45, 0.95], [tip, 0.2, 0.9]] as const)
+      for (let i = 0; i < tongues; i++) {
+        const u = i / (tongues - 1) - 0.5; // -0.5 .. 0.5 across the fire
+        const flick = Math.sin(t * (9 + i * 1.7) + i * 2.1) * 0.5 + Math.sin(t * (15 + i) + i) * 0.25;
+        const h = (22 + 18 * (1 - Math.abs(u) * 1.6)) * k * scale * (1 + flick * 0.35);
+        const bx = at.x + u * width * (0.6 + scale * 0.4) + Math.sin(t * 7 + i) * 1.5;
+        const w = Math.max(2, (width / tongues) * 1.6 * scale + 2);
+        g.fillStyle(c, alpha).fillTriangle(bx - w, at.y, bx + w, at.y, bx + Math.sin(t * 11 + i * 3) * 3 * k, at.y - h);
+      }
   }
 
   /** Before building a new area: the old seals belong to the old map, so only forget them. */

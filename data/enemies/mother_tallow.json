@@ -17,7 +17,9 @@
       "prompt": "SET HER ALIGHT",
       "hint": "Her wax still stirs, humming under the surface. It won't lie still until it burns.",
       "fallenLine": "She sinks into her pool, but the wax keeps moving. Something has pushed up out of the floor.",
-      "igniteTicks": 80
+      "igniteTicks": 280,
+      "scream": "b_tallow_scream",
+      "flash": "ember"
     }
   },
   "sprite": "mother_tallow",
