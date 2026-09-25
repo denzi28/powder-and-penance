@@ -60,12 +60,13 @@ The map is in [WORLD.md](WORLD.md).
 | Oskar at his hub stall (`oskar_hub`): thanks, his story; the shop comes later | ✅ (no shop yet) |
 | The Abbey view from the Hill of Candles (`abbey_view`) | ✅ |
 | Arriving at Wick's Rest (`arrive_wicks_rest`): Maudlin calls you to the fire | ✅ |
-| Maudlin at the shrine (`maudlin`): first meeting (warm hands), the Drip, the Abbey, the Toll Gate | ✅ (levelling comes later) |
+| Maudlin at the shrine (`maudlin`): first meeting (warm hands), the Drip, the Abbey, the Toll Gate, levelling | ✅ |
 | **The Tollwarden** (Abbey Gatehouse). His entrance line: "Toll is paid in tallow, pilgrim. And tallow is paid in you." His last words (`tollwarden_death`): he kept count of every pilgrim sent to the Works so they wouldn't be only tallow. His name was **Anselm**. He gives you the Toll Key. | ✅ |
 | Maudlin hears of Anselm's death (a new option once you've heard his last words) | ✅ |
 | Arriving at the Works (`works_arrive`) | ✅ |
 | **The Rendering Hall reveal** (`rendering_reveal`): the robes with name tags, the carts, "The Tallow in your pouch is warm. It always has been. Now you know why." | ✅ |
-| The Chandler's Ledger (Foreman's Office): names and weights. Showing it to Maudlin: her confession begins. | ✅ (the full forgive/condemn choice comes with the Chandler) |
+| The Chandler's Ledger (Foreman's Office): names and weights. Showing it to Maudlin: her confession begins. | ✅ |
+| **Maudlin's judgement** (`maudlin`, "The Chandler is dead.", once he has fallen and you carry the ledger): she tells you all of it (the Order's cart twenty years ago, the tired and the sick she sent up, the levels made of them) and puts the shrine's snuffer in your hand. **Forgive** (`maudlin_forgiven`): she stays, will look at their faces the way Anselm did, and gives you her last Bitter Salt; later, "How are you, Maudlin?". **Condemn** (`maudlin_condemned`): she walks down the road with the names, leaves you the Tallow under her bench, and Wick's Rest goes cold (shrine `cold`: no rest, no travel); you level up at any other Wick from its menu. "Not yet" leaves it open. Carrying Hild's letter, she asks to read it first. Both set `maudlin_judged`. | ✅ |
 | **Mother Tallow** (`mother_tallow_death`): wordless. She sinks back into the vat she never stopped tending, ladle still in her hand. **Seal of Tallow.** | ✅ |
 | **Pip** (Waxmire, `pip_mire` → hub `pip_hub`): slipped off the carts, hides in a ring of candles, heard the singing lady call. Sent to Wick's Rest; gives you a candle stub; later notices the singing has stopped. | ✅ (the Act 2 payoff comes later) |
 | **The Mire Matron** (`matron_death`): the Abbey's midwife. When the Drip came into the cradles she couldn't give the children to the flame, so she brought them down to the mire and sang to them, and never stopped. **Seal of the Mire.** | ✅ |
@@ -75,7 +76,8 @@ The map is in [WORLD.md](WORLD.md).
 | **Hild** (`hild_talk`): warm hands again; the Synod and the beeswax; the Smoker and a candle; her apiary (`{ "open": "apiary" }`). Read her orchard letter first and she tells you who M. is; either way she gives you a new letter for her sister. | ✅ |
 | **The letter** (`maudlin`, "I bring a letter from Bloomhollow"): Maudlin reads it twice, and sends back a reply sealed in grey wax with their mother's beeswax inside. Hild gives you Bitter Salt for it and opens her cellar. | ✅ |
 | **The Hive Queen** (Great Skep). Entrance: "Hush, my darlings. Another one come to burn us?" Her turn: she pours herself into the Skep and the swarm comes out wearing her. Her last words (`queen_death`): Mother Aldith, who went in with the Queen and was kept; "it wasn't the Synod that beat us. We just forgot how to let things end." **Ring of the Queen.** Hild hears of it. | ✅ |
-| Brother Aldous | Next, with the Abbey revision |
+| **Brother Aldous** (`aldous`, Scriptorium): a Nave Watch Warden who threw his spear down the Crypt Stair and hides among the books, half his face gone to wax. He begs you not to go down to the Works; tells you how the Chandler fights. **Give him the Bitter Salt from your phial** (the `spend` step takes one phial level; with none, he says he'll hold a while): the cold comes back into his face, and he swears to be at your side in the Nave (`aldous_saved`). He walks in beside you when the Chandler's fight begins (arena `ally`) and fights through both phases (ai `ally`); if he's still standing at the end (`aldous_fought`) he kneels by the Chandler: "Rest, Father." Afterwards he sits in the Scriptorium with his shield across his knees, waiting to guard the lift. | ✅ |
+| **Aldous the Unmade** (`aldous_turns`, Nave Approach): reach the great door with all four Seals without having saved him, and he has turned: the same mail, the same shield, nothing behind it ("...warm... you're still... warm..."). A miniboss (`mb_aldous`, his own theme `the_unmade`) that drops the **Nave Watch Ring**; his Scriptorium corner is empty (`aldous_turned`). | ✅ |
 
 ## Writing dialogue and cutscenes
 Everything is data; the game hot-reloads it and checks every reference when it loads.

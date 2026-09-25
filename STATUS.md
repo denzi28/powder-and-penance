@@ -115,15 +115,17 @@ Stack: Phaser 3 + TypeScript + Vite. Zod-validated data files, Vitest tests.
     - **20 chests in the world** (was 68): only the cage key, the Chandler's ledger, Oskar's strongbox, the Vault's Keg Charges, the seven weapons and armour pieces, the eight rings and one phial shard (the Collapsed Gate) are still in chests. Tallow Ingots, Ember Salt, Bitter Salt, Tallow lumps and the other four phial shards are carried by enemies (`carries`), the tougher ones where the room has them (the Belfry Brute and the Scarecrow Warden carry a salt each); the rest of the consumable caches and the powder pouches are gone. `src/game/Balance.ts` counts carried items in their room's tier, so the curve is unchanged. Chests that sat in the road or the middle of a room moved to alcoves and corners (the cage key and buckler in the Cutting's alcoves, the Parish Signet by Lome's shrine).
     - The road where the Wreck meets the Cutting is two tiles wider (the wagon's escort walked under the wall's overhang there in the opening).
     - **Heavy guns reload faster:** Chapel Flintlock 150 → 95 ticks, Gunner's Blunderbuss 170 → 110, Heavy Crossbow 120 → 85 (and you walk a little faster while reloading).
+  - Act 1's promises kept:
+    - **Maudlin's judgement:** with the Chandler dead and his ledger in your pack, "The Chandler is dead." Forgive her (she stays, gives you her last Bitter Salt) or condemn her (she walks down the road; Wick's Rest goes cold: shrine entity `cold` makes a Wick unlit, unrestable and untravellable, and the shrine menu then offers LEVEL UP at every other Wick). See STORY.md.
+    - **Brother Aldous:** NPC in the Scriptorium (`npc_aldous`, portrait 22). Give him the Bitter Salt out of your phial (script step `spend: "phialLevel"`) and he fights beside you against the Chandler: enemy ai `ally` (`Enemy.ally`, `foe`; the brain's `follow` state; on the player's team for hits, takes no attack token, can't be riposted or lose track), brought in by the arena's `ally: { kind, when }` and dismissed after the boss's last words. Reach the Nave door with the four Seals without saving him and he has turned: Aldous the Unmade, a miniboss (`when: aldous_turned` on the placement, cutscene `aldous_turns`, theme `the_unmade`, the Nave Watch Ring). Enemy placements take a `when` condition now; `GameScene.refreshPlacedEnemies` adds and removes them as story flags change.
+    - **Art gaps closed:** the held weapons (sword, dagger, greataxe, crossbow, revolver, flintlock, blunderbuss) are shaded with brass fittings, wood grain and a lit edge; the weapon rack is an armoury stand with finials and pegs; the lever sits in dressed stone with an iron quadrant and an oak handle. The Last Candle is redrawn (shoulders, a slumped middle, a skirt run into a glossy pool, a warm core, runs of wax, a melted skull with the stubs of his taper crown, arms that stand off the body). The Chandler's vestments have dithered round shading, a damask of gold flames and warm light from his crown. The Nave gets a red runner down the aisle, lancet windows, a reliquary and votive stands. Death frames for the Wickling, Warden (and Aldous), Acolyte, Renderer and Belfry Brute now tip the body over onto the floor in a pool (`bodyDown` in tools/gen-art.ts) instead of a coloured ellipse.
 - Dialogue voice blips per speaker.
 - The Chandler finale, as above.
 - Fixed: enemy thrown attacks ignored `count`/`spreadDeg` (always threw 1). Mother Tallow now really spits 3 globs and her bones 5 embers, so those fights got harder.
 - Fixed: the player got stuck in the Nave doorway. The arena sealed while the player stood on the tile next to the seal, which then became solid. Arenas now wake only 2+ tiles away from every seal (`src/game/arenaWake.ts`); a test covers all arenas.
 
 ## Remaining for Act 1
-- **Pixel-art beauty pass** ← in progress. Done: the player, all four tilesets, the regular enemies and the bosses. Portraits are repainted (48×48, `tools/portraits.ts`). Still procedural placeholder: most weapons, regular enemies' death frames, the lever and weapon racks. The Chandler, the Last Candle and the Nave decor are the roughest.
-- **Brother Aldous** (Abbey Scriptorium): give him Bitter Salt and he fights beside you against the Chandler (needs an ally AI). Otherwise you meet him later as a Wickling in the Nave Approach.
-- **Sister Maudlin's forgive/condemn choice** (after the Chandler's ledger). Forgive: she stays and helps in Act 2. Condemn: she leaves and her shrine goes cold.
+- ~~Pixel-art beauty pass~~, ~~Brother Aldous~~, ~~Maudlin's forgive/condemn choice~~: done (see Most recent work).
 - **Balance pass** (done by the owner after playtesting): boss HP and damage, enemy numbers.
 
 ## Later roadmap (from PLAN.md, proposed)
@@ -135,8 +137,8 @@ Stack: Phaser 3 + TypeScript + Vite. Zod-validated data files, Vitest tests.
 - **Act 2:** the Cathedral (up the Nave lift). The "something drinking the Wick" mystery; Pip's payoff.
 
 ## What to do next (suggested order)
-1. **Pixel-art pass.** Start with what's on screen most: the player, then the Abbey tileset, then enemies, then bosses. Work in `tools/gen-art.ts`, or drop real hand-made art into `assets/sprites/` following ASSETS.md (gen:art never overwrites existing files without `--force`).
-2. Playtest Act 1 end to end. Fix bugs, then do the balance pass.
-3. Expansion Step 5 (ROADMAP.md): Madder Marsh, the Dyers' Quarter.
-4. Maudlin's forgive/condemn choice, then Brother Aldous.
-5. Balance the economy after a playtest (level costs, shop prices, material counts).
+1. Playtest Act 1 end to end (both of Maudlin's endings, Aldous saved and lost). Fix bugs, then do the balance pass.
+2. Hide the HUD and minimap during cutscenes; a "current goal" line in the pause menu.
+3. Balance the economy after a playtest (level costs, shop prices, material counts).
+4. Expansion Step 5 (ROADMAP.md): Madder Marsh, the Dyers' Quarter.
+5. Real hand-made art can still replace any sheet: drop it into `assets/sprites/` following ASSETS.md (gen:art never overwrites existing files without `--force`).

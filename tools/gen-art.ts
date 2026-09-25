@@ -551,26 +551,55 @@ function genPlayer() {
 
 // ---------------------------------------------------------------- weapons, shadow, fx, ui
 function genWeapons() {
+  // A pilgrim's arming sword: brass pommel and cross, a leather-wrapped grip, a fullered blade lit along its top edge
   const sword = new Img(22, 9);
-  sword.set(1, 4, P.steel2); // pommel
-  sword.hline(2, 4, 3, P.wood2); // grip
-  sword.vline(5, 2, 5, P.steel1); // guard
-  sword.rect(6, 3, 13, 2, P.steel2); // blade
-  sword.hline(6, 4, 13, P.steel1);
-  sword.set(19, 3, P.steel2); // tip
+  sword.set(0, 4, BRASS); // pommel
+  sword.vline(1, 3, 3, GOLD0);
+  sword.set(1, 3, mix(GOLD0, P.wax2, 0.4));
+  for (let x = 2; x <= 4; x++) {
+    sword.set(x, 4, x % 2 ? WOOD.c1 : WOOD.c2); // the wrap
+    sword.set(x, 3, x % 2 ? WOOD.c2 : WOOD.c3);
+  }
+  sword.vline(5, 1, 7, BRASS); // the cross, its ends curled
+  sword.set(5, 1, mix(GOLD0, P.wax2, 0.4));
+  sword.set(5, 2, GOLD0);
+  sword.set(4, 1, BRASS);
+  sword.set(4, 7, WOOD.c0);
+  sword.rect(6, 3, 12, 3, IRON.c2); // the blade
+  sword.hline(6, 3, 12, IRON.c3); // lit edge
+  sword.hline(7, 4, 9, IRON.c1); // the fuller
+  sword.hline(6, 5, 12, mix(IRON.c1, IRON.c2, 0.5)); // lower edge in shade
+  sword.rect(6, 3, 1, 3, IRON.c1); // ricasso
+  sword.hline(18, 3, 1, IRON.c3); // the point
+  sword.set(18, 4, IRON.c2);
+  sword.set(19, 3, IRON.c3);
+  sword.set(12, 3, P.white); // a glint
   sword.outline(P.ink);
   sheet('sword', sword, { cell: [22, 9], pivot: [3, 4], layer: 'weapon', points: { tip: [20, 3] } });
 
+  // The Parish Revolver: blued Works steel, a fluted cylinder, a brass guard and butt cap on a walnut grip
   const rev = new Img(15, 10);
-  rev.rect(6, 2, 7, 2, P.steel1); // barrel
-  rev.hline(6, 2, 7, P.steel2);
-  rev.rect(4, 2, 3, 3, P.steel1); // cylinder
-  rev.set(5, 3, P.dark2);
-  rev.vline(3, 2, 3, P.dark2); // frame
-  rev.set(3, 1, P.steel1); // hammer
-  rev.rect(2, 4, 3, 2, P.wood2); // grip
-  rev.rect(1, 6, 3, 2, P.wood1);
-  rev.set(5, 5, P.dark2); // trigger
+  rev.rect(7, 2, 6, 2, IRON.c1); // barrel
+  rev.hline(7, 2, 6, IRON.c3);
+  rev.set(12, 1, IRON.c2); // front sight
+  rev.hline(8, 4, 4, IRON.c0); // ejector rod
+  rev.rect(4, 2, 3, 3, IRON.c1); // cylinder
+  rev.set(4, 2, IRON.c3);
+  rev.set(5, 2, IRON.c2);
+  rev.vline(5, 3, 2, IRON.c0); // flutes
+  rev.set(6, 4, IRON.c0);
+  rev.vline(3, 2, 3, IRON.c0); // frame
+  rev.set(3, 1, IRON.c2); // hammer
+  rev.set(2, 1, IRON.c1);
+  rev.set(4, 6, GOLD0); // trigger guard
+  rev.set(5, 6, BRASS);
+  rev.set(6, 5, BRASS);
+  rev.set(5, 5, IRON.c0); // trigger
+  rev.rect(2, 5, 2, 2, WOOD.c2); // grip
+  rev.rect(1, 6, 2, 2, WOOD.c1);
+  rev.set(2, 5, WOOD.c3);
+  rev.set(1, 6, WOOD.c2);
+  rev.hline(1, 8, 2, BRASS); // butt cap
   rev.outline(P.ink);
   sheet('revolver', rev, { cell: [15, 10], pivot: [3, 5], layer: 'weapon', points: { muzzle: [13, 2] } });
 }
@@ -732,16 +761,60 @@ function drawWickling(c: Img, dir: Dir5, pose: WickPose) {
   c.set(ax, ay + b, E.wax0);
 }
 
+/**
+ * A body going down (death frames 2-4): the figure as `draw` paints it standing, tipped over about its middle
+ * (frame 2 half way, 3 and 4 flat on the ground) so it lies along the floor with its feet where they were; a
+ * pool of `pool` spreads under it, and by the last frame it has gone dark and still.
+ */
+function bodyDown(c: Img, draw: (c: Img) => void, f: number, pool: RGBA, dir = 1) {
+  const src = new Img(c.w, c.h);
+  draw(src);
+  let x0 = c.w, x1 = -1, y0 = c.h, y1 = -1;
+  for (let y = 0; y < c.h; y++)
+    for (let x = 0; x < c.w; x++)
+      if (src.alpha(x, y)) {
+        x0 = Math.min(x0, x);
+        x1 = Math.max(x1, x);
+        y0 = Math.min(y0, y);
+        y1 = Math.max(y1, y);
+      }
+  if (x1 < 0) return;
+  const a = (f === 2 ? 60 : 90) * (Math.PI / 180) * dir;
+  const sw = (x1 - x0 + 1) / 2;
+  const shh = (y1 - y0 + 1) / 2;
+  const scx = (x0 + x1 + 1) / 2;
+  const scy = (y0 + y1 + 1) / 2;
+  const flat = f >= 3 ? 0.72 : 0.88; // seen from above, a body on the floor is foreshortened
+  const halfH = (shh * Math.abs(Math.sin(a)) + sw * Math.abs(Math.cos(a))) * flat; // how tall it is once tipped
+  const dcx = scx + dir * (f === 2 ? 2 : 1);
+  const dcy = y1 + 1 - halfH;
+  if (f >= 3) {
+    const len = shh * 2;
+    c.ellipse(dcx, y1 - 1, len * (0.45 + (f - 3) * 0.15), 2.5 + (f - 3), mix(pool, P.ink, 0.35));
+    c.ellipse(dcx - 1, y1 - 1.5, len * (0.3 + (f - 3) * 0.12), 1.5 + (f - 3) * 0.6, pool);
+  }
+  const cos = Math.cos(a);
+  const sin = Math.sin(a);
+  for (let y = 0; y < c.h; y++)
+    for (let x = 0; x < c.w; x++) {
+      const dx = x + 0.5 - dcx;
+      const dy = (y + 0.5 - dcy) / flat;
+      const sx = Math.floor(scx + dx * cos + dy * sin);
+      const sy = Math.floor(scy - dx * sin + dy * cos);
+      if (!src.alpha(sx, sy)) continue;
+      const i = (sy * src.w + sx) * 4;
+      const col: RGBA = [src.px[i], src.px[i + 1], src.px[i + 2], 255];
+      c.set(x, y, f >= 4 ? mix(col, P.ink, 0.22) : col);
+    }
+}
+
 function drawWicklingDeath(c: Img, f: number) {
   if (f < 2) {
     drawWickling(c, 'S', { bob: f + 1, hunch: f + 2, flame: f, sway: 0, flinch: true });
     return;
   }
-  c.ellipse(16, 26, 7 + f, 2.5, P.wood1);
-  c.ellipse(16, 25, 3 + f * 0.5, 1.5, P.wax1);
-  c.set(15, 24, P.wax2);
-  if (f < 4) c.set(17, 23, f === 2 ? P.flame2 : P.flame1);
-  else c.set(17, 22, P.dark2);
+  // it topples, its candle guttering out, and its wax runs out across the floor
+  bodyDown(c, cc => drawWickling(cc, 'S', { hunch: 2, flame: f < 4 ? 1 : 0, sway: 0, flinch: true }), f, P.wax1);
 }
 
 function drawDummy(c: Img, lean: number) {
@@ -948,11 +1021,17 @@ function genArsenal() {
   sheet(
     'dagger',
     outlined(14, 8, c => {
-      c.hline(1, 4, 3, P.wood1);
-      c.vline(4, 3, 3, P.steel1);
-      c.rect(5, 3, 6, 2, P.steel2);
-      c.hline(5, 4, 6, P.steel1);
-      c.set(11, 3, P.steel2);
+      // a rondel: iron disc guard and pommel, a cord-wound grip, a narrow stiff blade
+      c.set(0, 4, IRON.c2); // pommel disc
+      c.vline(0, 3, 3, IRON.c1);
+      for (let x = 1; x <= 3; x++) c.set(x, 4, x % 2 ? WOOD.c2 : WOOD.c1);
+      c.vline(4, 2, 5, IRON.c1); // guard disc
+      c.set(4, 2, IRON.c3);
+      c.rect(5, 3, 6, 2, IRON.c2);
+      c.hline(5, 3, 6, IRON.c3);
+      c.hline(5, 4, 6, IRON.c1);
+      c.set(11, 3, IRON.c3);
+      c.set(8, 3, P.white);
     }),
     { cell: [14, 8], pivot: [2, 4], layer: 'weapon', points: { tip: [12, 3] } },
   );
@@ -960,17 +1039,32 @@ function genArsenal() {
   sheet(
     'greataxe',
     outlined(31, 17, c => {
-      c.hline(1, 8, 23, P.wood1); // haft
-      c.hline(1, 9, 23, P.wood2);
-      c.set(0, 8, P.steel1);
-      c.rect(17, 7, 3, 4, P.steel1); // back spike + socket
-      for (let y = 2; y <= 15; y++) {
-        const bulge = 3 - Math.abs(y - 8.5) / 2.5;
-        c.hline(20, y, Math.max(2, Math.round(3 + bulge)), P.steel1);
-        c.set(20 + Math.max(2, Math.round(3 + bulge)), y, P.steel2); // edge
+      // an ash haft bound in iron, a leather grip; a bearded head with a hooked back spike and a bright bevel
+      c.hline(1, 8, 21, WOOD.c2); // haft
+      c.hline(1, 9, 21, WOOD.c1);
+      for (let x = 4; x < 21; x += 5) c.set(x, 8, WOOD.c3); // grain
+      c.rect(0, 8, 1, 2, IRON.c2); // butt cap
+      c.rect(3, 8, 5, 2, DWOOD.c1); // leather grip
+      for (let x = 3; x < 8; x += 2) c.set(x, 8, DWOOD.c2);
+      c.rect(13, 8, 1, 2, IRON.c2); // bands
+      c.rect(17, 8, 1, 2, IRON.c2);
+      c.rect(18, 6, 3, 6, IRON.c1); // socket
+      c.vline(18, 6, 6, IRON.c2);
+      c.set(18, 6, IRON.c3);
+      c.hline(15, 8, 3, IRON.c1); // back spike, hooked down
+      c.set(14, 9, IRON.c1);
+      c.set(15, 7, IRON.c2);
+      for (let y = 1; y <= 16; y++) {
+        const w = Math.max(1, Math.round(1 + 5.5 * Math.sin((Math.PI * (y - 0.5)) / 16) + (y > 10 ? 1 : 0))); // a beard on the lower half
+        const x0 = 21;
+        c.hline(x0, y, w, IRON.c1);
+        if (w > 2) c.set(x0 + w - 2, y, IRON.c2); // the bevel
+        c.set(x0 + w - 1, y, IRON.c3); // the edge
+        if (y < 5) c.set(x0, y, IRON.c2);
       }
-      c.set(24, 1, P.steel2);
-      c.set(24, 16, P.steel2);
+      c.set(23, 6, IRON.c0); // a nick, and a mark from the forge
+      c.set(22, 11, IRON.c0);
+      c.set(26, 5, P.white);
     }),
     { cell: [31, 17], pivot: [5, 8], layer: 'weapon', points: { tip: [27, 8] } },
   );
@@ -978,14 +1072,28 @@ function genArsenal() {
   sheet(
     'crossbow',
     outlined(21, 15, c => {
-      c.rect(1, 6, 12, 3, P.wood1); // stock
-      c.hline(1, 6, 12, P.wood2);
-      c.vline(14, 1, 13, P.wood2); // prod
-      c.set(13, 0, P.wood2);
-      c.set(13, 14, P.wood2);
-      for (let y = 2; y <= 12; y++) c.set(12 - Math.round(Math.abs(y - 7) * 0.2), y, P.wax1); // string
-      c.hline(9, 7, 10, P.steel2); // loaded bolt
-      c.set(19, 7, P.steel1);
+      // a heavy crossbow: an oak tiller, a steel prod bent back at the tips, a windlass hook at the butt
+      c.rect(2, 6, 11, 3, WOOD.c2); // tiller
+      c.hline(2, 6, 11, WOOD.c3);
+      c.hline(2, 8, 11, WOOD.c1);
+      c.rect(0, 5, 3, 5, WOOD.c1); // butt
+      c.vline(0, 5, 5, WOOD.c2);
+      c.set(1, 4, IRON.c2); // windlass hook
+      c.set(1, 3, IRON.c1);
+      c.rect(6, 9, 2, 2, IRON.c1); // trigger lever
+      c.set(7, 11, IRON.c0);
+      c.rect(12, 5, 2, 5, IRON.c1); // the stirrup-plate that holds the prod
+      for (let y = 0; y <= 14; y++) {
+        const k = (y - 7) / 7;
+        const x = 15 - Math.round(2 * k * k); // bent back toward the tips
+        c.set(x, y, IRON.c2);
+        if (y < 7) c.set(x - 1, y, IRON.c3);
+      }
+      for (let y = 1; y <= 13; y++) c.set(Math.round(13 - (1 - Math.abs(y - 7) / 6) * 3), y, P.wax1); // the string, drawn back
+      c.hline(9, 7, 9, WOOD.c2); // the bolt
+      c.set(9, 6, P.blood2); // fletching
+      c.set(9, 8, P.blood2);
+      c.hline(18, 7, 2, IRON.c3);
     }),
     { cell: [21, 15], pivot: [5, 7], layer: 'weapon', points: { muzzle: [19, 7] } },
   );
@@ -993,13 +1101,30 @@ function genArsenal() {
   sheet(
     'flintlock',
     outlined(20, 10, c => {
-      c.rect(6, 2, 12, 2, P.steel1); // long barrel
-      c.hline(6, 2, 12, P.steel2);
-      c.rect(2, 3, 6, 2, P.wood2); // stock
-      c.rect(1, 5, 3, 3, P.wood1); // grip
-      c.set(6, 4, P.dark2); // lock
-      c.set(5, 1, P.steel1); // cock
-      c.set(8, 5, P.dark2); // trigger guard
+      // the Chapel Flintlock: a long octagonal barrel pinned in a walnut stock, brass bands, lock and furniture
+      c.rect(7, 2, 11, 2, IRON.c1); // barrel
+      c.hline(7, 2, 11, IRON.c3);
+      c.set(17, 2, IRON.c3);
+      c.set(17, 3, IRON.c2); // muzzle ring
+      c.hline(7, 4, 8, WOOD.c2); // the fore-stock under it
+      c.hline(8, 5, 6, WOOD.c1); // ramrod
+      c.set(14, 5, BRASS);
+      c.vline(14, 2, 3, BRASS); // the barrel band
+      c.rect(3, 3, 5, 2, WOOD.c2); // wrist
+      c.hline(3, 3, 5, WOOD.c3);
+      c.rect(1, 5, 3, 2, WOOD.c2); // grip, curving down
+      c.set(1, 5, WOOD.c3);
+      c.rect(1, 7, 2, 1, WOOD.c1);
+      c.hline(1, 8, 2, BRASS); // butt cap
+      c.rect(5, 3, 2, 2, IRON.c1); // lock plate
+      c.set(7, 2, GOLD0); // the pan
+      c.set(5, 1, IRON.c2); // the cock, and its flint
+      c.set(6, 1, IRON.c1);
+      c.set(6, 0, P.stone3);
+      c.set(5, 6, GOLD0); // trigger guard
+      c.set(6, 6, BRASS);
+      c.set(7, 5, BRASS);
+      c.set(6, 5, IRON.c0);
     }),
     { cell: [20, 10], pivot: [3, 5], layer: 'weapon', points: { muzzle: [18, 2] } },
   );
@@ -1065,11 +1190,26 @@ function genArsenal() {
   sheet(
     'rack',
     outlined(18, 22, c => {
-      c.rect(3, 6, 2, 14, P.wood1);
-      c.rect(13, 6, 2, 14, P.wood1);
-      c.hline(2, 8, 14, P.wood2);
-      c.hline(2, 16, 14, P.wood2);
-      c.rect(1, 19, 16, 2, P.dark1);
+      // an armoury stand: two turned posts with finials, a notched top bar with pegs, a lower rail, a plinth
+      for (const px of [3, 13]) {
+        c.rect(px, 5, 2, 14, WOOD.c2);
+        c.vline(px, 5, 14, WOOD.c3);
+        c.vline(px + 1, 5, 14, WOOD.c1);
+        c.rect(px - 1, 3, 4, 2, WOOD.c2); // finial
+        c.hline(px - 1, 3, 4, WOOD.c3);
+        c.set(px, 2, WOOD.c2);
+        c.set(px + 1, 2, WOOD.c1);
+        c.hline(px, 11, 2, IRON.c2); // an iron bracket
+      }
+      c.rect(2, 7, 14, 2, WOOD.c2); // top bar
+      c.hline(2, 7, 14, WOOD.c3);
+      c.hline(2, 8, 14, WOOD.c1);
+      for (const x of [6, 9, 12]) c.set(x, 6, IRON.c3); // pegs
+      c.hline(2, 15, 14, WOOD.c1); // lower rail
+      c.hline(2, 14, 14, WOOD.c2);
+      c.rect(1, 19, 16, 2, P.stone2); // plinth
+      c.hline(1, 19, 16, P.stone3);
+      c.hline(1, 20, 16, P.stone1);
     }),
     { cell: [18, 22], pivot: [9, 20], layer: 'single' },
   );
@@ -1408,11 +1548,7 @@ function wardenDeath(c: Img, f: number) {
     drawWarden(c, 'S', { bob: 2 + f, hunch: 2 + f, flinch: true });
     return;
   }
-  c.ellipse(16, 25, 9, 3, P.steel1);
-  c.ellipse(15, 24.5, 5, 1.5, P.steel2);
-  c.rect(8, 24, 5, 3, P.wood2);
-  c.rect(20, 23, 3, 3, P.blood1);
-  if (f === 4) c.set(22, 22, P.dark2);
+  bodyDown(c, cc => drawWarden(cc, 'S', { hunch: 1, flinch: true }), f, P.blood1);
 }
 
 // --- Powder Acolyte: dark robe, porcelain mask, bandolier of little pots; throws firepots.
@@ -1491,9 +1627,9 @@ function acolyteDeath(c: Img, f: number) {
     drawAcolyte(c, 'S', { bob: 2 + f, hunch: 2 + f, flinch: true, pot: 'none' });
     return;
   }
-  c.ellipse(16, 25, 8, 3, P.dark2);
-  c.rect(12, 23, 4, 3, P.wax2);
-  if (f < 4) c.set(21, 24, P.flame2);
+  bodyDown(c, cc => drawAcolyte(cc, 'S', { hunch: 1, flinch: true, pot: 'none' }), f, mix(P.blood1, P.dark1, 0.3), -1);
+  if (f < 4) c.set(24, 26, P.flame2); // a firepot rolled clear, still lit
+  c.disc(24, 27, 1.5, P.wood1);
 }
 
 // --- Taper Hound: lean black dog with a lit taper candle on its back.
@@ -1680,10 +1816,7 @@ function bruteDeath(c: Img, f: number) {
     drawBrute(c, 'S', { bob: 3 + f * 2, hunch: 3 + f, flinch: true });
     return;
   }
-  c.ellipse(24, 40, 16, 5, P.wax1);
-  c.rect(15, 37, 18, 4, P.wood1);
-  c.ellipse(36, 37, 6, 4, P.flame1);
-  c.set(40, 37, P.ember);
+  bodyDown(c, cc => drawBrute(cc, 'S', { hunch: 2, flinch: true }), f, P.blood1);
 }
 
 // --- The Tollwarden (48x48): the Abbey's gatekeeper. Tall iron barbute with a coin-slot visor and pale
@@ -2046,9 +2179,7 @@ function rendererDeath(c: Img, f: number) {
     drawRenderer(c, 'S', { bob: 2 + f, hunch: 2 + f, flinch: true });
     return;
   }
-  c.rect(8, 23, 16, 4, P.stone1);
-  c.rect(10, 23, 8, 3, P.wood2);
-  c.rect(22, 22, 4, 4, P.dark2);
+  bodyDown(c, cc => drawRenderer(cc, 'S', { hunch: 1, flinch: true }), f, mix(P.wax1, P.wood1, 0.45)); // grease, not blood
 }
 
 // --- Vat Crawler: a heap of half-rendered wax that drags itself along; a guttering wick on top.
@@ -2620,12 +2751,24 @@ function genWorks() {
   const lever = new Img(32, 24);
   for (let f = 0; f < 2; f++) {
     const c = new Img(16, 24);
-    c.rect(4, 17, 8, 6, P.stone2);
-    c.hline(4, 17, 8, P.stone3);
-    if (f === 0) line(c, 8, 18, 10, 6, P.steel1);
-    else line(c, 8, 18, 14, 14, P.steel1);
-    const [kx, ky] = f === 0 ? [10, 5] : [14, 13];
-    c.disc(kx, ky, 1.5, P.blood2);
+    // a dressed-stone block with an iron slot and a toothed quadrant; the arm is iron, the handle turned oak
+    c.rect(3, 16, 10, 7, P.stone2);
+    c.hline(3, 16, 10, P.stone4);
+    c.vline(3, 16, 7, P.stone3);
+    c.vline(12, 16, 7, P.stone1);
+    c.hline(3, 22, 10, P.stone1);
+    c.set(5, 19, P.stone1); // wear on the stone
+    c.set(10, 20, P.stone3);
+    c.rect(6, 16, 4, 2, IRON.c0); // the slot
+    for (let a = 0; a < 5; a++) c.set(Math.round(8 + Math.cos(-Math.PI * 0.2 - a * 0.25) * 4), Math.round(17 + Math.sin(-Math.PI * 0.2 - a * 0.25) * 4), IRON.c2); // the quadrant's teeth
+    const [ex, ey] = f === 0 ? [10, 5] : [14, 13];
+    line(c, 8, 17, ex, ey, IRON.c1);
+    line(c, 7, 17, ex - 1, ey, IRON.c2);
+    c.set(8, 17, IRON.c3); // the pivot bolt
+    const [hx, hy] = f === 0 ? [10, 3] : [14, 11];
+    c.rect(hx - 1, hy - 1, 2, 3, WOOD.c2); // the handle
+    c.set(hx - 1, hy - 1, WOOD.c3);
+    c.set(hx, hy + 1, WOOD.c1);
     c.outline(P.ink);
     lever.blit(c, f * 16, 0);
   }
@@ -4648,14 +4791,18 @@ function drawChandler(c: Img, dir: Dir5, pose: PriestPose) {
   const red = { c0: hex('#3a0d14'), c1: P.blood1, c2: P.blood2, c3: hex('#cf5058') };
   const cream = { c0: mix(P.wax1, P.stone3, 0.5), c1: P.wax1, c2: P.wax2, c3: mix(P.wax2, P.white, 0.5) };
   const gold0 = mix(P.flame1, P.wood1, 0.45);
-  const shadeAt = (t: number, r: { c0: RGBA; c1: RGBA; c2: RGBA; c3: RGBA }) => (t < 0.1 ? r.c3 : t < 0.2 ? mix(r.c2, r.c3, 0.5) : t > 0.92 ? r.c0 : t > 0.78 ? r.c1 : r.c2);
+  // Round shading, light from the upper left, with an ordered dither where two tones meet
+  const shadeAt = (t: number, r: { c0: RGBA; c1: RGBA; c2: RGBA; c3: RGBA }, x = 0, y = 0) => {
+    const d = t + ((x + y) % 2 ? 0.035 : -0.035);
+    return d < 0.1 ? r.c3 : d < 0.2 ? mix(r.c2, r.c3, 0.5) : d > 0.92 ? r.c0 : d > 0.76 ? r.c1 : d > 0.64 ? mix(r.c1, r.c2, 0.5) : r.c2;
+  };
   // Red under-robe: a long bell to the floor, pooled wide when he kneels; the hem swings as he walks.
   for (let y = top; y <= hem; y++) {
     const k = (y - top) / Math.max(1, hem - top);
     const half = Math.round(5 + k * (7 + o.kneel * 5));
     const swing = y > hem - 6 && o.step >= 0 ? (o.step % 2 ? 1 : -1) : 0;
     const x0 = cx - half + swing;
-    for (let x = x0; x <= x0 + half * 2; x++) c.set(x, y, y >= hem - 1 ? (y === hem ? gold0 : P.flame1) : shadeAt((x - x0) / (half * 2), red));
+    for (let x = x0; x <= x0 + half * 2; x++) c.set(x, y, y >= hem - 1 ? (y === hem ? gold0 : P.flame1) : shadeAt((x - x0) / (half * 2), red, x, y));
   }
   for (const x of [-5, 4]) line(c, cx + x, top + 26, cx + x * 1.6, hem - 2, red.c1); // folds of the under-robe
   // Cream chasuble over it, to the knees, edged in gold
@@ -4663,7 +4810,13 @@ function drawChandler(c: Img, dir: Dir5, pose: PriestPose) {
   for (let y = top; y <= chasBot; y++) {
     const k = (y - top) / Math.max(1, chasBot - top);
     const half = Math.round(6 + k * 4);
-    for (let x = cx - half; x <= cx + half; x++) c.set(x, y, shadeAt((x - cx + half) / (half * 2), cream));
+    for (let x = cx - half; x <= cx + half; x++) {
+      const t = (x - cx + half) / (half * 2);
+      let col = shadeAt(t, cream, x, y);
+      // a damask of little gold flames woven into the cream
+      if ((x - cx + 99) % 4 === 2 && (y - top) % 4 === 2 && t > 0.08 && t < 0.9) col = mix(col, P.flame1, t > 0.6 ? 0.35 : 0.5);
+      c.set(x, y, col);
+    }
     c.set(cx - half, y, P.flame1);
     c.set(cx + half, y, gold0);
   }
@@ -4755,6 +4908,12 @@ function drawChandler(c: Img, dir: Dir5, pose: PriestPose) {
     c.ellipse(hx, hy + 1, 3.5, 4.5, P.stone3);
     c.hline(hx - 2, hy - 2, 4, P.stone2);
   }
+  // Warm light from the crown on his scalp and shoulders
+  if (!back) {
+    c.set(hx - 1, hy - 4, mix(skin.c3, P.flame2, 0.35));
+    c.set(hx + 1, hy - 4, mix(skin.c2, P.flame1, 0.3));
+  }
+  for (const dx of [-6, -5, 5, 6]) c.set(cx + dx, top - 1 + (Math.abs(dx) === 6 ? 1 : 0), mix(red.c3, P.flame2, 0.3));
   // Crown of lit tapers on a gold band, like a halo
   const cy = hy - 4;
   c.hline(hx - 4, cy, 9, P.flame1);
@@ -4833,53 +4992,96 @@ function drawCandleMan(c: Img, dir: Dir5, pose: CandlePose) {
   const back = dir === 'N' || dir === 'NE';
   const cx = 32 + sh;
   const W = WAXR;
-  const glow = mix(P.wax2, P.flame1, 0.45); // the light inside him, showing through the wax
-  // His own wax, pooling where he stands
-  c.ellipse(32, 57.5, 12 + o.melt * 4, 3.5 + o.melt * 0.5, W.w0);
-  c.ellipse(32, 57, 11 + o.melt * 4, 3 + o.melt * 0.5, W.w2);
-  c.ellipse(28, 56.5, 5, 1.2, W.w3);
-  // The column of his body: wax lit from inside, brightest down the middle (he has been melting: shorter than he was)
+  // five tones of wax across the body, a warm core where the fire inside shows through
+  const tone = [mix(W.w0, P.ink, 0.25), W.w0, W.w1, W.w2, W.w3];
+  const core = mix(P.wax2, P.flame1, 0.5);
+  const hot = mix(P.flame1, P.flame2, 0.4);
+  // His own wax, pooling where he stands: a glossy puddle with a bright rim
+  const pr = 12 + o.melt * 4;
+  c.ellipse(32, 57.5, pr + 1, 3.8 + o.melt * 0.5, tone[0]);
+  c.ellipse(32, 57, pr, 3.2 + o.melt * 0.5, W.w1);
+  c.ellipse(31, 56.8, pr - 3, 2.2, W.w2);
+  c.hline(26 - o.melt, 56, 6, W.w3);
+  c.set(38 + o.melt * 2, 58, W.w3);
+  // The body: broad wax shoulders, a slumped middle, and a skirt that has run out into the pool. The outline
+  // wobbles where the wax has sagged.
   const top = 28 + b;
-  for (let y = top; y <= 56; y++) {
-    const k = (y - top) / Math.max(1, 56 - top);
-    const half = Math.round(7 + k * 3 + (y > 50 ? (y - 50) * 0.6 : 0));
+  const bottom = 56;
+  const wob = rng(419);
+  const wobble: number[] = [];
+  for (let y = 0; y <= 40; y++) wobble.push(wob() < 0.3 ? 1 : 0);
+  for (let y = top; y <= bottom; y++) {
+    const r = y - top;
+    const k = r / Math.max(1, bottom - top);
+    let half = r < 5 ? 8 + Math.min(2, r) : 10 - Math.min(2, (r - 5) * 0.35) + Math.max(0, (k - 0.55) * 11);
+    half = Math.round(half + wobble[r % 40]);
     for (let x = cx - half; x <= cx + half; x++) {
-      const t = (x - cx + half) / (half * 2);
-      const col = t < 0.12 ? W.w3 : t > 0.88 ? W.w0 : t > 0.72 ? W.w1 : Math.abs(t - 0.45) < 0.14 && !back ? glow : W.w2;
+      const t = (x - (cx - half)) / Math.max(1, half * 2); // 0 lit left edge .. 1 dark right edge
+      const dither = (x + y) % 2 ? 0.04 : -0.04;
+      let i = t + dither < 0.1 ? 4 : t + dither < 0.3 ? 3 : t + dither < 0.62 ? 2 : t + dither < 0.85 ? 1 : 0;
+      if (k > 0.8 && i > 1) i--; // the skirt is in his own shadow
+      let col = tone[i];
+      if (!back && Math.abs(t - 0.42) < 0.13 && k > 0.08 && k < 0.75) col = (x + y) % 3 ? core : mix(core, W.w2, 0.5); // the core
       c.set(x, y, col);
     }
   }
-  for (const [x, y, l] of [[-8, 8, 4], [7, 12, 5], [-5, 18, 3], [9, 20, 4]]) if (top + y < 56) {
-    c.vline(cx + x, top + y, l, W.w3); // drips
-    c.set(cx + x, top + y + l, W.w1);
+  // Runs of wax: down the front, and off the edges of the silhouette in fat drops
+  const run = rng(88);
+  for (let i = 0; i < 9; i++) {
+    const side = i % 2 ? 1 : -1;
+    const y0 = top + 3 + Math.floor(run() * 22);
+    if (y0 > bottom - 3) continue;
+    const r0 = y0 - top;
+    const half = r0 < 5 ? 8 + Math.min(2, r0) : 10 - Math.min(2, (r0 - 5) * 0.35);
+    const x = Math.round(cx + side * (half + (i < 4 ? 1 : -2 - Math.floor(run() * 4))));
+    const l = 2 + Math.floor(run() * 5);
+    c.vline(x, y0, l, side < 0 ? W.w3 : W.w1);
+    c.set(x, y0 + l, side < 0 ? W.w2 : tone[0]);
+    if (i < 4) c.set(x, y0 + l + 1, side < 0 ? W.w2 : tone[0]); // a drop about to fall
   }
-  // Rags of burnt vestment at the hips: red gone black at the edges, a scrap of gold
+  // Rags of burnt vestment at the hips: red scorched black at the edges, a gilt hem half melted in, the stole
   const rag = rng(77);
-  for (let x = -9; x <= 9; x++) {
-    if (top + 14 >= 56) break;
-    const l = Math.min(3 + Math.floor(rag() * 5), 56 - top - 14);
-    c.vline(cx + x, top + 14, l, x % 3 === 0 ? P.blood1 : x % 3 === 1 ? mix(P.blood1, P.dark1, 0.6) : P.dark2);
-    c.set(cx + x, top + 14 + l - 1, P.ink); // burnt edge
+  const hip = top + 13;
+  if (hip < bottom - 2) {
+    for (let x = -9; x <= 9; x++) {
+      const l = Math.min(3 + Math.floor(rag() * 6), bottom - hip - 1);
+      const red = x % 4 === 0 ? mix(P.blood1, P.dark1, 0.3) : x % 4 === 2 ? P.blood2 : P.blood1;
+      c.vline(cx + x, hip, l, x > 5 ? mix(red, P.ink, 0.35) : red);
+      c.set(cx + x, hip + l - 1, x % 2 ? P.ink : P.dark1); // burnt edge
+      if (l > 4 && x % 3 === 0) c.set(cx + x, hip + l - 2, P.ember); // still smouldering
+    }
+    c.hline(cx - 9, hip, 19, GOLD0); // the gilt hem
+    for (let x = -9; x <= 9; x += 3) c.set(cx + x, hip, mix(GOLD0, P.wax2, 0.4));
+    if (!back)
+      for (let y = top + 2; y < hip; y++) {
+        c.set(cx - 3 + Math.round((y - top) * 0.15), y, P.blood1); // the stole, sunk into the wax
+        c.set(cx + 3 - Math.round((y - top) * 0.15), y, P.blood2);
+      }
   }
-  c.hline(cx - 9, top + 14, 19, mix(P.flame1, P.dark1, 0.5)); // what is left of the gold hem
-  // Fire licking up one flank, and cracks glowing through the wax
+  // Fire licking up one flank, a warm rim on that side, and cracks glowing through the wax
   const fl = rng(31 + (o.sway + 3) * 7 + o.bob * 3 + o.flick * 11);
-  for (let i = 0; i < 7; i++) {
+  for (let y = top + 2; y < bottom - 2; y++) {
+    const r0 = y - top;
+    const half = Math.round(r0 < 5 ? 8 + Math.min(2, r0) : 10 - Math.min(2, (r0 - 5) * 0.35) + Math.max(0, (r0 / (bottom - top) - 0.55) * 11));
+    if ((y + o.flick) % 3) c.set(cx + half, y, mix(W.w1, P.flame1, 0.45));
+  }
+  for (let i = 0; i < 8; i++) {
     const y = top + 6 + Math.floor(fl() * 24);
-    if (y > 55) continue;
-    const x = cx + 7 + Math.floor(fl() * 3);
-    const h = 2 + Math.floor(fl() * 3);
+    if (y > 54) continue;
+    const x = cx + 8 + Math.floor(fl() * 3);
+    const h = 2 + Math.floor(fl() * 4);
     c.vline(x, y - h, h, P.flame1);
     c.set(x, y - h, P.flame2);
-    c.set(x + 1, y - 1, P.ember);
+    c.set(x - 1, y - 1, P.ember);
   }
   if (!back)
-    for (const [x0, y0, x1, y1] of [[-3, 5, 1, 9], [1, 9, -1, 13], [3, 17, 5, 22], [-6, 20, -4, 25]]) {
+    for (const [x0, y0, x1, y1] of [[-3, 5, 1, 9], [1, 9, -1, 13], [-1, 13, 1, 16], [3, 17, 5, 22], [-6, 20, -4, 25], [5, 22, 4, 26]]) {
       if (top + y1 >= 55) continue;
       line(c, cx + x0, top + y0, cx + x1, top + y1, P.ember);
-      line(c, cx + x0 + 1, top + y0, cx + x1 + 1, top + y1, (x0 + o.flick) % 2 ? P.flame1 : P.flame2); // the crack's hot lip
+      line(c, cx + x0 + 1, top + y0, cx + x1 + 1, top + y1, (x0 + o.flick) % 2 ? hot : P.flame2); // the crack's hot lip
     }
-  // Arms of wax (spread = raised wide). The right hand holds the snuffer unless spread.
+  // Arms of wax (spread = raised wide), thick at the shoulder and thinning to the hand. The right hand holds the
+  // snuffer unless spread.
   const armY = top + 2;
   for (const side of [-1, 1]) {
     const held = side === 1 && !o.spread;
@@ -4887,38 +5089,56 @@ function drawCandleMan(c: Img, dir: Dir5, pose: CandlePose) {
     const hx2 = held ? chx : Math.round(cx + side * (11 + o.spread * 5));
     const hy2 = Math.min(53, held ? chy : Math.round(armY + 15 - o.spread * 12)); // sunk in: arms stay above the pool
     if (armY > 52) continue;
-    for (let t = -1; t <= 1; t++) line(c, cx + side * 7, armY + t, hx2, hy2 + t, t < 0 ? W.w3 : t > 0 ? W.w1 : W.w2);
-    c.disc(hx2, hy2, 1.8, W.w2);
+    const sx = cx + side * 8;
+    // five strands across the arm: the edge toward the body is a dark crease, so the arm stands off the torso
+    for (let t = -2; t <= 2; t++) {
+      const out = t * side; // + away from the body
+      const col = out <= -2 ? tone[0] : out === -1 ? W.w1 : out === 0 ? W.w2 : out === 1 ? (side < 0 ? W.w3 : W.w1) : side < 0 ? W.w3 : tone[1];
+      line(c, sx + t, armY, hx2 + Math.round(t * 0.6), hy2, col);
+    }
+    c.disc(hx2, hy2, 2.2, W.w2); // the hand, fingers run together
     c.set(hx2 - 1, hy2 - 1, W.w3);
-    c.vline(hx2, hy2 + 2, 2 + (o.spread ? 2 : 0), W.w2); // dripping off his fingers
-    c.set(hx2, hy2 + 4 + (o.spread ? 2 : 0), W.w1);
+    c.set(hx2 + 1, hy2 + 1, W.w1);
+    c.vline(hx2 + side, hy2 + 2, 2 + (o.spread ? 3 : 1), W.w2); // dripping off his fingers
+    c.set(hx2 + side, hy2 + 4 + (o.spread ? 3 : 1), W.w1);
+    c.disc(sx, armY, 2.5, side < 0 ? W.w3 : W.w1); // the shoulder
   }
-  // Head: melted to one side, one ember eye left
+  // Head: a skull of wax sagging to one side, one ember eye in a hollow socket, a melted gash of a mouth, and the
+  // stubs of his taper crown melted into the brow
   const hx = 32 + lx + (o.flinch ? -2 : 0);
   const hy = 18 + b + o.hunch + ly;
-  c.ellipse(hx, hy + 2, 5, 6, W.w1);
-  c.ellipse(hx - 1, hy + 1, 3.5, 4.5, W.w2);
-  c.set(hx - 3, hy - 2, W.w3);
-  c.ellipse(hx + 2, hy + 7, 3, 2, W.w1);
-  c.hline(hx + 1, hy + 9, 3, W.w0);
+  c.ellipse(hx, hy + 2, 5.5, 6.5, tone[1]);
+  c.ellipse(hx - 1, hy + 1, 4.5, 5.5, W.w2);
+  c.ellipse(hx - 2, hy, 2.5, 3, W.w3);
+  c.ellipse(hx + 3, hy + 8, 3.5, 2.2, W.w1); // the jaw, slid down to one side
+  c.hline(hx + 1, hy + 10, 4, tone[0]);
+  c.vline(hx + 5, hy + 9, 3, W.w1); // a string of wax off the chin
+  for (const [dx, h] of [[-4, 3], [-2, 4], [2, 3], [4, 2]]) {
+    c.vline(hx + dx, hy - 4 - h + 1, h, dx < 0 ? W.w3 : W.w1); // the crown's tapers, melted to stubs
+    c.set(hx + dx, hy - 4 - h, P.dark2);
+  }
   if (!back) {
     const f0 = dir === 'S' ? hx : dir === 'SE' ? hx + 1 : hx + 2;
-    c.rect(f0 - 3, hy + 1, 2, 2, P.ink);
+    c.rect(f0 - 4, hy, 3, 3, P.ink); // the socket
     c.set(f0 - 3, hy + 1, o.flinch ? P.wax2 : P.flame2);
     c.set(f0 - 2, hy + 2, o.flinch ? P.wax2 : P.ember);
-    c.hline(f0 + 1, hy + 2, 2, W.w3); // the other eye, melted shut
-    c.hline(f0 + 1, hy + 3, 2, W.w0);
-    c.hline(f0 - 1, hy + 5, 3, o.flinch ? P.ember : P.dark2);
+    c.set(f0 - 4, hy + 3, W.w1); // a tear of wax under it
+    c.set(f0 - 4, hy + 4, W.w1);
+    c.hline(f0 + 1, hy + 2, 3, W.w3); // the other eye, melted shut
+    c.hline(f0 + 1, hy + 3, 3, tone[0]);
+    c.hline(f0 - 2, hy + 6, 4, o.flinch ? P.ember : P.ink); // the mouth
+    c.set(f0 + 2, hy + 7, P.dark1);
   }
   // The wick, and its black flame
   c.vline(hx, hy - 6, 3, P.ink);
+  c.set(hx, hy - 4, P.ember);
   if (!o.out) blackFlame(c, hx, hy - 6, o.flare + o.flick * 0.3, o.sway);
   // Rising out of the altar fire: flames around what hasn't come up yet
   if (o.rise > 0 && o.melt === 0) {
     const r = rng(600 + o.rise);
-    for (let i = 0; i < 16; i++) {
-      const x = 20 + Math.floor(r() * 25);
-      const h = 3 + Math.floor(r() * 8);
+    for (let i = 0; i < 18; i++) {
+      const x = 19 + Math.floor(r() * 27);
+      const h = 3 + Math.floor(r() * 9);
       c.vline(x, 57 - h, h, i % 3 ? P.flame1 : P.ember);
       c.set(x, 57 - h, P.flame2);
     }
@@ -6381,6 +6601,73 @@ function genNaveDecor() {
       c.set(32, y + 1, IRON.c0);
     }
     c.outline(P.ink);
+    f.push(c);
+  }
+  // 5: a length of the red runner down the aisle (flat, one tile): worn wool, a gilt border, a diamond pattern,
+  // the odd spill of wax
+  {
+    const c = cell();
+    const y0 = B - 16;
+    for (let y = y0; y < B; y++) {
+      for (let x = 26; x <= 37; x++) {
+        let col = (x + y) % 2 ? CLOTH_RED.c1 : mix(CLOTH_RED.c1, CLOTH_RED.c2, 0.4);
+        const dx = Math.abs(x - 31.5);
+        const dy = Math.abs(((y - y0) % 8) - 3.5);
+        if (Math.abs(dx + dy - 4) < 0.6) col = mix(CLOTH_RED.c2, P.flame1, 0.35); // the diamond
+        if (x === 27 || x === 36) col = CLOTH_RED.c0;
+        if (x === 26 || x === 37) col = y % 3 ? GOLD0 : mix(GOLD0, P.flame1, 0.5);
+        c.set(x, y, col);
+      }
+    }
+    for (const [x, y] of [[30, 3], [33, 9], [29, 12]]) c.set(x, y0 + y, mix(CLOTH_RED.c1, P.stone2, 0.5)); // worn through
+    c.ellipse(34, y0 + 6, 1.8, 1.2, P.wax1); // a spill of wax
+    c.set(34, y0 + 6, P.wax2);
+    f.push(c);
+  }
+  // 6: a lancet window in the north wall: lead cames, the Abbey's flame in the glass, a stone sill
+  {
+    const c = cell();
+    const x0 = 27;
+    const w = 10;
+    const topY = B - 34;
+    const sill = B - 17;
+    for (let y = topY; y < sill; y++) {
+      const k = y - topY;
+      const inset = k < 4 ? Math.round(4 - Math.sqrt(Math.max(0, 16 - (4 - k) * (4 - k))) + (4 - k) * 0.25) : 0; // the pointed head
+      for (let x = x0 + inset; x < x0 + w - inset; x++) {
+        const edge = x === x0 + inset || x === x0 + w - inset - 1;
+        let col: RGBA = edge ? STN.c3 : (x - x0) % 3 === 0 || k % 5 === 0 ? P.dark1 : k < 7 ? mix(P.cyan, P.teal2, 0.4) : k < 12 ? P.blood2 : mix(P.moss2, P.teal2, 0.3);
+        if (!edge && x > x0 + 3 && x < x0 + 6 && k > 5 && k < 13) col = k < 8 ? P.flame2 : P.flame1; // the flame
+        c.set(x, y, col);
+      }
+    }
+    c.set(x0 + 4, topY + 6, P.white); // light through the glass
+    box(c, x0 - 1, sill, w + 2, 2, STN);
+    c.outline(P.ink);
+    f.push(c);
+  }
+  // 7: a reliquary on a plinth: a gilt house with a window, a saint's skull behind it, two candles
+  {
+    const c = cell();
+    box(c, 25, B - 8, 14, 8, STN); // plinth
+    c.hline(25, B - 8, 14, STN.c3);
+    c.rect(26, B - 20, 12, 12, BRASS); // the house
+    c.hline(26, B - 20, 12, mix(GOLD0, P.wax2, 0.4));
+    c.vline(26, B - 20, 12, mix(GOLD0, P.wax2, 0.3));
+    c.vline(37, B - 20, 12, mix(BRASS, P.wood1, 0.5));
+    for (let i = 0; i < 6; i++) c.hline(26 + i, B - 21 - i, 12 - i * 2, i === 5 ? P.flame2 : BRASS); // the roof
+    c.set(32, B - 27, P.flame2);
+    c.rect(29, B - 17, 6, 7, P.ink); // the window
+    c.ellipse(32, B - 14, 2.2, 2, P.wax1); // the skull
+    c.set(31, B - 14, P.ink);
+    c.set(33, B - 14, P.ink);
+    c.hline(31, B - 12, 3, P.wax2);
+    c.set(30, B - 17, mix(P.cyan, P.white, 0.5)); // glint on the glass
+    for (const [x, y] of [[27, B - 11], [36, B - 11]]) c.set(x, y, P.blood2); // garnets
+    candleAt(c, 23, B - 1, 5);
+    candleAt(c, 40, B - 1, 4);
+    c.outline(P.ink);
+    finish(c, 32, B, 9, 2);
     f.push(c);
   }
   packSheet('decor_nave', f, W, H, B);
@@ -9148,14 +9435,25 @@ function genVault() {
   const blun = new Img(24, 11);
   blun.rect(1, 5, 7, 3, WOOD.c2); // stock
   blun.hline(1, 5, 7, WOOD.c3);
+  blun.hline(1, 7, 7, WOOD.c1);
+  blun.set(4, 6, WOOD.c1); // grain
   blun.rect(2, 7, 3, 2, WOOD.c1); // grip
+  blun.set(2, 7, WOOD.c2);
+  blun.hline(1, 9, 3, IRON.c1); // butt plate
   blun.rect(7, 4, 11, 3, BRASS); // barrel
-  blun.hline(7, 4, 11, GOLD0);
+  blun.hline(7, 4, 11, mix(GOLD0, P.wax2, 0.35));
+  blun.hline(7, 6, 11, mix(BRASS, P.wood1, 0.4));
+  for (const x of [10, 14]) blun.vline(x, 4, 3, IRON.c1); // barrel bands
   for (let x = 18; x < 23; x++) {
     const flare = Math.round((x - 17) * 0.7);
     blun.vline(x, 4 - flare, 3 + flare * 2, x === 22 ? GOLD0 : BRASS); // the bell
+    blun.set(x, 4 - flare, mix(GOLD0, P.wax2, 0.35));
   }
-  blun.set(8, 3, IRON.c2); // the lock
+  blun.vline(22, 4, 3, IRON.c0); // the dark of the mouth
+  blun.rect(7, 3, 2, 1, IRON.c2); // the lock
+  blun.set(6, 2, IRON.c2); // cock
+  blun.set(5, 8, GOLD0); // trigger guard
+  blun.set(6, 8, BRASS);
   blun.outline(P.ink);
   sheet('blunderbuss', blun, { cell: [24, 11], pivot: [3, 6], layer: 'weapon', points: { muzzle: [22, 5] } });
   // cannonball and spark

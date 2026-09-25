@@ -200,6 +200,7 @@ Enemies hold their weapon like the player does: `handAnchors` in the body manife
 | `hive_queen` | 64×64 | 32,58 | none | `idle`, `walk`, `intro`, `sweep`, `thrust`, `spit`, `release`, `pour` (her turn), `stagger` |
 | `queen_swarm` | 64×64 | 32,58 | none | The Swarm Unbound: `idle`, `walk`, `intro`, `dive`, `engulf`, `volley`, `stagger` |
 | `npc_hild` | 32×32 | 16,28 | none | Hild, in her straw hat and veil pushed back (the 12-frame townsfolk layout) |
+| `npc_aldous` | 32×32 | 16,28 | none | Brother Aldous: mail and a torn red tabard, no helm, wax over his left cheek and shoulder; sits in the Scriptorium |
 | `decor_bloom` | 64×64 | 32,62 | none | 0 apple tree in blossom, 1 in fruit, 2 burned tree, 3 wax press, 4 flower bed, 5 scarecrow, 6 skep bench, 7 lavender bush, 8 hive box, 9 Synod notice, 10 orchard gate, 11 honey barrels, 12 mead rack, 13 bee altar, 14 great skep, 15 charred stump, 16 honey cart, 17 comb frames, 18 bee saint, 19 fallen skep, 20 chapel pew, 21 votive stand, 22 hollyhocks, 23 ash heap |
 
 ### NPCs (`npc_oskar`, `npc_maudlin`, `npc_pip`: 32×32, pivot 16,28)
@@ -209,7 +210,7 @@ Enemies hold their weapon like the player does: `handAnchors` in the body manife
 ### `portraits` (48×48 per frame, ui)
 - Dialogue-box portraits, painted by `tools/portraits.ts` (lit volumes, hue-shifted ramps, a warm rim light): 0 Oskar,
   1 Maudlin, 2 Pip, 3 the Tollwarden, 4 the Mire Matron, 5 the Chandler, 6 Tomas, 7 Hedda, 8 Bede, 9 Agnes, 10 Ulla,
-  11 Jost, 12 Lome, 13 Wenna, 14 Fennick, 15 Cuthwin, 16 Hobb, 17 Wren, 18 the Master Gunner, 19 Hild, 20 the Hive Queen (Mother Aldith), 21 the Scarecrow Warden (`portrait` in data/npcs.json).
+  11 Jost, 12 Lome, 13 Wenna, 14 Fennick, 15 Cuthwin, 16 Hobb, 17 Wren, 18 the Master Gunner, 19 Hild, 20 the Hive Queen (Mother Aldith), 21 the Scarecrow Warden, 22 Brother Aldous (`portrait` in data/npcs.json).
 - `data/npcs.json` picks each character's frame.
 
 ### Bosses
@@ -245,11 +246,11 @@ Portrait frame 4 is the Mire Matron.
 | Sheet | Cell | Notes |
 |---|---|---|
 | `chandler` | 64×64, pivot 32,58 | The priest: cream chasuble with a gold orphrey over a red robe, red sleeves, a crown of lit tapers. `idle`, `walk`, `sweep`, `slam` (Extinguish), `jab`, `flick` (plucks a taper from his crown), `censer` (smoke swallows him), `intro` (kneeling at the altar, then rising), `pour` (loop: hands over the altar fire, wax running off them; the snuffer is laid down meanwhile), `stagger`, `death` (unused: he turns instead of falling) |
-| `chandler_wick` | 64×64, pivot 32,58 | The Last Candle: a column of melting wax, flames up one flank, burnt rags at the hips, a melted face with one ember eye, a wick with a **black flame** (dark teardrop, pale rim). `idle`, `walk`, `sweep`, `jab`, `slam`, `leap`, `volley` (the flame swells), `flood` (arms wide; snuffer laid down), `intro` (rising out of the altar fire), `stagger`, `death` (melts into his pool; the flame goes out) |
+| `chandler_wick` | 64×64, pivot 32,58 | The Last Candle: broad wax shoulders, a slumped middle and a skirt run out into a glossy pool; shaded round with a warm core showing through, runs of wax off the silhouette, glowing cracks, flames up one flank with a warm rim; burnt vestment rags with a gilt hem and his stole sunk in the wax; a skull of wax sagging to one side, one ember eye in a hollow socket, the stubs of his taper crown, and a wick with a **black flame** (dark teardrop, pale rim). `idle`, `walk`, `sweep`, `jab`, `slam`, `leap`, `volley` (the flame swells), `flood` (arms wide; snuffer laid down), `intro` (rising out of the altar fire), `stagger`, `death` (melts into his pool; the flame goes out) |
 | `chandler_snuffer`, `chandler_snuffer_lit` | 64×16, pivot 8,8 (grip) | Iron staff with a brass collar and the snuffer's bell; tip (58,8). The lit one burns with black flame (phase 2). |
 | `taper_shot` | 12×6, pivot 6,3 | A flung lit taper, flame first (rotates with its flight) |
 | `black_flame` | 8×10, pivot 4,6 | Phase 2's projectiles |
-| `decor_nave` | 64×64, pivot 32,62 | 0 `great_altar` (3 tiles, its fire in an iron bowl), 1 `candelabrum`, 2 `pew` (2 tiles), 3 `pew_broken`, 4 `lift_gate` (iron bars over a dark shaft, set in a wall gap) |
+| `decor_nave` | 64×64, pivot 32,62 | 0 `great_altar` (3 tiles, its fire in an iron bowl), 1 `candelabrum`, 2 `pew` (2 tiles), 3 `pew_broken`, 4 `lift_gate` (iron bars over a dark shaft, set in a wall gap), 5 `nave_runner` (flat, one tile of red runner with a gilt border and diamonds), 6 `lancet_window` (stained glass with the Abbey's flame, set in the north wall), 7 `reliquary` (a gilt house with a saint's skull behind glass, on a plinth, two candles) |
 | `decor_abbey` | 64×64, pivot 32,62 | 0 `saint_statue` (tall), 1 `stone_bench` (2 tiles), 2 `dry_fountain` (2), 3 `rubble` (flat), 4 `fallen_bell` (2), 5 `bell_rope` (hangs, no footprint), 6 `sarcophagus` (2), 7 `bone_pile` (tall), 8 `skull_shelf` (2, tall), 9 `bones` (flat), 10 `lectern`, 11 `writing_desk` (2), 12 `scroll_pile` (flat), 13 `barrels` (tall), 14 `sacks`, 15 `candle_stand`, 16 `banner` (hangs on the wall above, no footprint) |
 
 Portrait frame 5 is the Chandler.
@@ -305,7 +306,7 @@ Static scenery, referenced by `data/decor.json`, which picks a sheet and frame a
 | 3 | `boulder` | 7 | `candle_cairn` |
 
 ### Icons (`icons`: 16×16 cells, one row; the inventory and equipment screens)
-0 fists, 1 dagger, 2 straight sword, 3 greataxe, 4 revolver, 5 flintlock, 6 heavy crossbow, 7 buckler, 8 pilgrim's hood, 9 drowned veil, 10 gaoler's helm, 11 acolyte's robe, 12 renderer's apron, 13 warden's hauberk, 14 tallow lump, 15 powder pouch, 16 phial shard, 17 bitter salt, 18 cage key, 19 toll key, 20 igniter, 21 ledger, 22 seal of tallow, 23 seal of the mire, 24 mending phial, 25 empty slot. Consumables: 26 firebomb, 27 pilgrim's knife, 28 wild honeycomb, 29 grey salt crust, 30 warding incense, 31 paper cartridge, 32 chandler's oil, 33 stale wafer, 34 smoke pellet, 35 ringer's grog, 36 pilgrim's tallow candle. Rings: 37 band of steady breath, 38 parish signet, 39 cutpurse's band, 40 porter's knot, 41 miser's band, 42 ring of the last candle, 43 mourner's ring, 44 ring of the quiet step, 45 powder-maker's ring, 46 warden's ward. 47 lore note. Materials and shop rings: 48 tallow ingot, 49 ember salt, 50 hawker's ring, 51 gunner's band. The Powder Vault: 52 blunderbuss, 53 gunner's coat, 54 ring of the steady hand, 55 keg charge, 56 Oskar's strongbox. Bloomhollow: 57 smoker, 58 beekeeper's veil, 59 beekeeper's coat, 60 ring of the queen, 61 beeswax candle, 62 Hild's letter, 63 Maudlin's reply. Weapons, shields, armour, items, consumables and rings choose theirs with `icon`; a consumable dropped on the floor is drawn with its icon at 5/8 scale. 64 Seal of Powder (black wax, a powder glint), 65 Seal of the Hive (golden beeswax, a comb cell).
+0 fists, 1 dagger, 2 straight sword, 3 greataxe, 4 revolver, 5 flintlock, 6 heavy crossbow, 7 buckler, 8 pilgrim's hood, 9 drowned veil, 10 gaoler's helm, 11 acolyte's robe, 12 renderer's apron, 13 warden's hauberk, 14 tallow lump, 15 powder pouch, 16 phial shard, 17 bitter salt, 18 cage key, 19 toll key, 20 igniter, 21 ledger, 22 seal of tallow, 23 seal of the mire, 24 mending phial, 25 empty slot. Consumables: 26 firebomb, 27 pilgrim's knife, 28 wild honeycomb, 29 grey salt crust, 30 warding incense, 31 paper cartridge, 32 chandler's oil, 33 stale wafer, 34 smoke pellet, 35 ringer's grog, 36 pilgrim's tallow candle. Rings: 37 band of steady breath, 38 parish signet, 39 cutpurse's band, 40 porter's knot, 41 miser's band, 42 ring of the last candle, 43 mourner's ring, 44 ring of the quiet step, 45 powder-maker's ring, 46 warden's ward. 47 lore note. Materials and shop rings: 48 tallow ingot, 49 ember salt, 50 hawker's ring, 51 gunner's band. The Powder Vault: 52 blunderbuss, 53 gunner's coat, 54 ring of the steady hand, 55 keg charge, 56 Oskar's strongbox. Bloomhollow: 57 smoker, 58 beekeeper's veil, 59 beekeeper's coat, 60 ring of the queen, 61 beeswax candle, 62 Hild's letter, 63 Maudlin's reply. Weapons, shields, armour, items, consumables and rings choose theirs with `icon`; a consumable dropped on the floor is drawn with its icon at 5/8 scale. 64 Seal of Powder (black wax, a powder glint), 65 Seal of the Hive (golden beeswax, a comb cell), 66 Nave Watch Ring (an iron band with the Abbey's flame, wax run over half of it).
 
 ### Ambient life (`critters`: 16×16 cells, pivot 8,14, facing right) and `data/ambience.json`
 The critters sheet holds small animals that wander rooms and flee from the player (`src/world/Ambience.ts`):
@@ -319,6 +320,7 @@ The critters sheet holds small animals that wander rooms and flee from the playe
 | Sheet | Cell | Pivot | Animations |
 |---|---|---|---|
 | `warden` | 32×32 | 16,28 | `idle`, `walk`, `bash`, `thrust`, `overhead`, `stagger`, `death` |
+| `aldous`, `aldous_unmade` | 32×32 | 16,28 | The warden's sheet under wax (`waxCoat` in tools/gen-art.ts): Brother Aldous going to wax (helm and a shoulder coated, the plume melted), and the Unmade gone to it (all but the shield's wood, ember eyes) |
 | `acolyte` | 32×32 | 16,28 | `idle`, `walk`, `throw`, `shove`, `stagger`, `death` |
 | `hound` | 32×32 | 16,28 | `idle`, `walk`, `lunge`, `bite`, `stagger`, `death` |
 | `brute` | 48×48 | 24,44 | `idle`, `walk`, `slam`, `sweep`, `grab`, `stagger`, `death` |
