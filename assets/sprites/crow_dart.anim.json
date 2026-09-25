@@ -1,0 +1,12 @@
+{
+  "image": "crow_dart.png",
+  "cell": [
+    12,
+    8
+  ],
+  "pivot": [
+    6,
+    4
+  ],
+  "layer": "fx"
+}

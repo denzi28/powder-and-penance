@@ -4175,7 +4175,7 @@ function line(img: Img, x0: number, y0: number, x1: number, y1: number, c: RGBA)
 
 function genNpcs() {
   genTownsfolk();
-  const who = ['oskar', 'maudlin', 'pip', 'tollwarden', 'matron', 'chandler', 'tomas', 'hedda', 'bede', 'agnes', 'ulla', 'jost', 'lome', 'wenna', 'fennick', 'cuthwin', 'hobb', 'wren', 'gunner'] as const;
+  const who = ['oskar', 'maudlin', 'pip', 'tollwarden', 'matron', 'chandler', 'tomas', 'hedda', 'bede', 'agnes', 'ulla', 'jost', 'lome', 'wenna', 'fennick', 'cuthwin', 'hobb', 'wren', 'gunner', 'hild', 'queen', 'scarecrow'] as const;
   // painted head-and-shoulders portraits for the dialogue box (tools/portraits.ts)
   const pr = renderPortraits(who);
   const portraits = new Img(pr.w, pr.h);
@@ -7215,7 +7215,7 @@ function genCritters() {
 // 14 tallow lump, 15 powder pouch, 16 phial shard, 17 bitter salt, 18 cage key, 19 toll key, 20 igniter,
 // 21 ledger, 22 seal of tallow, 23 seal of the mire, 24 mending phial, 25 empty slot.
 function genIcons() {
-  const N = 57;
+  const N = 64;
   const img = new Img(16 * N, 16);
   const icon = (i: number, draw: (c: Img) => void, outline = true) => {
     const c = new Img(16, 16);
@@ -7704,6 +7704,79 @@ function genIcons() {
     c.vline(10, 6, 8, IRON.c2);
     c.rect(7, 8, 2, 3, GOLD0);
     c.set(7, 10, P.ink);
+  });
+  // ---- Bloomhollow (57-63)
+  const straw: Ramp = { c0: mix(P.wood2, P.wood1, 0.35), c1: mix(P.wood2, P.flame1, 0.35), c2: mix(P.wax1, P.flame1, 0.35), c3: mix(P.wax1, P.flame2, 0.3) };
+  // 57 the smoker: a tin can, its spout, the bellows, a wisp of smoke
+  icon(57, c => {
+    c.rect(2, 8, 4, 4, WOOD.c2);
+    c.hline(2, 8, 4, WOOD.c3);
+    c.rect(6, 5, 6, 8, IRON.c1);
+    c.vline(6, 5, 8, IRON.c3);
+    c.vline(11, 5, 8, IRON.c0);
+    line(c, 11, 5, 13, 3, IRON.c2);
+    c.set(8, 11, P.ember);
+    c.set(13, 1, P.stone4);
+    c.set(14, 0, P.stone3);
+  });
+  // 58 beekeeper's veil: a straw hat with its dark mesh
+  icon(58, c => {
+    c.hline(1, 6, 14, straw.c1);
+    c.hline(1, 6, 5, straw.c3);
+    c.rect(4, 3, 8, 3, straw.c2);
+    c.hline(4, 3, 8, straw.c3);
+    for (let y = 7; y < 14; y++) for (let x = 3; x < 13; x++) c.set(x, y, (x + y) % 2 ? P.dark1 : P.dark2);
+  });
+  // 59 beekeeper's coat: cream linen, honey-stained, scorched at the hem
+  icon(59, c => {
+    c.rect(4, 3, 8, 11, mix(P.wax1, P.wax2, 0.3));
+    c.vline(4, 3, 11, P.wax2);
+    c.vline(11, 3, 11, mix(P.wax1, P.stone3, 0.4));
+    c.rect(2, 4, 2, 7, mix(P.wax1, P.stone3, 0.2));
+    c.rect(12, 4, 2, 7, mix(P.wax1, P.stone3, 0.4));
+    c.vline(8, 4, 10, mix(P.wax1, P.stone3, 0.5));
+    c.set(6, 8, P.honey);
+    c.set(10, 6, P.honey);
+    for (let x = 4; x < 12; x += 2) c.set(x, 13, P.dark1);
+  });
+  // 60 ring of the queen: a gold band set with a drop of amber, a bee in it
+  icon(60, c => {
+    c.ellipse(8, 9, 5, 4, P.flame1);
+    c.ellipse(8, 9, 3, 2.2, null as unknown as RGBA); // the hole through the band
+    c.set(5, 7, P.flame2);
+    c.disc(8, 4.5, 2.4, P.honey);
+    c.set(7, 4, P.wax2);
+    c.set(8, 5, P.ink);
+  });
+  // 61 beeswax candle: a golden taper, lit, a comb pattern pressed into it
+  icon(61, c => {
+    c.rect(6, 6, 4, 9, mix(P.wax2, P.honey, 0.35));
+    c.vline(6, 6, 9, mix(P.wax2, P.honey, 0.15));
+    c.vline(9, 6, 9, mix(P.honey, P.wood2, 0.3));
+    for (let y = 7; y < 15; y += 2) c.set(7 + (y % 4 === 1 ? 1 : 0), y, P.honey);
+    c.set(7, 5, P.dark1);
+    c.set(7, 4, P.flame2);
+    c.set(7, 3, P.flame1);
+    c.set(8, 3, P.wax2);
+  });
+  // 62 Hild's letter: folded, tied with twine, a pressed blossom under the knot
+  icon(62, c => {
+    c.rect(2, 4, 12, 8, P.wax2);
+    c.hline(2, 4, 12, mix(P.wax2, P.white, 0.5));
+    line(c, 2, 4, 8, 8, P.wax1);
+    line(c, 13, 4, 8, 8, P.wax1);
+    c.vline(8, 4, 8, EN.rope);
+    c.set(8, 8, P.blossom);
+    c.set(9, 8, P.poppy);
+  });
+  // 63 Maudlin's reply: a small sealed letter, grey wax with a candle stamped in it
+  icon(63, c => {
+    c.rect(2, 4, 12, 8, mix(P.wax1, P.stone3, 0.25));
+    c.hline(2, 4, 12, P.wax2);
+    line(c, 2, 11, 8, 7, P.wax1);
+    line(c, 13, 11, 8, 7, P.wax1);
+    c.disc(8, 7, 2.2, P.stone2);
+    c.vline(8, 6, 2, P.flame2);
   });
   sheet('icons', img, { cell: [16, 16], pivot: [0, 0], layer: 'ui' });
 
@@ -9855,9 +9928,738 @@ function genBloomDecor() {
   sheet('prop_seal', seal, { cell: [16, 16], pivot: [8, 16], layer: 'single' });
 }
 
+// ---- Bloomhollow's creatures
+const SMOCK: Ramp = { c0: mix(P.wax1, P.stone2, 0.55), c1: mix(P.wax1, P.stone3, 0.3), c2: mix(P.wax1, P.wax2, 0.25), c3: P.wax2 };
+const HUSKWAX: Ramp = { c0: mix(P.wax1, P.wood1, 0.45), c1: mix(P.wax1, P.honey, 0.35), c2: mix(P.wax2, P.honey, 0.3), c3: P.wax2 };
+const GUARDCOAT: Ramp = { c0: mix(P.teal1, P.ink, 0.35), c1: P.teal1, c2: mix(P.teal1, P.teal2, 0.6), c3: P.teal2 };
+const SACK: Ramp = { c0: mix(P.wood1, P.dark1, 0.3), c1: mix(P.wax1, P.wood2, 0.6), c2: mix(P.wax1, P.wood2, 0.4), c3: mix(P.wax1, P.wood2, 0.2) };
+
+/** A wide straw hat with a veil of dark mesh falling to the shoulders, a wax face just seen through it. */
+function veiledHead(c: Img, dir: Dir5, hx: number, hy: number, flinch: boolean) {
+  const back = dir === 'N' || dir === 'NE';
+  // the veil: a dark mesh bell from the brim to the shoulders; a wax face shows through the holes
+  for (let y = hy - 1; y <= hy + 6; y++) {
+    const half = 3 + Math.min(2, Math.floor((y - hy + 1) / 3));
+    for (let x = hx - half; x <= hx + half; x++) {
+      const mesh = (x + y) % 2 === 0;
+      const face = !back && Math.abs(x - hx - (dir === 'E' ? 1 : dir === 'SE' ? 0.5 : 0)) <= 2 && y >= hy && y <= hy + 4;
+      const col = mesh ? (x === hx - half ? mix(P.dark2, P.stone2, 0.5) : P.dark1) : face ? HUSKWAX.c2 : P.dark2;
+      c.set(x, y, col);
+    }
+  }
+  if (!back) {
+    const f = hx + (dir === 'E' ? 1 : dir === 'SE' ? 1 : 0);
+    const eye = flinch ? P.ember : P.flame1; // a honey glint in empty sockets
+    c.set(f - 1, hy + 2, P.ink);
+    if (dir !== 'E') c.set(f + 1, hy + 2, P.ink);
+    c.set(f - 1, hy + 1, eye);
+    if (dir !== 'E') c.set(f + 1, hy + 1, eye);
+  }
+  // hat: a flat crown and a wide brim, lit on its left
+  c.hline(hx - 6, hy - 2, 13, STRAW.c1);
+  c.hline(hx - 6, hy - 2, 4, STRAW.c3);
+  c.hline(hx - 5, hy - 1, 11, STRAW.c0);
+  c.rect(hx - 3, hy - 5, 7, 3, STRAW.c2);
+  c.hline(hx - 3, hy - 5, 7, STRAW.c3);
+  c.hline(hx - 3, hy - 3, 7, mix(P.poppy, P.wood1, 0.3)); // a faded band
+}
+
+// --- Beekeeper Husk: a beekeeper the Synod rendered and set back to work, a wax figure in a veiled hat and a
+// honey-stained smock. It pumps its smoker into your eyes, and bees crawl on it unharmed.
+type HuskPose = BodyPose & { pump?: number; bash?: number };
+const HUSK_HAND: Record<Dir5, [number, number]> = { S: [21, 20], SE: [21, 19], E: [19, 19], NE: [20, 18], N: [20, 18] };
+function huskHand(dir: Dir5, p: HuskPose): [number, number] {
+  const [hx, hy] = HUSK_HAND[dir];
+  const [fx, fy] = FACE_VEC[dir];
+  const { lx, ly } = leanOffsets(dir, p.lean ?? 0);
+  const pump = p.pump ?? 0;
+  const bash = p.bash ?? 0;
+  return [Math.round(hx + lx + fx * pump * 3 - bash * 2), Math.round(hy + ly + (p.bob ?? 0) - pump * 4 + fy * pump * 2 - bash * 6)];
+}
+function drawHusk(c: Img, dir: Dir5, pose: HuskPose) {
+  const o = { bob: 0, lean: 0, hunch: 0, step: -1, flinch: false, pump: 0, bash: 0, ...pose };
+  const b = o.bob;
+  const { lx, ly, sh } = leanOffsets(dir, o.lean);
+  const back = dir === 'N' || dir === 'NE';
+  const liftL = o.step === 1 ? 2 : 0;
+  const liftR = o.step === 3 ? 2 : 0;
+  c.rect(13, 24 - liftL + b, 3, 3, WOOD.c1); // boots
+  c.rect(17, 24 - liftR + b, 3, 3, WOOD.c0);
+  // the smock, to the shins, stained with honey
+  for (let y = 13; y <= 24; y++) {
+    const w = 8 + Math.floor((y - 13) / 3);
+    const x0 = 16 - Math.floor(w / 2) + (y < 19 ? sh : 0);
+    for (let x = 0; x < w; x++) c.set(x0 + x, y + b, shadeT(x / (w - 1), SMOCK));
+  }
+  c.hline(12 + sh, 18 + b, 8, EN.rope); // rope belt
+  if (!back) for (const [x, y] of [[14, 20], [15, 21], [17, 16], [18, 22]]) c.set(x + sh, y + b, x === 17 ? BL.h1 : BL.h2);
+  c.vline(16 + sh, 19 + b, 5, SMOCK.c1); // a fold
+  // wax running from the cuffs
+  c.set(11 + sh, 21 + b, HUSKWAX.c1);
+  c.set(11 + sh, 22 + b, HUSKWAX.c2);
+  // off arm, gloved; the smoker arm goes to its hand
+  c.rect(10 + sh, 14 + b, 2, 6, SMOCK.c2);
+  c.rect(10 + sh, 20 + b, 2, 2, WOOD.c2);
+  const [ax, ay] = huskHand(dir, o);
+  line(c, 20 + sh, 14 + b, ax, ay - 1, back ? SMOCK.c0 : SMOCK.c1);
+  line(c, 21 + sh, 14 + b, ax + 1, ay - 1, SMOCK.c0);
+  c.rect(ax - 1, ay - 1, 2, 2, WOOD.c2);
+  // bees crawling over it, as they crawl over anything that smells of honey
+  c.set(13 + sh, 15 + b, P.flame2);
+  c.set(18 + sh, 23 + b, P.flame2);
+  const hx = 16 + lx + (o.flinch ? -1 : 0);
+  const hy = 7 + b + o.hunch + ly;
+  veiledHead(c, dir, hx, hy, o.flinch);
+}
+function huskDeath(c: Img, f: number) {
+  if (f < 2) return drawHusk(c, 'S', { bob: 2 + f, hunch: 2 + f, flinch: true });
+  c.ellipse(16, 25, 8, 3, SMOCK.c1);
+  c.ellipse(14, 24.5, 5, 1.5, SMOCK.c2);
+  c.ellipse(21, 25, 4, 1.4, HUSKWAX.c2); // it slumps into a puddle of wax
+  c.hline(8, 23, 8, STRAW.c1); // the hat
+  c.hline(9, 22, 5, STRAW.c3);
+  if (f < 4) c.set(18, 22, P.flame2);
+}
+
+// --- Orchard Guard: a scarecrow that stands in the rows with its arms out, and then doesn't.
+type GuardPose = BodyPose & { wake?: number; reap?: number };
+const GUARD_HAND: Record<Dir5, [number, number]> = { S: [22, 19], SE: [22, 18], E: [20, 18], NE: [21, 17], N: [21, 17] };
+function guardHand(dir: Dir5, p: GuardPose): [number, number] {
+  const [hx, hy] = GUARD_HAND[dir];
+  const { lx, ly } = leanOffsets(dir, p.lean ?? 0);
+  const wake = p.wake ?? 1;
+  const reap = p.reap ?? 0;
+  // asleep, the arm is straight out along the cross-bar
+  return [Math.round(hx + lx + (1 - wake) * 4 - reap * 3), Math.round(hy + ly + (p.bob ?? 0) - (1 - wake) * 4 - reap * 5)];
+}
+function drawGuard(c: Img, dir: Dir5, pose: GuardPose) {
+  const o = { bob: 0, lean: 0, hunch: 0, step: -1, flinch: false, wake: 1, reap: 0, ...pose };
+  const b = o.bob;
+  const w = o.wake;
+  const { lx, ly, sh } = leanOffsets(dir, o.lean * w);
+  const back = dir === 'N' || dir === 'NE';
+  // below the coat: the post it stood on, or two stick legs once it walks
+  if (w < 0.5) box(c, 15, 21 + b, 3, 7, WOOD);
+  else {
+    const liftL = o.step === 1 ? 2 : 0;
+    const liftR = o.step === 3 ? 2 : 0;
+    box(c, 13, 21 + b, 2, 7 - liftL, WOOD);
+    box(c, 18, 21 + b, 2, 7 - liftR, DWOOD);
+  }
+  // the cross-bar under the coat's shoulders (asleep)
+  if (w < 0.5) box(c, 5, 13 + b, 22, 2, WOOD);
+  // coat, patched, straw poking from the hem
+  for (let y = 12; y <= 22; y++) {
+    const cw = 9 + Math.floor((y - 12) / 4);
+    const x0 = 16 - Math.floor(cw / 2) + (y < 17 ? sh : 0);
+    for (let x = 0; x < cw; x++) c.set(x0 + x, y + b, shadeT(x / (cw - 1), GUARDCOAT));
+  }
+  for (let x = 12; x < 21; x += 2) c.vline(x, 22 + b, 2 + (x % 3), x % 4 ? STRAW.c2 : STRAW.c3);
+  if (!back) {
+    c.rect(13 + sh, 17 + b, 3, 3, mix(P.blood1, P.wood2, 0.3)); // patch
+    c.set(13 + sh, 17 + b, mix(P.blood2, P.wood2, 0.3));
+    c.vline(16 + sh, 13 + b, 9, GUARDCOAT.c0); // the coat's opening
+  }
+  c.hline(12 + sh, 18 + b, 9, EN.rope); // twine for a belt
+  // arms: out stiff along the bar asleep; bent and gripping awake
+  const straw = (x: number, y: number) => {
+    c.set(x, y, STRAW.c3);
+    c.set(x + 1, y + 1, STRAW.c2);
+    c.set(x - 1, y + 1, STRAW.c1);
+  };
+  if (w < 0.5) {
+    c.rect(6, 12 + b, 6, 3, GUARDCOAT.c2);
+    c.rect(21, 12 + b, 6, 3, GUARDCOAT.c1);
+    straw(5, 12 + b);
+    straw(27, 12 + b);
+  } else {
+    c.rect(10 + sh, 13 + b, 2, 6, GUARDCOAT.c2);
+    straw(10 + sh, 19 + b);
+    const [ax, ay] = guardHand(dir, o);
+    line(c, 20 + sh, 13 + b, ax, ay, GUARDCOAT.c1);
+    straw(ax, ay);
+  }
+  // the sack head: painted eyes (they burn when it wakes), a stitched grin, a battered hat
+  const tilt = w < 0.5 ? 1 : 0;
+  const hx = 16 + lx + (o.flinch ? -1 : 0) + tilt;
+  const hy = 7 + b + o.hunch + ly;
+  c.disc(hx, hy, 3.6, SACK.c1);
+  c.disc(hx - 0.6, hy - 0.6, 2.6, SACK.c2);
+  c.set(hx - 2, hy - 2, SACK.c3);
+  if (!back) {
+    const f = hx + (dir === 'E' ? 1 : dir === 'SE' ? 1 : 0);
+    const eye = w > 0.5 ? (o.flinch ? P.flame2 : P.ember) : P.ink;
+    c.set(f - 1, hy - 1, eye);
+    if (dir !== 'E') c.set(f + 1, hy - 1, eye);
+    for (let x = -2; x <= 2; x++) c.set(f + x, hy + 1 + (Math.abs(x) === 2 ? -1 : 0), x % 2 ? P.ink : SACK.c0); // the grin
+  } else c.vline(hx, hy - 2, 5, SACK.c0); // the sack's seam
+  c.hline(hx - 5, hy - 3, 11, DWOOD.c1); // hat brim
+  c.rect(hx - 3, hy - 6, 7, 3, DWOOD.c1);
+  c.hline(hx - 3, hy - 6, 7, DWOOD.c3);
+  c.set(hx + 3, hy - 4, STRAW.c3); // straw from under the hat
+}
+function guardDeath(c: Img, f: number) {
+  if (f < 2) return drawGuard(c, 'S', { bob: 2 + f, hunch: 2 + f, flinch: true });
+  // it falls apart into a heap of coat and straw
+  c.ellipse(16, 25, 8, 2.5, GUARDCOAT.c1);
+  for (let i = 0; i < 9; i++) c.set(9 + i * 2, 25 + (i % 2), i % 3 ? STRAW.c2 : STRAW.c3);
+  c.disc(22, 24, 2.5, SACK.c1);
+  c.hline(6, 23, 7, DWOOD.c1);
+}
+
+// --- The Scarecrow Warden (48 cell): the old orchard-keeper's scarecrow, burned with the grove and still
+// keeping it. The keeper's own beekeeping coat on its back, scorched; a candle burning inside its sack head;
+// crows riding its shoulders; a great scythe.
+type WardenPose = BodyPose & { wake?: number; reap?: number; crow?: number; crouch?: number };
+const SWARDEN_HAND: Record<Dir5, [number, number]> = { S: [33, 28], SE: [33, 27], E: [30, 27], NE: [32, 25], N: [32, 25] };
+function swardenHand(dir: Dir5, p: WardenPose): [number, number] {
+  const [hx, hy] = SWARDEN_HAND[dir];
+  const [fx, fy] = FACE_VEC[dir];
+  const { lx, ly } = leanOffsets(dir, p.lean ?? 0);
+  const wake = p.wake ?? 1;
+  const reap = p.reap ?? 0;
+  return [Math.round(hx + lx + (1 - wake) * 6 - reap * 5 + fx * Math.max(0, -reap) * 4), Math.round(hy + ly + (p.bob ?? 0) + (p.crouch ?? 0) * 2 - (1 - wake) * 6 - reap * 8 + fy * Math.max(0, -reap) * 2)];
+}
+function drawScarecrowWarden(c: Img, dir: Dir5, pose: WardenPose) {
+  const o = { bob: 0, lean: 0, hunch: 0, step: -1, flinch: false, wake: 1, reap: 0, crow: 0, crouch: 0, ...pose };
+  const b = o.bob + o.crouch * 2;
+  const w = o.wake;
+  const { lx, ly, sh } = leanOffsets(dir, o.lean * w);
+  const back = dir === 'N' || dir === 'NE';
+  const COAT_B: Ramp = { c0: mix(SMOCK.c0, P.ink, 0.45), c1: mix(SMOCK.c1, P.ink, 0.25), c2: SMOCK.c1, c3: SMOCK.c2 }; // scorched cream
+  if (w < 0.5) box(c, 22, 32 + b, 4, 12, CHAR);
+  else {
+    const liftL = o.step === 1 ? 3 : 0;
+    const liftR = o.step === 3 ? 3 : 0;
+    box(c, 19, 32 + b, 3, 12 - liftL, CHAR);
+    box(c, 27, 32 + b, 3, 12 - liftR, CHAR);
+  }
+  if (w < 0.5) box(c, 6, 18 + b, 36, 3, CHAR);
+  // the coat: long, its hem burnt ragged and still glowing at the edges
+  for (let y = 16; y <= 34; y++) {
+    const cw = 14 + Math.floor((y - 16) / 3);
+    const x0 = 24 - Math.floor(cw / 2) + (y < 25 ? sh : 0);
+    for (let x = 0; x < cw; x++) c.set(x0 + x, y + b, shadeT(x / (cw - 1), COAT_B));
+  }
+  for (let x = 17; x < 33; x++) {
+    const ragged = (x * 7) % 5;
+    c.vline(x, 33 + b - ragged, ragged + 2, ragged > 2 ? P.ink : CHAR.c1);
+    if (ragged === 3) c.set(x, 32 + b - ragged, P.ember); // smouldering
+  }
+  for (const [x, y] of [[19, 22], [28, 26], [22, 30]]) {
+    c.rect(x + sh, y + b, 2, 2, CHAR.c1); // burn holes
+    c.set(x + sh, y + b, P.ember);
+  }
+  if (!back) {
+    c.vline(24 + sh, 17 + b, 15, COAT_B.c0);
+    for (let y = 19; y < 31; y += 4) c.set(23 + sh, y + b, BL.h2); // the keeper's buttons, brass once
+  }
+  c.hline(17 + sh, 26 + b, 15, EN.rope);
+  for (let x = 18; x < 31; x += 2) c.vline(x, 34 + b, 2, x % 4 ? STRAW.c1 : CHAR.c3); // charred straw
+  // arms
+  const straw = (x: number, y: number) => {
+    c.set(x, y, STRAW.c2);
+    c.set(x + 1, y + 1, CHAR.c3);
+    c.set(x - 1, y + 1, STRAW.c1);
+  };
+  if (w < 0.5) {
+    c.rect(7, 17 + b, 10, 4, COAT_B.c2);
+    c.rect(31, 17 + b, 10, 4, COAT_B.c1);
+    straw(6, 17 + b);
+    straw(42, 17 + b);
+  } else {
+    const off: [number, number] = o.crow > 0 ? [13 + sh - Math.round(o.crow * 2), 10 + b - Math.round(o.crow * 6)] : [13 + sh, 28 + b];
+    line(c, 17 + sh, 17 + b, off[0], off[1], COAT_B.c2);
+    line(c, 18 + sh, 17 + b, off[0] + 1, off[1], COAT_B.c1);
+    straw(off[0], off[1] + 1);
+    const [ax, ay] = swardenHand(dir, o);
+    line(c, 31 + sh, 17 + b, ax, ay, COAT_B.c1);
+    line(c, 32 + sh, 17 + b, ax + 1, ay, COAT_B.c0);
+    straw(ax, ay + 1);
+  }
+  // crows on its shoulders (one flies when it throws)
+  const crowAt = (x: number, y: number, flip: boolean) => {
+    c.rect(x, y, 4, 2, P.ink);
+    c.set(x + (flip ? -1 : 4), y, P.ink); // the head
+    c.set(x + (flip ? -2 : 5), y, P.flame1); // the beak
+    c.set(x + (flip ? 0 : 3), y - 1, P.dark1);
+    c.set(x + 1, y + 2, P.dark2);
+  };
+  crowAt(16 + sh, 14 + b, true);
+  if (o.crow < 0.5) crowAt(29 + sh, 14 + b, false);
+  // the head: a burnt sack with a candle inside, light through the eye-holes and the grin
+  const hx = 24 + lx + (o.flinch ? -2 : 0) + (w < 0.5 ? 2 : 0);
+  const hy = 9 + b + o.hunch + ly;
+  c.disc(hx, hy, 5.5, mix(SACK.c1, P.ink, 0.35));
+  c.disc(hx - 1, hy - 1, 4, mix(SACK.c2, P.ink, 0.25));
+  c.set(hx - 3, hy - 3, SACK.c2);
+  if (!back) {
+    const f = hx + (dir === 'E' ? 2 : dir === 'SE' ? 1 : 0);
+    const lit = w > 0.5 ? (o.flinch ? P.wax2 : P.flame2) : mix(P.flame1, P.ink, 0.4);
+    for (const dx of dir === 'E' ? [1] : [-2, 2]) {
+      c.rect(f + dx - 1, hy - 2, 2, 2, lit);
+      c.set(f + dx - 1, hy - 2, P.flame1);
+    }
+    for (let x = -3; x <= 3; x++) c.set(f + x, hy + 2 + (Math.abs(x) === 3 ? -1 : 0), x % 2 ? lit : P.ink); // a jagged grin, lit
+  }
+  // the hat: wide, the brim burnt through
+  c.hline(hx - 8, hy - 4, 17, CHAR.c1);
+  c.hline(hx - 7, hy - 3, 15, CHAR.c0);
+  c.rect(hx - 4, hy - 9, 9, 5, CHAR.c1);
+  c.hline(hx - 4, hy - 9, 9, CHAR.c3);
+  c.set(hx + 6, hy - 4, null); // a hole in the brim
+  c.set(hx + 2, hy - 9, P.ember);
+  // smoke still curling off it
+  c.set(hx + 1, hy - 11, withAlpha(P.stone3, 170));
+  c.set(hx + 2, hy - 13, withAlpha(P.stone3, 110));
+}
+function swardenDeath(c: Img, f: number) {
+  if (f < 2) return drawScarecrowWarden(c, 'S', { bob: 3 + f * 2, hunch: 2 + f, flinch: true });
+  c.ellipse(24, 41, 13, 3.5, mix(SMOCK.c1, P.ink, 0.3));
+  for (let i = 0; i < 12; i++) c.set(12 + i * 2, 41 + (i % 2), i % 3 ? STRAW.c1 : CHAR.c3);
+  c.disc(34, 39, 4, mix(SACK.c1, P.ink, 0.35));
+  if (f < 4) {
+    c.set(34, 38, P.flame2); // the candle in its head, guttering
+    c.set(34, 37, P.flame1);
+  }
+  c.hline(9, 38, 13, CHAR.c1);
+}
+
+// --- The Hive Queen (64 cell): the orchard's queen, grown into her own great skep. A pale gold woman to the
+// waist, a bodice of comb, amber eyes, a crown of lit beeswax tapers, gauze wings; below the waist the straw
+// hive she has become, bees pouring from its door. A sceptre of comb in her hand.
+type QueenPose = BodyPose & { rise?: number; arm?: number; reach?: number; spread?: number; mouth?: number; sink?: number; wing?: number };
+const QUEEN_HAND: Record<Dir5, [number, number]> = { S: [47, 30], SE: [46, 29], E: [42, 29], NE: [45, 27], N: [45, 27] };
+function queenHand(dir: Dir5, p: QueenPose): [number, number] {
+  const [hx, hy] = QUEEN_HAND[dir];
+  const [fx, fy] = FACE_VEC[dir];
+  const { lx, ly } = leanOffsets(dir, p.lean ?? 0);
+  const up = Math.max(p.arm ?? 0, p.spread ?? 0);
+  const reach = p.reach ?? 0;
+  const y = hy + (p.bob ?? 0) + (p.rise ?? 0) + (p.sink ?? 0) + ly + reach * 5 * fy - up * 12;
+  return [Math.round(hx + lx + reach * 8 * fx - up * 3 * fx + (p.spread ?? 0) * 4), Math.round(Math.min(56, y))];
+}
+function drawQueen(c: Img, dir: Dir5, pose: QueenPose) {
+  const o = { bob: 0, lean: 0, hunch: 0, step: -1, flinch: false, rise: 0, arm: 0, reach: 0, spread: 0, mouth: 0, sink: 0, wing: 0, ...pose };
+  const { lx, ly, sh } = leanOffsets(dir, o.lean);
+  const back = dir === 'N' || dir === 'NE';
+  const SKIN_Q: Ramp = { c0: mix(P.honey, P.wood1, 0.45), c1: mix(P.wax1, P.honey, 0.45), c2: mix(P.wax2, P.honey, 0.3), c3: P.wax2 };
+  // the skep she has become: a great straw bell, the door at its foot pouring bees and honey
+  const base = 57;
+  const sk = 24;
+  const top = 30 + o.bob;
+  for (let y = top; y <= base; y++) {
+    const k = (y - top) / (base - top);
+    const half = Math.round(10 + (sk - 10) * Math.sqrt(k));
+    for (let x = -half; x <= half; x++) {
+      const t = (x + half) / (half * 2);
+      let col = shadeT(t, STRAW);
+      if ((y - top) % 3 === 2) col = mix(col, STRAW.c0, 0.35);
+      c.set(32 + x, y, col);
+    }
+  }
+  if (!back) {
+    c.ellipse(32, base - 3, 5, 4, P.ink, (_x, y) => y <= base);
+    for (const [x, y] of [[26, 52], [37, 50], [30, 48], [41, 54], [22, 55]]) c.set(x, y, P.flame2);
+  }
+  c.ellipse(32, base + 1, 14, 2, BL.h1); // honey welling round its foot
+  c.hline(24, base + 1, 8, BL.h3);
+  // comb bulging from a split in the straw
+  for (let y = 0; y < 8; y++) c.hline(40, top + 12 + y, 4 - Math.abs(y - 4) / 2, y % 2 ? BL.h2 : P.wax1);
+  // her wings: two pairs of gauze, lit gold at the veins
+  const wy = 18 + o.bob + o.rise + o.sink + ly;
+  const flap = o.wing ? 2 : 0;
+  for (const s of [-1, 1]) {
+    c.ellipse(32 + s * 13 + sh, wy - flap, 9, 5, withAlpha(P.wax2, 120), (x, y) => y < wy + 3);
+    c.ellipse(32 + s * 11 + sh, wy + 7 - flap, 7, 3, withAlpha(P.wax2, 100));
+    line(c, 32 + s * 4 + sh, wy + 2, 32 + s * 20 + sh, wy - 4 - flap, withAlpha(P.honey, 200)); // a vein
+  }
+  // her body to the waist, rising out of the hive
+  const wb = o.bob + o.rise + o.sink;
+  if (o.sink < 14) {
+    for (let y = 20; y <= 32; y++) {
+      if (y + wb > top + 2) continue; // below the rim of the hive
+      const half = y < 24 ? 5 : 4 + Math.floor((y - 24) / 4);
+      const x0 = 32 - half + sh;
+      for (let x = 0; x <= half * 2; x++) {
+        const t = x / (half * 2);
+        // a bodice of comb: little golden hexes
+        const hex = (x + (y % 2 ? 1 : 0)) % 3 === 0 || y % 3 === 0;
+        c.set(x0 + x, y + wb, back ? shadeT(t, SKIN_Q) : hex ? shadeT(t, HONEY) : mix(shadeT(t, HONEY), P.wax1, 0.4));
+      }
+    }
+    // arms: long and pale; the right holds the sceptre, the left beckons (or both spread wide)
+    const shoulderY = 21 + wb;
+    const [rx, ry] = queenHand(dir, o);
+    for (let t = -1; t <= 0; t++) line(c, 38 + sh + t, shoulderY, rx + t, ry - 1, t ? SKIN_Q.c1 : SKIN_Q.c2);
+    c.rect(rx - 1, ry - 1, 2, 2, SKIN_Q.c3);
+    const lh: [number, number] = o.spread > 0 ? [18 + sh - Math.round(o.spread * 4), shoulderY - Math.round(o.spread * 10)] : [23 + sh, shoulderY + 10];
+    for (let t = 0; t <= 1; t++) line(c, 26 + sh + t, shoulderY, lh[0] + t, lh[1], t ? SKIN_Q.c1 : SKIN_Q.c2);
+    c.rect(lh[0] - 1, lh[1] - 1, 2, 2, SKIN_Q.c3);
+    // the head: long golden hair, a calm face like a mask, amber eyes, the crown
+    const hx = 32 + lx + (o.flinch ? -2 : 0);
+    const hy = 13 + wb + o.hunch + ly;
+    for (const s of [-1, 1]) for (let y = hy - 2; y < hy + 12; y++) c.set(hx + s * (4 + Math.floor((y - hy) / 5)), y, y % 3 ? P.honey : P.flame2); // hair falling
+    c.ellipse(hx, hy + 1, 4, 5, back ? P.honey : SKIN_Q.c1);
+    if (!back) {
+      c.ellipse(hx - 0.7, hy, 3, 4, SKIN_Q.c2);
+      c.set(hx - 2, hy - 3, SKIN_Q.c3);
+      const f = hx + (dir === 'E' ? 2 : dir === 'SE' ? 1 : 0);
+      const eye = o.flinch ? P.wax2 : P.honey;
+      c.hline(f - 3, hy, 2, eye);
+      if (dir !== 'E') c.hline(f + 1, hy, 2, eye);
+      c.set(f - 3, hy, P.flame1);
+      c.set(f + 2, hy, P.flame1);
+      if (o.mouth > 0) c.rect(f - 1, hy + 3, 2, 2, P.ink);
+      else c.hline(f - 1, hy + 3, 2, SKIN_Q.c0);
+    } else {
+      c.ellipse(hx, hy + 1, 3.5, 4.5, P.honey);
+      for (let y = hy - 2; y < hy + 5; y += 2) c.hline(hx - 2, y, 4, P.flame2);
+    }
+    // the crown: a ring of comb, three lit beeswax tapers
+    c.hline(hx - 4, hy - 4, 9, BL.h2);
+    c.hline(hx - 4, hy - 5, 9, BL.h3);
+    for (const [dx, h] of [[-3, 3], [0, 5], [3, 3]]) {
+      c.vline(hx + dx, hy - 5 - h, h, mix(P.wax2, P.honey, 0.3));
+      c.set(hx + dx, hy - 6 - h, P.flame2);
+      c.set(hx + dx, hy - 7 - h, P.flame1);
+    }
+  } else {
+    // sunk into her hive: only the crown's flames show over its rim
+    for (const dx of [-3, 0, 3]) c.set(32 + dx, top - 1, P.flame2);
+  }
+}
+function queenDeath(c: Img, f: number) {
+  drawQueen(c, 'S', { sink: f * 4, flinch: true });
+}
+
+// --- The Swarm Queen (64 cell): what's left when her hive breaks: her shape held in the air by the whole swarm,
+// her crown floating where her head was, her eyes two points of amber.
+type SwarmQPose = BodyPose & { spread?: number; stretch?: number; scatter?: number; seed?: number; coalesce?: number };
+function drawQueenSwarm(c: Img, dir: Dir5, pose: SwarmQPose) {
+  const o = { bob: 0, lean: 0, hunch: 0, flinch: false, spread: 0, stretch: 0, scatter: 0, seed: 0, coalesce: 1, ...pose };
+  const [fx, fy] = FACE_VEC[dir];
+  const r = rng(700 + o.seed * 31 + DIR5.indexOf(dir) * 7);
+  const cx = 32 + Math.round(fx * o.stretch * 6);
+  const cy = 30 + o.bob + Math.round(fy * o.stretch * 3);
+  // her shape: head, torso, a tail of bees trailing to the ground, arms (spread wide, or thrust forward)
+  const parts: [number, number, number, number, number][] = [
+    [cx, cy - 16, 5, 5, 60],
+    [cx, cy - 4, 8, 9, 170],
+    [cx, cy + 10, 11, 9, 180],
+    [cx, cy + 22, 7, 5, 70],
+  ];
+  const armA = o.spread > 0 ? -0.9 - o.spread * 0.5 : 0.4;
+  for (const s of [-1, 1]) {
+    const ax = cx + s * (12 + o.spread * 6) + fx * o.stretch * 8;
+    const ay = cy - 6 + Math.round(armA * 6) + fy * o.stretch * 4;
+    parts.push([ax, ay, 4 + o.spread * 2, 3, 40]);
+    parts.push([(cx + ax) / 2, (cy - 8 + ay) / 2, 4, 3, 30]);
+  }
+  const spread = 1 + o.scatter * 1.2 + (1 - o.coalesce) * 1.5;
+  const bees: [number, number][] = [];
+  for (const [px, py, rx, ry, n] of parts)
+    for (let i = 0; i < n; i++) {
+      const a = r() * Math.PI * 2;
+      const d = Math.sqrt(r());
+      bees.push([Math.round(px + Math.cos(a) * rx * d * spread), Math.round(py + Math.sin(a) * ry * d * spread)]);
+    }
+  // a dark heart, then bees over it: black bodies, gold bands, wings catching the light
+  for (const [px, py, rx, ry] of parts.slice(0, 3)) c.ellipse(px, py, rx * 0.7 * spread, ry * 0.7 * spread, withAlpha(P.ink, Math.round(210 * o.coalesce)));
+  bees.forEach(([x, y], i) => {
+    if (x < 1 || x > 62 || y < 1 || y > 62) return;
+    const k = i % 10;
+    c.set(x, y, k < 5 ? P.ink : k < 7 ? P.dark1 : k < 9 ? P.honey : P.flame2); // mostly dark bodies, gold where the light catches
+    if (k === 8) c.set(x + 1, y, P.ink);
+    if (i % 13 === 0) c.set(x, y - 1, withAlpha(P.wax2, 170)); // a wing
+  });
+  // her crown, floating where her head was, and her eyes
+  const hy = cy - 17;
+  c.hline(cx - 4, hy - 4, 9, BL.h2);
+  for (const [dx, h] of [[-3, 3], [0, 5], [3, 3]]) {
+    c.vline(cx + dx, hy - 4 - h, h, mix(P.wax2, P.honey, 0.3));
+    c.set(cx + dx, hy - 5 - h, P.flame2);
+  }
+  if (dir !== 'N' && dir !== 'NE' && o.coalesce > 0.5) {
+    const f = cx + (dir === 'E' ? 2 : dir === 'SE' ? 1 : 0);
+    c.set(f - 2, hy + 1, o.flinch ? P.wax2 : P.flame2);
+    if (dir !== 'E') c.set(f + 2, hy + 1, o.flinch ? P.wax2 : P.flame2);
+  }
+  c.ellipse(32, 58, 12 * spread, 2, withAlpha(P.ink, 60)); // its shadow on the ground
+}
+function queenSwarmDeath(c: Img, f: number) {
+  // the swarm lets go: bees scatter, the crown drops to the ground
+  if (f < 3) drawQueenSwarm(c, 'S', { scatter: 0.5 + f * 0.7, coalesce: 1 - f * 0.3, seed: f, flinch: true });
+  const y = f < 3 ? 13 + f * 12 : 52;
+  c.hline(28, y, 9, BL.h2);
+  for (const dx of [-3, 0, 3]) c.vline(32 + dx, y - 3, 3, mix(P.wax2, P.honey, 0.3));
+  if (f < 4) c.set(32, y - 4, P.flame2);
+}
+
+function genBloomCreatures() {
+  const P7 = phased7();
+  const walk4 = <T,>(draw: (c: Img, d: Dir5, p: T) => void, mk: (f: number) => T) => [0, 1, 2, 3].map(f => (c: Img, d: Dir5) => draw(c, d, mk(f)));
+  const frames = <T,>(draw: (c: Img, d: Dir5, p: T) => void, poses: T[]) => poses.map(p => (c: Img, d: Dir5) => draw(c, d, p));
+  const withHand = <T,>(draw: (c: Img, d: Dir5, p: T) => void, hand: (d: Dir5, p: T) => [number, number]) => (name: string, poses: T[], timing: { ticks: number; phase?: string; events?: string[] }[], loop: boolean) => ({
+    name,
+    frames: poses.map(p => (c: Img, d: Dir5) => draw(c, d, p)),
+    timing,
+    loop,
+    hand: (d: Dir5, f: number) => hand(d, poses[f]),
+  });
+
+  // ---- weapons and shots
+  // the smoker: a tin fire-can with a spout and a leather bellows (the player's and the husks')
+  const smoker = new Img(20, 12);
+  smoker.rect(1, 5, 5, 3, WOOD.c2); // bellows boards
+  smoker.hline(1, 5, 5, WOOD.c3);
+  smoker.rect(2, 8, 4, 2, mix(P.wood1, P.dark2, 0.3)); // leather
+  smoker.rect(6, 3, 8, 7, IRON.c1); // the can
+  smoker.vline(6, 3, 7, IRON.c3);
+  smoker.vline(13, 3, 7, IRON.c0);
+  smoker.hline(7, 6, 6, IRON.c0);
+  for (let x = 14; x < 19; x++) smoker.vline(x, 3 + Math.floor((x - 14) / 2), 3 - Math.floor((x - 14) / 3), IRON.c2); // the spout
+  smoker.set(18, 4, P.ember);
+  smoker.set(9, 8, P.ember); // coals glowing through a vent
+  smoker.outline(P.ink);
+  sheet('smoker', smoker, { cell: [20, 12], pivot: [3, 7], layer: 'weapon', points: { tip: [18, 4] } });
+  // the guards' scythe
+  const scythe = new Img(34, 16);
+  line(scythe, 1, 12, 24, 8, WOOD.c2);
+  line(scythe, 1, 13, 24, 9, WOOD.c1);
+  for (let i = 0; i < 12; i++) {
+    const x = 24 + i * 0.7;
+    const y = 8 - Math.sqrt(i) * 2.4 + i * 0.35;
+    scythe.set(Math.round(x), Math.round(y), i < 10 ? P.steel1 : P.steel2);
+    scythe.set(Math.round(x) - 1, Math.round(y) + 1, i % 3 ? IRON.c1 : P.steel2);
+  }
+  line(scythe, 24, 8, 31, 2, P.steel2);
+  scythe.set(12, 10, WOOD.c3); // the grip
+  scythe.outline(P.ink);
+  sheet('scythe', scythe, { cell: [34, 16], pivot: [3, 12], layer: 'weapon', points: { tip: [31, 2] } });
+  // the Warden's great scythe: a long charred snath, a wide blade still hot at its edge
+  const gs = new Img(52, 22);
+  line(gs, 1, 18, 38, 12, CHAR.c2);
+  line(gs, 1, 19, 38, 13, CHAR.c1);
+  for (let i = 0; i < 16; i++) {
+    const x = 38 + i * 0.75;
+    const y = 12 - Math.sqrt(i) * 3.2 + i * 0.4;
+    gs.vline(Math.round(x), Math.round(y), 3, i < 13 ? IRON.c1 : IRON.c2);
+    gs.set(Math.round(x), Math.round(y), i % 4 ? P.steel2 : P.ember);
+  }
+  line(gs, 38, 12, 49, 2, P.steel2);
+  gs.outline(P.ink);
+  sheet('warden_scythe', gs, { cell: [52, 22], pivot: [3, 18], layer: 'weapon', points: { tip: [49, 2] } });
+  // the Queen's sceptre: a rod of dark wax crowned with a gilded comb
+  const sc = new Img(30, 12);
+  line(sc, 1, 7, 20, 5, mix(P.wood1, P.honey, 0.35));
+  line(sc, 1, 8, 20, 6, P.wood1);
+  for (let y = 0; y < 8; y++) sc.hline(21, 2 + y, 7 - Math.abs(y - 4) / 1.5, y % 2 ? BL.h2 : BL.h3);
+  sc.set(24, 5, BL.h0);
+  sc.set(26, 4, BL.h0);
+  sc.outline(P.ink);
+  sheet('comb_sceptre', sc, { cell: [30, 12], pivot: [3, 7], layer: 'weapon', points: { tip: [28, 6] } });
+  // royal jelly (a lobbed glob), a bee (a stinging dart), a crow (the Warden's messenger)
+  const jelly = new Img(9, 9);
+  jelly.disc(4.5, 5, 3.4, BL.h1);
+  jelly.disc(4, 4.5, 2.2, BL.h2);
+  jelly.set(3, 3, P.wax2);
+  jelly.outline(P.ink);
+  sheet('royal_jelly', jelly, { cell: [9, 9], pivot: [4, 4], layer: 'fx' });
+  const bee = new Img(7, 5);
+  bee.rect(1, 2, 4, 2, P.flame2);
+  bee.set(2, 2, P.ink);
+  bee.set(4, 2, P.ink);
+  bee.set(5, 3, P.ink); // the sting
+  bee.set(2, 1, withAlpha(P.wax2, 200));
+  bee.set(3, 1, withAlpha(P.wax2, 200));
+  sheet('bee_dart', bee, { cell: [7, 5], pivot: [3, 2], layer: 'fx' });
+  const crow = new Img(12, 8);
+  crow.rect(2, 3, 6, 3, P.ink);
+  crow.rect(8, 3, 2, 2, P.ink);
+  crow.set(10, 3, P.flame1);
+  crow.set(9, 3, P.ember); // an eye
+  line(crow, 3, 3, 6, 0, P.dark1); // a wing up
+  crow.set(1, 4, P.dark1);
+  crow.outline(P.ink);
+  sheet('crow_dart', crow, { cell: [12, 8], pivot: [6, 4], layer: 'fx' });
+
+  // ---- Beekeeper Husk
+  const husk = withHand(drawHusk, huskHand);
+  rosterSheet(
+    'husk',
+    CELL,
+    PIVOT,
+    7,
+    [
+      husk('idle', [{}, { bob: 1 }], idleT, true),
+      husk('walk', [0, 1, 2, 3].map(f => ({ step: f, bob: f % 2 ? -1 : 0 })), walkT(9), true),
+      husk('puff', [{ pump: 0.3 }, { pump: 0.7, lean: -1 }, { pump: 1, lean: -1 }, { pump: 1.2, lean: 2 }, { pump: 1.1, lean: 2 }, { pump: 0.5 }, {}], P7, false),
+      husk('bash', [{ bash: 0.5 }, { bash: 1, lean: -1 }, { bash: 1.1, lean: -2 }, { bash: -0.5, lean: 3, pump: 1 }, { bash: -0.6, lean: 3, pump: 1 }, { lean: 1 }, {}], P7, false),
+      husk('stagger', [{ lean: -2, flinch: true }, { lean: -1, bob: 1, flinch: true }, { bob: 1 }], staggerT, false),
+    ],
+    [0, 1, 2, 3, 4].map(f => (c: Img) => huskDeath(c, f)),
+    HUSK_HAND,
+  );
+  // ---- Orchard Guard
+  const guard = withHand(drawGuard, guardHand);
+  rosterSheet(
+    'orchard_guard',
+    CELL,
+    PIVOT,
+    7,
+    [
+      guard('dormant', [{ wake: 0 }, { wake: 0, bob: 1 }], [{ ticks: 60 }, { ticks: 60 }], true),
+      guard('rise', [{ wake: 0, flinch: true }, { wake: 0.2, bob: 1 }, { wake: 0.6, lean: -1 }, { wake: 1, lean: 1 }, { wake: 1 }], [{ ticks: 8 }, { ticks: 8 }, { ticks: 8 }, { ticks: 8 }, { ticks: 8 }], false),
+      guard('idle', [{}, { bob: 1 }], idleT, true),
+      guard('walk', [0, 1, 2, 3].map(f => ({ step: f, bob: f % 2 ? -1 : 0, lean: 1 })), walkT(10), true),
+      guard('reap', [{ reap: 0.5 }, { reap: 1, lean: -1 }, { reap: 1.2, lean: -2 }, { reap: -0.5, lean: 3 }, { reap: -0.6, lean: 3 }, { lean: 1 }, {}], P7, false),
+      guard('stagger', [{ lean: -2, flinch: true }, { lean: -1, bob: 1, flinch: true }, { bob: 1 }], staggerT, false),
+    ],
+    [0, 1, 2, 3, 4].map(f => (c: Img) => guardDeath(c, f)),
+    GUARD_HAND,
+  );
+  // ---- Honey Slime: a crawler of honey instead of wax, drowned bees suspended in it
+  const honeyDraw = (c: Img, d: Dir5, p: BodyPose & { sunk?: number }) => {
+    drawCrawler(c, d, { ...p, size: 0.85 });
+    for (let y = 0; y < 32; y++)
+      for (let x = 0; x < 32; x++) {
+        const i = (y * 32 + x) * 4;
+        if (c.px[i + 3] === 0) continue;
+        const [r, g, bl] = [c.px[i], c.px[i + 1], c.px[i + 2]];
+        if (r < 150 || r < bl) continue; // outline, eyes, wick
+        const l = (r + g + bl) / 3;
+        c.set(x, y, l > 225 ? P.wax2 : l > 200 ? BL.h3 : l > 170 ? BL.h2 : BL.h1);
+      }
+    // no wick: bees caught inside instead
+    for (let y = 0; y < 16; y++) for (let x = 14; x < 20; x++) if (c.px[(y * 32 + x) * 4 + 3] && y < 17) c.set(x, y, null);
+    for (const [x, y] of [[13, 23], [18, 22], [16, 25]]) if (c.alpha(x, y)) c.set(x, y, P.ink);
+    const sunk = p.sunk ?? 0;
+    if (sunk > 0) for (let y = 0; y < 32; y++) for (let x = 0; x < 32; x++) if (y < 26 - (8 - sunk) && c.alpha(x, y)) c.set(x, y, null); // still mostly under the honey
+  };
+  rosterSheet(
+    'honey_slime',
+    CELL,
+    PIVOT,
+    7,
+    [
+      { name: 'idle', frames: frames(honeyDraw, [{}, { bob: 1 }]), timing: [{ ticks: 14 }, { ticks: 14 }], loop: true },
+      { name: 'walk', frames: walk4(honeyDraw, f => ({ bob: f % 2 ? 2 : 0, lean: f === 1 ? 1 : f === 3 ? -1 : 0 })), timing: walkT(8), loop: true },
+      { name: 'rise', frames: frames(honeyDraw, [{ sunk: 6 }, { sunk: 4, bob: 2 }, { sunk: 2, bob: 3 }, { bob: -2 }, {}]), timing: [{ ticks: 8 }, { ticks: 8 }, { ticks: 8 }, { ticks: 8 }, { ticks: 8 }], loop: false },
+      { name: 'engulf', frames: frames(honeyDraw, [{ bob: 2 }, { bob: 3 }, { bob: 4 }, { bob: -3, lean: 2 }, { bob: -2, lean: 2 }, { bob: 1 }, {}]), timing: P7, loop: false },
+      { name: 'stagger', frames: frames(honeyDraw, [{ bob: 3, flinch: true }, { bob: 2, flinch: true }, { bob: 1 }]), timing: staggerT, loop: false },
+    ],
+    [0, 1, 2, 3, 4].map(f => (c: Img) => {
+      crawlerDeath(c, f, 0.85);
+      for (let y = 0; y < 32; y++) for (let x = 0; x < 32; x++) if (c.alpha(x, y)) c.set(x, y, f < 2 ? c.px[(y * 32 + x) * 4] > 150 ? BL.h2 : BL.h0 : c.px[(y * 32 + x) * 4] > 200 ? BL.h3 : BL.h1);
+    }),
+    null,
+  );
+  // ---- the Scarecrow Warden (48)
+  const sw = withHand(drawScarecrowWarden, swardenHand);
+  rosterSheet(
+    'scarecrow_warden',
+    48,
+    [24, 44],
+    7,
+    [
+      sw('dormant', [{ wake: 0 }, { wake: 0, bob: 1 }], [{ ticks: 60 }, { ticks: 60 }], true),
+      sw('rise', [{ wake: 0, flinch: true }, { wake: 0.3, bob: 1 }, { wake: 0.7, lean: -2 }, { wake: 1, lean: 1, crow: 1 }, { wake: 1 }], [{ ticks: 10 }, { ticks: 10 }, { ticks: 10 }, { ticks: 10 }, { ticks: 14 }], false),
+      sw('idle', [{}, { bob: 1 }], idleT, true),
+      sw('walk', [0, 1, 2, 3].map(f => ({ step: f, bob: f % 2 ? -1 : 0, lean: 1 })), walkT(11), true),
+      sw('reap', [{ reap: 0.5 }, { reap: 1, lean: -1 }, { reap: 1.2, lean: -2 }, { reap: -0.6, lean: 3 }, { reap: -0.7, lean: 3 }, { lean: 1 }, {}], P7, false),
+      sw('spin', [{ reap: 0.8, crouch: 1 }, { reap: 1, crouch: 1 }, { reap: 1.2, crouch: 1, lean: -1 }, { reap: 0.2, lean: 2 }, { reap: -0.4, lean: 2 }, { reap: 0.2 }, {}], P7, false),
+      sw('crows', [{ crow: 0.5 }, { crow: 1, lean: -1 }, { crow: 1, lean: -1 }, { crow: 1.2, lean: 2 }, { crow: 1, lean: 1 }, { crow: 0.4 }, {}], P7, false),
+      sw('leap', [{ crouch: 1 }, { crouch: 2, reap: 1 }, { bob: -8, reap: 1.2, lean: -2 }, { bob: -4, reap: -0.6, lean: 3 }, { crouch: 1, reap: -0.7 }, { reap: -0.3 }, {}], P7, false),
+      sw('stagger', [{ lean: -2, flinch: true }, { lean: -1, bob: 1, flinch: true }, { bob: 1 }], staggerT, false),
+    ],
+    [0, 1, 2, 3, 4].map(f => (c: Img) => swardenDeath(c, f)),
+    SWARDEN_HAND,
+  );
+  // ---- the Hive Queen (64)
+  const q = withHand(drawQueen, queenHand);
+  rosterSheet(
+    'hive_queen',
+    64,
+    [32, 58],
+    7,
+    [
+      q('idle', [{}, { wing: 1 }, { bob: 1 }, { bob: 1, wing: 1 }], [{ ticks: 10 }, { ticks: 10 }, { ticks: 10 }, { ticks: 10 }], true),
+      q('walk', [0, 1, 2, 3].map(f => ({ bob: f % 2 ? 1 : 0, wing: f % 2 })), walkT(9), true),
+      q('intro', [{ sink: 16 }, { sink: 12, wing: 1 }, { sink: 7 }, { sink: 2, wing: 1 }, { spread: 1 }, { spread: 1, wing: 1 }], [{ ticks: 18 }, { ticks: 18 }, { ticks: 18 }, { ticks: 18 }, { ticks: 20 }, { ticks: 30 }], false),
+      q('sweep', [{ arm: 0.5 }, { arm: 1, lean: -1 }, { arm: 1.1, lean: -2, wing: 1 }, { reach: 1, lean: 3 }, { reach: 1, lean: 3, wing: 1 }, { lean: 1 }, {}], P7, false),
+      q('thrust', [{ reach: -0.5 }, { reach: -0.8, lean: -1 }, { reach: -1, lean: -2, wing: 1 }, { reach: 1.4, lean: 3 }, { reach: 1.4, lean: 3, wing: 1 }, { reach: 0.4 }, {}], P7, false),
+      q('spit', [{ hunch: 1 }, { hunch: -1, mouth: 1, lean: -1 }, { hunch: -2, mouth: 1, lean: -2 }, { mouth: 1, lean: 2 }, { mouth: 1, lean: 1, wing: 1 }, { lean: 1 }, {}], P7, false),
+      q('release', [{ spread: 0.4 }, { spread: 0.8, wing: 1 }, { spread: 1 }, { spread: 1.1, wing: 1, bob: -1 }, { spread: 1, wing: 1 }, { spread: 0.5 }, {}], P7, false),
+      q('pour', [{ flinch: true }, { sink: 3, flinch: true }, { sink: 6, wing: 1 }, { sink: 9 }, { sink: 12, wing: 1 }, { sink: 15 }], [{ ticks: 20 }, { ticks: 20 }, { ticks: 20 }, { ticks: 20 }, { ticks: 20 }, { ticks: 60 }], false),
+      q('stagger', [{ lean: -2, flinch: true }, { lean: -1, bob: 1, flinch: true }, { bob: 1 }], staggerT, false),
+    ],
+    [0, 1, 2, 3, 4].map(f => (c: Img) => queenDeath(c, f)),
+    QUEEN_HAND,
+  );
+  // ---- the Swarm Queen (64): a new pattern of bees in every frame
+  const sq = (name: string, poses: SwarmQPose[], timing: { ticks: number }[], loop: boolean) => ({ name, frames: poses.map((p, i) => (c: Img, d: Dir5) => drawQueenSwarm(c, d, { seed: i, ...p })), timing, loop });
+  rosterSheet(
+    'queen_swarm',
+    64,
+    [32, 58],
+    7,
+    [
+      sq('idle', [{}, { bob: 1 }, {}, { bob: -1 }], [{ ticks: 6 }, { ticks: 6 }, { ticks: 6 }, { ticks: 6 }], true),
+      sq('walk', [{}, { bob: 1 }, {}, { bob: -1 }], [{ ticks: 5 }, { ticks: 5 }, { ticks: 5 }, { ticks: 5 }], true),
+      sq('intro', [{ coalesce: 0 }, { coalesce: 0.2 }, { coalesce: 0.45 }, { coalesce: 0.7 }, { coalesce: 0.9, spread: 1 }, { spread: 1 }], [{ ticks: 16 }, { ticks: 16 }, { ticks: 16 }, { ticks: 16 }, { ticks: 20 }, { ticks: 30 }], false),
+      sq('dive', [{ stretch: -0.5 }, { stretch: -1 }, { stretch: -1, bob: -2 }, { stretch: 1.5 }, { stretch: 1.6 }, { stretch: 0.5 }, {}], P7, false),
+      sq('engulf', [{ spread: 0.5 }, { spread: 1 }, { spread: 1.2, bob: -1 }, { spread: 1.4, scatter: 0.3 }, { spread: 1.4, scatter: 0.4 }, { spread: 0.6 }, {}], P7, false),
+      sq('volley', [{ stretch: -0.4 }, { stretch: -0.6, spread: 0.4 }, { stretch: -0.6, spread: 0.6 }, { stretch: 0.8, spread: 0.6 }, { stretch: 0.8, spread: 0.4 }, { stretch: 0.3 }, {}], P7, false),
+      sq('stagger', [{ scatter: 0.8, flinch: true }, { scatter: 0.6, flinch: true }, { scatter: 0.2 }], staggerT, false),
+    ],
+    [0, 1, 2, 3, 4].map(f => (c: Img) => queenSwarmDeath(c, f)),
+    null,
+  );
+}
+
+// ---- Hild the beekeeper: Maudlin's sister, the last honest chandler, in her veiled hat with her smoker.
+function genHild() {
+  const honeySkin = mix(P.wax1, P.wood2, 0.3);
+  villagerSheet('npc_hild', {
+    cloth: SMOCK,
+    long: true,
+    legs: P.dark2,
+    skin: honeySkin,
+    head: 'hair',
+    headCol: mix(P.stone3, P.wax1, 0.4), // grey-gold hair
+    apron: mix(P.honey, P.wood2, 0.35),
+    job: (c, f, g) => {
+      // the veiled hat, pushed back so the veil hangs behind her
+      c.hline(g.cx - 6, g.top + 1, 13, STRAW.c1);
+      c.hline(g.cx - 6, g.top + 1, 4, STRAW.c3);
+      c.rect(g.cx - 3, g.top - 2, 7, 3, STRAW.c2);
+      c.hline(g.cx - 3, g.top - 2, 7, STRAW.c3);
+      for (let y = g.top + 2; y < g.body + 2; y++) {
+        c.set(g.cx - 5, y, y % 2 ? P.dark1 : P.dark2); // the veil falling behind her shoulders
+        c.set(g.cx + 5, y, y % 2 ? P.dark2 : P.dark1);
+      }
+      if (f.kind === 'work') {
+        // working the smoker over a frame of comb
+        const r: [number, number] = [g.cx + 7, g.waist - 2 - f.k * 2];
+        c.rect(r[0] - 1, r[1] - 3, 3, 4, IRON.c1);
+        c.set(r[0] + 1, r[1] - 4, IRON.c2);
+        if (f.k) c.set(r[0] + 2, r[1] - 6, withAlpha(P.stone4, 180));
+        const l: [number, number] = [g.cx - 6, g.waist];
+        c.rect(l[0] - 2, l[1] - 3, 5, 4, WOOD.c2);
+        c.hline(l[0] - 1, l[1] - 2, 3, BL.h2);
+        return { r, l };
+      }
+      if (f.pose === 'stand') c.set(g.cx + 6, g.waist + 2, P.flame2); // a bee on her apron
+    },
+  });
+}
+
 function genBloom() {
   genOrchardTiles();
   genBloomDecor();
+  genBloomCreatures();
+  genHild();
 }
 
 genPlayer();

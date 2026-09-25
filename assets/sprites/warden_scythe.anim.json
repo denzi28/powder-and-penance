@@ -1,0 +1,18 @@
+{
+  "image": "warden_scythe.png",
+  "cell": [
+    52,
+    22
+  ],
+  "pivot": [
+    3,
+    18
+  ],
+  "layer": "weapon",
+  "points": {
+    "tip": [
+      49,
+      2
+    ]
+  }
+}

@@ -721,6 +721,23 @@ export const CAST: Record<string, Person> = {
       for (let y = 30; y < 47; y += 3) k.c.set(44, y, P.wax2);
     },
   },
+  hild: {
+    fem: true, seed: 20, skin: mix(P.wax1, P.wood2, 0.3), bg: mix(P.wood1, P.honey, 0.25), rim: P.honey, age: 2, iris: mix(P.honey, P.wood1, 0.3),
+    brow: mix(P.stone3, P.wax1, 0.3), browTilt: -0.6, mouth: 'smile', hair: { col: mix(P.stone3, P.wax1, 0.4), style: 'long' },
+    cloth: mix(P.wax1, P.stone3, 0.3), collar: P.honey,
+    front: k => hildHat(k),
+  },
+  queen: {
+    fem: true, seed: 21, skin: mix(P.wax2, P.honey, 0.3), bg: mix(P.honey, P.ink, 0.6), rim: P.flame2, age: 0, iris: P.honey, eyes: 'half',
+    brow: null, mouth: 'thin', lips: mix(P.honey, P.ember, 0.3), hair: { col: P.honey, style: 'long' }, cloth: P.honey, collar: P.wax2,
+    back: k => queenWings(k),
+    front: k => queenCrown(k),
+  },
+  scarecrow: {
+    seed: 22, skin: mix(P.wax1, P.wood2, 0.5), bg: mix(P.dark1, P.ember, 0.18), rim: P.ember, brow: null, mouth: 'neutral',
+    cloth: mix(P.wax1, P.stone2, 0.5), collar: P.ink,
+    front: k => scarecrowSack(k),
+  },
   gunner: {
     seed: 19, skin: mix(P.wax1, P.dark1, 0.42), bg: mix(P.stone1, P.dark1, 0.5), rim: P.flame1, age: 2, iris: P.flame2, brow: P.stone3, browTilt: 1.4,
     mouth: 'grin', beard: { col: P.stone3, style: 'braided' }, cloth: mix(P.blood1, P.dark1, 0.2), collar: P.flame1,
@@ -798,6 +815,102 @@ function gunnerHat(k: Kit) {
   line(c, 30, 38, 40, 47, mix(P.wood1, P.stone2, 0.3));
   c.set(35, 43, P.ember);
   c.set(35, 42, P.flame1);
+}
+
+function hildHat(k: Kit) {
+  const { c, head } = k;
+  const cx = head.cx;
+  const st = ramp(mix(P.wax1, P.flame1, 0.35));
+  // the beekeeper's hat pushed back on her head: a wide straw brim, the veil hanging behind
+  for (let y = head.cy - 6; y < 44; y++)
+    for (const side of [-1, 1]) {
+      const x = cx + side * (head.rx + 2 + Math.floor((y - head.cy) / 6));
+      if (c.has(x, y)) c.set(x, y, (x + y) % 2 ? P.dark1 : mix(P.dark2, P.stone1, 0.4));
+    }
+  volume(c, { cx, cy: head.cy - 11, rx: head.rx - 1, ry: 4 }, st, (_x, y) => y < head.cy - 8, { flat: 0.2 });
+  for (let x = Math.floor(cx - head.rx - 6); x <= cx + head.rx + 6; x++) {
+    c.set(x, head.cy - 8, st[x < cx ? 3 : 2]);
+    c.set(x, head.cy - 7, st[1]);
+  }
+  for (let x = Math.floor(cx - head.rx + 1); x <= cx + head.rx - 1; x++) c.set(x, head.cy - 9, mix(P.poppy, P.wood1, 0.3)); // a faded band
+  // a bee settled on her collar, unbothered
+  c.set(30, 42, P.flame2);
+  c.set(31, 42, P.ink);
+  c.set(30, 41, P.wax2);
+}
+
+function queenWings(k: Kit) {
+  const { c, head } = k;
+  for (const side of [-1, 1])
+    for (let y = 18; y < 44; y++)
+      for (let x = 0; x < 48; x++) {
+        const dx = (x - (head.cx + side * 15)) / 11;
+        const dy = (y - 28) / 12;
+        if (dx * dx + dy * dy > 1 || (x - head.cx) * side < 6) continue;
+        const cur = c.get(x, y);
+        if (!cur) continue;
+        c.set(x, y, mix(cur, P.wax2, 0.3 + (dx * dx + dy * dy) * 0.2)); // gauze over the dark
+        if ((x + y * 2) % 9 === 0) c.set(x, y, mix(cur, P.honey, 0.6)); // veins
+      }
+}
+
+function queenCrown(k: Kit) {
+  const { c, head } = k;
+  const cx = head.cx;
+  const gold = ramp(P.honey, P.flame2);
+  // a band of comb across her brow, beeswax tapers standing in it, all lit
+  for (let x = cx - 9; x <= cx + 9; x++) {
+    c.set(x, head.cy - 10, gold[(x + 20) % 3 === 0 ? 1 : x < cx ? 3 : 2]);
+    c.set(x, head.cy - 9, gold[1]);
+  }
+  for (const dx of [-8, -4, 0, 4, 7]) candle(c, cx + dx, head.cy - 11, 4 + (dx === 0 ? 3 : (dx + 8) % 2));
+  glow(c, cx, head.cy - 17, 13, P.flame2, 0.3);
+  // her bodice of comb
+  for (let y = 40; y < 48; y++) for (let x = 10; x < 38; x++) if (c.has(x, y) && ((x + (y % 2 ? 1 : 0)) % 3 === 0 || y % 3 === 0)) c.set(x, y, gold[1]);
+  // bees in her hair
+  for (const [x, y] of [[12, 26], [35, 22], [9, 35], [38, 33]]) {
+    c.set(x, y, P.flame2);
+    c.set(x + 1, y, P.ink);
+  }
+}
+
+function scarecrowSack(k: Kit) {
+  // No face: a burlap sack, burnt, a candle burning inside it behind two eye-holes and a jagged grin.
+  const { c, head } = k;
+  const cx = head.cx;
+  const sack = ramp(mix(P.wax1, P.wood2, 0.55), mix(P.wax1, P.wood2, 0.2));
+  const sackE: Ell = { cx, cy: head.cy + 1, rx: head.rx + 2, ry: head.ry + 3 };
+  volume(c, sackE, sack, (_x, y) => y < 40, { flat: 0.15, dither: 0.4 });
+  for (let y = Math.floor(sackE.cy - sackE.ry); y < 40; y += 2) for (let x = Math.floor(cx - sackE.rx); x <= cx + sackE.rx; x += 3) if (c.has(x, y) && ((x * 7 + y * 3) % 5 === 0)) c.set(x, y, sack[1]); // the weave
+  // scorch creeping up from the neck
+  for (let x = Math.floor(cx - sackE.rx); x <= cx + sackE.rx; x++) for (let y = 33; y < 40; y++) if (c.has(x, y) && y > 33 + ((x * 5) % 4)) c.set(x, y, mix(c.get(x, y)!, P.ink, 0.6));
+  // the eye-holes and the grin, lit from inside
+  for (const ex of [cx - 6, cx + 3]) {
+    for (let j = 0; j < 3; j++) for (let i = 0; i < 3; i++) c.set(ex + i, k.ey - 1 + j, j === 0 ? P.flame1 : P.flame2);
+    glow(c, ex + 1, k.ey, 4, P.flame2, 0.4);
+  }
+  for (let x = cx - 6; x <= cx + 6; x++) {
+    const y = k.my + (Math.abs(x - cx) > 4 ? -1 : 0);
+    c.set(x, y, x % 2 ? P.flame2 : P.ink);
+    c.set(x, y + 1, x % 2 ? P.flame1 : P.ink);
+  }
+  // stitches where the sack is tied at the neck
+  for (let x = cx - 7; x <= cx + 7; x += 2) c.set(x, 38, P.ink);
+  // the hat, its brim burnt through
+  const hr = ramp(mix(P.dark1, P.ink, 0.3));
+  volume(c, { cx, cy: head.cy - 12, rx: head.rx, ry: 5 }, hr, (_x, y) => y < head.cy - 8, { flat: 0.2 });
+  for (let x = Math.floor(cx - head.rx - 7); x <= cx + head.rx + 7; x++) {
+    if (x > cx + 9 && x < cx + 12) continue; // the hole
+    c.set(x, head.cy - 8, hr[x < cx ? 3 : 1]);
+    c.set(x, head.cy - 7, hr[0]);
+  }
+  c.set(cx + 3, head.cy - 15, P.ember);
+  // a crow on its shoulder
+  for (let y = 36; y < 41; y++) for (let x = 36; x < 43; x++) c.set(x, y, P.ink);
+  c.set(43, 36, P.ink);
+  c.set(44, 36, P.flame1);
+  c.set(41, 36, P.ember);
+  line(c, 37, 36, 39, 33, P.dark1);
 }
 
 /** Paint the named characters side by side: a strip `PORTRAIT * n` wide. */

@@ -1,0 +1,18 @@
+{
+  "image": "smoker.png",
+  "cell": [
+    20,
+    12
+  ],
+  "pivot": [
+    3,
+    7
+  ],
+  "layer": "weapon",
+  "points": {
+    "tip": [
+      18,
+      4
+    ]
+  }
+}

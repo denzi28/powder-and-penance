@@ -1,0 +1,18 @@
+{
+  "image": "scythe.png",
+  "cell": [
+    34,
+    16
+  ],
+  "pivot": [
+    3,
+    12
+  ],
+  "layer": "weapon",
+  "points": {
+    "tip": [
+      31,
+      2
+    ]
+  }
+}

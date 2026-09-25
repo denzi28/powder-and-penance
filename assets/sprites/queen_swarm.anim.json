@@ -1,0 +1,264 @@
+{
+  "image": "queen_swarm.png",
+  "cell": [
+    64,
+    64
+  ],
+  "pivot": [
+    32,
+    58
+  ],
+  "layer": "single",
+  "animations": {
+    "idle": {
+      "row": 0,
+      "dirs": [
+        "S",
+        "SE",
+        "E",
+        "NE",
+        "N"
+      ],
+      "loop": true,
+      "frames": [
+        {
+          "ticks": 6
+        },
+        {
+          "ticks": 6
+        },
+        {
+          "ticks": 6
+        },
+        {
+          "ticks": 6
+        }
+      ]
+    },
+    "walk": {
+      "row": 5,
+      "dirs": [
+        "S",
+        "SE",
+        "E",
+        "NE",
+        "N"
+      ],
+      "loop": true,
+      "frames": [
+        {
+          "ticks": 5
+        },
+        {
+          "ticks": 5
+        },
+        {
+          "ticks": 5
+        },
+        {
+          "ticks": 5
+        }
+      ]
+    },
+    "intro": {
+      "row": 10,
+      "dirs": [
+        "S",
+        "SE",
+        "E",
+        "NE",
+        "N"
+      ],
+      "loop": false,
+      "frames": [
+        {
+          "ticks": 16
+        },
+        {
+          "ticks": 16
+        },
+        {
+          "ticks": 16
+        },
+        {
+          "ticks": 16
+        },
+        {
+          "ticks": 20
+        },
+        {
+          "ticks": 30
+        }
+      ]
+    },
+    "dive": {
+      "row": 15,
+      "dirs": [
+        "S",
+        "SE",
+        "E",
+        "NE",
+        "N"
+      ],
+      "loop": false,
+      "frames": [
+        {
+          "ticks": 1,
+          "phase": "windup"
+        },
+        {
+          "ticks": 2,
+          "phase": "windup"
+        },
+        {
+          "ticks": 2,
+          "phase": "windup"
+        },
+        {
+          "ticks": 1,
+          "phase": "active"
+        },
+        {
+          "ticks": 1,
+          "phase": "active"
+        },
+        {
+          "ticks": 2,
+          "phase": "recovery"
+        },
+        {
+          "ticks": 1,
+          "phase": "recovery"
+        }
+      ]
+    },
+    "engulf": {
+      "row": 20,
+      "dirs": [
+        "S",
+        "SE",
+        "E",
+        "NE",
+        "N"
+      ],
+      "loop": false,
+      "frames": [
+        {
+          "ticks": 1,
+          "phase": "windup"
+        },
+        {
+          "ticks": 2,
+          "phase": "windup"
+        },
+        {
+          "ticks": 2,
+          "phase": "windup"
+        },
+        {
+          "ticks": 1,
+          "phase": "active"
+        },
+        {
+          "ticks": 1,
+          "phase": "active"
+        },
+        {
+          "ticks": 2,
+          "phase": "recovery"
+        },
+        {
+          "ticks": 1,
+          "phase": "recovery"
+        }
+      ]
+    },
+    "volley": {
+      "row": 25,
+      "dirs": [
+        "S",
+        "SE",
+        "E",
+        "NE",
+        "N"
+      ],
+      "loop": false,
+      "frames": [
+        {
+          "ticks": 1,
+          "phase": "windup"
+        },
+        {
+          "ticks": 2,
+          "phase": "windup"
+        },
+        {
+          "ticks": 2,
+          "phase": "windup"
+        },
+        {
+          "ticks": 1,
+          "phase": "active"
+        },
+        {
+          "ticks": 1,
+          "phase": "active"
+        },
+        {
+          "ticks": 2,
+          "phase": "recovery"
+        },
+        {
+          "ticks": 1,
+          "phase": "recovery"
+        }
+      ]
+    },
+    "stagger": {
+      "row": 30,
+      "dirs": [
+        "S",
+        "SE",
+        "E",
+        "NE",
+        "N"
+      ],
+      "loop": false,
+      "frames": [
+        {
+          "ticks": 6
+        },
+        {
+          "ticks": 10
+        },
+        {
+          "ticks": 30
+        }
+      ]
+    },
+    "death": {
+      "row": 35,
+      "dirs": [
+        "S"
+      ],
+      "loop": false,
+      "frames": [
+        {
+          "ticks": 8
+        },
+        {
+          "ticks": 10
+        },
+        {
+          "ticks": 12
+        },
+        {
+          "ticks": 30
+        },
+        {
+          "ticks": 60
+        }
+      ]
+    }
+  }
+}
