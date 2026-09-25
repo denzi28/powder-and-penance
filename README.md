@@ -118,6 +118,15 @@ Act 1 is being built room by room: the plan is in [WORLD.md](WORLD.md) and the s
   - The Vault Wick shrine; the Master Gunner's log; **Oskar's strongbox** in his cache (take it to him: he gives you the Ring of the Steady Hand and opens his real stock, Keg Charges included); the **Gunner's Coat** in the Fuse Corridor.
   - The boss, **the Master Gunner**, in the Range. First his cannon: lobbed cannonballs (three at once; watch the landing rings), a fan of grapeshot, an unblockable ram, a point-blank blast. When the gun cracks he leaps clear, and it's a duel: blunderbuss blasts, stock swings, a tossed keg, a leap back and a parting shot. He leaves you his **Blunderbuss** (two-handed; eight balls a shot).
   - Tuning: `data/enemies/master_gunner.json`, `master_gunner_duel.json`, `powder_mule.json`, `fuse_runner.json`, `data/props/keg.json`.
+- **Bloomhollow** (optional; take the collapsed gate at the bottom of Penance Road), 10 rooms of orchard:
+  - **Hives:** strike one and its bees come out after whoever struck it; break it and a bigger swarm and a spill of honey come out. A swarm stings everyone in its cloud, so you can lead it into enemies. Roll through it, or smoke it and it settles.
+  - **Smoke** (the Smoker, the Husks' smokers) calms bees and blinds anything that breathes it, you too. **Honey** slows like wax.
+  - **Tallow seals** close two old ways (the Mead Cellar, the Chapel vestry). Light a **Beeswax Candle** and walk up to one: it melts.
+  - New enemies: **Beekeeper Husks** (blinding smoke; bees ignore them), **Drone Swarms**, **Orchard Guards** (they stand like scarecrows until you're close) and **Honey Slimes** (hidden in the honey).
+  - **Hild** at the Press House (the Press Wick): the Smoker, a first candle, her apiary shop, and a letter for her sister Maudlin. Bring Maudlin's reply back for Bitter Salt and more stock.
+  - Miniboss: **the Scarecrow Warden** in the Burned Grove (drops the Beekeeper's Coat). The Beekeeper's Veil is in the Hive Walls.
+  - The boss, **the Hive Queen**, in the Great Skep: sceptre sweeps, a sting lance, royal jelly, guard swarms, honey rain. At half health she pours herself into the Skep and the **Swarm Unbound** comes out: dives, engulfs, sting volleys. Smoke staggers it. She leaves the **Ring of the Queen** (a backstab or riposte heals 40 HP).
+  - Tuning: `data/enemies/hive_queen.json`, `queen_swarm.json`, `scarecrow_warden.json`, `beekeeper_husk.json`, `orchard_guard.json`, `honey_slime.json`, `data/swarms.json`, `data/props/hive.json`.
 - **A shrine appears after every boss.**
 - **Quick travel:** rest at any shrine and choose TRAVEL to go to any other lit shrine, in any area.
 - **Items come in chests** (press E). You keep control while the lid opens. The banner explains the effect in plain numbers (e.g. "phial drinks 3 -> 4"), with the flavour text below.

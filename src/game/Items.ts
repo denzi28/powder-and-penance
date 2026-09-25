@@ -149,6 +149,8 @@ function buffLine(m: import('../data/schemas').Mods, lose: boolean): string {
   if (m.damage) parts.push(`your hits deal ${pct(m.damage)} more damage`);
   if (m.staminaRegen) parts.push(`stamina comes back ${pct(m.staminaRegen)} faster`);
   if (m.poise) parts.push(`+${m.poise} poise, so you are hard to stagger`);
+  if (m.light) parts.push('you carry a clean beeswax light: the dark draws back, and tallow seals weep and melt as you come near');
+  if (m.stings !== undefined && m.stings < 1) parts.push(`bee stings hurt you ${pct(m.stings)} less`);
   const s = parts.join(', ');
   return s.charAt(0).toUpperCase() + s.slice(1);
 }

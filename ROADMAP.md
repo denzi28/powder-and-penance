@@ -77,31 +77,27 @@ Each new biome is somewhere the Order's grey never reached, and each hides a pie
 - **Items:** the Blunderbuss (his drop; two-handed, a spread of eight), the Gunner's Coat (armour), the Ring of the Steady Hand (Oskar's reward: your shots spread half as much), and the Keg Charge (a thrown consumable Oskar stocks once his strongbox is back).
 - Music: a quiet vault theme, and "Last Salute" for the fight. New sounds for kegs, both enemies, the cannon and both guns.
 
-## Step 4: Bloomhollow, the Apiary Orchard (colourful biome #1)
-*An early side area off the Penance Road: warm, golden, deceptively pretty.*
-- **10 rooms:** the Orchard Gate, Lavender Rows, the Hive Walls, the Press House, the Burned Grove, the Queen's Garden and more.
-- **Colours and scenery:**
-  - Colours: honey gold, violet lavender, fresh green, poppy red.
-  - New tileset: flowering grass, honeycomb stone, orchard paths.
-  - Decor: hives, fruit trees, wax presses, flower beds, scarecrows.
+## Step 4: Bloomhollow, the Apiary Orchard (done, colourful biome #1)
+*An early side area off the Penance Road, through the collapsed gate: warm, golden, deceptively pretty. 10 rooms.*
+- **Rooms:** the Orchard Gate, Lavender Rows, the Hive Walls, the Press House (the Press Wick, and Hild), the Apple Walk, the Mead Cellar, the Burned Grove, the Orchard Chapel, the Queen's Garden and the Great Skep (the boss, then the Queen's Wick).
+- **Colours and scenery:** honey gold, lavender violet, orchard green, poppy red, blossom pink. A new tileset (`tiles_orchard`: flowering grass, lavender, orchard paths, honey pools, honeycomb paving, burned ash, press-house boards, hedgerow walls) and 24 new decor pieces (apple trees in blossom and fruit, burned trees, skeps, hive boxes, wax presses, flower beds, the bee altar, bee saints, the Great Skep...). Petals and pollen in the air; crows in the grove.
 - **Mechanics:**
-  - **Bee swarms** chase whoever disturbs a hive, you or enemies, so you can lead them into foes.
-  - **Smoke** (a Smoker item) calms them.
+  - **Hives** (a new breakable): strike one and its swarm comes out after whoever struck it; break it and a bigger swarm and a spill of honey come out. Swarms sting everything in their cloud, so you can lead one through a crowd (`data/swarms.json`).
+  - **Smoke** calms swarms and blinds anything that breathes it, you included (the screen closes in to a small circle).
+  - **Honey** slows, like wax.
+  - **Tallow seals:** the Synod sealed the old ways with tallow. Walk up with a lit beeswax candle and they melt.
 - **New enemies:**
-  - **Beekeeper Husk:** a veiled wax figure with a smoker. Its smoke blinds.
-  - **Drone Swarm:** a cloud you roll through, not fight.
-  - **Orchard Guard:** a scarecrow with a scythe that wakes when you're close.
-  - **Honey Slime:** a sticky floor that slows.
-- **Miniboss: the Scarecrow Warden** in the Burned Grove.
-- **Boss: the Hive Queen**, a queen who is half woman, half hive. The swarm is her second phase.
-- **NPC: Maud the Beekeeper**, the last honest chandler. She sells beeswax candles, a light source that reveals hidden paths.
-- **Items:**
-  - Smoker (a light weapon that blinds).
-  - Beekeeper's Veil and Coat.
-  - Honeycomb (consumable).
-  - Ring of the Queen: heal on a backstab.
-- **Lore:** Maud's orchard notes, the burned grove's letter of decree, the first hint that tallow replaced beeswax.
-- **Sound:** bees, birdsong, wind in the orchard; a pastoral waltz exploration theme; the Queen's buzzing choir boss theme.
+  - **Beekeeper Husk:** a veiled wax figure with a smoker. Its smoke blinds; bees ignore it.
+  - **Drone Swarm:** a cloud you roll through or smoke, not fight.
+  - **Orchard Guard:** stands like a scarecrow until you're close, then reaps and hooks you in with its scythe.
+  - **Honey Slime:** hides in the honey, engulfs, and leaves a slowing trail.
+- **Miniboss: the Scarecrow Warden** in the Burned Grove: scythe combos, a reaping spin, crows that home in, a leap that leaves a ring of embers. Drops the Beekeeper's Coat.
+- **Boss: the Hive Queen** in the Great Skep: sceptre sweeps, a sting lance, royal jelly lobbed into honey pools, her guard swarms, honey rain. At half health she pours herself into the Skep and comes out as **the Swarm Unbound**: dives, engulfs, sting volleys, a spiral, calls the hive. Smoke staggers her.
+- **NPC: Hild the Beekeeper** (the roadmap's "Maud"; she became Hild, Maudlin's sister, to tie into the orchard letter on the road). She gives you the Smoker and a first candle, and sells from her apiary: beeswax candles, honeycomb, smoke, more once her sister writes back and once the Queen is dead.
+- **Quest:** Hild's letter goes up to Maudlin at Wick's Rest; Maudlin's reply comes back down, and Hild gives you Bitter Salt and opens her cellar.
+- **Items:** the Smoker (a light weapon: a puff that blinds, a heavy cloud), the Beekeeper's Veil and Coat (armour: stings hurt less), the Beeswax Candle (a clean light for a minute: the dark draws back and tallow seals melt), the Ring of the Queen (a backstab or riposte heals 40 HP), honeycomb.
+- **Lore:** six notes (Hild's chalk board, the press house ledger, the Synod's requisition, the decree nailed in the grove, the orchard hymn, the sealer's accounts), the arrival cutscene, and Mother Aldith's last words.
+- **Sound:** bees, songbirds and wind in the orchard, bees at every skep, a pastoral waltz exploring, "The Queen's Court" and "The Swarm" for the fight, and new sounds for every enemy, both bosses, hives, swarms and the Smoker.
 
 ## Step 5: Madder Marsh, the Dyers' Quarter (colourful biome #2)
 *A half-flooded dyers' village off the Waxmire: streets of dye vats and hanging cloth, colour everywhere.*

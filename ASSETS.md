@@ -191,6 +191,16 @@ Enemies hold their weapon like the player does: `handAnchors` in the body manife
 | `gunner_cannon` | 64×64 | 32,58 | none | The Master Gunner's cannon: `idle`, `walk` (rolling), `fire`, `lob`, `ram`, `intro`, `dismount` (his turn), `stagger`, `death` |
 | `gunner` | 48×48 | 24,44 | hand anchors | The Master Gunner on foot: `idle`, `walk`, `shoot`, `club`, `toss`, `leap`, `intro`, `stagger`, `death` |
 | `decor_vault` | 64×64 | 32,62 | none | 0 keg stack, 1 powder barrel, 2 cannonball pyramid, 3 practice target, 4 spilled powder, 5 rubble, 6 shot crate, 7 cannon rail |
+| `prop_hive` | 24×32 | 12,29 | none | A straw hive on its post: frame 0 whole, frame 1 broken open |
+| `prop_seal` | 16×16 | 8,16 | none | A Synod tallow seal set in a wall: frame 0 whole, frame 1 melting |
+| `smoker`, `scythe`, `warden_scythe`, `comb_sceptre` | weapon layer | hand | none | The Smoker (yours and the Husks'), the Guards' scythe, the Warden's great scythe, the Queen's comb sceptre |
+| `royal_jelly`, `bee_dart`, `crow_dart` | small | centre | none | The Queen's lobbed jelly; her sting darts; the Warden's crows |
+| `husk`, `orchard_guard`, `honey_slime` | 32×32 | 16,28 | none | Beekeeper Husk (`idle`, `walk`, `puff`, `bash`, `stagger`), Orchard Guard (`dormant`: standing like a scarecrow, `rise`, `idle`, `walk`, `reap`, `stagger`), Honey Slime (`idle`, `walk`, `rise`, `engulf`, `stagger`) |
+| `scarecrow_warden` | 48×48 | 24,44 | none | `dormant`, `rise`, `idle`, `walk`, `reap`, `spin`, `crows`, `leap`, `stagger` |
+| `hive_queen` | 64×64 | 32,58 | none | `idle`, `walk`, `intro`, `sweep`, `thrust`, `spit`, `release`, `pour` (her turn), `stagger` |
+| `queen_swarm` | 64×64 | 32,58 | none | The Swarm Unbound: `idle`, `walk`, `intro`, `dive`, `engulf`, `volley`, `stagger` |
+| `npc_hild` | 32×32 | 16,28 | none | Hild, in her straw hat and veil pushed back (the 12-frame townsfolk layout) |
+| `decor_bloom` | 64×64 | 32,62 | none | 0 apple tree in blossom, 1 in fruit, 2 burned tree, 3 wax press, 4 flower bed, 5 scarecrow, 6 skep bench, 7 lavender bush, 8 hive box, 9 Synod notice, 10 orchard gate, 11 honey barrels, 12 mead rack, 13 bee altar, 14 great skep, 15 charred stump, 16 honey cart, 17 comb frames, 18 bee saint, 19 fallen skep, 20 chapel pew, 21 votive stand, 22 hollyhocks, 23 ash heap |
 
 ### NPCs (`npc_oskar`, `npc_maudlin`, `npc_pip`: 32×32, pivot 16,28)
 - Frames: 0–1 idle (breathing), 2–3 talking (mouth open, then closed).
@@ -199,7 +209,7 @@ Enemies hold their weapon like the player does: `handAnchors` in the body manife
 ### `portraits` (48×48 per frame, ui)
 - Dialogue-box portraits, painted by `tools/portraits.ts` (lit volumes, hue-shifted ramps, a warm rim light): 0 Oskar,
   1 Maudlin, 2 Pip, 3 the Tollwarden, 4 the Mire Matron, 5 the Chandler, 6 Tomas, 7 Hedda, 8 Bede, 9 Agnes, 10 Ulla,
-  11 Jost, 12 Lome, 13 Wenna, 14 Fennick, 15 Cuthwin, 16 Hobb, 17 Wren, 18 the Master Gunner (`portrait` in data/npcs.json).
+  11 Jost, 12 Lome, 13 Wenna, 14 Fennick, 15 Cuthwin, 16 Hobb, 17 Wren, 18 the Master Gunner, 19 Hild, 20 the Hive Queen (Mother Aldith), 21 the Scarecrow Warden (`portrait` in data/npcs.json).
 - `data/npcs.json` picks each character's frame.
 
 ### Bosses
@@ -267,6 +277,7 @@ Each area picks its tileset in `data/areas.json`. Autotiling only reads the mani
 |---|---|---|
 | `tiles` | abbey, test | `floor` (stone), `floor_moss` |
 | `tiles_road` | road, hub | `floor` (dirt with clods and pebbles), `floor_grass` (tufts, the odd pale flower), `floor_road` (packed pale earth, no ruts, so it works running any way), `floor_plank` (boards with grain and nails), `floor_stone` (warm flagstones). Walls are earth cliffs under a grass lip (some with a hung lantern: `glow`); caps and rock are dark brush. Fringes: grass frays onto the ground beside it; the road's packed edge spreads into the dirt. |
+| `tiles_orchard` | bloom | `floor` (orchard grass with clover and tufts), `floor_path` (worn earth), `floor_flowers` (poppies, daisies, cornflowers), `floor_lavender` (violet rows), `floor_honey` (a deep amber pool with slow ripples, glints, a drowned bee: slows), `floor_comb` (six-sided honey-stone paving), `floor_ash` (the burned grove), `floor_plank` (the press house), `floor_stone` (warm flagstones). Walls are dry-stone honey limestone under a flowering hedgerow (some with a lit beeswax niche: `glow`; charred faces over ash). Fringes: honey spreads a lip, flowers spill over, the path frays into the grass. |
 
 ### Decor (`decor_hub`: 64×64 cells, pivot 32,62)
 Two-tile pieces cover the anchor tile and the one west of it; three-tile pieces cover one tile each side.
@@ -292,11 +303,11 @@ Static scenery, referenced by `data/decor.json`, which picks a sheet and frame a
 | 3 | `boulder` | 7 | `candle_cairn` |
 
 ### Icons (`icons`: 16×16 cells, one row; the inventory and equipment screens)
-0 fists, 1 dagger, 2 straight sword, 3 greataxe, 4 revolver, 5 flintlock, 6 heavy crossbow, 7 buckler, 8 pilgrim's hood, 9 drowned veil, 10 gaoler's helm, 11 acolyte's robe, 12 renderer's apron, 13 warden's hauberk, 14 tallow lump, 15 powder pouch, 16 phial shard, 17 bitter salt, 18 cage key, 19 toll key, 20 igniter, 21 ledger, 22 seal of tallow, 23 seal of the mire, 24 mending phial, 25 empty slot. Consumables: 26 firebomb, 27 pilgrim's knife, 28 wild honeycomb, 29 grey salt crust, 30 warding incense, 31 paper cartridge, 32 chandler's oil, 33 stale wafer, 34 smoke pellet, 35 ringer's grog, 36 pilgrim's tallow candle. Rings: 37 band of steady breath, 38 parish signet, 39 cutpurse's band, 40 porter's knot, 41 miser's band, 42 ring of the last candle, 43 mourner's ring, 44 ring of the quiet step, 45 powder-maker's ring, 46 warden's ward. 47 lore note. Materials and shop rings: 48 tallow ingot, 49 ember salt, 50 hawker's ring, 51 gunner's band. The Powder Vault: 52 blunderbuss, 53 gunner's coat, 54 ring of the steady hand, 55 keg charge, 56 Oskar's strongbox. Weapons, shields, armour, items, consumables and rings choose theirs with `icon`; a consumable dropped on the floor is drawn with its icon at 5/8 scale.
+0 fists, 1 dagger, 2 straight sword, 3 greataxe, 4 revolver, 5 flintlock, 6 heavy crossbow, 7 buckler, 8 pilgrim's hood, 9 drowned veil, 10 gaoler's helm, 11 acolyte's robe, 12 renderer's apron, 13 warden's hauberk, 14 tallow lump, 15 powder pouch, 16 phial shard, 17 bitter salt, 18 cage key, 19 toll key, 20 igniter, 21 ledger, 22 seal of tallow, 23 seal of the mire, 24 mending phial, 25 empty slot. Consumables: 26 firebomb, 27 pilgrim's knife, 28 wild honeycomb, 29 grey salt crust, 30 warding incense, 31 paper cartridge, 32 chandler's oil, 33 stale wafer, 34 smoke pellet, 35 ringer's grog, 36 pilgrim's tallow candle. Rings: 37 band of steady breath, 38 parish signet, 39 cutpurse's band, 40 porter's knot, 41 miser's band, 42 ring of the last candle, 43 mourner's ring, 44 ring of the quiet step, 45 powder-maker's ring, 46 warden's ward. 47 lore note. Materials and shop rings: 48 tallow ingot, 49 ember salt, 50 hawker's ring, 51 gunner's band. The Powder Vault: 52 blunderbuss, 53 gunner's coat, 54 ring of the steady hand, 55 keg charge, 56 Oskar's strongbox. Bloomhollow: 57 smoker, 58 beekeeper's veil, 59 beekeeper's coat, 60 ring of the queen, 61 beeswax candle, 62 Hild's letter, 63 Maudlin's reply. Weapons, shields, armour, items, consumables and rings choose theirs with `icon`; a consumable dropped on the floor is drawn with its icon at 5/8 scale.
 
 ### Ambient life (`critters`: 16×16 cells, pivot 8,14, facing right) and `data/ambience.json`
 The critters sheet holds small animals that wander rooms and flee from the player (`src/world/Ambience.ts`):
-0-3 rat (idle, sniff, run a/b), 4-7 crow (idle, peck, fly a/b), 8-11 frog (sit, croak, hop a/b), 12-13 moth, 14-17 cat (sit, tail flick, walk a/b), 18-19 bat (wings up/down).
+0-3 rat (idle, sniff, run a/b), 4-7 crow (idle, peck, fly a/b), 8-11 frog (sit, croak, hop a/b), 12-13 moth, 14-17 cat (sit, tail flick, walk a/b), 18-19 bat (wings up/down). Air effects include `petals` and `pollen` (Bloomhollow).
 
 `data/ambience.json` brings the scenery to life. Nothing in it affects play.
 - `decor.<kind>`: flame points in px from the decor anchor (`at`), plus optional `glow` (light scale), `flicker` (dancing flame tips, on by default), `smoke` / `embers` / `steam` (per second; `steamAt` for where steam rises) and `moths`.

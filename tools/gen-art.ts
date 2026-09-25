@@ -9113,28 +9113,41 @@ function genOrchardTiles() {
       img.set(x + 1, y - h - 1, P.violet1);
     }
   }
-  // 14-15 honey: a glossy amber pool from a broken hive, wax flecks floating in it (it slows you)
-  for (let v = 0; v < 2; v++) {
-    const [ox, oy] = at(14 + v);
+  // 14-15, 105-106 honey: a deep amber pool from a broken hive, slow ripples, a few glints, wax flecks and a
+  // drowned bee floating in it (it slows you). The ripples run with the tile so the pool reads as one sheet.
+  const deep = mix(BL.h1, BL.h0, 0.3);
+  [14, 15, 105, 106].forEach((slot, v) => {
+    const [ox, oy] = at(slot);
     const r = rng(9400 + v);
-    img.rect(ox, oy, T, T, BL.h1);
-    speck(ox, oy, r, 10, BL.h2);
-    speck(ox, oy, r, 5, BL.h0);
-    // long glossy streaks catching the light
-    for (let i = 0; i < 2; i++) {
-      const x = ox + 1 + Math.floor(r() * 9);
-      const y = oy + 2 + Math.floor(r() * 12);
-      img.hline(x, y, 4, BL.h3);
-      img.set(x + 1, y, P.wax2);
-      img.hline(x + 1, y + 1, 3, BL.h2);
-    }
+    for (let y = 0; y < T; y++)
+      for (let x = 0; x < T; x++) {
+        const bend = Math.sin((2 * Math.PI * y) / T + v * 1.7) * 0.18;
+        const n = Math.sin(2 * Math.PI * (x / T + y / (2 * T) + bend));
+        img.set(ox + x, oy + y, n < -0.78 ? mix(deep, BL.h0, 0.3) : n > 0.86 ? mix(BL.h1, BL.h2, 0.3) : deep);
+      }
+    speck(ox, oy, r, 4, mix(deep, BL.h0, 0.6), 1);
+    // a glint: a short bright curve where the light catches the surface
+    const gx = ox + 2 + Math.floor(r() * 9);
+    const gy = oy + 2 + Math.floor(r() * 10);
+    img.hline(gx, gy, 3, BL.h3);
+    img.set(gx + 1, gy, P.wax2);
+    img.set(gx + 3, gy + 1, BL.h2);
+    img.set(gx - 1, gy + 1, BL.h2);
     if (v === 1) {
       // a scrap of comb afloat
-      img.rect(ox + 9, oy + 9, 3, 2, P.wax1);
-      img.set(ox + 10, oy + 9, BL.h0);
-      img.hline(ox + 9, oy + 11, 3, BL.h0);
+      img.rect(ox + 9, oy + 10, 3, 2, mix(P.wax1, BL.h2, 0.4));
+      img.set(ox + 10, oy + 10, BL.h0);
+      img.hline(ox + 9, oy + 12, 3, BL.h0);
     }
-  }
+    if (v === 2) {
+      // a drowned bee: a dark body, pale wings spread flat
+      img.hline(ox + 5, oy + 11, 3, P.ink);
+      img.set(ox + 6, oy + 11, BL.h3);
+      img.set(ox + 5, oy + 10, P.wax1);
+      img.set(ox + 7, oy + 10, P.wax1);
+    }
+    if (v === 3) for (let i = 0; i < 3; i++) img.set(ox + 3 + Math.floor(r() * 10), oy + 3 + Math.floor(r() * 10), P.wax1); // wax flecks
+  });
   // 16-31 wall caps: the flowering hedgerow along the top of every wall, lit on its open edges
   const foliage = (ox: number, oy: number, r: () => number, dark: boolean, blossoms: number) => {
     img.rect(ox, oy, T, T, dark ? mix(BL.g0, P.ink, 0.3) : BL.g1);
@@ -9270,14 +9283,14 @@ function genOrchardTiles() {
       const off = row % 2 ? 4 : 0;
       for (let col = -1; col < 3; col++) {
         const x0 = col * 8 + off;
-        const stain = r() < 0.18;
+        const stain = r() < 0.1;
         for (let yy = 0; yy < 4; yy++)
           for (let xx = 0; xx < 8; xx++) {
             const px = x0 + xx;
             if (px < 0 || px >= T) continue;
             // cut corners make each flag six-sided
             const corner = (yy === 0 || yy === 3) && (xx === 0 || xx === 7);
-            const c = yy === 0 || xx === 0 || corner ? joint : yy === 1 && xx < 6 ? (stain ? BL.h3 : BL.s3) : stain ? BL.h2 : BL.s2;
+            const c = yy === 0 || xx === 0 || corner ? joint : yy === 1 && xx < 6 ? (stain ? mix(BL.s3, BL.h3, 0.5) : BL.s3) : stain ? mix(BL.s2, BL.h2, 0.5) : BL.s2;
             img.set(ox + px, oy + y0 + yy, c);
           }
       }
@@ -9392,7 +9405,7 @@ function genOrchardTiles() {
       floor_path: [4, 4, 5, 6, 7],
       floor_flowers: [8, 9, 10, 11],
       floor_lavender: [12, 13],
-      floor_honey: [14, 14, 15],
+      floor_honey: [14, 14, 15, 105, 14, 106],
       floor_comb: [44, 45],
       floor_ash: [46, 46, 47],
       floor_plank: [98, 99],

@@ -156,7 +156,7 @@ R('bloom_06_mead_cellar', [8, 45], 22, 14)
 R('bloom_07_burned_grove', [29, 49], 28, 18)
   .open(20, 0, 2, 1).open(0, 3).open(13, 17, 2, 1)
   .paint(1, 1, 26, 16, 'a').paint(1, 3, 6, 1, '=').paint(20, 1, 2, 5, '=').paint(13, 12, 2, 5, '=')
-  .paint(22, 13, 4, 3, '.')
+  .paint(23, 13, 2, 1, ',').paint(22, 14, 4, 1, ',').paint(23, 15, 3, 1, ',') // one corner the fire missed
   .decors('burned_tree', [[4, 7], [9, 3], [18, 4], [24, 8], [5, 14], [22, 14], [10, 12]])
   .decors('charred_stump', [[13, 4], [17, 12], [7, 10]]).decors('ash_heap', [[15, 7], [20, 10]])
   .enemy('scarecrow_warden', 14, 8, 'S', { miniboss: { id: 'scarecrow_warden', title: 'The Scarecrow Warden', drop: 'gear_beekeepers_coat', hpMult: 1.3 } })

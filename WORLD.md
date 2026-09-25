@@ -14,6 +14,8 @@ Target: **~2 h** first playthrough (2 h 15 min with the optional Powder Vault). 
    [The Waxmire] <--open-- [Wick's Rest (hub)] --toll key--> [Tallow Works]
                                   ^                               | hidden wall
                            [Penance Road]                   [Powder Vault]
+                                  | collapsed gate
+                           [Bloomhollow: Hive Queen]
 ```
 
 ## Area overview
@@ -26,6 +28,7 @@ Target: **~2 h** first playthrough (2 h 15 min with the optional Powder Vault). 
 | Tallow Works | `works` | 10 | Soot brick, iron, grease | Mother Tallow | 30 min |
 | The Waxmire | `mire` | 10 | Mud, wax pools, dead roots | Mire Matron | 30 min |
 | Powder Vault (optional) | `vault` | 4 | Cellar stone, powder kegs | Master Gunner | 15 min |
+| Bloomhollow (optional) | `bloom` | 10 | Orchard grass, lavender, honey, honeycomb paving | Scarecrow Warden (mini), Hive Queen | 35 min |
 
 **Critical path:**
 1. Penance Road
@@ -42,6 +45,7 @@ Target: **~2 h** first playthrough (2 h 15 min with the optional Powder Vault). 
 - Foreman's Wick (works)
 - Drowned Wick (mire)
 - Vault Wick (vault)
+- Press Wick (bloom)
 
 ## Engine features Act 1 needs (built as their first room needs them)
 | Feature | First needed in |
@@ -176,3 +180,24 @@ Oskar's hidden powder cache under the Tallow Works: the heretics' old workshop.
 | vault_02 | **Fuse Corridor** ✅ | A long hall lined with ten kegs: two Mules, two Fuse-Runners, an Acolyte. Break the kegs to hurt them, or yourself. Chest: **Gunner's Coat**. |
 | vault_03 | **Oskar's Cache** ✅ | **Oskar's strongbox** (take it to him: Ring of the Steady Hand, and his full stock), two Keg Charges, two Tallow Ingots. |
 | vault_04 | **The Range** ✅ | **Optional boss: the Master Gunner**: his cannon on its rail, then a duel with his blunderbuss. Drops the **Blunderbuss**; then the **Range Wick** appears. |
+
+## Bloomhollow (`bloom`): optional, the Apiary Orchard
+Hild's orchard valley, through the collapsed gate at the bottom of Penance Road. The Wax Synod burned it for making beeswax, "a light that asks nothing". All 10 rooms are built ✅ (`tools/level-gen/bloom.mjs`).
+
+**Hives** (prop `hive`) hum on posts and benches. Strike one and a swarm comes out after whoever struck it; break it and a bigger swarm comes out, with a spill of honey. Swarms sting everyone in their cloud: lead one through enemies, roll through it, or smoke it calm. **Honey** (`floor_honey`, and pools) slows like wax. **Tallow seals** (prop `tallow_seal`) close two old ways; they melt when you walk up with a lit **Beeswax Candle**.
+
+**New enemies:** the **Beekeeper Husk** (smoke that blinds, bees ignore it), the **Drone Swarm** (a cloud, placed with a `swarm` entity), the **Orchard Guard** (stands like a scarecrow, wakes when you're close, reaps and hooks), the **Honey Slime** (hidden in honey, engulfs, leaves a slowing trail).
+
+| # | Room | Contents |
+|---|---|---|
+| bloom_01 | **Orchard Gate** ✅ | Down from the Collapsed Gate. The burned arch, the Synod's notice, two Orchard Guards among the trees, a hive. *Arrival cutscene: a Husk smoking a hive that isn't there.* |
+| bloom_02 | **Lavender Rows** ✅ | Rows of lavender, two Drone Swarms, two Husks, a Honey Slime in the honey. Hild's chalk board. Chest: Wild Honeycomb x2. |
+| bloom_03 | **Hive Walls** ✅ | Six hives along the walls, two Husks and a Guard: the place to learn to lead a swarm. Chest: **Beekeeper's Veil**. |
+| bloom_04 | **Press House** ✅ | **Press Wick shrine**; **Hild** at her wax press (Smoker, first candle, her apiary shop, the letter to Maudlin). The press ledger. Under the floor: Tallow Ingot x2. |
+| bloom_05 | **Apple Walk** ✅ | Fruit trees, two hives, a swarm, two Guards, a Slime. Chest: Tallow Ingot. |
+| bloom_06 | **Mead Cellar** ✅ | Casks and honey, two Slimes; a door that opens from the east. The Synod's requisition. Behind a **tallow seal**: a **Phial Shard**. |
+| bloom_07 | **Burned Grove** ✅ | **Miniboss: the Scarecrow Warden** among the black trees: scythe combos, a reaping spin, crows, a leap with a ring of embers. Drops the **Beekeeper's Coat**. The decree; Ember Salt in the one corner the fire missed. |
+| bloom_08 | **Orchard Chapel** ✅ | The bee altar, bee saints, two Husks kneeling in the pews, the orchard hymn. Behind a **tallow seal** in the vestry: Beeswax Candles and the sealer's accounts. |
+| bloom_09 | **Queen's Garden** ✅ | Five hives, two swarms, two Husks and a Guard before the Great Skep. |
+| bloom_10 | **Great Skep** ✅ | **Boss: the Hive Queen** ("Hush, my darlings."): sceptre sweeps, a sting lance, royal jelly, her guard swarms, honey rain. At half health she pours herself into the Skep and comes out as **the Swarm Unbound**. Mother Aldith's last words; **Ring of the Queen**; then the **Queen's Wick** appears. |
+

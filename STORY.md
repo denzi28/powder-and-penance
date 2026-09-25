@@ -45,6 +45,8 @@ The map is in [WORLD.md](WORLD.md).
 | **Fennick** | Foreman's Office (Works) | The Works' last clerk, still keeping the ledger, and the only one who wrote down what the carts brought in. |
 | **Brother Cuthwin** | Abbey Porch | A novice who sweeps the dripping wax from the porch every day. |
 | **Old Hobb** | Abbey Porch | A beggar and former bell-ringer who counts everyone going in. |
+| **Hild** | Bloomhollow Press House | Maudlin's younger sister, the last beekeeper in the orchard. The Synod burned her hives for making beeswax; she stayed. Gives you the Smoker and a first beeswax candle, sells from her apiary, and sends a letter up to the sister who hasn't written back in twenty years. (The roadmap's "Maud the Beekeeper"; she became Hild to tie into the orchard letter on the road.) |
+| **Mother Aldith** | Bloomhollow Great Skep | Kept the Orchard Chapel. When the Synod came with pitch she went into the Great Skep with the Queen and never came out: the bees kept her warm when the Drip came, until she couldn't tell their humming from her own. She is the Hive Queen. |
 | **The Tollwarden** | Abbey Gatehouse | Speaks before the fight: "Toll is paid in tallow, pilgrim. And tallow is paid in you." |
 | **Mother Tallow** | Works | Wordless. Hums a work song. |
 | **Mire Matron** | Waxmire | Sings; asks if you've come to be born again |
@@ -69,6 +71,10 @@ The map is in [WORLD.md](WORLD.md).
 | **The Mire Matron** (`matron_death`): the Abbey's midwife. When the Drip came into the cradles she couldn't give the children to the flame, so she brought them down to the mire and sang to them, and never stopped. **Seal of the Mire.** | ✅ |
 | **The Chandler** (Nave). Entrance: kneeling at the altar, he finishes his prayer first: "Kneel, child. It is quicker kneeling." His turn: "Forty years I fed it. Then let it have the last of me." He pours himself onto the altar fire and rises as **the Last Candle**, a black flame on his wick. | ✅ |
 | **The ending** (`chandler_death`): he confesses the rendering and the ledger he signed; *"The Wick was never starving. Something up there is drinking it."* He asks you to climb for him. The lift chains wake; **END OF ACT ONE**. Sets `chandler_rests` and `act1_complete`; the lift opens with `act2`. | ✅ |
+| **Bloomhollow** (`bloom_arrive`): blossom on the air, a Husk smoking a hive that isn't there, the hives still humming | ✅ |
+| **Hild** (`hild_talk`): warm hands again; the Synod and the beeswax; the Smoker and a candle; her apiary (`{ "open": "apiary" }`). Read her orchard letter first and she tells you who M. is; either way she gives you a new letter for her sister. | ✅ |
+| **The letter** (`maudlin`, "I bring a letter from Bloomhollow"): Maudlin reads it twice, and sends back a reply sealed in grey wax with their mother's beeswax inside. Hild gives you Bitter Salt for it and opens her cellar. | ✅ |
+| **The Hive Queen** (Great Skep). Entrance: "Hush, my darlings. Another one come to burn us?" Her turn: she pours herself into the Skep and the swarm comes out wearing her. Her last words (`queen_death`): Mother Aldith, who went in with the Queen and was kept; "it wasn't the Synod that beat us. We just forgot how to let things end." **Ring of the Queen.** Hild hears of it. | ✅ |
 | Brother Aldous | Next, with the Abbey revision |
 
 ## Writing dialogue and cutscenes
