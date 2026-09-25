@@ -36,7 +36,7 @@
   "author": "Powder & Penance dev",
   "build": {
     "appId": "com.powderandpenance.game",
-    "productName": "Powder & Penance",
+    "productName": "Powder and Penance",
     "directories": {
       "output": "release",
       "buildResources": "build"
@@ -70,7 +70,14 @@
         "tar.gz"
       ],
       "icon": "build/icon.png",
-      "category": "Game"
-    }
+      "category": "Game",
+      "executableName": "powder-and-penance",
+      "desktop": {
+        "entry": {
+          "Name": "Powder & Penance"
+        }
+      }
+    },
+    "artifactName": "PowderAndPenance-${version}-${os}-${arch}.${ext}"
   }
 }
