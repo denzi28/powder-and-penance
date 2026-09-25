@@ -612,6 +612,13 @@ export class Enemy extends Actor {
     const s = this.move!.strikes[this.strikeIndex];
     this.vx = this.vy = 0;
     this.runner = new AttackRunner(this, s, this.facing, this.def.weaponRestDeg * DEG);
+    const share = this.ally ? this.def.allyDamage : undefined;
+    if (share && s.damage > 0) {
+      // a set share of the player's own blow with that weapon, as they are now
+      const w = DATA.weapons[share.weapon];
+      const theirs = (w?.light?.[0]?.damage ?? 0) * (this.ctx.player().damageDealtMult?.('melee', share.weapon) ?? 1);
+      this.runner.damageMult = (theirs * share.share) / s.damage;
+    }
     const anim = s.anim && this.anim.has(s.anim) ? s.anim : 'attack';
     this.anim.play(anim, { restart: true, phases: { windup: s.windup, active: s.active, recovery: s.recovery } });
   }

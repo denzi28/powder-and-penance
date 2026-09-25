@@ -149,6 +149,7 @@ describe('an ally (Brother Aldous)', () => {
       ...pp, chestY: pp.y - 10, dead: false, bodyRadius: 5, team: 'player', aimAngle: -Math.PI / 2, invulnerable: false,
       hurtRect: () => ({ x: pp.x - 5, y: pp.y - 20, w: 10, h: 20 }),
       onHit: () => playerHurt++,
+      damageDealtMult: () => 2, // a player whose sword hits twice as hard as its base
     } as unknown as Player;
     const bus = new EventBus<GameEvents>();
     const combat = new CombatSystem();
@@ -171,10 +172,17 @@ describe('an ally (Brother Aldous)', () => {
     const wick = new Enemy(ctx, 'wickling', w.x, w.y, Math.PI / 2);
     list.push(wick);
     let t = 0;
+    const blows: number[] = [];
     for (; t < 1500 && !wick.dead; t++) {
+      const before = wick.hp;
       aldous.tick();
       combat.resolve([aldous, wick], bus);
+      if (wick.hp < before) blows.push(before - wick.hp);
     }
+    // each blow is a quarter of the player's own first Straight Sword swing (22 base, doubled here)
+    const quarter = Math.round(DATA.weapons.straight_sword.light[0].damage * 2 * 0.25);
+    expect(blows.length).toBeGreaterThan(0);
+    for (const b of blows.slice(0, -1)) expect(b).toBe(quarter); // (the last may be what was left)
     expect(aldous.foe === wick || wick.dead).toBe(true);
     expect(wick.dead, 'the Wickling fell').toBe(true);
     // on the player's side: the combat system skips same-team hits, so his blows pass through you

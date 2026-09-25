@@ -2,6 +2,7 @@
   "id": "aldous",
   "name": "Brother Aldous",
   "ai": "ally",
+  "allyDamage": { "weapon": "straight_sword", "share": 0.25 },
   "sprite": "aldous",
   "weaponSprite": "warden_spear",
   "weaponRestDeg": 30,

@@ -87,6 +87,7 @@ function loadAll(src: Record<string, unknown>) {
       if (e.boss?.deathScript && !data.scripts[e.boss.deathScript])
         errors.push(`data/enemies/${e.id}.json: unknown deathScript "${e.boss.deathScript}"`);
       if (e.splitInto && !data.enemies[e.splitInto.kind]) errors.push(`data/enemies/${e.id}.json: splitInto unknown kind "${e.splitInto.kind}"`);
+      if (e.allyDamage && !data.weapons[e.allyDamage.weapon]?.light?.length) errors.push(`data/enemies/${e.id}.json: allyDamage names "${e.allyDamage.weapon}", not a weapon with a light attack`);
       const next = e.boss?.next;
       if (next && !data.enemies[next.kind]?.boss) errors.push(`data/enemies/${e.id}.json: next phase "${next.kind}" is not a boss`);
       if (next && !data.items[next.chest.item]) errors.push(`data/enemies/${e.id}.json: next.chest has unknown item "${next.chest.item}"`);

@@ -830,6 +830,11 @@ export const EnemyDef = z.object({
    */
   ai: z.enum(['melee', 'ranged', 'dummy', 'rhythm', 'boss', 'ally']),
   /**
+   * An ally's blows (ai "ally"): every hit deals `share` of what the player's first light attack with `weapon`
+   * would deal right now (their stats, that weapon's upgrade, rings), whatever the move's own damage.
+   */
+  allyDamage: z.object({ weapon: z.string(), share: pos }).optional(),
+  /**
    * Boss (ai "boss"): waits dormant until the player enters its arena (room entity "arena"), then performs
    * its entrance (the player keeps control): `introAnim` for `introTicks`, with `slams` (ticks) that shake
    * the screen, and `introLine` shown as a banner. Its name and health bar sit at the bottom of the screen.
