@@ -173,6 +173,9 @@ export class GameScene extends Phaser.Scene {
   travel: { exit: Exit; t: number; fade: number } | null = null;
   /** Area name shown on arrival (t in ticks). */
   areaBanner: { name: string; t: number } | null = null;
+  /** The goal, shown for a while when it changes (and on loading a game). */
+  goalNote: { text: string; t: number } | null = null;
+  private lastGoal: string | null = null;
   /** Large map open (M): the world is paused. */
   mapOpen = false;
   /** Equipment / inventory screen (from the pause menu): the world is paused. */
@@ -371,6 +374,7 @@ export class GameScene extends Phaser.Scene {
     this.cam.tickShake();
     if (this.toast && ++this.toast.t > this.toast.life) this.toast = null;
     if (this.areaBanner && ++this.areaBanner.t > DATA.hud.areaBanner.ticks) this.areaBanner = null;
+    this.tickGoal();
     if (this.hitstop > 0) {
       this.hitstop--;
       return;
@@ -564,6 +568,16 @@ export class GameScene extends Phaser.Scene {
     const t = this.player.loadTier;
     this.menu = { title: 'PAUSED', subtitle: `${DATA.areas.areas[this.area].name}. Load ${this.player.equipLoad}/${this.player.capacity} (${t.label.toLowerCase()}).`, footer: `GOAL: ${this.currentGoal()}`, items, index, onBack: close };
     this.controls.clearBuffer();
+  }
+
+  /** A new goal (or a game just loaded, once any opening scene is over): show it under the area banner. */
+  private tickGoal() {
+    if (this.goalNote && ++this.goalNote.t > DATA.hud.goal.ticks) this.goalNote = null;
+    if (this.player.dead || this.shrineSeq || this.travel) return;
+    const goal = this.currentGoal();
+    if (goal === this.lastGoal) return;
+    this.lastGoal = goal;
+    if (goal) this.goalNote = { text: goal, t: 0 };
   }
 
   /** What to do next (data/goals.json): the first goal whose condition holds. */

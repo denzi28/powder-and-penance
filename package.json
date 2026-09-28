@@ -52,7 +52,7 @@
         "zip"
       ],
       "icon": "build/icon.png",
-      "signAndEditExecutable": false
+      "signAndEditExecutable": true
     },
     "portable": {
       "artifactName": "PowderAndPenance-${version}-portable.exe"

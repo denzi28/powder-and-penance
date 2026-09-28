@@ -27,13 +27,15 @@ const anything: unknown = new Proxy(() => anything, { get: (_t, k) => (k === 'th
 const anyAnims = new Proxy({}, { get: () => ({ row: 0, dirs: ['S'], loop: true, frames: [{ ticks: 5 }] }), has: () => true });
 
 /** Plays a script: confirms every few ticks and walks the menu cursor upward, so every menu is eventually left. */
-function play(id: string, flags: Set<string>, maxTicks = 20000, opts: { picks?: string[]; phialLevel?: number } = {}) {
+function play(id: string, flags: Set<string>, maxTicks = 20000, opts: { picks?: string[]; phialLevel?: number; skipAt?: number } = {}) {
   let t = 0;
+  const events: { t: number; what: string }[] = [];
+  const lines: { t: number; text: string }[] = [];
   const picks = [...(opts.picks ?? [])];
   const gs = {
     flags,
     controls: {
-      pressed: (a: string) => (a === 'moveUp' ? t % 4 === 0 && !picks.length : a === 'confirm' ? t % 4 === 2 : false),
+      pressed: (a: string) => (a === 'back' ? t === opts.skipAt : a === 'moveUp' ? t % 4 === 0 && !picks.length : a === 'confirm' ? t % 4 === 2 : false),
       clearBuffer: () => {},
     },
     npcs: { speaking: null, refresh: () => {}, get: () => null, setSceneHidden: () => {} },
@@ -54,8 +56,8 @@ function play(id: string, flags: Set<string>, maxTicks = 20000, opts: { picks?: 
     save: () => {},
     enemies: [],
     areaRoomList: Object.values(DATA.rooms),
-    bus: { emit: () => {} },
-    cam: { addTrauma: () => {} },
+    bus: { emit: (k: string, e: { id?: string }) => events.push({ t, what: `${k}:${e?.id ?? ''}` }) },
+    cam: { addTrauma: () => events.push({ t, what: 'shake' }) },
     showToast: () => {},
     markDirty: () => {},
     rebuildShrines: () => {},
@@ -74,9 +76,11 @@ function play(id: string, flags: Set<string>, maxTicks = 20000, opts: { picks?: 
       }
     }
     story.tick();
+    const say = (story as unknown as { dialogue: { text: string; choices: string[] | null } | null }).dialogue;
+    if (say && !say.choices && lines.at(-1)?.text !== say.text) lines.push({ t, text: say.text });
     t++;
   }
-  return { finished: !story.active, ticks: t, player: gs.player };
+  return { finished: !story.active, ticks: t, player: gs.player, events, lines };
 }
 
 describe('voices', () => {
@@ -169,5 +173,18 @@ describe('Act 1 endings for Maudlin and Aldous', () => {
     expect(scene.when).toContain('!aldous_saved');
     for (const seal of ['tallow', 'the_mire', 'powder', 'the_hive']) expect(scene.when).toContain(`key:seal_of_${seal}`);
     expect(DATA.rooms.abbey_09_scriptorium.entities.find(e => e.type === 'npc' && e.id === 'aldous')!.when).toBe('!aldous_turned');
+  });
+});
+
+describe('skipping the opening', () => {
+  it('runs the rest of the scene without a sound, a shake or a flash, and still plays Oskar telling you what to do', () => {
+    const r = play('wreck_intro', new Set(), 20000, { skipAt: 200 });
+    expect(r.finished).toBe(true);
+    const firstLine = r.lines.find(l => l.t >= 200)!;
+    expect(firstLine.text).toContain('Dusk on the Penance Road');
+    // nothing went off between the press and the first line (the scene ran in an instant, then faded back in)
+    expect(r.events.filter(e => e.t > 200 && e.t < firstLine.t && e.what !== 'sfx:voice')).toEqual([]);
+    const oskar = r.lines.filter(l => l.t > 200).map(l => l.text).join(' ');
+    expect(oskar).toContain('had the key on his belt');
   });
 });

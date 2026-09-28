@@ -8,5 +8,6 @@
   "gap": 3,
   "toast": { "y": 8, "cols": 60, "titleScale": 1 },
   "areaBanner": { "y": 72, "scale": 1, "ticks": 180 },
+  "goal": { "ticks": 330 },
   "minimap": { "enabled": true, "w": 72, "h": 48, "scale": 2 }
 }

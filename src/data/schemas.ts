@@ -554,7 +554,8 @@ export type Step =
   | { hide: string[] }
   | { show: string[] }
   | { bars: boolean }
-  | { follow: string | null };
+  | { follow: string | null }
+  | { skipEnds: true };
 export const Step: z.ZodType<Step> = z.lazy(() =>
   z.union([
     /** A line of dialogue. `who`: a character id (data/npcs.json); omitted = narration. */
@@ -608,6 +609,8 @@ export const Step: z.ZodType<Step> = z.lazy(() =>
     z.object({ bars: z.boolean() }).strict(),
     /** The camera rides with an actor ("actor:<id>"), or stops (null). */
     z.object({ follow: z.union([Target, z.null()]) }).strict(),
+    /** Skipping a scene stops here: what follows (the lines that tell you what to do) plays even when it's skipped. */
+    z.object({ skipEnds: z.literal(true) }).strict(),
   ]),
 );
 /** data/scripts/*.json: a dialogue or cutscene. `skippable`: Esc jumps to the end (flags are still set). */
@@ -1027,6 +1030,8 @@ export const HudCfg = z.object({
   toast: z.object({ y: int.nonnegative(), cols: int.positive(), titleScale: int.positive() }).default({ y: 8, cols: 60, titleScale: 1 }),
   /** Area name shown on arrival: vertical position (px), text scale, how long it stays (ticks, fades included). */
   areaBanner: z.object({ y: int.nonnegative(), scale: int.positive(), ticks: int.positive() }).default({ y: 72, scale: 1, ticks: 180 }),
+  /** The goal (data/goals.json), shown under the area banner when it changes and on loading a game: how long (ticks, fades included). */
+  goal: z.object({ ticks: int.positive() }).default({ ticks: 330 }),
   /** Corner minimap: on/off, box size (px), pixels per tile. The large map (M) scales itself to fit. */
   minimap: z
     .object({ enabled: z.boolean(), w: int.positive(), h: int.positive(), scale: int.positive() })

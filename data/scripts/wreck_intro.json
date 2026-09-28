@@ -150,6 +150,7 @@
     {"bars": false},
     {"camera": "player", "ticks": 1},
     {"wait": 70},
+    {"skipEnds": true},
     {"fade": "in", "ticks": 80},
     {"say": "Dusk on the Penance Road. You were thrown clear when the prison wagon went over. The guards are dead, and the wax-things that killed them have shambled off into the trees."},
     {"camera": "point:wagon", "ticks": 50},

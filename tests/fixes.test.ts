@@ -141,6 +141,12 @@ describe('release', () => {
   it('ships with the debug hotkeys and menu switched off', () => {
     expect(DATA.debug.enabled).toBe(false);
   });
+
+  it('puts the game\'s icon into the Windows .exe', async () => {
+    const pkg = JSON.parse((await import('node:fs')).readFileSync('package.json', 'utf8'));
+    expect(pkg.build.win.icon).toBe('build/icon.png');
+    expect(pkg.build.win.signAndEditExecutable).toBe(true); // off, the builder leaves the stock Electron icon on the .exe
+  });
 });
 
 describe('update 0.1.1', () => {
