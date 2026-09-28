@@ -51,10 +51,15 @@ export class Exits {
     this.armed = false;
   }
 
-  /** The exit the player just walked into, if any. */
-  check(x: number, y: number): Exit | null {
+  /**
+   * The exit the player just walked into, if any. `solid` says whether a tile blocks: an exit in a sealed way (the
+   * Bloomhollow gate's rubble, the Vault's cracked wall) can't be taken while its tile is still a wall, even with
+   * your feet pressed right up against its edge.
+   */
+  check(x: number, y: number, solid: (tx: number, ty: number) => boolean = () => false): Exit | null {
     const tx = Math.floor(x / TILE);
     const ty = Math.floor(y / TILE);
+    if (solid(tx, ty)) return null;
     const hit = this.list.find(e => tx >= e.x0 && tx < e.x1 && ty >= e.y0 && ty < e.y1) ?? null;
     if (!hit) {
       this.armed = true;

@@ -655,7 +655,7 @@ export class GameScene extends Phaser.Scene {
       return;
     }
     if (p.dead || this.shrineSeq) return;
-    const exit = this.exits.check(p.x, p.y);
+    const exit = this.exits.check(p.x, p.y, (tx, ty) => this.grid.isSolid(tx, ty));
     if (!exit) return;
     if (!check(this.flags, exit.when)) {
       this.exits.disarm();

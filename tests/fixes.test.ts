@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { DATA } from '../src/data/config';
 import { rollFor } from '../src/player/Player';
 import { check } from '../src/story/conditions';
+import { Exits } from '../src/world/Exits';
 
 describe('reported bugs', () => {
   it("Wick's Rest stands clear of every villager's stops and paths", () => {
@@ -108,5 +109,39 @@ describe('small polish', () => {
 describe('release', () => {
   it('ships with the debug hotkeys and menu switched off', () => {
     expect(DATA.debug.enabled).toBe(false);
+  });
+});
+
+describe('update 0.1.1', () => {
+  it('lets angry bees give up sooner', () => {
+    const s = DATA.swarms.swarms;
+    expect(s.hive.angerTicks).toBeLessThanOrEqual(300);
+    expect(s.hive.giveUp).toBeLessThanOrEqual(150);
+    expect(s.hive_broken.angerTicks).toBeLessThanOrEqual(420);
+    expect(s.drones.angerTicks).toBeLessThanOrEqual(210);
+  });
+
+  it('has the Hive Queen fight with honey: no swarms released, splashing sounds', () => {
+    for (const k of ['hive_queen', 'queen_swarm']) {
+      const text = JSON.stringify(DATA.enemies[k]);
+      expect(text, k).not.toContain('"swarm":');
+      expect(text, k).not.toMatch(/"(b_swarm_[a-z]+|b_sceptre|b_step_glide|e_buzz)"/);
+    }
+    expect(DATA.enemies.hive_queen.moves.some(m => m.id === 'comb_burst')).toBe(true);
+    expect(DATA.enemies.queen_swarm.moves.some(m => m.id === 'honey_deluge')).toBe(true);
+  });
+
+  it('turns screams and roars down', () => {
+    expect(DATA.audio.screamVolume).toBeLessThan(0.6);
+  });
+
+  it("won't take an exit through a sealed way until it opens", () => {
+    const exits = new Exits();
+    exits.build([DATA.rooms.road_04_collapsed_gate]);
+    const gate = DATA.rooms.road_04_collapsed_gate;
+    const at = { x: (gate.origin[0] + 13) * 16 + 8, y: (gate.origin[1] + 17) * 16 }; // feet pressed on the rubble's edge
+    exits.check(0, 0); // arm it (standing off every exit)
+    expect(exits.check(at.x, at.y, () => true)).toBeNull(); // the rubble is still there
+    expect(exits.check(at.x, at.y, () => false)?.to.area).toBe('bloom'); // blasted clear
   });
 });

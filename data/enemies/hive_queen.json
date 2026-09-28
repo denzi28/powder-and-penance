@@ -10,9 +10,9 @@
       110
     ],
     "slamShake": 0.35,
-    "slamSfx": "b_queen_hum",
+    "slamSfx": "b_honey_slosh",
     "introLine": "\"Hush, my darlings. Another one come to burn us? Then come closer, little flame. Come to the comb.\"",
-    "roarSfx": "b_queen_song",
+    "roarSfx": "b_honey_slosh",
     "turn": {
       "kind": "queen_swarm",
       "altar": [
@@ -69,7 +69,7 @@
   "corpseTicks": 999999,
   "blood": "honey",
   "steps": {
-    "sfx": "b_step_glide",
+    "sfx": "b_step_honey",
     "volume": 0.6
   },
   "moves": [
@@ -105,7 +105,7 @@
           "knockback": 140,
           "hitstop": 5,
           "shake": 0.25,
-          "sfx": "b_sceptre",
+          "sfx": "b_honey_swipe",
           "anim": "sweep"
         }
       ]
@@ -149,7 +149,7 @@
           "hitstop": 6,
           "shake": 0.35,
           "unparryable": true,
-          "sfx": "b_swarm_dive",
+          "sfx": "b_honey_lance",
           "anim": "thrust"
         }
       ]
@@ -182,7 +182,7 @@
             "fromDeg": 0,
             "toDeg": 0
           },
-          "sfx": "b_jelly_spit",
+          "sfx": "b_honey_spit",
           "anim": "spit",
           "projectile": {
             "sprite": "royal_jelly",
@@ -214,37 +214,69 @@
       ]
     },
     {
-      "id": "release",
+      "id": "comb_burst",
       "range": [
-        0,
-        400
+        40,
+        320
       ],
       "weight": 1,
-      "cooldown": 480,
+      "cooldown": 320,
       "strikes": [
         {
           "damage": 0,
           "poise": 0,
-          "windup": 40,
-          "active": 10,
-          "recovery": 40,
+          "windup": 38,
+          "active": 8,
+          "recovery": 36,
           "hitbox": {
             "shape": "circle",
             "radius": 1
           },
+          "trackDegPerTick": 4,
           "telegraph": {
             "tick": 14,
-            "kind": "normal"
+            "kind": "danger"
           },
           "sweep": {
             "fromDeg": 0,
             "toDeg": 0
           },
-          "sfx": "b_swarm_roar",
+          "sfx": "b_honey_deluge",
           "anim": "release",
-          "swarm": {
-            "id": "queens_guard",
-            "count": 2
+          "projectile": {
+            "sprite": "royal_jelly",
+            "speed": 1,
+            "range": 1,
+            "damage": 26,
+            "poise": 24,
+            "knockback": 90,
+            "radius": 6,
+            "count": 1,
+            "lob": {
+              "flightTicks": 50,
+              "arcHeight": 60,
+              "blastRadius": 26,
+              "sfx": "b_honey_burst"
+            },
+            "shards": {
+              "sprite": "royal_jelly",
+              "count": 8,
+              "speed": 105,
+              "range": 90,
+              "damage": 12,
+              "poise": 10,
+              "knockback": 50,
+              "radius": 3
+            }
+          },
+          "pools": {
+            "count": 4,
+            "radius": 16,
+            "spread": 60,
+            "at": "target",
+            "ticks": 420,
+            "speedMult": 0.5,
+            "kind": "honey"
           }
         }
       ]

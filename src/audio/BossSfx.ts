@@ -83,7 +83,9 @@ export class BossSfx {
     }
     const g = ctx.createGain();
     const soft = id.startsWith('b_matron') || id === 'b_wet_swipe' || id === 'b_embrace'; // her voice is thin: lift it
-    g.gain.value = volume * DATA.audio.master * DATA.audio.sfx * SETTINGS.master * SETTINGS.sfx * 0.8 * (soft ? 1.8 : 1);
+    // screams and roars were far louder than everything else in a fight: they sit at a fraction now
+    const loud = id.includes('scream') || id.includes('roar') ? DATA.audio.screamVolume : 1;
+    g.gain.value = volume * DATA.audio.master * DATA.audio.sfx * SETTINGS.master * SETTINGS.sfx * 0.8 * (soft ? 1.8 : 1) * loud;
     const p = ctx.createStereoPanner();
     p.pan.value = Math.max(-0.8, Math.min(0.8, pan));
     g.connect(p);
@@ -1441,14 +1443,49 @@ const RECIPES: Record<LayeredSound, Recipe> = {
     k.clang(0.2, 900, 0.3, 0.12);
   },
   b_honey_rain: k => {
-    k.buzz(0, 0.8, 200, 0.12, 5, 1.2);
+    k.splash(0, 0.6, 0.35, true); // honey slopping up out of the comb
+    k.bubbles(0.1, 6, 0.4, true);
     k.splash(0.4, 0.5, 0.3, true);
   },
   b_queen_scream: k => {
-    k.scream(0, 1.8, 900, 400, 0.35, 4, 0.6);
-    k.buzz(0, 2.2, 160, 0.4, 12, 1.5);
-    k.splash(0.8, 0.8, 0.4, true); // her hive splitting
+    // her turn: not a scream but the whole hive giving way, honey pouring out of her in waves
+    k.splash(0, 1.4, 0.7, true);
+    k.splash(0.35, 1.1, 0.5);
+    k.bubbles(0.2, 10, 0.6, true);
+    k.splash(0.9, 1.2, 0.55, true);
+    k.rumble(0, 1.8, 0.25);
   },
+  // the Hive Queen's honey: her whole kit is wet, heavy splashes (no roars, no swarms)
+  b_honey_slosh: k => {
+    k.splash(0, 0.9, 0.6, true);
+    k.splash(0.25, 0.7, 0.45);
+    k.bubbles(0.1, 8, 0.5, true);
+    k.splash(0.6, 0.6, 0.35, true);
+  },
+  b_honey_swipe: k => {
+    k.whoosh(0, 0.3, 250, 900, 0.35);
+    k.splash(0.16, 0.4, 0.55);
+  },
+  b_honey_lance: k => {
+    k.whoosh(0, 0.35, 300, 1200, 0.3);
+    k.splash(0.22, 0.5, 0.65, true);
+    k.splash(0.3, 0.3, 0.35);
+  },
+  b_honey_spit: k => {
+    k.splash(0, 0.25, 0.35);
+    k.bubbles(0.05, 4, 0.35);
+  },
+  b_honey_burst: k => {
+    k.splash(0, 0.5, 0.7, true);
+    k.splash(0.05, 0.3, 0.4);
+    k.bubbles(0.1, 5, 0.4, true);
+  },
+  b_honey_deluge: k => {
+    k.splash(0, 1.0, 0.7, true);
+    k.splash(0.2, 0.8, 0.5);
+    k.bubbles(0.3, 10, 0.55, true);
+  },
+  b_step_honey: k => k.splash(0, 0.16, 0.1, true),
   // the swarm
   b_swarm_roar: k => {
     k.buzz(0, 1.6, 150, 0.45, 14, 1.4);
