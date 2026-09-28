@@ -76,7 +76,7 @@ export class BossSfx {
       this.active = this.active.filter(a => a.end > now);
       const strained = audioStrained();
       const cap = strained ? 4 : 8;
-      const minor = id.startsWith('b_step') || id.startsWith('e_step') || id === 'e_buzz';
+      const minor = id.startsWith('b_step') || id.startsWith('e_step') || id === 'e_buzz' || id === 'c_hoof' || id === 'c_wheels';
       if (this.active.length >= (minor ? cap / 2 : cap)) return;
       if (this.active.some(a => a.id === id && now - a.at < 0.08)) return;
       this.active.push({ id, at: now, end: now + (id.includes('scream') || id.includes('roar') ? 2 : 0.9) });
@@ -1519,6 +1519,16 @@ const RECIPES: Record<LayeredSound, Recipe> = {
     k.rumble(0, 5, 0.45);
     k.chain(0.2, 4.6, 0.25);
     for (let i = 0; i < 18; i++) k.pop(i * 0.27 + (i % 2) * 0.06, 140 + (i % 2) * 30, 0.35);
+  },
+  c_hoof: k => {
+    // one hoof on a packed dirt road: a dull clop and a little grit
+    k.pop(0, rnd(130, 170), 0.3);
+    k.boom(0, 110, 70, 0.06, 0.18);
+  },
+  c_wheels: k => {
+    // a stretch of the cart rolling: iron-shod wheels grinding, the cage's bars and chains rattling
+    k.rumble(0, 0.9, 0.3);
+    k.chain(0.05, 0.7, 0.14);
   },
   c_crows: k => {
     for (let i = 0; i < 4; i++) k.voice(i * 0.22, 0.2, 720 - i * 30, 560, 'ah', 0.3, 0.9);

@@ -69,6 +69,18 @@ const BURSTS: Record<string, { cols: string[]; z: number; spread: number; speed:
   honey: { cols: ['honey', 'flame2'], z: 8, spread: 1.4, speed: 60, up: true, stain: true },
 };
 
+/** Footfalls of cutscene actors walking, by sprite sheet, on every other frame of the walk (`every` to change that). */
+export const STEPS: Record<string, { id: string; volume: number; every?: number }> = {
+  warden: { id: 'e_step_warden', volume: 0.45 },
+  wickling: { id: 'e_step_patter', volume: 0.6 },
+  npc_driver: { id: 'e_step_boot', volume: 0.5 },
+  cart_horse: { id: 'c_hoof', volume: 0.5 },
+};
+/** The sound an actor makes going down (a `death` pose), by sprite sheet. */
+const FALLS: Record<string, string> = { warden: 'e_warden_die', wickling: 'e_wick_die' };
+/** A cart rolls (an actor with a `bob` on the move): a stretch of rattling wheels every this many ticks. */
+const WHEELS_EVERY = 48;
+
 const WRAP = 26;
 /** Speech bubble pacing: letters typed per tick, and ticks to fade in and out. */
 const BUBBLE = { typePerTick: 0.6, fadeIn: 8, fadeOut: 18 };
@@ -134,6 +146,8 @@ export class Stage {
     const a = this.actors.get(id);
     if (!a) return;
     this.pose(a, pose);
+    const fall = pose.anim === 'death' ? FALLS[a.sheet] : undefined;
+    if (fall) this.gs.bus.emit('sfx', { id: fall, x: a.x, y: a.y, volume: 0.7 });
     if (pose.shake !== undefined) a.shake = pose.shake;
   }
 
@@ -202,7 +216,9 @@ export class Stage {
   tick() {
     for (const a of this.actors.values()) {
       a.t++;
+      const was = a.player ? a.player.index : a.frames ? Math.floor((a.t - 1) / a.every) % a.frames.length : 0;
       a.player?.tick();
+      this.sounds(a, was);
       const m = a.move;
       if (m) {
         m.t++;
@@ -216,6 +232,22 @@ export class Stage {
     }
     for (const b of this.bubbles) b.t++;
     this.bubbles = this.bubbles.filter(b => b.t < b.ticks);
+  }
+
+  /** Footfalls while an actor walks (on its walk's contact frames), and the wheels of a rolling cart. */
+  private sounds(a: Actor, was: number) {
+    const m = a.move;
+    if (!m || m.arc) return; // standing, or flying through the air
+    const at = { x: a.x, y: a.y };
+    if (a.bob) {
+      if (m.t % WHEELS_EVERY === 0) this.gs.bus.emit('sfx', { id: 'c_wheels', ...at, volume: 0.8 });
+      return;
+    }
+    const step = STEPS[a.sheet];
+    if (!step) return;
+    const walking = a.player ? a.player.name === 'walk' : !!a.frames && a.frames.length > 1;
+    const now = a.player ? a.player.index : a.frames ? Math.floor(a.t / a.every) % a.frames.length : 0;
+    if (walking && now !== was && now % (step.every ?? 2) === 0) this.gs.bus.emit('sfx', { id: step.id, ...at, volume: step.volume });
   }
 
   /** Is this actor still on its way? */
