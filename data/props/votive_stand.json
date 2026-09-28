@@ -1,0 +1,12 @@
+{
+  "id": "votive_stand",
+  "name": "Votive Stand",
+  "sprite": "decor_bloom",
+  "frame": 21,
+  "brokenFrame": null,
+  "hp": 8,
+  "radius": 6,
+  "hurtbox": { "w": 12, "h": 20, "offsetY": -10 },
+  "debris": "wax1",
+  "sfx": "break_pot"
+}

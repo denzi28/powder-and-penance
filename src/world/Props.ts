@@ -1,4 +1,4 @@
-// Breakable scenery (crates, pots, candle clusters). Props are Actors on the 'prop' team, so any attack or
+// Breakable scenery (crates, pots, candle clusters, reeds, a dead willow, candelabra). Props are Actors on the 'prop' team, so any attack or
 // projectile can break them; they are immovable bodies. They respawn on rest; loot drops only the first time
 // (world flag "loot:<uid>").
 import Phaser from 'phaser';
@@ -45,6 +45,9 @@ export class Prop extends Actor {
   }
   get knockbackResist() {
     return 1;
+  }
+  get shotsPass() {
+    return this.def.shotsPass;
   }
   get stateName() {
     return this.dead ? 'broken' : 'prop';
@@ -98,8 +101,10 @@ export class Props {
 
   render(alpha: number) {
     for (const [p, s] of this.sprites) {
-      // Frame 0 = intact, frame 1 = rubble (stays until the props respawn).
-      s.setFrame(p.dead ? 1 : 0)
+      // Standing, or its rubble (stays until the props respawn); some leave nothing behind.
+      const broken = p.def.brokenFrame;
+      s.setVisible(!p.dead || broken !== null);
+      s.setFrame(p.dead ? (broken ?? p.def.frame) : p.def.frame)
         .setPosition(Math.round(lerp(p.prevX, p.x, alpha) + p.flinchX), Math.round(p.y + p.flinchY + (p.def.secretWall ? 3 : 0)))
         .setScale(p.squash.sx, p.squash.sy)
         .setDepth(p.dead ? DEPTH.shadow + 1 : DEPTH.actor(p.y + (p.def.secretWall ? 4 : 0)));

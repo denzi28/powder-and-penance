@@ -168,6 +168,19 @@ describe('after 0.2.0', () => {
     expect(cs.at).toEqual([0, 0]);
     expect(cs.size).toEqual([r.tiles[0].length, r.tiles.length]);
   });
+
+  it('lets you cut down the Waxmire\'s reeds, rushes and dead willows and break the Nave\'s candles, and shoot over the reeds', () => {
+    for (const r of Object.values(DATA.rooms))
+      for (const e of r.entities) {
+        if (e.type === 'decor') expect(['reeds', 'root_tangle', 'dead_willow'], `${r.id} still has ${e.kind} as scenery`).not.toContain(e.kind);
+        if (e.type === 'decor' && r.id === 'abbey_12_nave') expect(['candelabrum', 'votive_stand']).not.toContain(e.kind);
+      }
+    expect(DATA.props.reeds.shotsPass).toBe(true);
+    expect(DATA.props.root_tangle.shotsPass).toBe(true);
+    expect(DATA.props.dead_willow.shotsPass).toBe(false); // a tree stops a ball
+    const nave = DATA.rooms.abbey_12_nave.entities.filter(e => e.type === 'prop').map(e => e.kind);
+    expect(nave.filter(k => k === 'candelabrum' || k === 'votive_stand')).toHaveLength(4);
+  });
 });
 
 describe('release', () => {

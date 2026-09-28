@@ -1,0 +1,12 @@
+{
+  "id": "dead_willow",
+  "name": "Dead Willow",
+  "sprite": "decor_mire",
+  "frame": 7,
+  "brokenFrame": null,
+  "hp": 90,
+  "radius": 7,
+  "hurtbox": { "w": 12, "h": 36, "offsetY": -18 },
+  "debris": "wood1",
+  "sfx": "break_wood"
+}

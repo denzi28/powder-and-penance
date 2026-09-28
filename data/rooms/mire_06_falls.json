@@ -62,17 +62,17 @@
       "facing": "E"
     },
     {
-      "type": "decor",
+      "type": "prop",
       "kind": "dead_willow",
       "at": [2, 9]
     },
     {
-      "type": "decor",
+      "type": "prop",
       "kind": "reeds",
       "at": [11, 3]
     },
     {
-      "type": "decor",
+      "type": "prop",
       "kind": "reeds",
       "at": [8, 15]
     },

@@ -209,7 +209,7 @@ export class Projectiles {
   private hitActors(p: Projectile, actors: readonly Actor[], combat: CombatSystem, bus: EventBus<GameEvents>) {
     const shape = { kind: 'circle' as const, cx: p.x, cy: p.y - PROJECTILE_HEIGHT, radius: p.def.radius };
     for (const a of actors) {
-      if (a.dead || a.team === p.owner.team || p.hitSet.has(a) || a.invulnerable || a.god) continue;
+      if (a.dead || a.team === p.owner.team || p.hitSet.has(a) || a.invulnerable || a.god || a.shotsPass) continue; // (over the reeds)
       if (!shapeHitsRect(shape, a.hurtRect())) continue;
       p.hitSet.add(a);
       const src: HitSource = {

@@ -1,0 +1,13 @@
+{
+  "id": "root_tangle",
+  "name": "Dead Rushes",
+  "sprite": "decor_mire",
+  "frame": 3,
+  "brokenFrame": null,
+  "hp": 4,
+  "radius": 7,
+  "hurtbox": { "w": 14, "h": 18, "offsetY": -9 },
+  "shotsPass": true,
+  "debris": "wood2",
+  "sfx": "break_wood"
+}

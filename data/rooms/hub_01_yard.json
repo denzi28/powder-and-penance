@@ -537,7 +537,7 @@
       "at": [10, 30]
     },
     {
-      "type": "decor",
+      "type": "prop",
       "kind": "dead_willow",
       "at": [3, 30]
     },
