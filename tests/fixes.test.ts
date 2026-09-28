@@ -107,6 +107,22 @@ describe('small polish', () => {
   });
 });
 
+describe('opening cutscene polish', () => {
+  it('gives every line in the wagon scene time to be read before the next one', () => {
+    const steps = DATA.scripts.wreck_intro.steps as Record<string, unknown>[];
+    const gaps: number[] = [];
+    let run: number | null = null;
+    for (const s of steps) {
+      if (typeof s.bubble === 'string') {
+        if (run !== null) gaps.push(run);
+        run = 0;
+      } else if (typeof s.wait === 'number' && run !== null) run += s.wait;
+    }
+    expect(gaps.length).toBeGreaterThanOrEqual(8);
+    expect(gaps.slice(0, 5).every(g => g >= 70), String(gaps)).toBe(true); // the quiet opening lines don't tumble over each other
+  });
+});
+
 describe('release', () => {
   it('ships with the debug hotkeys and menu switched off', () => {
     expect(DATA.debug.enabled).toBe(false);

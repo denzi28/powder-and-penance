@@ -11,6 +11,8 @@ export const SPRITES: Record<string, SpriteManifest> = {};
 export const SPRITE_URLS: Record<string, string> = {};
 export const ASSET_ERRORS: string[] = [];
 export const FONT_URL = fontUrl;
+/** Font atlas layout: see ASSETS.md ("Pixel font"). */
+export const FONT = { cellW: 6, cellH: 8, charsPerRow: 16 };
 
 for (const [p, url] of Object.entries(urls)) SPRITE_URLS[base(p)] = url;
 for (const [p, raw] of Object.entries(manifests)) {

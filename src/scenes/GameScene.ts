@@ -333,6 +333,7 @@ export class GameScene extends Phaser.Scene {
     }
     if (this.story.active) {
       // A conversation or cutscene: the script drives the dialogue box, camera and fades; the world waits.
+      this.cam.tickShake(); // (a cutscene's shake still settles)
       this.story.tick();
       if (this.toast && ++this.toast.t > this.toast.life) this.toast = null;
       if (this.areaBanner && ++this.areaBanner.t > DATA.hud.areaBanner.ticks) this.areaBanner = null;
@@ -1147,6 +1148,7 @@ export class GameScene extends Phaser.Scene {
     const camX = focus ? Math.round(focus.x) : feet.x;
     const camY = focus ? Math.round(focus.y) : feet.y;
     this.cam.apply(this.cameras.main, camX, camY, alpha, this.roomBounds(focus ? focus.x : this.player.x, focus ? focus.y : this.player.y), delta);
+    this.story.stage.drawBubbles();
     this.enemyBars.draw(this.enemyViews.values(), fxDelta);
     this.lightCones.draw(this.enemies, this.grid);
     this.debug.draw(this, feet.x, feet.y);
