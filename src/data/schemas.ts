@@ -130,7 +130,8 @@ export const CombatCfg = z.object({
 
 export const AiCfg = z.object({ maxAttackers: int.positive() });
 
-export const AudioCfg = z.object({ master: num.min(0).max(1), sfx: num.min(0).max(1), hearingDistance: pos });
+/** data/config/audio.json. `screamVolume`: every scream and roar (sound ids containing "scream" or "roar") plays at this share. */
+export const AudioCfg = z.object({ master: num.min(0).max(1), sfx: num.min(0).max(1), hearingDistance: pos, screamVolume: num.min(0).max(1).default(0.45) });
 export const SfxPreset = z.object({
   wave: z.enum(['sine', 'square', 'sawtooth', 'triangle', 'noise']),
   freq: pos,
@@ -1310,7 +1311,7 @@ export const LAYERED_SOUNDS = [
   'b_tallow_scream', 'b_chandler_scream', 'b_cannon_burst', 'b_boss_fall',
   // Bloomhollow
   'e_buzz', 'e_sting', 'e_swarm_rise', 'e_swarm_calm', 'p_smoker', 'e_husk_puff',
-  'e_husk_alert', 'e_husk_hurt', 'e_husk_die', 'e_husk_pump', 'e_step_husk', 'e_straw', 'e_guard_rise', 'e_guard_alert', 'e_guard_hurt', 'e_guard_die', 'e_scythe', 'e_scythe_windup', 'b_warden_roar', 'b_warden_scythe', 'b_warden_spin', 'b_crows_fly', 'b_step_straw', 'b_queen_hum', 'b_queen_song', 'b_jelly_spit', 'b_sceptre', 'b_swarm_roar', 'b_swarm_dive', 'b_queen_scream', 'b_step_glide', 'b_honey_rain',
+  'e_husk_alert', 'e_husk_hurt', 'e_husk_die', 'e_husk_pump', 'e_step_husk', 'e_straw', 'e_guard_rise', 'e_guard_alert', 'e_guard_hurt', 'e_guard_die', 'e_scythe', 'e_scythe_windup', 'b_warden_roar', 'b_warden_scythe', 'b_warden_spin', 'b_crows_fly', 'b_step_straw', 'b_queen_hum', 'b_queen_song', 'b_jelly_spit', 'b_sceptre', 'b_swarm_roar', 'b_swarm_dive', 'b_queen_scream', 'b_step_glide', 'b_honey_rain', 'b_honey_slosh', 'b_honey_swipe', 'b_honey_lance', 'b_honey_spit', 'b_honey_burst', 'b_honey_deluge', 'b_step_honey',
   'c_shriek', 'c_neigh', 'c_crash', 'c_cart', 'c_crows', 'c_bell_toll', 'c_steam', 'c_bubble', 'p_blunderbuss', 'p_throw', 'p_throw_knife', 'p_eat', 'p_incense', 'p_cartridge', 'p_oil', 'p_smoke', 'p_drink_grog', 'p_candle', 'p_ring', 'p_paper',
 ] as const;
 export type LayeredSound = (typeof LAYERED_SOUNDS)[number];
