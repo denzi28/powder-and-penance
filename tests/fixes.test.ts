@@ -153,6 +153,23 @@ describe('opening cutscene sound', () => {
   });
 });
 
+describe('after 0.2.0', () => {
+  it('pays a boss\'s Tallow only when it falls for good, not for a phase you can beat again after dying', () => {
+    for (const d of Object.values(DATA.enemies)) {
+      const b = d.boss;
+      if (b?.next || b?.turn) expect(d.tallow, `${d.id} (a phase that leads on)`).toBe(0);
+    }
+    expect(DATA.enemies.mother_bones.tallow).toBe(3500); // her whole reward, once
+  });
+
+  it('plays the Rendering Hall\'s reveal as soon as you step into the hall, from any doorway', () => {
+    const r = DATA.rooms.works_08_hall;
+    const cs = r.entities.find(e => e.type === 'cutscene' && e.id === 'rendering_reveal')!;
+    expect(cs.at).toEqual([0, 0]);
+    expect(cs.size).toEqual([r.tiles[0].length, r.tiles.length]);
+  });
+});
+
 describe('release', () => {
   it('ships with the debug hotkeys and menu switched off', () => {
     expect(DATA.debug.enabled).toBe(false);

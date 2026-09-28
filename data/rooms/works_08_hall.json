@@ -35,8 +35,8 @@
       "type": "cutscene",
       "id": "rendering_reveal",
       "script": "rendering_reveal",
-      "at": [2, 1],
-      "size": [4, 3]
+      "at": [0, 0],
+      "size": [26, 18]
     },
     {
       "type": "point",
