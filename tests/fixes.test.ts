@@ -149,7 +149,7 @@ describe('release', () => {
   });
 });
 
-describe('update 0.1.1', () => {
+describe('update 0.2.0', () => {
   it('lets angry bees give up sooner', () => {
     const s = DATA.swarms.swarms;
     expect(s.hive.angerTicks).toBeLessThanOrEqual(300);
