@@ -20,11 +20,13 @@ export function wirePresentation(gs: GameScene) {
   bus.on('shake', e => gs.cam.addTrauma(e.trauma));
   bus.on('sfx', e => {
     let vol = e.volume ?? 1;
+    // heard from the player, or in a staged cutscene (the player hidden or elsewhere) from the middle of the screen
+    const ear = gs.story.cinematic ? gs.cameras.main.midPoint : gs.player;
     if (e.x !== undefined && e.y !== undefined) {
-      const d = Math.hypot(e.x - gs.player.x, e.y - gs.player.y);
+      const d = Math.hypot(e.x - ear.x, e.y - ear.y);
       vol *= Math.max(0, 1 - d / DATA.audio.hearingDistance);
     }
-    if (BossSfx.has(e.id)) gs.bossSfx.play(e.id, vol, e.x !== undefined ? (e.x - gs.player.x) / 200 : 0); // layered boss sounds
+    if (BossSfx.has(e.id)) gs.bossSfx.play(e.id, vol, e.x !== undefined ? (e.x - ear.x) / 200 : 0); // layered boss sounds
     else gs.sfx.play(e.id, vol, (e.pitch ?? 1) * (0.96 + Math.random() * 0.08));
   });
 

@@ -137,6 +137,22 @@ describe('opening cutscene polish', () => {
   });
 });
 
+describe('opening cutscene sound', () => {
+  it('gives everyone who walks in the opening footfalls, and the cart its wheels', async () => {
+    const { STEPS } = await import('../src/story/Stage');
+    const steps = DATA.scripts.wreck_intro.steps as Record<string, unknown>[];
+    const sheet = new Map<string, string>(); // (an id can be put back on stage as something else: the horse, fallen)
+    const walkers = new Set<string>();
+    for (const s of steps) {
+      if (typeof s.actor === 'string') sheet.set(s.actor, String(s.sprite));
+      if (typeof s.move === 'string' && (s.anim === 'walk' || Array.isArray(s.frames))) walkers.add(sheet.get(s.move)!);
+    }
+    expect(walkers.size).toBeGreaterThanOrEqual(4);
+    for (const w of walkers) expect(STEPS[w], w).toBeTruthy();
+    expect(steps.some(s => s.actor === 'wagon' && typeof s.bob === 'number' && s.bob > 0)).toBe(true); // a bob: it rolls, and rattles
+  });
+});
+
 describe('release', () => {
   it('ships with the debug hotkeys and menu switched off', () => {
     expect(DATA.debug.enabled).toBe(false);
