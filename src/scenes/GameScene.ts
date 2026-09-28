@@ -1200,7 +1200,7 @@ export class GameScene extends Phaser.Scene {
     this.bossMusic.update(fight, arena => this.flags.has(arena.startsWith('miniboss:') ? arena : `boss:${arena}`));
     // the world quietens under the music, and under a cutscene's own sounds
     const scene = this.story.cinematic;
-    this.ambientAudio.duck(scene ? 0.2 : fight ? 0.35 : 1);
+    this.ambientAudio.duck(scene ? 0.2 : fight ? 0.35 : this.story.active ? 0.5 : 1); // (and under anyone talking)
     this.exploreMusic.update(Math.min(delta, 100) / 1000, this.area, !!fight || this.bossMusic.playing, (1 - 0.9 * this.ambientAudio.harpNear) * (scene ? 0.5 : 1));
     this.arena.update(delta);
     // A script can point the camera elsewhere (cutscenes); otherwise it follows the player.

@@ -84,7 +84,7 @@ export class BossSfx {
     const g = ctx.createGain();
     const soft = id.startsWith('b_matron') || id === 'b_wet_swipe' || id === 'b_embrace'; // her voice is thin: lift it
     // screams and roars were far louder than everything else in a fight: they sit at a fraction now
-    const loud = id.includes('scream') || id.includes('roar') ? DATA.audio.screamVolume : 1;
+    const loud = id.includes('scream') || id.includes('roar') || id.includes('shriek') ? DATA.audio.screamVolume : 1;
     g.gain.value = volume * DATA.audio.master * DATA.audio.sfx * SETTINGS.master * SETTINGS.sfx * 0.8 * (soft ? 1.8 : 1) * loud;
     const p = ctx.createStereoPanner();
     p.pan.value = Math.max(-0.8, Math.min(0.8, pan));
