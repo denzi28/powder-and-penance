@@ -4,6 +4,7 @@ import { DATA } from '../src/data/config';
 import { rollFor } from '../src/player/Player';
 import { check } from '../src/story/conditions';
 import { Exits } from '../src/world/Exits';
+import { isDesktop } from '../src/game/Desktop';
 
 describe('reported bugs', () => {
   it("Wick's Rest stands clear of every villager's stops and paths", () => {
@@ -143,5 +144,11 @@ describe('update 0.1.1', () => {
     exits.check(0, 0); // arm it (standing off every exit)
     expect(exits.check(at.x, at.y, () => true)).toBeNull(); // the rubble is still there
     expect(exits.check(at.x, at.y, () => false)?.to.area).toBe('bloom'); // blasted clear
+  });
+});
+
+describe('quit game', () => {
+  it('only offers QUIT GAME in the desktop app (a browser tab cannot close itself)', () => {
+    expect(isDesktop()).toBe(false); // the tests run outside Electron
   });
 });

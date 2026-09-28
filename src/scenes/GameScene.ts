@@ -73,6 +73,7 @@ import { applySave, snapshot } from '../game/Persistence';
 import { updateAim } from '../game/aim';
 import type { Actor } from '../actors/Actor';
 import type { Dir8 } from '../core/math';
+import { isDesktop, quitGame } from '../game/Desktop';
 import { CarriedDrop, MinibossPlacement, type Cond, type RoomData } from '../data/schemas';
 
 const DEPTH_LIGHT = (y: number) => DEPTH.actor(y) + 1;
@@ -545,6 +546,18 @@ export class GameScene extends Phaser.Scene {
           this.scene.start('title');
         },
       },
+      ...(isDesktop()
+        ? [
+            {
+              label: 'QUIT GAME',
+              enabled: true,
+              action: () => {
+                this.save(); // progress kept, then the window closes
+                quitGame();
+              },
+            },
+          ]
+        : []),
     ];
     const t = this.player.loadTier;
     this.menu = { title: 'PAUSED', subtitle: `${DATA.areas.areas[this.area].name}. Load ${this.player.equipLoad}/${this.player.capacity} (${t.label.toLowerCase()}).`, footer: `GOAL: ${this.currentGoal()}`, items, index, onBack: close };
