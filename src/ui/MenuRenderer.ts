@@ -23,7 +23,7 @@ export class MenuRenderer {
     this.g.clear();
     const visible = !!menu;
     this.title.setVisible(visible);
-    this.subtitle.setVisible(visible);
+    this.subtitle.setVisible(visible && !!menu?.subtitle); // (a menu without one mustn't keep the last menu's)
     this.footer.setVisible(visible && !!menu?.footer);
     this.rows.forEach(r => r.setVisible(false));
     if (!menu) return;

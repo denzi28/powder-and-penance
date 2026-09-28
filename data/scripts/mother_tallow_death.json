@@ -7,6 +7,7 @@
     { "wait": 40 },
     { "say": "Her ladle lies where she stood. In the ash beside it, something hard and bright: stamped with the Abbey's candle." },
     { "give": "seal_of_tallow" },
+    { "if": ["key:seal_of_tallow", "key:seal_of_the_mire", "key:seal_of_powder", "key:seal_of_the_hive"], "then": [{ "say": "Four Seals. As the last of them settles in your hand, the phial at your belt grows heavier, as if the Abbey itself had poured you one more drink for the road ahead." }, { "give": "phial_shard" }] },
     { "set": "mother_tallow_rests" }
   ]
 }

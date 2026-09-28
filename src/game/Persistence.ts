@@ -34,6 +34,9 @@ export function applySave(gs: GameScene, s: SaveData) {
   const known = (id: string) => (DATA.weapons[id] ? id : FISTS); // data may have changed since saving
   p.tallow = s.tallow;
   p.phials = { ...s.phials };
+  // a save from before the phial held at most `maxCharges` drinks (it once reached 8)
+  p.phials.max = Math.min(p.phials.max, DATA.phial.maxCharges);
+  p.phials.charges = Math.min(p.phials.charges, p.phials.max);
   // the inventory first (dropping anything the data no longer has), then what's equipped from it
   p.inv.weapons = s.gear.weapons.filter(id => DATA.weapons[id] && id !== FISTS);
   p.inv.shields = s.gear.shields.filter(id => DATA.shields[id]);

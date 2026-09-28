@@ -1,0 +1,13 @@
+{
+  "id": "reeds",
+  "name": "Reeds",
+  "sprite": "decor_mire",
+  "frame": 2,
+  "brokenFrame": null,
+  "hp": 4,
+  "radius": 6,
+  "hurtbox": { "w": 12, "h": 22, "offsetY": -11 },
+  "shotsPass": true,
+  "debris": "leaf2",
+  "sfx": "break"
+}

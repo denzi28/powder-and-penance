@@ -4,7 +4,7 @@
 // (scattering `shards`, if any). Straight shots may home in on a foe, glance off walls (`bounces`), or come back
 // to the thrower like a boomerang (`returns`).
 import { DATA } from '../data/config';
-import { shapeHitsRect } from './shapes';
+import { groundHit, shapeHitsRect } from './shapes';
 import { TILE, type TileGrid } from '../world/TileGrid';
 import type { Actor } from '../actors/Actor';
 import type { CombatSystem, HitSource } from './CombatSystem';
@@ -183,9 +183,8 @@ export class Projectiles {
       const turn = Math.random() * Math.PI * 2;
       for (let i = 0; i < sh.count; i++) this.spawn(p.owner, l.tx, l.ty, turn + (i / sh.count) * Math.PI * 2, d);
     }
-    const shape = { kind: 'circle' as const, cx: l.tx, cy: l.ty - 6, radius: lob.blastRadius };
     for (const a of actors) {
-      if (a.dead || a.team === p.owner.team || !shapeHitsRect(shape, a.hurtRect())) continue;
+      if (a.dead || a.team === p.owner.team || !groundHit(l.tx, l.ty, lob.blastRadius, a.x, a.y, a.bodyRadius)) continue;
       combat.applyHit(
         {
           owner: p.owner,
@@ -209,7 +208,7 @@ export class Projectiles {
   private hitActors(p: Projectile, actors: readonly Actor[], combat: CombatSystem, bus: EventBus<GameEvents>) {
     const shape = { kind: 'circle' as const, cx: p.x, cy: p.y - PROJECTILE_HEIGHT, radius: p.def.radius };
     for (const a of actors) {
-      if (a.dead || a.team === p.owner.team || p.hitSet.has(a) || a.invulnerable || a.god) continue;
+      if (a.dead || a.team === p.owner.team || p.hitSet.has(a) || a.invulnerable || a.god || a.shotsPass) continue; // (over the reeds)
       if (!shapeHitsRect(shape, a.hurtRect())) continue;
       p.hitSet.add(a);
       const src: HitSource = {

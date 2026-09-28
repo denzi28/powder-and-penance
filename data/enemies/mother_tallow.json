@@ -28,7 +28,7 @@
   "wader": true,
   "hp": 500,
   "poise": {"max": 280, "resetTicks": 300},
-  "tallow": 1500,
+  "tallow": 0,
   "speed": 22,
   "strafeSpeed": 14,
   "accelTicks": 16,

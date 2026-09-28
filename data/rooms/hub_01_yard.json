@@ -537,7 +537,7 @@
       "at": [10, 30]
     },
     {
-      "type": "decor",
+      "type": "prop",
       "kind": "dead_willow",
       "at": [3, 30]
     },
@@ -680,10 +680,10 @@
           "ticks": 420
         },
         {
-          "at": [23, 9],
+          "at": [21, 8],
           "do": "work",
           "ticks": 240,
-          "face": 1
+          "face": -1
         }
       ]
     },

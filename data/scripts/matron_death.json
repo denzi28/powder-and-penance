@@ -12,6 +12,7 @@
     { "wait": 40 },
     { "say": "She lies back into the pool as if into a bed. The wax closes over her face last. Around you, the pools go still." },
     { "give": "seal_of_the_mire" },
+    { "if": ["key:seal_of_tallow", "key:seal_of_the_mire", "key:seal_of_powder", "key:seal_of_the_hive"], "then": [{ "say": "Four Seals. As the last of them settles in your hand, the phial at your belt grows heavier, as if the Abbey itself had poured you one more drink for the road ahead." }, { "give": "phial_shard" }] },
     { "set": "matron_rests" },
     { "camera": "player", "ticks": 45 }
   ]

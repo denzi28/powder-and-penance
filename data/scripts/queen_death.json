@@ -20,6 +20,7 @@
     { "give": "ring_of_the_queen" },
     { "say": "Pressed into the comb where she lay is a seal of beeswax, stamped with the Abbey's candle." },
     { "give": "seal_of_the_hive" },
+    { "if": ["key:seal_of_tallow", "key:seal_of_the_mire", "key:seal_of_powder", "key:seal_of_the_hive"], "then": [{ "say": "Four Seals. As the last of them settles in your hand, the phial at your belt grows heavier, as if the Abbey itself had poured you one more drink for the road ahead." }, { "give": "phial_shard" }] },
     { "set": "queen_rests" },
     { "camera": "player", "ticks": 45 }
   ]

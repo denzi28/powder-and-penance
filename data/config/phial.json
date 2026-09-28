@@ -1,6 +1,6 @@
 {
   "startCharges": 3,
-  "maxCharges": 8,
+  "maxCharges": 5,
   "healAmount": 45,
   "healPerLevel": 10,
   "maxLevel": 5,

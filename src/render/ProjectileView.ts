@@ -5,6 +5,7 @@ import { DATA } from '../data/config';
 import { lerp } from '../core/math';
 import { DEPTH } from './depth';
 import { hexToInt } from '../ui/colors';
+import { GROUND_SQUASH } from '../combat/shapes';
 import type { Projectile } from '../combat/Projectiles';
 import type { SpriteLib } from '../anim/SpriteLib';
 
@@ -40,9 +41,9 @@ export class ProjectileView {
         const r = p.def.lob.blastRadius;
         // Warning ring (flattened for the 3/4 view), brighter as the landing nears.
         g.lineStyle(1, hexToInt(DATA.palette.ember), 0.35 + 0.6 * k);
-        g.strokeEllipse(p.lob.tx, p.lob.ty, r * 2, r * 1.3);
+        g.strokeEllipse(p.lob.tx, p.lob.ty, r * 2, r * 2 * GROUND_SQUASH);
         g.fillStyle(hexToInt(DATA.palette.ember), 0.08 + 0.2 * k);
-        g.fillEllipse(p.lob.tx, p.lob.ty, r * 2 * k, r * 1.3 * k);
+        g.fillEllipse(p.lob.tx, p.lob.ty, r * 2 * k, r * 2 * GROUND_SQUASH * k);
         g.fillStyle(hexToInt(DATA.palette.ink), 0.35);
         g.fillEllipse(x, y, 6, 3); // shadow under the pot
       }

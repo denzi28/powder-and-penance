@@ -19,7 +19,7 @@
   "weaponRestDeg": 50,
   "hp": 450,
   "poise": {"max": 240, "resetTicks": 240},
-  "tallow": 2000,
+  "tallow": 3500,
   "loot": "boss_salt",
   "speed": 52,
   "strafeSpeed": 34,

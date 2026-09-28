@@ -214,9 +214,14 @@ export const PropDef = z.object({
   name: z.string(),
   sprite: z.string(),
   hp: pos,
+  /** Frame of `sprite` drawn while it stands, and once broken (null: it's gone, nothing left but the burst). */
+  frame: int.nonnegative().default(0),
+  brokenFrame: int.nonnegative().nullable().default(1),
   /** Blocking circle radius (px). */
   radius: pos,
   hurtbox: HurtBox,
+  /** Shots fly over it (reeds, dead grass); a blade still cuts it down. */
+  shotsPass: z.boolean().default(false),
   /** Palette key for the break burst. */
   debris: z.string(),
   loot: z.string().default('none'),

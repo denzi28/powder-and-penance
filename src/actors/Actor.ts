@@ -62,6 +62,11 @@ export abstract class Actor {
   /** Palette key for hit particles. */
   abstract get bloodColor(): string;
   /** 0 = full knockback, 1 = immovable. */
+  /** Shots fly over it (low growth: reeds, dead grass); a blade still cuts it. */
+  get shotsPass() {
+    return false;
+  }
+
   /** Multiplier on damage taken (armour lowers it for the player). */
   get damageTakenMult() {
     return 1;

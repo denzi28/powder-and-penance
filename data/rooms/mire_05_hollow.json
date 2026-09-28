@@ -54,12 +54,12 @@
       "at": [8, 8]
     },
     {
-      "type": "decor",
+      "type": "prop",
       "kind": "reeds",
       "at": [2, 2]
     },
     {
-      "type": "decor",
+      "type": "prop",
       "kind": "reeds",
       "at": [9, 2]
     },
