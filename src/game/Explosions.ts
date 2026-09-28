@@ -2,7 +2,7 @@
 // fuse; it hisses and throws sparks for `fuseTicks`, then bursts: everyone within `radius` is hit (you too),
 // and every keg in reach is broken, lighting its own fuse. Cleared when the world resets.
 import { DATA } from '../data/config';
-import { shapeHitsRect } from '../combat/shapes';
+import { groundHit } from '../combat/shapes';
 import type { Actor } from '../actors/Actor';
 import type { BlastDef } from '../data/schemas';
 import type { GameScene } from '../scenes/GameScene';
@@ -39,9 +39,8 @@ export class Explosions {
   private burst(f: Fuse, gs: GameScene) {
     const b = f.blast;
     gs.bus.emit('blast', { x: f.x, y: f.y, radius: b.radius, sfx: b.sfx });
-    const shape = { kind: 'circle' as const, cx: f.x, cy: f.y - 6, radius: b.radius };
     for (const a of gs.actors) {
-      if (a === f.source || a.dead || !shapeHitsRect(shape, a.hurtRect())) continue;
+      if (a === f.source || a.dead || !groundHit(f.x, f.y, b.radius, a.x, a.y, a.bodyRadius)) continue;
       gs.combat.applyHit(
         {
           owner: f.source,

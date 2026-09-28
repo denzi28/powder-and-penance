@@ -17,6 +17,7 @@
     { "say": "He salutes, very correctly, and his hand does not come down." },
     { "give": "gear_blunderbuss" },
     { "give": "seal_of_powder" },
+    { "if": ["key:seal_of_tallow", "key:seal_of_the_mire", "key:seal_of_powder", "key:seal_of_the_hive"], "then": [{ "say": "Four Seals. As the last of them settles in your hand, the phial at your belt grows heavier, as if the Abbey itself had poured you one more drink for the road ahead." }, { "give": "phial_shard" }] },
     { "give": "cache_keg_charges" },
     { "if": "!item:chest_gunners_coat", "then": [{ "give": "gear_gunners_coat" }] },
     { "set": "gunner_last_words" },

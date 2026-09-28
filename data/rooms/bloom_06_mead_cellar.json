@@ -73,7 +73,7 @@
       "kind": "honey_slime",
       "at": [11, 6],
       "facing": "N",
-      "carries": { "id": "bloom_shard", "item": "phial_shard" }
+      "carries": { "id": "bloom_shard", "item": "cache_honey" }
     },
     {
       "type": "enemy",

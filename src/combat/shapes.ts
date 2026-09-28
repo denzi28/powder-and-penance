@@ -40,6 +40,20 @@ export function shapeHitsRect(s: HitShape, r: Rect): boolean {
   return false;
 }
 
+/** The floor is seen at an angle: a circle on the ground is drawn as an oval this much shorter than it is wide. */
+export const GROUND_SQUASH = 0.65;
+
+/**
+ * Does a blast on the ground (an eruption, a lobbed pot, a keg) of `radius` at (cx, cy), drawn as that oval, reach
+ * someone standing at (x, y)? Where their feet are decides it, give or take their body's `reach`: not their head
+ * poking over the edge, which let blasts land far outside the circle you saw.
+ */
+export function groundHit(cx: number, cy: number, radius: number, x: number, y: number, reach = 0): boolean {
+  const rx = radius + reach;
+  const ry = rx * GROUND_SQUASH;
+  return ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 <= 1;
+}
+
 /** Outline points for debug drawing. */
 export function shapeOutline(s: HitShape, segments = 12): [number, number][] {
   if (s.kind === 'circle')

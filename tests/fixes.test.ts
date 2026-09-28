@@ -183,6 +183,34 @@ describe('after 0.2.0', () => {
   });
 });
 
+describe('phials and blasts', () => {
+  it('holds five drinks at most: four for the road, the fifth with the last of the four Seals', async () => {
+    expect(DATA.phial.maxCharges).toBe(5);
+    const shards = Object.values(DATA.rooms).flatMap(r =>
+      r.entities.filter(e => (e.type === 'item' ? String(e.item) : e.type === 'enemy' ? (e.carries as { item?: string } | undefined)?.item : undefined) === 'phial_shard'),
+    ).length;
+    const inWorld = Object.values(DATA.rooms).filter(r => !r.id.startsWith('test')).flatMap(r =>
+      r.entities.filter(e => (e.type === 'item' ? String(e.item) : e.type === 'enemy' ? (e.carries as { item?: string } | undefined)?.item : undefined) === 'phial_shard'),
+    ).length;
+    expect(DATA.phial.startCharges + inWorld).toBe(4);
+    expect(shards).toBeGreaterThanOrEqual(inWorld);
+    for (const s of ['mother_tallow_death', 'gunner_death', 'matron_death', 'queen_death'])
+      expect(JSON.stringify(DATA.scripts[s].steps), s).toContain('"then":[{"say":"Four Seals.');
+  });
+
+  it('lands a ground blast inside the oval you see, not on a head poking over its edge', async () => {
+    const { groundHit, GROUND_SQUASH } = await import('../src/combat/shapes');
+    const r = 30;
+    expect(groundHit(0, 0, r, 0, 0)).toBe(true);
+    expect(groundHit(0, 0, r, r - 1, 0)).toBe(true); // at the side edge
+    expect(groundHit(0, 0, r, r + 6, 0)).toBe(false);
+    expect(groundHit(0, 0, r, 0, r * GROUND_SQUASH - 1)).toBe(true); // the near edge of the oval
+    expect(groundHit(0, 0, r, 0, r * GROUND_SQUASH + 5)).toBe(false); // (the old test hit here, and well past it)
+    expect(groundHit(0, 0, r, 0, -(r * GROUND_SQUASH + 5))).toBe(false);
+    expect(groundHit(0, 0, r, r + 4, 0, 5)).toBe(true); // a body's edge touching counts
+  });
+});
+
 describe('release', () => {
   it('ships with the debug hotkeys and menu switched off', () => {
     expect(DATA.debug.enabled).toBe(false);

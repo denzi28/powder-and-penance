@@ -3,7 +3,7 @@
 // `warnTicks`, then bursts: everyone in `radius` (not the attacker's side) is hit. Shields don't help; rolling
 // out does. Everything still waiting is called off if the attacker dies. Cleared when the world resets.
 import { DATA } from '../data/config';
-import { shapeHitsRect } from '../combat/shapes';
+import { GROUND_SQUASH, groundHit } from '../combat/shapes';
 import { hexToInt } from '../ui/colors';
 import { DEPTH } from '../render/depth';
 import { TILE } from '../world/TileGrid';
@@ -110,9 +110,8 @@ export class Eruptions {
     this.bursts.push({ x: w.x, y: w.y, fx: d.fx, radius: d.radius, t: 0 });
     gs.bus.emit('erupted', { x: w.x, y: w.y, radius: d.radius, fx: d.fx, sfx: d.sfx });
     if (d.damage <= 0) return;
-    const shape = { kind: 'circle' as const, cx: w.x, cy: w.y - 6, radius: d.radius };
     for (const a of gs.actors) {
-      if (a.dead || a.team === w.owner.team || a.team === 'prop' || !shapeHitsRect(shape, a.hurtRect())) continue;
+      if (a.dead || a.team === w.owner.team || a.team === 'prop' || !groundHit(w.x, w.y, d.radius, a.x, a.y, a.bodyRadius)) continue;
       gs.combat.applyHit(
         {
           owner: w.owner,
@@ -145,9 +144,9 @@ export class Eruptions {
       const c = col(LOOK[w.def.fx].ring);
       const pulse = w.t < 10 && w.t % 4 < 2 ? 1 : 0.7;
       g.lineStyle(1, col('blood2'), (0.5 + 0.5 * k) * pulse);
-      g.strokeEllipse(w.x, w.y, r * 2, r * 1.3);
+      g.strokeEllipse(w.x, w.y, r * 2, r * 2 * GROUND_SQUASH);
       g.fillStyle(c, 0.12 + 0.3 * k);
-      g.fillEllipse(w.x, w.y, r * 2 * k, r * 1.3 * k);
+      g.fillEllipse(w.x, w.y, r * 2 * k, r * 2 * GROUND_SQUASH * k);
     }
     for (const b of this.bursts) {
       const k = b.t / BURST_TICKS; // 0 -> 1 over the burst

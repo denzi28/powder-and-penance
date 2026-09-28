@@ -26,7 +26,7 @@
       "kind": "taper_hound",
       "at": [3, 5],
       "facing": "E",
-      "carries": { "id": "abbey_shard", "item": "phial_shard" }
+      "carries": { "id": "abbey_shard", "item": "cache_candles" }
     },
     {
       "type": "prop",

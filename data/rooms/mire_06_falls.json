@@ -40,7 +40,7 @@
       "kind": "taper_hound",
       "at": [4, 3],
       "facing": "E",
-      "carries": { "id": "mire_shard", "item": "phial_shard" }
+      "carries": { "id": "mire_shard", "item": "cache_incense" }
     },
     {
       "type": "enemy",

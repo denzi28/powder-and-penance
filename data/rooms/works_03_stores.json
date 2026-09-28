@@ -224,7 +224,7 @@
       "kind": "powder_acolyte",
       "at": [12, 2],
       "facing": "S",
-      "carries": { "id": "works_shard", "item": "phial_shard" }
+      "carries": { "id": "works_shard", "item": "cache_cartridges" }
     },
     {
       "type": "enemy",

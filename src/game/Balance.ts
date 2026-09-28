@@ -16,6 +16,8 @@ export interface BalanceData {
   balance: BalanceCfg;
   player: { maxHp: number };
   phial: { startCharges: number };
+  /** Dialogue and cutscene scripts: a phial given by one (the four Seals' reward) counts before the last tier. */
+  scripts?: Record<string, { steps: unknown[] }>;
 }
 
 const STATS: readonly StatName[] = ['vitality', 'endurance', 'strength', 'dexterity'];
@@ -266,6 +268,14 @@ export function balanceReport(d: BalanceData): BalanceReport {
     }
     return u;
   };
+
+  // A phial handed over by a script comes with the last of the four Seals, so it is there for the last tier
+  // (each script gift is one-time per item, however many scripts offer it).
+  const gifts = new Set<string>();
+  for (const s of Object.values(d.scripts ?? {}))
+    for (const m of JSON.stringify(s.steps).matchAll(/"give":"([^"]+)"/g)) if (d.items[m[1]]?.effect.type === 'phialMax') gifts.add(m[1]);
+  const lastTier = tiers[tiers.length - 1];
+  shards.set(lastTier, (shards.get(lastTier) ?? 0) + gifts.size);
 
   let carried = 0;
   let flasks = d.phial.startCharges;
