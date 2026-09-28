@@ -121,6 +121,20 @@ describe('opening cutscene polish', () => {
     expect(gaps.length).toBeGreaterThanOrEqual(8);
     expect(gaps.slice(0, 5).every(g => g >= 70), String(gaps)).toBe(true); // the quiet opening lines don't tumble over each other
   });
+
+  it('shows who wrecked the wagon, and lands everyone it throws', () => {
+    const steps = DATA.scripts.wreck_intro.steps as Record<string, unknown>[];
+    const wicklings = steps.filter(s => s.sprite === 'wickling').map(s => s.actor);
+    expect(wicklings.length).toBeGreaterThanOrEqual(3);
+    // the guard with the cage key runs off east (to die in the Cutting, beside the key)
+    expect(steps.some(s => s.move === 'guard3' && (s.to as number[])[0] >= 30)).toBe(true);
+    // a thrown driver is put back on the ground (no longer drawn up on the wagon's seat)
+    const thrown = steps.findIndex(s => s.move === 'driver' && s.arc);
+    const landed = steps.findIndex((s, i) => i > thrown && s.actor === 'driver');
+    expect(thrown).toBeGreaterThan(0);
+    expect(landed).toBeGreaterThan(thrown);
+    expect(steps[landed].lift).toBeUndefined();
+  });
 });
 
 describe('release', () => {
