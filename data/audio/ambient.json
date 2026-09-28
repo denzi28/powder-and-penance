@@ -2,11 +2,11 @@
   "volume": 0.8,
   "areas": {
     "road": {
-      "beds": [{ "type": "wind", "volume": 0.18, "freq": 520, "gust": 0.7 }],
+      "beds": [{ "type": "wind", "volume": 0.1, "freq": 520, "gust": 0.5 }],
       "events": [
-        { "sound": "crow", "every": [7, 18], "volume": 0.5 },
-        { "sound": "creak", "every": [9, 22], "volume": 0.6 },
-        { "sound": "owl", "every": [20, 45], "volume": 0.4 },
+        { "sound": "crow", "every": [12, 26], "volume": 0.35 },
+        { "sound": "creak", "every": [14, 30], "volume": 0.4 },
+        { "sound": "owl", "every": [25, 55], "volume": 0.3 },
         { "sound": "bell", "every": [45, 90], "volume": 0.25, "when": "!boss:chandler" }
       ]
     },
