@@ -250,9 +250,11 @@ describe('the Chandler fight with Brother Aldous', () => {
     void player;
   });
 
-  it('trims the heavy guns a little', () => {
-    expect(DATA.weapons.flintlock.ranged!.projectile.damage).toBe(63);
+  it('trims the two-handed weapons a little, and leaves the one-handed flintlock', () => {
+    expect(DATA.weapons.greataxe.light.map(s => s.damage)).toEqual([38, 41]);
+    expect(DATA.weapons.greataxe.heavy!.strike.damage).toBe(58);
     expect(DATA.weapons.heavy_crossbow.ranged!.projectile.damage).toBe(43);
     expect(DATA.weapons.blunderbuss.ranged!.projectile.damage).toBe(15);
+    expect(DATA.weapons.flintlock.ranged!.projectile.damage).toBe(70);
   });
 });
