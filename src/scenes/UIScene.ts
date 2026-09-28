@@ -56,6 +56,15 @@ export class UIScene extends Phaser.Scene {
   }
 
   create() {
+    // Phaser keeps this scene object between games (quit to title, continue): start from nothing, not from the
+    // last game's (destroyed) icons.
+    this.slotIcons = [];
+    this.ammoTexts = [];
+    this.handKeys = [];
+    this.buffIcons = [];
+    this.phialIcons = [];
+    this.toastBottom = 0;
+    this.tallowShown = 0;
     this.gs = this.scene.get('game') as GameScene;
     const W = DATA.game.width;
     const H = DATA.game.height;

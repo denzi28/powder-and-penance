@@ -212,6 +212,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   create(data: GameStartData = {}) {
+    this.resetSession();
     this.lib = new SpriteLib(this);
     this.controls = INPUT;
     this.controls.attach(this.game.canvas);
@@ -314,6 +315,50 @@ export class GameScene extends Phaser.Scene {
     });
 
     this.scene.launch('ui');
+  }
+
+  /**
+   * Phaser keeps this scene object between games (quit to title, then continue or a new game), so everything a
+   * game builds up starts again from nothing here: no menu left open, no event handlers wired twice, no systems
+   * holding the last game's (destroyed) graphics.
+   */
+  private resetSession() {
+    this.bus = new EventBus<GameEvents>();
+    this.combat = new CombatSystem();
+    this.projectiles = new Projectiles();
+    this.tokens = new AttackTokens();
+    this.enemies = [];
+    this.exits = new Exits();
+    this.pools = new WaxPools();
+    this.explosions = new Explosions();
+    this.screenFx = new ScreenFx();
+    this.eruptions = new Eruptions();
+    this.swarms = new Swarms();
+    this.hiveOut = new Map();
+    this.playerLight = null;
+    this.menu = null;
+    this.toast = null;
+    this.hurt = null;
+    this.shrineSeq = null;
+    this.simTick = 0;
+    this.tickCount = 0;
+    this.hitstop = 0;
+    this.deathT = -1;
+    this.respawnT = -1;
+    this.travel = null;
+    this.areaBanner = null;
+    this.goalNote = null;
+    this.lastGoal = null;
+    this.mapOpen = false;
+    this.gear = null;
+    this.pendingScreen = null;
+    this.warp = null;
+    this.rooms = [];
+    this.enemyViews = new Map();
+    this.rng = mulberry32(1234);
+    this.roomsJson = '';
+    this.menuNav = new MenuNav();
+    this.dirty = false;
   }
 
   // ------------------------------------------------------------------ simulation
