@@ -92,6 +92,8 @@ export class CombatSystem {
   private boxes: ActiveHitbox[] = [];
   /** Shapes active during the last resolve, for the debug overlay. */
   debugShapes: HitShape[] = [];
+  /** Hits that can't land at all: a boss fight's smoke stands between the two (set by the scene). */
+  blocked: ((attacker: Actor, target: Actor) => boolean) | null = null;
 
   add(b: ActiveHitbox) {
     this.boxes.push(b);
@@ -128,6 +130,7 @@ export class CombatSystem {
   applyHit(src: HitSource, target: Actor, bus: EventBus<GameEvents>): HitInfo | null {
     if (target.dead || target.invulnerable || target.god) return null;
     const attacker = src.owner;
+    if (this.blocked?.(attacker, target)) return null;
 
     const guard = src.kind === 'critical' ? null : target.guard();
     if (guard) {

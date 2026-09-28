@@ -261,6 +261,7 @@ export class GameScene extends Phaser.Scene {
     };
     this.story = new Story(this);
     this.arena = new BossArena(this);
+    this.combat.blocked = (a, b) => this.arena.divides(a, b);
     this.levers = new Levers(this.lib);
     this.notes = new Notes(this.lib);
     this.loot = new LootDrops(this.lib);
@@ -782,7 +783,7 @@ export class GameScene extends Phaser.Scene {
     });
     this.bus.on('died', e => {
       if (e.actor instanceof Enemy && e.actor.ally) {
-        this.showToast(e.actor.def.name.toUpperCase(), 'has fallen. The wax has him now.');
+        this.showToast(e.actor.def.name.toUpperCase(), 'has fallen. He is not moving.');
         return;
       }
       if (e.actor instanceof Enemy) {

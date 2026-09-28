@@ -272,6 +272,7 @@ const dead: State<Enemy> = {
     e.ctx.bus.emit('died', { actor: e });
   },
   tick(e, t) {
+    if (e.ally) return; // a fallen ally lies where he fell for the rest of the fight (he may yet get up)
     const fadeStart = e.def.deathTicks + e.def.corpseTicks;
     if (t >= fadeStart) e.alpha = Math.max(0, 1 - (t - fadeStart) / 30);
     if (t >= fadeStart + 30) e.remove = true;

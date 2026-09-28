@@ -192,3 +192,67 @@ describe('an ally (Brother Aldous)', () => {
     expect(aldous.stateName).toBe('follow');
   });
 });
+
+describe('the Chandler fight with Brother Aldous', () => {
+  const setup = () => {
+    const rooms = Object.values(DATA.rooms).filter(r => r.area === 'abbey');
+    const grid = levelGrid(rooms);
+    const nave = DATA.rooms.abbey_12_nave;
+    const at = (x: number, y: number) => ({ x: (nave.origin[0] + x) * TILE + TILE / 2, y: (nave.origin[1] + y) * TILE + TILE - 2 });
+    const pp = at(10, 15);
+    const player = {
+      ...pp, chestY: pp.y - 10, dead: false, bodyRadius: 5, team: 'player', aimAngle: -Math.PI / 2, invulnerable: false,
+      hurtRect: () => ({ x: pp.x - 5, y: pp.y - 20, w: 10, h: 20 }), onHit: () => {}, damageDealtMult: () => 1,
+    } as unknown as Player;
+    const bus = new EventBus<GameEvents>();
+    const combat = new CombatSystem();
+    const list: Enemy[] = [];
+    const ctx: WorldCtx = {
+      input: null as never, bus, grid: () => grid, combat, projectiles: new Projectiles(), tokens: new AttackTokens(),
+      nav: new Pathfinder(() => grid), rng: mulberry32(5), player: () => player, enemies: () => list, roomAt: () => nave.id,
+    };
+    const a = at(10, 5);
+    const aldous = new Enemy(ctx, 'aldous', a.x, a.y, 0);
+    aldous.ally = true;
+    const w = at(10, 4);
+    const foe = new Enemy(ctx, 'wickling', w.x, w.y, Math.PI / 2);
+    list.push(aldous, foe);
+    return { player, bus, combat, aldous, foe };
+  };
+
+  it('has enemies turn on Aldous when he is in their face, and back on you once he falls', () => {
+    const { player, aldous, foe } = setup();
+    foe.aggro();
+    for (let t = 0; t < 5; t++) foe.tick();
+    expect(foe.player).toBe(aldous);
+    aldous.kill();
+    foe.tick();
+    expect(foe.player).toBe(player);
+  });
+
+  it('leaves a fallen Aldous lying where he fell', () => {
+    const { aldous } = setup();
+    aldous.kill();
+    for (let t = 0; t < 1500; t++) aldous.tick();
+    expect(aldous.dead).toBe(true);
+    expect(aldous.remove).toBe(false);
+    expect(aldous.alpha).toBe(1);
+  });
+
+  it('lets nothing strike through a boss fight\'s smoke, and keeps Aldous from picking a foe beyond it', () => {
+    const { player, bus, combat, aldous, foe } = setup();
+    combat.blocked = (x, y) => x === foe || y === foe;
+    const blow = { owner: foe, kind: 'melee', damage: 10, poise: 0, knockback: 0, hitstop: 0, shake: 0, angle: 0, unblockable: true, unparryable: true } as const;
+    expect(combat.applyHit(blow, aldous, bus)).toBeNull();
+    expect(combat.applyHit({ ...blow, owner: aldous }, foe, bus)).toBeNull();
+    for (let t = 0; t < 5; t++) aldous.tick();
+    expect(aldous.foe).toBeNull();
+    void player;
+  });
+
+  it('trims the heavy guns a little', () => {
+    expect(DATA.weapons.flintlock.ranged!.projectile.damage).toBe(63);
+    expect(DATA.weapons.heavy_crossbow.ranged!.projectile.damage).toBe(43);
+    expect(DATA.weapons.blunderbuss.ranged!.projectile.damage).toBe(15);
+  });
+});

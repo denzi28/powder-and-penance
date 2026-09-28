@@ -17,7 +17,7 @@
     "reload": { "ticks": 85, "stamina": 12, "moveMult": 0.4 },
     "projectile": {
       "sprite": "bolt", "speed": 300, "range": 320,
-      "damage": 48, "poise": 25, "pierce": 2, "knockback": 90,
+      "damage": 43, "poise": 25, "pierce": 2, "knockback": 90,
       "hitstop": 4, "shake": 0.12, "radius": 2, "spreadDeg": 0
     },
     "casing": false,

@@ -17,7 +17,7 @@
     "reload": { "ticks": 95, "stamina": 10, "moveMult": 0.5 },
     "projectile": {
       "sprite": "ball", "speed": 360, "range": 240,
-      "damage": 70, "poise": 40, "pierce": 0, "knockback": 160,
+      "damage": 63, "poise": 40, "pierce": 0, "knockback": 160,
       "hitstop": 6, "shake": 0.2, "radius": 3, "spreadDeg": 0
     },
     "casing": false,

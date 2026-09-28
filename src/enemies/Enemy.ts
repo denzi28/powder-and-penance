@@ -24,12 +24,18 @@ const UNBLINDABLE: ReadonlySet<string> = new Set(['dead', 'critVictim', 'submerg
 
 /** Ticks of trying to move without getting anywhere before an enemy counts as stuck. */
 const STUCK_TICKS = 30;
+/** How often an enemy weighs up turning on the player's ally, and the odds it does when neither is nearer. */
+const QUARRY_TICKS: readonly [number, number] = [120, 240];
+const QUARRY_CHANCE = 0.25;
 
 export class Enemy extends Actor {
   /** Fights on the player's side (Brother Aldous): its blows land on enemies, theirs on it, and yours pass through. */
   ally = false;
   /** An ally's current foe: the nearest living enemy it can fight (null: it walks at the player's side). */
   foe: Enemy | null = null;
+  /** An enemy's quarry when an ally is in the fight: that ally instead of the player (null: the player). */
+  quarry: Actor | null = null;
+  private quarryT = 0;
   get team(): 'enemy' | 'player' {
     return this.ally ? 'player' : 'enemy';
   }
@@ -251,6 +257,7 @@ export class Enemy extends Actor {
 
     if (this.blind > 0) this.blind--;
     if (this.ally && !this.dead) this.foe = this.pickFoe();
+    else if (!this.dead) this.tickQuarry();
     if (this.isFighter && !this.dead && this.sm.name !== 'critVictim') this.perceive();
     if (this.bubble && !this.summons.some(s => !s.dead)) {
       this.bubble = false; // the last summon fell: the bubble bursts
@@ -341,10 +348,12 @@ export class Enemy extends Actor {
 
   /**
    * An ally's foe: it keeps the one it's fighting while that one can still be fought, else takes the nearest
-   * enemy near the player that can be struck (not dormant, not sheltering, not mid-turn at its altar).
+   * enemy near the player that can be struck (not dormant, not sheltering, not mid-turn at its altar, not
+   * on the far side of a boss fight's smoke).
    */
   private pickFoe(): Enemy | null {
-    const fightable = (e: Enemy) => !e.dead && !e.ally && !e.invulnerable && !e.bossWaiting && e.def.ai !== 'dummy' && e.stateName !== 'submerged';
+    const fightable = (e: Enemy) =>
+      !e.dead && !e.ally && !e.invulnerable && !e.bossWaiting && e.def.ai !== 'dummy' && e.stateName !== 'submerged' && !this.ctx.combat.blocked?.(this, e); // not beyond a boss fight's smoke
     const p = this.ctx.player();
     if (this.foe && fightable(this.foe) && Math.hypot(this.foe.x - p.x, this.foe.y - p.y) < 320) return this.foe;
     let best: Enemy | null = null;
@@ -358,6 +367,26 @@ export class Enemy extends Actor {
       }
     }
     return best;
+  }
+
+  /**
+   * With an ally in the fight, an enemy picks between you and him every few seconds (never mid-swing): whoever
+   * is right in its face, else now and then the ally. Being struck by the ally can turn it on him too.
+   */
+  private tickQuarry() {
+    if (this.quarry?.dead) this.quarry = null;
+    if (--this.quarryT > 0 || this.sm.name === 'attack') return;
+    const p = this.ctx.player();
+    const ally = this.ctx.enemies().find(e => e.ally && !e.dead);
+    if (!ally || p.dead || !this.isFighter) {
+      this.quarry = null;
+      this.quarryT = QUARRY_TICKS[0];
+      return;
+    }
+    this.quarryT = QUARRY_TICKS[0] + Math.floor(this.ctx.rng() * (QUARRY_TICKS[1] - QUARRY_TICKS[0]));
+    const dp = Math.hypot(p.x - this.x, p.y - this.y);
+    const da = Math.hypot(ally.x - this.x, ally.y - this.y);
+    this.quarry = da < dp * 0.7 ? ally : dp < da * 0.7 ? null : this.ctx.rng() < QUARRY_CHANCE ? ally : null;
   }
 
   /** A boss fighting you always knows where you are: its arena is sealed, there's nowhere to hide. */
@@ -382,6 +411,7 @@ export class Enemy extends Actor {
 
   onHit(h: HitInfo) {
     this.barTicks = DATA.juice.enemyBarTicks;
+    if (!this.ally && h.attacker instanceof Enemy && h.attacker.ally && this.ctx.rng() < (this.def.boss ? 0.25 : 0.5)) this.quarry = h.attacker;
     if (this.def.immortal) {
       this.lastHit = { damage: h.damage, poise: h.poiseDamage, staggered: h.staggered, age: this.age };
       this.hp = this.maxHp;
@@ -477,7 +507,7 @@ export class Enemy extends Actor {
   alertRoom() {
     if (this.room === null) return;
     for (const o of this.ctx.enemies()) {
-      if (o === this || o.dead || o.room !== this.room || !o.isFighter || o.def.boss) continue;
+      if (o === this || o.dead || o.room !== this.room || !o.isFighter || o.def.boss || o.ally) continue; // (an ally isn't one of them)
       const st = o.sm.name;
       if (st === 'idle' || st === 'suspicious' || st === 'return') {
         o.awareness = 1;
@@ -489,7 +519,8 @@ export class Enemy extends Actor {
 
   /** Who it fights: the player, or (an ally) its foe; an ally with no foe looks to the player. */
   get player(): Actor {
-    return this.ally ? (this.foe ?? this.ctx.player()) : this.ctx.player();
+    if (this.ally) return this.foe ?? this.ctx.player();
+    return this.quarry && !this.quarry.dead ? this.quarry : this.ctx.player();
   }
   distToPlayer() {
     const p = this.player;
