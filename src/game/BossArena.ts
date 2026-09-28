@@ -47,6 +47,8 @@ type Stage =
 const AFTER_DEATH = 30;
 /** How close you must stand to the remains to use them. */
 const REMAINS_REACH = 30;
+/** A fallen ally gets back up on this share of his health when the boss rises into its next phase. */
+const ALLY_RALLY_HP = 0.6;
 
 export class BossArena {
   /** The boss being fought (drives the boss bar), or null. */
@@ -109,6 +111,21 @@ export class BossArena {
   /** Is this tile currently sealed by smoke? (Doors in a sealed doorway can't be used.) */
   sealed(tx: number, ty: number) {
     return !!this.current?.seals.some(s => s.tx === tx && s.ty === ty);
+  }
+
+  /**
+   * While a fight is on, the smoke cuts the arena off: nothing outside can strike anyone inside (a sword over
+   * the seal, a shot, a lobbed pot), nor the other way round.
+   */
+  divides(a: { x: number; y: number }, b: { x: number; y: number }) {
+    const r = this.current?.room;
+    if (!r) return false;
+    const inside = (p: { x: number; y: number }) => {
+      const tx = Math.floor(p.x / TILE) - r.origin[0];
+      const ty = Math.floor(p.y / TILE) - r.origin[1];
+      return ty >= 0 && ty < r.tiles.length && tx >= 0 && tx < r.tiles[0].length;
+    };
+    return inside(a) !== inside(b);
   }
 
   /** Where the player's Tallow should fall if they die now (null = where they stand). */
@@ -233,6 +250,7 @@ export class BossArena {
       this.active = { enemy: risen, title: risen.def.boss?.title ?? risen.def.name };
       this.stage = { name: 'fight', boss: risen, deathT: 0 };
       risen.startIntro();
+      this.rallyAlly();
       this.spotlight(risen, (risen.def.boss?.introTicks ?? 60) + 10);
       if (risen.def.boss?.introLine) gs.showToast(this.active.title.toUpperCase(), risen.def.boss.introLine);
     }
@@ -281,6 +299,7 @@ export class BossArena {
     this.active = { enemy: risen, title: risen.def.boss?.title ?? risen.def.name };
     this.stage = { name: 'fight', boss: risen, deathT: 0 };
     risen.startIntro();
+    this.rallyAlly();
     this.spotlight(risen, (risen.def.boss?.introTicks ?? 60) + 10);
     if (risen.def.boss?.introLine) gs.showToast(this.active.title.toUpperCase(), risen.def.boss.introLine);
   }
@@ -298,6 +317,8 @@ export class BossArena {
       const dy = near.ty === oy ? -1 : near.ty === oy + a.room.tiles.length - 1 ? 1 : 0;
       this.entry = { x: (near.tx + dx) * TILE + TILE / 2, y: (near.ty + dy) * TILE + TILE - 2 };
     } else this.entry = null;
+    // whatever was chasing you in from outside can't follow through the smoke: it gives up and goes home
+    for (const e of gs.enemies) if (e !== boss && !e.dead && this.divides(e, p)) e.loseTrack();
     for (const s of a.seals) {
       s.prev = gs.grid.get(s.tx, s.ty);
       gs.grid.set(s.tx, s.ty, Cell.Wall);
@@ -327,12 +348,31 @@ export class BossArena {
     gs.showToast(e.def.name.toUpperCase(), 'is at your side.');
   }
 
+  /**
+   * The boss rises into its next phase: an ally who fell gets back up (on part of his health) and fights on.
+   */
+  private rallyAlly() {
+    const gs = this.gs;
+    const old = this.ally;
+    if (!old || !old.dead || !gs.enemies.includes(old)) return;
+    const { x, y } = old;
+    gs.despawn(old);
+    const e = gs.spawnEnemy(old.kind, x, y, Math.atan2(gs.player.y - y, gs.player.x - x));
+    if (!e) return;
+    e.ally = true;
+    e.hp = Math.round(e.maxHp * ALLY_RALLY_HP);
+    this.ally = e;
+    gs.particles.burst(x, y - 10, 10, -Math.PI / 2, 1.4, 18, 50, 'wax2', false);
+    gs.bus.emit('sfx', { id: 'e_warden_alert', x, y });
+    gs.showToast(e.def.name.toUpperCase(), 'gets back up. "Not yet. Not while he stands."');
+  }
+
   /** The fight is won and its last words are over: the ally kneels and is gone (back to where you found him). */
   private dismissAlly() {
     const e = this.ally;
     this.ally = null;
-    if (!e || e.dead || !this.gs.enemies.includes(e)) return;
-    this.gs.particles.burst(e.x, e.y - 10, 16, -Math.PI / 2, 1.6, 16, 60, 'wax2', false);
+    if (!e || !this.gs.enemies.includes(e)) return;
+    if (!e.dead) this.gs.particles.burst(e.x, e.y - 10, 16, -Math.PI / 2, 1.6, 16, 60, 'wax2', false);
     this.gs.despawn(e);
   }
 

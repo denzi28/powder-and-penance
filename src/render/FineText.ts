@@ -3,8 +3,7 @@
 // game at full screen resolution and draws the same pixel font at 2/3 of that (2 screen pixels per font
 // pixel where the game uses 3): the same letters, a third smaller. Used for the message box and item
 // descriptions. Everything is laid out in game pixels (fractions allowed); `charW` / `lineH` give the metrics.
-import { FONT } from '../scenes/BootScene';
-import { FONT_URL } from '../data/assets';
+import { FONT, FONT_URL } from '../data/assets';
 
 export type FineItem =
   | { kind: 'text'; x: number; y: number; text: string; color: number; alpha?: number }
@@ -129,4 +128,4 @@ class FineOverlay {
 }
 
 export const FINE = new FineOverlay();
-if (import.meta.env.DEV) (window as unknown as { __fine: FineOverlay }).__fine = FINE; // console debugging
+if (import.meta.env.DEV && typeof window !== 'undefined') (window as unknown as { __fine: FineOverlay }).__fine = FINE; // console debugging

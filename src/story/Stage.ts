@@ -9,6 +9,7 @@ import { AnimPlayer } from '../anim/AnimPlayer';
 import { DEPTH } from '../render/depth';
 import { hexToInt } from '../ui/colors';
 import { TILE } from '../world/TileGrid';
+import { FINE, type FineItem } from '../render/FineText';
 import type { Dir8 } from '../core/math';
 import type { GameScene } from '../scenes/GameScene';
 
@@ -68,7 +69,9 @@ const BURSTS: Record<string, { cols: string[]; z: number; spread: number; speed:
   honey: { cols: ['honey', 'flame2'], z: 8, spread: 1.4, speed: 60, up: true, stain: true },
 };
 
-const WRAP = 22;
+const WRAP = 26;
+/** Speech bubble pacing: letters typed per tick, and ticks to fade in and out. */
+const BUBBLE = { typePerTick: 0.6, fadeIn: 8, fadeOut: 18 };
 
 export class Stage {
   private actors = new Map<string, Actor>();
@@ -76,8 +79,6 @@ export class Stage {
   private hidden = new Set<string>();
   /** The actor the camera rides with, if any. */
   follow: string | null = null;
-  private g: Phaser.GameObjects.Graphics | null = null;
-  private texts: Phaser.GameObjects.BitmapText[] = [];
 
   constructor(private gs: GameScene) {}
 
@@ -173,7 +174,7 @@ export class Stage {
 
   bubble(text: string, over: string, ticks?: number) {
     this.bubbles = this.bubbles.filter(b => b.over !== over); // one line at a time per speaker
-    this.bubbles.push({ text, over, t: 0, ticks: ticks ?? 50 + text.length * 3 });
+    this.bubbles.push({ text, over, t: 0, ticks: ticks ?? 70 + text.length * 4 });
     this.gs.bus.emit('sfx', { id: 'voice', volume: 0.35, pitch: 0.8 + Math.random() * 0.4 });
   }
 
@@ -239,8 +240,7 @@ export class Stage {
     for (const h of [...this.hidden]) this.setHidden(h, false);
     this.bubbles = [];
     this.follow = null;
-    this.g?.clear();
-    this.texts.forEach(t => t.setVisible(false));
+    FINE.set('bubbles', []);
   }
 
   // ------------------------------------------------------------------ drawing (every frame)
@@ -264,44 +264,53 @@ export class Stage {
       a.sprite.setFrame(frame).setFlipX(flip).setPosition(x, y).setDepth(DEPTH.actor(a.y) + a.z);
       a.shadow?.setPosition(Math.round(a.x), Math.round(a.y) + 1).setScale(hop ? Math.max(0.5, 1 - hop / 40) : 1);
     }
-    // speech bubbles over whoever speaks
-    this.g ??= gs.add.graphics().setDepth(DEPTH.overlay - 4);
-    const g = this.g.clear();
-    this.texts.forEach(t => t.setVisible(false));
+  }
+
+  /**
+   * Speech bubbles over whoever speaks, in fine print (FineText: the game's font a third smaller) so they
+   * don't cover the scene. Called after the camera has moved this frame, so they sit still over the speaker.
+   */
+  drawBubbles() {
+    const gs = this.gs;
+    const cam = gs.cameras.main;
+    const items: FineItem[] = [];
     // bubbles that would overlap stack upward (a leader line runs back down to the speaker), inside the view
     const placed: { x: number; y: number; w: number; h: number }[] = [];
-    const view = gs.cameras.main.worldView;
-    this.bubbles.forEach((b, i) => {
-      const over = this.pos(b.over);
+    const W = DATA.game.width;
+    const veil = 1 - gs.story.fadeAlpha; // they go dark with the scene
+    const ink = hexToInt(DATA.palette.ink);
+    const rim = 0xa39eb0;
+    for (const b of this.bubbles) {
+      const at = this.pos(b.over);
       const a = b.over.startsWith('actor:') ? this.actors.get(b.over.slice(6)) : null;
       const head = a ? (gs.lib.manifest(a.sheet).cell[1] ?? 32) * 0.8 : 30;
-      let t = this.texts[i];
-      if (!t) {
-        t = gs.add.bitmapText(0, 0, 'pixel', '').setDepth(DEPTH.overlay - 3);
-        this.texts[i] = t;
-      }
-      const shown = b.text.slice(0, Math.ceil(b.t * 1.2));
-      t.setText(wrap(b.text));
-      const w = t.width + 6;
-      const h = t.height + 5;
-      t.setText(wrap(shown, b.text));
-      const bx = Math.round(Math.max(view.x + 2, Math.min(view.right - w - 2, over.x - w / 2)));
-      const natural = Math.round(over.y - head - h - 4);
+      const ox = Math.round(at.x - cam.scrollX);
+      const oy = Math.round(at.y - cam.scrollY);
+      const m = FINE.measure(wrap(b.text));
+      const w = m.w + 5;
+      const h = m.h + 4;
+      const bx = Math.max(2, Math.min(W - w - 2, ox - w / 2));
+      const natural = oy - head - h - 4;
       let by = natural;
       for (let guard = 0; guard < 8; guard++) {
         const hit = placed.find(r => bx < r.x + r.w + 2 && bx + w + 2 > r.x && by < r.y + r.h + 2 && by + h + 2 > r.y);
         if (!hit) break;
         by = hit.y - h - 3;
       }
-      by = Math.max(view.y + 2, by);
+      by = Math.max(2, by);
       placed.push({ x: bx, y: by, w, h });
-      const fade = b.t > b.ticks - 8 ? (b.ticks - b.t) / 8 : 1;
-      if (by < natural - 1) g.lineStyle(1, 0xa39eb0, 0.6 * fade).lineBetween(over.x, by + h, over.x, natural + h + 3); // a leader down to the speaker
-      g.fillStyle(0x140f14, 0.9 * fade).fillRect(bx, by, w, h);
-      g.lineStyle(1, 0xa39eb0, fade).strokeRect(bx + 0.5, by + 0.5, w - 1, h - 1);
-      g.fillStyle(0x140f14, 0.9 * fade).fillTriangle(over.x - 3, by + h, over.x + 3, by + h, over.x, by + h + 4);
-      t.setPosition(bx + 3, by + 3).setAlpha(fade).setVisible(true);
-    });
+      const inT = Math.min(1, b.t / BUBBLE.fadeIn);
+      const outT = b.t > b.ticks - BUBBLE.fadeOut ? (b.ticks - b.t) / BUBBLE.fadeOut : 1;
+      const f = Math.max(0, Math.min(inT, outT)) * veil;
+      if (f <= 0) continue;
+      if (by < natural - 1) items.push({ kind: 'rect', x: ox, y: by + h, w: 1, h: natural - by + 3, color: rim, alpha: 0.6 * f }); // a leader down to the speaker
+      items.push({ kind: 'rect', x: bx, y: by, w, h, color: rim, alpha: f });
+      items.push({ kind: 'rect', x: bx + 1, y: by + 1, w: w - 2, h: h - 2, color: ink, alpha: f });
+      for (let i = 0; i < 3; i++) items.push({ kind: 'rect', x: ox - 2 + i, y: by + h + i, w: 5 - 2 * i, h: 1, color: ink, alpha: f }); // the tail
+      const shown = b.text.slice(0, Math.ceil(b.t * BUBBLE.typePerTick));
+      items.push({ kind: 'text', x: bx + 2.5, y: by + 2, text: wrap(shown, b.text), color: hexToInt(DATA.palette.wax2), alpha: f });
+    }
+    FINE.set('bubbles', items);
   }
 }
 

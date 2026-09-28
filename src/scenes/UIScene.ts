@@ -175,6 +175,7 @@ export class UIScene extends Phaser.Scene {
     else this.g.setVisible(true);
     this.drawToast();
     this.drawAreaBanner();
+    this.drawGoal();
     this.mapView.update(this.gs, dt);
     this.dialogueBox.update(this.gs, dt);
     this.bossBar.update(this.gs, dt);
@@ -372,6 +373,33 @@ export class UIScene extends Phaser.Scene {
     this.g.fillStyle(hexToInt(DATA.palette.flame1), a);
     this.g.fillRect(x - 8 - len, ruleY, len, 1);
     this.g.fillRect(x + this.areaText.width + 8, ruleY, len, 1);
+  }
+
+  /** A new goal, under the area banner (or where it would be): a small label over one or two lines of fine print. */
+  private drawGoal() {
+    const g = this.gs;
+    const n = g.menu || g.gear || g.mapOpen || g.story.active ? null : g.goalNote;
+    if (!n) {
+      FINE.set('goal', []);
+      return;
+    }
+    const life = DATA.hud.goal.ticks;
+    const a = n.t < 20 ? n.t / 20 : n.t > life - 50 ? Math.max(0, (life - n.t) / 50) : 1;
+    const col = (name: string) => hexToInt(DATA.palette[name]);
+    let y = Math.max(DATA.hud.areaBanner.y, this.toastBottom + 8);
+    if (this.areaText.visible) y += this.areaText.height + 8; // under the area's name when both show
+    const cx = DATA.game.width / 2;
+    const label = 'GOAL';
+    const text = wrap(n.text, 64);
+    const lm = FINE.measure(label);
+    const tm = FINE.measure(text);
+    const w = Math.max(lm.w, tm.w) + 8;
+    const h = lm.h + tm.h + 5.5;
+    FINE.set('goal', [
+      { kind: 'rect', x: cx - w / 2, y, w, h, color: col('ink'), alpha: 0.7 * a },
+      { kind: 'text', x: cx - lm.w / 2, y: y + 2, text: label, color: col('flame2'), alpha: a },
+      { kind: 'text', x: cx - tm.w / 2, y: y + 3.5 + lm.h, text, color: col('wax2'), alpha: a },
+    ]);
   }
 
   /**

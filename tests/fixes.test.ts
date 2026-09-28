@@ -4,6 +4,7 @@ import { DATA } from '../src/data/config';
 import { rollFor } from '../src/player/Player';
 import { check } from '../src/story/conditions';
 import { Exits } from '../src/world/Exits';
+import { isDesktop } from '../src/game/Desktop';
 
 describe('reported bugs', () => {
   it("Wick's Rest stands clear of every villager's stops and paths", () => {
@@ -106,9 +107,45 @@ describe('small polish', () => {
   });
 });
 
+describe('opening cutscene polish', () => {
+  it('gives every line in the wagon scene time to be read before the next one', () => {
+    const steps = DATA.scripts.wreck_intro.steps as Record<string, unknown>[];
+    const gaps: number[] = [];
+    let run: number | null = null;
+    for (const s of steps) {
+      if (typeof s.bubble === 'string') {
+        if (run !== null) gaps.push(run);
+        run = 0;
+      } else if (typeof s.wait === 'number' && run !== null) run += s.wait;
+    }
+    expect(gaps.length).toBeGreaterThanOrEqual(8);
+    expect(gaps.slice(0, 5).every(g => g >= 70), String(gaps)).toBe(true); // the quiet opening lines don't tumble over each other
+  });
+
+  it('shows who wrecked the wagon, and lands everyone it throws', () => {
+    const steps = DATA.scripts.wreck_intro.steps as Record<string, unknown>[];
+    const wicklings = steps.filter(s => s.sprite === 'wickling').map(s => s.actor);
+    expect(wicklings.length).toBeGreaterThanOrEqual(3);
+    // the guard with the cage key runs off east (to die in the Cutting, beside the key)
+    expect(steps.some(s => s.move === 'guard3' && (s.to as number[])[0] >= 30)).toBe(true);
+    // a thrown driver is put back on the ground (no longer drawn up on the wagon's seat)
+    const thrown = steps.findIndex(s => s.move === 'driver' && s.arc);
+    const landed = steps.findIndex((s, i) => i > thrown && s.actor === 'driver');
+    expect(thrown).toBeGreaterThan(0);
+    expect(landed).toBeGreaterThan(thrown);
+    expect(steps[landed].lift).toBeUndefined();
+  });
+});
+
 describe('release', () => {
   it('ships with the debug hotkeys and menu switched off', () => {
     expect(DATA.debug.enabled).toBe(false);
+  });
+
+  it('puts the game\'s icon into the Windows .exe', async () => {
+    const pkg = JSON.parse((await import('node:fs')).readFileSync('package.json', 'utf8'));
+    expect(pkg.build.win.icon).toBe('build/icon.png');
+    expect(pkg.build.win.signAndEditExecutable).toBe(true); // off, the builder leaves the stock Electron icon on the .exe
   });
 });
 
@@ -143,5 +180,11 @@ describe('update 0.1.1', () => {
     exits.check(0, 0); // arm it (standing off every exit)
     expect(exits.check(at.x, at.y, () => true)).toBeNull(); // the rubble is still there
     expect(exits.check(at.x, at.y, () => false)?.to.area).toBe('bloom'); // blasted clear
+  });
+});
+
+describe('quit game', () => {
+  it('only offers QUIT GAME in the desktop app (a browser tab cannot close itself)', () => {
+    expect(isDesktop()).toBe(false); // the tests run outside Electron
   });
 });

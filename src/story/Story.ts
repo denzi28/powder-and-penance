@@ -168,6 +168,14 @@ export class Story {
   // ------------------------------------------------------------------ steps
   private exec(s: Step) {
     const gs = this.gs;
+    // Skipping runs the rest of the scene in an instant: its sounds, shakes, flashes, bursts and chatter would all go off at once.
+    if (this.skipping && ('sfx' in s || 'shake' in s || 'flash' in s || 'burst' in s || 'bubble' in s)) return;
+    if ('skipEnds' in s) {
+      // the scene proper is over: what follows plays whether it was skipped or not (and can't be skipped itself)
+      this.skipping = false;
+      this.skippable = false;
+      return;
+    }
     if (this.stageStep(s)) return;
     if ('say' in s) {
       const who = s.who ? DATA.npcs.npcs[s.who] : null;

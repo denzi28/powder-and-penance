@@ -73,6 +73,7 @@ import { applySave, snapshot } from '../game/Persistence';
 import { updateAim } from '../game/aim';
 import type { Actor } from '../actors/Actor';
 import type { Dir8 } from '../core/math';
+import { isDesktop, quitGame } from '../game/Desktop';
 import { CarriedDrop, MinibossPlacement, type Cond, type RoomData } from '../data/schemas';
 
 const DEPTH_LIGHT = (y: number) => DEPTH.actor(y) + 1;
@@ -172,6 +173,9 @@ export class GameScene extends Phaser.Scene {
   travel: { exit: Exit; t: number; fade: number } | null = null;
   /** Area name shown on arrival (t in ticks). */
   areaBanner: { name: string; t: number } | null = null;
+  /** The goal, shown for a while when it changes (and on loading a game). */
+  goalNote: { text: string; t: number } | null = null;
+  private lastGoal: string | null = null;
   /** Large map open (M): the world is paused. */
   mapOpen = false;
   /** Equipment / inventory screen (from the pause menu): the world is paused. */
@@ -260,6 +264,7 @@ export class GameScene extends Phaser.Scene {
     };
     this.story = new Story(this);
     this.arena = new BossArena(this);
+    this.combat.blocked = (a, b) => this.arena.divides(a, b);
     this.levers = new Levers(this.lib);
     this.notes = new Notes(this.lib);
     this.loot = new LootDrops(this.lib);
@@ -332,6 +337,7 @@ export class GameScene extends Phaser.Scene {
     }
     if (this.story.active) {
       // A conversation or cutscene: the script drives the dialogue box, camera and fades; the world waits.
+      this.cam.tickShake(); // (a cutscene's shake still settles)
       this.story.tick();
       if (this.toast && ++this.toast.t > this.toast.life) this.toast = null;
       if (this.areaBanner && ++this.areaBanner.t > DATA.hud.areaBanner.ticks) this.areaBanner = null;
@@ -368,6 +374,7 @@ export class GameScene extends Phaser.Scene {
     this.cam.tickShake();
     if (this.toast && ++this.toast.t > this.toast.life) this.toast = null;
     if (this.areaBanner && ++this.areaBanner.t > DATA.hud.areaBanner.ticks) this.areaBanner = null;
+    this.tickGoal();
     if (this.hitstop > 0) {
       this.hitstop--;
       return;
@@ -545,10 +552,32 @@ export class GameScene extends Phaser.Scene {
           this.scene.start('title');
         },
       },
+      ...(isDesktop()
+        ? [
+            {
+              label: 'QUIT GAME',
+              enabled: true,
+              action: () => {
+                this.save(); // progress kept, then the window closes
+                quitGame();
+              },
+            },
+          ]
+        : []),
     ];
     const t = this.player.loadTier;
     this.menu = { title: 'PAUSED', subtitle: `${DATA.areas.areas[this.area].name}. Load ${this.player.equipLoad}/${this.player.capacity} (${t.label.toLowerCase()}).`, footer: `GOAL: ${this.currentGoal()}`, items, index, onBack: close };
     this.controls.clearBuffer();
+  }
+
+  /** A new goal (or a game just loaded, once any opening scene is over): show it under the area banner. */
+  private tickGoal() {
+    if (this.goalNote && ++this.goalNote.t > DATA.hud.goal.ticks) this.goalNote = null;
+    if (this.player.dead || this.shrineSeq || this.travel) return;
+    const goal = this.currentGoal();
+    if (goal === this.lastGoal) return;
+    this.lastGoal = goal;
+    if (goal) this.goalNote = { text: goal, t: 0 };
   }
 
   /** What to do next (data/goals.json): the first goal whose condition holds. */
@@ -768,7 +797,7 @@ export class GameScene extends Phaser.Scene {
     });
     this.bus.on('died', e => {
       if (e.actor instanceof Enemy && e.actor.ally) {
-        this.showToast(e.actor.def.name.toUpperCase(), 'has fallen. The wax has him now.');
+        this.showToast(e.actor.def.name.toUpperCase(), 'has fallen. He is not moving.');
         return;
       }
       if (e.actor instanceof Enemy) {
@@ -1134,6 +1163,7 @@ export class GameScene extends Phaser.Scene {
     const camX = focus ? Math.round(focus.x) : feet.x;
     const camY = focus ? Math.round(focus.y) : feet.y;
     this.cam.apply(this.cameras.main, camX, camY, alpha, this.roomBounds(focus ? focus.x : this.player.x, focus ? focus.y : this.player.y), delta);
+    this.story.stage.drawBubbles();
     this.enemyBars.draw(this.enemyViews.values(), fxDelta);
     this.lightCones.draw(this.enemies, this.grid);
     this.debug.draw(this, feet.x, feet.y);

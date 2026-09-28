@@ -67,7 +67,7 @@
       "sprite": "ball",
       "speed": 300,
       "range": 130,
-      "damage": 17,
+      "damage": 15,
       "poise": 12,
       "pierce": 0,
       "knockback": 90,

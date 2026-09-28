@@ -12,7 +12,7 @@
   "crit": { "backstab": 2.2, "riposte": 2.5 },
   "light": [
     {
-      "damage": 42, "poise": 30, "stamina": 24,
+      "damage": 38, "poise": 30, "stamina": 24,
       "windup": 20, "active": 5, "recovery": 30,
       "comboFrom": 26, "rollCancelFrom": 32,
       "trackDegPerTick": 4,
@@ -23,7 +23,7 @@
       "knockback": 150, "hitstop": 6, "shake": 0.3, "sfx": "p_axe"
     },
     {
-      "damage": 46, "poise": 32, "stamina": 26,
+      "damage": 41, "poise": 32, "stamina": 26,
       "windup": 22, "active": 5, "recovery": 36,
       "comboFrom": 30, "rollCancelFrom": 38,
       "trackDegPerTick": 4,
@@ -39,7 +39,7 @@
     "chargeDamageMult": 1.5,
     "chargePoiseMult": 1.6,
     "strike": {
-      "damage": 64, "poise": 45, "stamina": 36,
+      "damage": 58, "poise": 45, "stamina": 36,
       "windup": 26, "active": 6, "recovery": 42,
       "rollCancelFrom": 40,
       "trackDegPerTick": 3,

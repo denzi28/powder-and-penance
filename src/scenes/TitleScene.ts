@@ -7,6 +7,7 @@ import { firstEnabled, MenuNav, type Menu, type MenuItem } from '../ui/Menu';
 import { MenuRenderer } from '../ui/MenuRenderer';
 import { hexToInt } from '../ui/colors';
 import { Sfx } from '../audio/Sfx';
+import { isDesktop, quitGame } from '../game/Desktop';
 import type { GameStartData } from './GameScene';
 
 export class TitleScene extends Phaser.Scene {
@@ -43,6 +44,7 @@ export class TitleScene extends Phaser.Scene {
     const items: MenuItem[] = [
       { label: 'CONTINUE', enabled: hasSave, note: 'no save yet', action: () => this.start('continue') },
       { label: 'NEW GAME', enabled: true, action: () => (hasSave ? this.confirmNew() : this.start('new')) },
+      ...(isDesktop() ? [{ label: 'QUIT GAME', enabled: true, action: () => quitGame() }] : []),
     ];
     this.menu = { title: '', items, index: firstEnabled(items) };
   }

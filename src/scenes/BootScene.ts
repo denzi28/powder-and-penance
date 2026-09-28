@@ -1,8 +1,7 @@
 import Phaser from 'phaser';
-import { FONT_URL, SPRITES, SPRITE_URLS } from '../data/assets';
+import { FONT, FONT_URL, SPRITES, SPRITE_URLS } from '../data/assets';
 
-/** Font atlas layout: see ASSETS.md ("Pixel font"). */
-export const FONT = { cellW: 6, cellH: 8, charsPerRow: 16 };
+export { FONT };
 
 export class BootScene extends Phaser.Scene {
   constructor() {
